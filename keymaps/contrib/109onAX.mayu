@@ -1,6 +1,6 @@
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ‘‹g‚¢‚Ì—JŸT - AX.mayu
-# Copyright (C) 2002, ¼–{ ”‹I <matsumoto678@oki.com>
+ï»¿#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# çª“ä½¿ã„ã®æ†‚é¬± - AX.mayu
+# Copyright (C) 2002, æ¾æœ¬ åšç´€ <matsumoto678@oki.com>
 #
 
 define KBD109onAX
@@ -12,7 +12,7 @@ def subst  S-*_8		= $LEFT_PARENTHESIS
 def subst  S-*_9		= $RIGHT_PARENTHESIS
 
 def subst  S-*BackSlash		= $LOW_LINE
-def subst  S-*_0		= $TILDE # ‚±‚ê‚Í‚È‚­‚Ä‚à‚¢‚¢
+def subst  S-*_0		= $TILDE # ã“ã‚Œã¯ãªãã¦ã‚‚ã„ã„
 
 def subst  S-*Hyphen		= $EQUALS_SIGN
 def subst ~S-*Equal		= $CIRCUMFLEX_ACCENT

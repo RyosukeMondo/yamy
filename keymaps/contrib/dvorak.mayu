@@ -1,17 +1,17 @@
-#
-# Dvorak layout for ‘‹g‚¢‚Ì—JŸT
+ï»¿#
+# Dvorak layout for çª“ä½¿ã„ã®æ†‚é¬±
 #
 # Written by KANAI Makoto <kanai@nadmin.org>
 #         on May. 2, 2000
 #
-# [g‚¢•û]
-# .mayu‚Ì’†‚Å
+# [ä½¿ã„æ–¹]
+# .mayuã®ä¸­ã§
 #     include "104.mayu"
-# ‚É‘±‚¢‚Ä
+# ã«ç¶šã„ã¦
 #     include "dvorak.mayu"
-# ‚Æ‚µ‚Ä“Ç‚İ‚Ü‚¹‚é¡
-# ‚»‚ÌŒã‚ÍAƒAƒ“ƒ_[ƒXƒRƒA•t‚ÌƒL[•Ê–¼‚ğg‚Á‚½w’è‚ª‰Â”\B
-# —á: window EditControl /:Edit$/ : Global
+# ã¨ã—ã¦èª­ã¿è¾¼ã¾ã›ã‚‹ï½¡
+# ãã®å¾Œã¯ã€ã‚¢ãƒ³ãƒ€ãƒ¼ã‚¹ã‚³ã‚¢ä»˜ã®ã‚­ãƒ¼åˆ¥åã‚’ä½¿ã£ãŸæŒ‡å®šãŒå¯èƒ½ã€‚
+# ä¾‹: window EditControl /:Edit$/ : Global
 #     key C-_H	=> BackSpace
 #
 

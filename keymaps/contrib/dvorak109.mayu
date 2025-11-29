@@ -1,26 +1,26 @@
-#
-# Dvorak layout for ‘‹g‚¢‚Ì—JŸT
+ï»¿#
+# Dvorak layout for çª“ä½¿ã„ã®æ†‚é¬±
 #
 # Written by KANAI Makoto <kanai@nadmin.org>
 #         on May. 2, 2000
 # Modified by Oota Toshiya <oota@mspd.mt.nec.co.jp>
 #	ver 1.1 2001/11/1
 #
-# [g‚¢•û]
-# .mayu‚Ì’†‚Å
+# [ä½¿ã„æ–¹]
+# .mayuã®ä¸­ã§
 #     include "109.mayu"
-# ‚É‘±‚¢‚Ä
+# ã«ç¶šã„ã¦
 #     include "dvorak109.mayu"
-# ‚Æ‚µ‚Ä“Ç‚İ‚Ü‚¹‚é¡
+# ã¨ã—ã¦èª­ã¿è¾¼ã¾ã›ã‚‹ï½¡
 
 def key EqualsSign Equal		=    0x0d # =+
-#key ~S-*”¼Šp/‘SŠp		= $GRAVE_ACCENT
-#key  S-*”¼Šp/‘SŠp		= $TILDE
-#key  A-”¼Šp/‘SŠp		= $ToggleIME
-#key    *–³•ÏŠ·		= *Space
-#key    *•ÏŠ·		= *Space
-#key    *‚Ğ‚ç‚ª‚È		= *Space
-#key    *‰p”		= S-*‰p”
+#key ~S-*åŠè§’/å…¨è§’		= $GRAVE_ACCENT
+#key  S-*åŠè§’/å…¨è§’		= $TILDE
+#key  A-åŠè§’/å…¨è§’		= $ToggleIME
+#key    *ç„¡å¤‰æ›		= *Space
+#key    *å¤‰æ›		= *Space
+#key    *ã²ã‚‰ãŒãª		= *Space
+#key    *è‹±æ•°		= S-*è‹±æ•°
 #key *ReverseSolidus	= *RightShift
 
 

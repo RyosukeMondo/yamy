@@ -1,5 +1,5 @@
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ���g���̗J�T - AX.mayu
+﻿#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 窓使いの憂鬱 - AX.mayu
 #
 # derived from 104.mayu, and 109.mayu
 # Copyright (C) 1999-2000, TAGA Nayuta <nayuta@users.sourceforge.net>
@@ -12,7 +12,7 @@ define KBDAX
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# AX ���{��L�[�{�[�h��`
+# AX 日本語キーボード定義
 #
 
 def key Esc Escape			=    0x01
@@ -45,7 +45,7 @@ def key RightSquareBracket CloseBracket	=    0x1b # ]}
 def key Enter Return			=    0x1c
 def key NumEnter NumReturn		= E0-0x1c
 def key LeftControl LControl LCtrl	=    0x1d
-def key �p��/�J�i Eisuu			= E0-0x1d # �p�� �J�i
+def key 英数/カナ Eisuu			= E0-0x1d # 英数 カナ
 def key Pause				= E1-0x1d 0x45 # Pause
 def key A				=    0x1e
 def key S				=    0x1f
@@ -77,7 +77,7 @@ def key RightShift RShift		=    0x36
 def key NumAsterisk NumMultiply		=    0x37 # Numpad *
 def key PrintScreen Snapshot		= E0-0x37
 def key LeftAlt LAlt LMenu		=    0x38
-def key ���� Kanji			= E0-0x38 # ����
+def key 漢字 Kanji			= E0-0x38 # 漢字
 def key Space				=    0x39
 def key CapsLock Capital Caps		=    0x3a # CapsLock
 def key F1				=    0x3b
@@ -96,20 +96,20 @@ def key Break				= E0-0x46 # Break
 def key Num7				=    0x47 # Numpad 7
 def key Home				= E0-0x47
 def key Num8				=    0x48 # Numpad 8
-def key �� Up				= E0-0x48
+def key ↑ Up				= E0-0x48
 def key Num9				=    0x49 # Numpad 9
 def key PageUp Prior			= E0-0x49
 def key NumHyphenMinus NumMinus		=    0x4a # Numpad -
 def key Num4				=    0x4b # Numpad 4
-def key �� Left				= E0-0x4b
+def key ← Left				= E0-0x4b
 def key Num5				=    0x4c # Numpad 5
 def key Num6				=    0x4d # Numpad 6
-def key �� Right			= E0-0x4d
+def key → Right			= E0-0x4d
 def key NumPlusSign NumPlus		=    0x4e # Numpad +
 def key Num1				=    0x4f # Numpad 1
 def key End				= E0-0x4f
 def key Num2				=    0x50
-def key �� Down				= E0-0x50
+def key ↓ Down				= E0-0x50
 def key Num3				=    0x51
 def key PageDown Next			= E0-0x51
 def key Num0				=    0x52
@@ -120,11 +120,11 @@ def key SysRq				=    0x54
 def key ReverseSolidus BackSlash	=    0x56 # \|
 def key F11				=    0x57
 def key F12				=    0x58
-def key ���ϊ� NonConvert		=    0x5a # ���ϊ�
-def key �ϊ� Convert			=    0x5b # �ϊ�
-def key AX 				=    0x5c # AX�L�[
-def key RightWindows RWindows RWin	= E0-0x5c # (�L�[�{�[�h��ɂ͂Ȃ�)
-def key Applications Apps		= E0-0x5d # (�L�[�{�[�h��ɂ͂Ȃ�)
+def key 無変換 NonConvert		=    0x5a # 無変換
+def key 変換 Convert			=    0x5b # 変換
+def key AX 				=    0x5c # AXキー
+def key RightWindows RWindows RWin	= E0-0x5c # (キーボード上にはない)
+def key Applications Apps		= E0-0x5d # (キーボード上にはない)
 # def overflow				=    0xff # overflow (ignore)
 
 def sync				=    0x7e # scan code used by &Sync
@@ -143,20 +143,20 @@ keymap Global
  mod Windows += AX
  key *AX			=> *RWindows
 
-# �EAX �L�[�{�[�h��ɂ� Windows �L�[�͑��݂��Ȃ��B
-# �EWindows95 �ł� [AX] �L�[�� [Windows] �L�[�̖�ڂ��ʂ����Ă������A
-#   NT/2000 �ł͖��������B
-# �EAX �L�[�{�[�h�� RWindows �� Applications �̃L�[�R�[�h�𔭐�������
-#   ���Ƃ͂Ȃ����ANT/2000 �̃h���C�o�͂����̃L�[�R�[�h��F������B
-# �E����ď�L�̂悤�Ȓ�`�����邱�Ƃ� [AX] �L�[�� [Windows] �L�[�Ƃ�
-#   �Ďg�p���邱�Ƃ��ł���B
+# ・AX キーボード上には Windows キーは存在しない。
+# ・Windows95 では [AX] キーが [Windows] キーの役目を果たしていたが、
+#   NT/2000 では無視される。
+# ・AX キーボードは RWindows や Applications のキーコードを発生させる
+#   ことはないが、NT/2000 のドライバはこれらのキーコードを認識する。
+# ・よって上記のような定義をすることで [AX] キーを [Windows] キーとし
+#   て使用することができる。
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # define some key sequence
 #
 
-keyseq $ToggleIME		= ����
+keyseq $ToggleIME		= 漢字
 keyseq $CapsLock		= CapsLock
 
 keyseq $SPACE			= ~S-*Space			#  

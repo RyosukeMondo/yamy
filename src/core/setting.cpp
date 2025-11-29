@@ -1356,16 +1356,6 @@ bool readFile(tstring *o_data, const tstringi &i_filename)
 		return true;
 	}
 
-	// try multibyte charset
-	size_t wsize = mbstowcs(NULL, reinterpret_cast<char *>(buf.get()), 0);
-	if (wsize != size_t(-1)) {
-		Array<wchar_t> wbuf(wsize);
-		mbstowcs(wbuf.get(), reinterpret_cast<char *>(buf.get()), wsize);
-		o_data->assign(wbuf.get(), wbuf.get() + wsize);
-		fclose(fp);
-		return true;
-	}
-
 	// try UTF-8
 	{
 		Array<wchar_t> wbuf(static_cast<size_t>(sbuf.st_size));
@@ -1373,6 +1363,9 @@ bool readFile(tstring *o_data, const tstringi &i_filename)
 		BYTE *end = buf.get() + sbuf.st_size;
 		wchar_t *d = wbuf.get();
 		enum { STATE_1, STATE_2of2, STATE_2of3, STATE_3of3 } state = STATE_1;
+
+		if (f + 3 <= end && f[0] == 0xef && f[1] == 0xbb && f[2] == 0xbf)
+			f += 3;
 
 		while (f != end) {
 			switch (state) {
@@ -1413,6 +1406,16 @@ bool readFile(tstring *o_data, const tstringi &i_filename)
 
 not_UTF_8:
 		;
+	}
+
+	// try multibyte charset
+	size_t wsize = mbstowcs(NULL, reinterpret_cast<char *>(buf.get()), 0);
+	if (wsize != size_t(-1)) {
+		Array<wchar_t> wbuf(wsize);
+		mbstowcs(wbuf.get(), reinterpret_cast<char *>(buf.get()), wsize);
+		o_data->assign(wbuf.get(), wbuf.get() + wsize);
+		fclose(fp);
+		return true;
 	}
 #endif // _UNICODE
 

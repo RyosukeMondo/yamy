@@ -1,11 +1,11 @@
+ï»¿#
+# DVORAKon109.mayu - dvorak layout on 109 layout for çª“ä½¿ã„ã®æ†‚é¬±
 #
-# DVORAKon109.mayu - dvorak layout on 109 layout for ‘‹g‚¢‚Ì—JŸT
 #
-#
-# dvorakƒL[”z—ñ‚ğ109ƒL[ã‚ÉÀŒ»‚·‚éB
-# ƒL[”z—ñ‚ÍAˆÈ‰º‚Ì‚æ‚¤‚É‚È‚éB‹ó”’‚Ì•”•ª‚Í•ÏX‚µ‚È‚¢B
-# S-0 ‚ª ~ ‚É‚È‚é‚±‚Æ‚ÆAS-^ ‚ª _ ‚É‚È‚é‚±‚Æ‚ğœ‚¯‚ÎAƒL[ˆÊ’u‚ğŒğŠ·‚µA
-# ]} ‚Å‚ ‚Á‚½ˆÊ’u‚É Contol ‚ğ’u‚¢‚½‚¾‚¯B(\_ ‚Í•s—v‚É‚È‚é‚½‚ßB)
+# dvorakã‚­ãƒ¼é…åˆ—ã‚’109ã‚­ãƒ¼ä¸Šã«å®Ÿç¾ã™ã‚‹ã€‚
+# ã‚­ãƒ¼é…åˆ—ã¯ã€ä»¥ä¸‹ã®ã‚ˆã†ã«ãªã‚‹ã€‚ç©ºç™½ã®éƒ¨åˆ†ã¯å¤‰æ›´ã—ãªã„ã€‚
+# S-0 ãŒ ~ ã«ãªã‚‹ã“ã¨ã¨ã€S-^ ãŒ _ ã«ãªã‚‹ã“ã¨ã‚’é™¤ã‘ã°ã€ã‚­ãƒ¼ä½ç½®ã‚’äº¤æ›ã—ã€
+# ]} ã§ã‚ã£ãŸä½ç½®ã« Contol ã‚’ç½®ã„ãŸã ã‘ã€‚(\_ ã¯ä¸è¦ã«ãªã‚‹ãŸã‚ã€‚)
 #
 # ----------------------------------------------------------------------------
 # |    |  ! |  " |  # |  $ |  % |  & |  ' |  ( |  ) |  ~ |  { |  } |  ` |    |
@@ -25,13 +25,13 @@
 define KBDDVORAKon109
 
 
-# ˆê’i–Ú
+# ä¸€æ®µç›®
 def subst S-*_0				= $TILDE
 def subst *Minus			= *LeftSquareBracket
 def subst *CircumflexAccent		= *RightSquareBracket
 def subst *YenSign			= *Atmark
 
-# “ñ’i–Ú
+# äºŒæ®µç›®
 def subst *Q				= *Colon
 def subst *W				= *Comma
 def subst *E				= *Period
@@ -46,7 +46,7 @@ def subst *Atmark			= *Slash
 def subst ~S-*LeftSquareBracket		= $CIRCUMFLEX_ACCENT
 def subst  S-*LeftSquareBracket 	= $LOW_LINE
 
-# O’i–Ú
+# ä¸‰æ®µç›®
 def subst *A				= *A
 def subst *S				= *O
 def subst *D				= *E
@@ -60,7 +60,7 @@ def subst *Semicolon			= *S
 def subst *Colon			= *Minus
 def subst *RightSquareBracket		= ~S-*ReverseSolidus	# temporary
 
-# l’i–Ú
+# å››æ®µç›®
 def subst *Z				= *Semicolon
 def subst *X				= *Q
 def subst *C				= *J
