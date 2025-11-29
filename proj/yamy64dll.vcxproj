@@ -23,6 +23,7 @@
     <ProjectGuid>{FFEC7383-47F7-459C-9D12-BE79572793FE}</ProjectGuid>
     <RootNamespace>yamy64dll</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <TargetName>yamy64</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -118,13 +119,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\hook.cpp" />
-    <ClCompile Include="..\stringtool.cpp" />
+    <ClCompile Include="..\src\hook.cpp" />
+    <ClCompile Include="..\src\stringtool.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\hook.h" />
-    <ClInclude Include="..\misc.h" />
-    <ClInclude Include="..\stringtool.h" />
+    <ClInclude Include="..\src\hook.h" />
+    <ClInclude Include="..\src\misc.h" />
+    <ClInclude Include="..\src\stringtool.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="regex64.vcxproj">

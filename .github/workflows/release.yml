@@ -57,11 +57,11 @@ jobs:
       shell: cmd
       working-directory: yamy
       run: |
-        copy README-ja.html bin\
-        copy 109.mayu bin\
-        copy 104.mayu bin\
-        copy dot.mayu bin\
-        copy default.mayu bin\
+        copy docs\README-ja.html bin\
+        copy keymaps\109.mayu bin\
+        copy keymaps\104.mayu bin\
+        copy keymaps\dot.mayu bin\
+        copy keymaps\default.mayu bin\
 
     - name: Create Zip Archive
       shell: cmd
