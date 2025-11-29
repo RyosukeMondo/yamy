@@ -125,7 +125,7 @@
     <ClCompile Include="..\src\ui\dlgsetting.cpp" />
     <ClCompile Include="..\src\ui\dlgversion.cpp" />
     <ClCompile Include="..\src\core\engine.cpp" />
-    <ClCompile Include="..\src\fixscancodemap.cpp" />
+    <ClCompile Include="..\src\system\fixscancodemap.cpp" />
     <ClCompile Include="..\src\core\focus.cpp" />
     <ClCompile Include="..\src\core\function.cpp" />
     <ClCompile Include="..\src\core\keyboard.cpp" />
@@ -151,7 +151,7 @@
     <ClInclude Include="..\src\ui\dlgversion.h" />
     <ClInclude Include="..\src\core\engine.h" />
     <ClInclude Include="..\src\utils\errormessage.h" />
-    <ClInclude Include="..\src\fixscancodemap.h" />
+    <ClInclude Include="..\src\system\fixscancodemap.h" />
     <ClInclude Include="..\src\core\focus.h" />
     <ClInclude Include="..\src\core\function.h" />
     <ClInclude Include="..\src\core\functions.h" />
