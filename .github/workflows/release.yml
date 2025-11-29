@@ -1,0 +1,85 @@
+name: Release Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        path: yamy
+
+    - name: Download Boost Headers
+      shell: cmd
+      run: |
+        curl -L -o boost_1_84_0.zip https://archives.boost.io/release/1.84.0/source/boost_1_84_0.zip
+        7z x boost_1_84_0.zip -o. -y -r -aos boost_1_84_0/boost/*
+      
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.3
+
+    - name: Build Release x64
+      shell: cmd
+      working-directory: yamy
+      run: |
+        msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=x64
+
+    - name: Build Release Win32
+      shell: cmd
+      working-directory: yamy
+      run: |
+        msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=Win32
+
+    - name: Prepare Artifacts
+      shell: cmd
+      working-directory: yamy
+      run: |
+        cd Release
+        if exist yamy64 move /Y yamy64 yamy64.exe
+        if exist yamyd32 move /Y yamyd32 yamyd32.exe
+        if exist yamy32 move /Y yamy32 yamy32.exe
+        cd ..
+        mkdir bin
+        copy Release\yamy64.exe bin\
+        copy Release\yamyd32.exe bin\
+        copy Release\yamy32.exe bin\
+        copy Release\yamy64.dll bin\
+        copy Release\yamy32.dll bin\
+        
+    - name: Copy Documentation and Config
+      shell: cmd
+      working-directory: yamy
+      run: |
+        copy README-ja.html bin\
+        copy 109.mayu bin\
+        copy 104.mayu bin\
+        copy dot.mayu bin\
+        copy default.mayu bin\
+
+    - name: Create Zip Archive
+      shell: cmd
+      working-directory: yamy/bin
+      run: |
+        7z a ../../yamy-release.zip *
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: yamy-release.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Artifact (for manual runs)
+      uses: actions/upload-artifact@v4
+      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      with:
+        name: yamy-release
+        path: yamy-release.zip
