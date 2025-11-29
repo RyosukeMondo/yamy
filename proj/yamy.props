@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <VERSION>0.03</VERSION>
+    <BOOST_MAJOR>1_84</BOOST_MAJOR>
+    <BOOST_MINOR>0</BOOST_MINOR>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>18.0.11123.170</_ProjectFileVersion>
+    <OutDir>..\$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\boost_$(BOOST_MAJOR)_$(BOOST_MINOR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>VERSION=&quot;$(VERSION)&quot;;LOGNAME=&quot;$(USERNAME)&quot;;COMPUTERNAME=&quot;$(COMPUTERNAME)&quot;;_CRT_SECURE_NO_WARNINGS;MAYU64;USE_INI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="VERSION">
+      <Value>$(VERSION)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BOOST_MAJOR">
+      <Value>$(BOOST_MAJOR)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BOOST_MINOR">
+      <Value>$(BOOST_MINOR)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

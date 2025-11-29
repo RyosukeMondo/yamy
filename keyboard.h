@@ -188,6 +188,16 @@ public:
 		Type_Mod7,					/// &lt;ASSIGN_MODIFIER&gt;
 		Type_Mod8,					/// &lt;ASSIGN_MODIFIER&gt;
 		Type_Mod9,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod10,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod11,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod12,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod13,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod14,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod15,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod16,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod17,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod18,					/// &lt;ASSIGN_MODIFIER&gt;
+		Type_Mod19,					/// &lt;ASSIGN_MODIFIER&gt;
 		Type_Lock0,					/// &lt;ASSIGN_MODIFIER&gt;
 		Type_Lock1,					/// &lt;ASSIGN_MODIFIER&gt;
 		Type_Lock2,					/// &lt;ASSIGN_MODIFIER&gt;

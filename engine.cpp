@@ -244,7 +244,7 @@ Modifier Engine::getCurrentModifiers(Key *i_key, bool i_isPressed)
 				cmods.press(Modifier::Type_Repeat, true);
 	}
 
-	for (int i = Modifier::Type_Mod0; i <= Modifier::Type_Mod9; ++ i)
+	for (int i = Modifier::Type_Mod0; i <= Modifier::Type_Mod19; ++ i)
 		cmods.press(static_cast<Modifier::Type>(i),
 					isPressed(static_cast<Modifier::Type>(i)));
 

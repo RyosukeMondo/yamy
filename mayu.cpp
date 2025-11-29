@@ -1158,7 +1158,7 @@ public:
 		_tsplitpath_s(exePath, exeDrive, GANA_MAX_PATH, exeDir, GANA_MAX_PATH, NULL, 0, NULL, 0);
 		yamydPath = exeDrive;
 		yamydPath += exeDir;
-		yamydPath += _T("yamyd32");
+		yamydPath += _T("yamyd32.exe");
 
 		BOOL result = CreateProcess(yamydPath.c_str(), NULL, NULL, NULL, FALSE,
 							   NORMAL_PRIORITY_CLASS, 0, NULL, &m_si, &m_pi);

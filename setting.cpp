@@ -473,6 +473,16 @@ continue_loop:
 			{ _T("M7-"), Modifier::Type_Mod7 },
 			{ _T("M8-"), Modifier::Type_Mod8 },
 			{ _T("M9-"), Modifier::Type_Mod9 },
+			{ _T("M10-"), Modifier::Type_Mod10 },
+			{ _T("M11-"), Modifier::Type_Mod11 },
+			{ _T("M12-"), Modifier::Type_Mod12 },
+			{ _T("M13-"), Modifier::Type_Mod13 },
+			{ _T("M14-"), Modifier::Type_Mod14 },
+			{ _T("M15-"), Modifier::Type_Mod15 },
+			{ _T("M16-"), Modifier::Type_Mod16 },
+			{ _T("M17-"), Modifier::Type_Mod17 },
+			{ _T("M18-"), Modifier::Type_Mod18 },
+			{ _T("M19-"), Modifier::Type_Mod19 },
 			{ _T("L0-"), Modifier::Type_Lock0 },
 			{ _T("L1-"), Modifier::Type_Lock1 },
 			{ _T("L2-"), Modifier::Type_Lock2 },
@@ -964,7 +974,7 @@ KeySeq *SettingLoader::load_KEY_SEQUENCE(
 			if (!ks->isCorrectMode(i_mode))
 				throw ErrorMessage()
 				<< _T("`$") << *t
-				<< _T("': Some of R-, IL-, IC-, NL-, CL-, SL-, KL-, MAX-, MIN-, MMAX-, MMIN-, T-, TS-, M0...M9- and L0...L9- are used in the keyseq.  They are prohibited in this context.");
+				<< _T("': Some of R-, IL-, IC-, NL-, CL-, SL-, KL-, MAX-, MIN-, MMAX-, MMIN-, T-, TS-, M0...M19- and L0...L9- are used in the keyseq.  They are prohibited in this context.");
 			keySeq.setMode(ks->getMode());
 			keySeq.add(ActionKeySeq(ks));
 		} else if (*t == _T("&")) { // <FUNCTION_NAME>
@@ -1083,6 +1093,16 @@ void SettingLoader::load_MODIFIER_ASSIGNMENT()
 		else if (*t == _T("mod7") ) mt = Modifier::Type_Mod7;
 		else if (*t == _T("mod8") ) mt = Modifier::Type_Mod8;
 		else if (*t == _T("mod9") ) mt = Modifier::Type_Mod9;
+		else if (*t == _T("mod10") ) mt = Modifier::Type_Mod10;
+		else if (*t == _T("mod11") ) mt = Modifier::Type_Mod11;
+		else if (*t == _T("mod12") ) mt = Modifier::Type_Mod12;
+		else if (*t == _T("mod13") ) mt = Modifier::Type_Mod13;
+		else if (*t == _T("mod14") ) mt = Modifier::Type_Mod14;
+		else if (*t == _T("mod15") ) mt = Modifier::Type_Mod15;
+		else if (*t == _T("mod16") ) mt = Modifier::Type_Mod16;
+		else if (*t == _T("mod17") ) mt = Modifier::Type_Mod17;
+		else if (*t == _T("mod18") ) mt = Modifier::Type_Mod18;
+		else if (*t == _T("mod19") ) mt = Modifier::Type_Mod19;
 		else throw ErrorMessage() << _T("`") << *t
 			<< _T("': invalid modifier name.");
 
@@ -1436,6 +1456,8 @@ void SettingLoader::load(const tstringi &i_filename)
 			_T("T-"), _T("TS-"),
 			_T("M0-"), _T("M1-"), _T("M2-"), _T("M3-"), _T("M4-"),
 			_T("M5-"), _T("M6-"), _T("M7-"), _T("M8-"), _T("M9-"),
+			_T("M10-"), _T("M11-"), _T("M12-"), _T("M13-"), _T("M14-"),
+			_T("M15-"), _T("M16-"), _T("M17-"), _T("M18-"), _T("M19-"),
 			_T("L0-"), _T("L1-"), _T("L2-"), _T("L3-"), _T("L4-"),
 			_T("L5-"), _T("L6-"), _T("L7-"), _T("L8-"), _T("L9-"),
 		};
