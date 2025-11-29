@@ -88,13 +88,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\yamy.cpp" />
+    <ClCompile Include="..\src\app\yamy.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\mayurc.h" />
+    <ClInclude Include="..\src\ui\mayurc.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\src\mayu.rc" />
+    <ResourceCompile Include="..\src\ui\mayu.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="yamy32.vcxproj">

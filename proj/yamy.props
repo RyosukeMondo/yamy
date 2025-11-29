@@ -14,7 +14,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..\boost_$(BOOST_MAJOR)_$(BOOST_MINOR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\boost_$(BOOST_MAJOR)_$(BOOST_MINOR);..\src\core;..\src\ui;..\src\system;..\src\utils;..\src\app;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION=&quot;$(VERSION)&quot;;LOGNAME=&quot;$(USERNAME)&quot;;COMPUTERNAME=&quot;$(COMPUTERNAME)&quot;;_CRT_SECURE_NO_WARNINGS;MAYU64;USE_INI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>

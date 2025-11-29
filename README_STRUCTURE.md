@@ -4,7 +4,12 @@ This repository has been reorganized for better clarity and maintainability.
 
 ## Directory Structure
 
-- **`src/`**: Core source code (`.cpp`, `.h`, `.rc`, `.def`).
+- **`src/`**: Core source code.
+  - **`core/`**: Main engine logic (key mapping, parser, settings).
+  - **`ui/`**: User interface (dialogs, resources).
+  - **`system/`**: Low-level system hooks, registry, and driver interaction.
+  - **`utils/`**: General purpose utilities and helper classes.
+  - **`app/`**: Application entry points (`yamy.cpp`, `mayu.cpp`).
 - **`proj/`**: Visual Studio project and solution files (`.sln`, `.vcxproj`).
 - **`driver/`**: Device driver source code and related files (formerly `d/`).
 - **`keymaps/`**: Default and contributed keymap files (`.mayu`).

@@ -45,7 +45,7 @@
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="..\src\engine.h">
+    <CustomBuild Include="..\src\core\engine.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CScript.exe ..\tools\makefunc.js %(FullPath) ..\src\functions.h
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\tools\makefunc.js;%(AdditionalInputs)</AdditionalInputs>

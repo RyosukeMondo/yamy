@@ -90,11 +90,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\yamyd.cpp" />
+    <ClCompile Include="..\src\app\yamyd.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\hook.h" />
-    <ClInclude Include="..\src\mayu.h" />
+    <ClInclude Include="..\src\system\hook.h" />
+    <ClInclude Include="..\src\app\mayu.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="yamy32dll.vcxproj">
