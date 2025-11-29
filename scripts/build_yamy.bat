@@ -70,6 +70,13 @@ popd
 
 echo.
 echo ==========================================
+echo Copying Launch Scripts to Release...
+echo ==========================================
+copy /Y scripts\launch_yamy.bat Release\launch_yamy.bat >nul
+copy /Y scripts\launch_yamy_admin.bat Release\launch_yamy_admin.bat >nul
+
+echo.
+echo ==========================================
 echo Build Successful!
 echo Executables are in the 'Release' folder.
 echo ==========================================
