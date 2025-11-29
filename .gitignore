@@ -1,5 +1,7 @@
 *~
 *.pdb
-functions.h
 /Debug
 /Release
+.vs/
+Backup/
+UpgradeLog.htm
