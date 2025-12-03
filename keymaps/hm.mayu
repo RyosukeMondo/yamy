@@ -1,0 +1,24 @@
+﻿#--------------------1row
+key *IL-*IC- =
+key s-_2 = $COMMERCIAL_AT
+key s-_6 = $CIRCUMFLEX_ACCENT
+key s-_7 = $AMPERSAND
+key s-_8 = $ASTERISK
+key s-_9 = $LEFT_PARENTHESIS
+key s-_0 = $RIGHT_PARENTHESIS
+
+#--------------------2row
+key colon   = s-_7
+key s-colon = $QUOTATION_MARK
+key *CircumflexAccent = $equals_sign
+key S-*CircumflexAccent = $PLUS_sign
+
+#--------------------3row
+key s-Minus     = $low_line
+key Atmark      = $GRAVE_ACCENT
+key s-Atmark    = $tilde
+
+#--------------------4row
+key s-semicolon = colon
+mod Ctrl -= LCtrl
+mod Windows -= LWindows

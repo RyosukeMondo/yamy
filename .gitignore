@@ -10,6 +10,7 @@
 *.aps
 Debug/
 Release/
+dist/
 x64/
 .vs/
 Backup/

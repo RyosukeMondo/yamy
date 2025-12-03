@@ -1,0 +1,11 @@
+﻿# DvorakY 
+key _4 = &Toggle(Lock0)
+key _5 = &Toggle(Lock0)
+
+# DvorakY 
+key L0-IL-~KL-*IC-SEMICOLON = y a 
+key L0-IL-~KL-*IC-q = y o 
+key L0-IL-~KL-*IC-j = y e 
+key L0-IL-~KL-*IC-k = y u 
+key L0-IL-~KL-*IC-x = y i 
+key L0-IL-~KL-*IC-c = k 

@@ -9,76 +9,75 @@ taskkill /F /IM yamy.exe 2>nul
 taskkill /F /IM yamy64.exe 2>nul
 taskkill /F /IM yamy32.exe 2>nul
 taskkill /F /IM yamyd32.exe 2>nul
-REM Wait a bit for processes to release locks
 timeout /t 1 /nobreak >nul
 
 echo ==========================================
-echo Rotating locked DLLs (if any)...
+echo Cleaning Release folder...
 echo ==========================================
-pushd Release
-if exist yamy64.dll ren yamy64.dll yamy64.dll.%RANDOM%.old
-if exist yamy32.dll ren yamy32.dll yamy32.dll.%RANDOM%.old
-popd
+if exist Release (
+    rmdir /S /Q Release
+)
+mkdir Release
 
 echo ==========================================
 echo Setting up Visual Studio Environment...
 echo ==========================================
-
-REM Try to find VS 2026 (v18) or fallback to others if needed.
 if exist "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" (
     call "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" -arch=amd64
 ) else (
-    echo Warning: VsDevCmd.bat not found at expected location.
-    echo Assuming you are running from a Developer Command Prompt.
+    echo Warning: VsDevCmd.bat not found. Assuming Developer Command Prompt.
 )
 
-echo.
 echo ==========================================
 echo Building Yamy (x64 Release)...
 echo ==========================================
 msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=x64
 if errorlevel 1 goto error
 
-echo.
 echo ==========================================
-echo Building Yamy (Win32 Release) for yamyd32...
+echo Building Yamy (Win32 Release)...
 echo ==========================================
 msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=Win32
 if errorlevel 1 goto error
 
-echo.
 echo ==========================================
 echo Finalizing (Renaming executables)...
 echo ==========================================
 pushd Release
-
-REM Fix extensionless outputs if they exist
-if exist yamy64 (
-    echo Renaming yamy64 to yamy64.exe...
-    move /Y yamy64 yamy64.exe
-)
-if exist yamyd32 (
-    echo Renaming yamyd32 to yamyd32.exe...
-    move /Y yamyd32 yamyd32.exe
-)
-if exist yamy32 (
-    echo Renaming yamy32 to yamy32.exe...
-    move /Y yamy32 yamy32.exe
-)
-
+if exist yamy64 move /Y yamy64 yamy64.exe
+if exist yamyd32 move /Y yamyd32 yamyd32.exe
+if exist yamy32 move /Y yamy32 yamy32.exe
 popd
 
-echo.
 echo ==========================================
-echo Copying Launch Scripts to Release...
+echo Packaging (Copying keymaps and scripts)...
 echo ==========================================
+echo Copying keymaps...
+xcopy /E /I /Y keymaps Release\keymaps >nul
+echo Copying scripts...
+xcopy /E /I /Y scripts Release\scripts >nul
+if exist Release\scripts\build_yamy.bat del Release\scripts\build_yamy.bat
+
+echo Copying launch scripts to root...
 copy /Y scripts\launch_yamy.bat Release\launch_yamy.bat >nul
 copy /Y scripts\launch_yamy_admin.bat Release\launch_yamy_admin.bat >nul
+copy /Y docs\readme.txt Release\readme.txt >nul
 
-echo.
+echo ==========================================
+echo Cleaning up debug symbols...
+echo ==========================================
+if exist Release\*.pdb del Release\*.pdb
+
+echo ==========================================
+echo Creating Zip Archive...
+echo ==========================================
+if not exist dist mkdir dist
+if exist dist\yamy-dist.zip del dist\yamy-dist.zip
+powershell -command "Compress-Archive -Path Release\* -DestinationPath dist\yamy-dist.zip -Force"
+
 echo ==========================================
 echo Build Successful!
-echo Executables are in the 'Release' folder.
+echo Created dist\yamy-dist.zip
 echo ==========================================
 endlocal
 exit /b 0
