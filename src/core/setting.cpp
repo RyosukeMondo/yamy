@@ -184,6 +184,7 @@ bool SettingLoader::getComma(bool i_doesThrow, const _TCHAR *i_name)
 void SettingLoader::load_INCLUDE()
 {
 	SettingLoader loader(m_soLog, m_log);
+	loader.m_currentFilename = m_currentFilename;
 	loader.m_defaultAssignModifier = m_defaultAssignModifier;
 	loader.m_defaultKeySeqModifier = m_defaultKeySeqModifier;
 	if (!loader.load(m_setting, (*getToken()).getString()))
@@ -1632,6 +1633,14 @@ add_symbols:
 
 		// find file from home directory
 		HomeDirectories pathes;
+
+		// check relative to current file
+		if (!m_currentFilename.empty()) {
+			tstringi dir = pathRemoveFileSpec(m_currentFilename);
+			if (!dir.empty())
+				pathes.push_back(dir);
+		}
+
 		getHomeDirectories(&pathes);
 		for (HomeDirectories::iterator i = pathes.begin(); i != pathes.end(); ++ i) {
 			*o_path = *i + _T("\\") + name;
