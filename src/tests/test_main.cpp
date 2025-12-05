@@ -6,6 +6,7 @@
 #include "test_stringtool.cpp"
 #include "test_setting.cpp"
 #include "test_misc.cpp"
+#include "test_keymap.cpp"
 
 TEST(SanityCheck, BasicAssertion) {
     EXPECT_EQ(1 + 1, 2);
