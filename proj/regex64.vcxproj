@@ -68,12 +68,6 @@
     <_ProjectFileVersion>18.0.11123.170</_ProjectFileVersion>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <CustomBuildStep>
-      <Command>..\tools\makeregex.bat $(Configuration) $(BOOST_MAJOR) $(BOOST_MINOR) $(CPUBIT)
-</Command>
-      <Inputs>..\makeregex.bat;%(Inputs)</Inputs>
-      <Outputs>ext_lib$(CPUBIT)\$(Configuration)\libboost_regex-mt-sgd-$(BOOST_MAJOR).lib;%(Outputs)</Outputs>
-    </CustomBuildStep>
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
@@ -92,12 +86,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <CustomBuildStep>
-      <Command>..\tools\makeregex.bat $(Configuration) $(BOOST_MAJOR) $(BOOST_MINOR) $(CPUBIT)
-</Command>
-      <Inputs>..\makeregex.bat;%(Inputs)</Inputs>
-      <Outputs>ext_lib$(CPUBIT)\$(Configuration)\libboost_regex-mt-s-$(BOOST_MAJOR).lib;%(Outputs)</Outputs>
-    </CustomBuildStep>
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
@@ -116,20 +104,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="..\tools\makeregex_template.bat">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cl /EP %(FullPath) &gt; %(RootDir)%(Directory)makeregex.bat
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)makeregex.bat;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cl /EP %(FullPath) &gt; %(RootDir)%(Directory)makeregex.bat
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)makeregex.bat;%(Outputs)</Outputs>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="regex32.vcxproj">
-      <Project>{2376fa78-c8b7-4ed0-b4e3-b5ad778a8c0f}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

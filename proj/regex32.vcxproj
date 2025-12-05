@@ -46,12 +46,6 @@
     <_ProjectFileVersion>18.0.11123.170</_ProjectFileVersion>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <CustomBuildStep>
-      <Command>..\tools\makeregex.bat $(Configuration) $(BOOST_MAJOR) $(BOOST_MINOR) $(CPUBIT)
-</Command>
-      <Inputs>..\makeregex.bat;%(Inputs)</Inputs>
-      <Outputs>ext_lib$(CPUBIT)\$(Configuration)\libboost_regex-mt-sgd-$(BOOST_MAJOR).lib;%(Outputs)</Outputs>
-    </CustomBuildStep>
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -67,12 +61,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <CustomBuildStep>
-      <Command>..\tools\makeregex.bat $(Configuration) $(BOOST_MAJOR) $(BOOST_MINOR) $(CPUBIT)
-</Command>
-      <Inputs>..\makeregex.bat;%(Inputs)</Inputs>
-      <Outputs>ext_lib$(CPUBIT)\$(Configuration)\libboost_regex-mt-s-$(BOOST_MAJOR).lib;%(Outputs)</Outputs>
-    </CustomBuildStep>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -88,14 +76,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="..\tools\makeregex_template.bat">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cl /EP %(FullPath) &gt; %(RootDir)%(Directory)makeregex.bat
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)makeregex.bat;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cl /EP %(FullPath) &gt; %(RootDir)%(Directory)makeregex.bat
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)makeregex.bat;%(Outputs)</Outputs>
-    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

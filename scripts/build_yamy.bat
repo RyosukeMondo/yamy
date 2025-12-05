@@ -20,6 +20,22 @@ if exist Release (
 mkdir Release
 
 echo ==========================================
+echo Cleaning Intermediate folders...
+echo ==========================================
+if exist proj\Release rmdir /S /Q proj\Release
+if exist proj\x64 rmdir /S /Q proj\x64
+if exist proj\yamy64\x64 rmdir /S /Q proj\yamy64\x64
+if exist proj\yamy64dll\x64 rmdir /S /Q proj\yamy64dll\x64
+
+echo ==========================================
+echo Copying Boost Libraries...
+echo ==========================================
+if not exist "proj\ext_lib64\Release" mkdir "proj\ext_lib64\Release"
+if not exist "proj\ext_lib32\Release" mkdir "proj\ext_lib32\Release"
+copy /Y "..\boost_1_84_0\libboost_regex-mt-s-1_84.lib" "proj\ext_lib64\Release\libboost_regex-mt-s-1_84.lib"
+copy /Y "..\boost_1_84_0\libboost_regex-mt-s-1_84.lib" "proj\ext_lib32\Release\libboost_regex-mt-s-1_84.lib"
+
+echo ==========================================
 echo Setting up Visual Studio Environment...
 echo ==========================================
 if exist "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" (
@@ -31,13 +47,13 @@ if exist "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Vs
 echo ==========================================
 echo Building Yamy (x64 Release)...
 echo ==========================================
-msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=x64
+msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=x64 /t:Build
 if errorlevel 1 goto error
 
 echo ==========================================
 echo Building Yamy (Win32 Release)...
 echo ==========================================
-msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=Win32
+msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=Win32 /t:Build
 if errorlevel 1 goto error
 
 echo ==========================================
