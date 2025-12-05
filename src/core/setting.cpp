@@ -26,17 +26,16 @@ Key *events[] = {
 
 
 // get mayu filename
-bool getFilenameFromRegistry(
+bool getFilenameFromConfig(const ConfigStore &i_config,
 	tstringi *o_name, tstringi *o_filename, Setting::Symbols *o_symbols)
 {
-	Registry reg(MAYU_REGISTRY_ROOT);
 	int index;
-	reg.read(_T(".mayuIndex"), &index, 0);
+	i_config.read(_T(".mayuIndex"), &index, 0);
 	_TCHAR buf[100];
 	_sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
 
 	tstringi entry;
-	if (!reg.read(buf, &entry))
+	if (!i_config.read(buf, &entry))
 		return false;
 
 	tregex getFilename(_T("^([^;]*);([^;]*);(.*)$"));
@@ -62,11 +61,11 @@ bool getFilenameFromRegistry(
 
 
 // get home directory path
-void getHomeDirectories(HomeDirectories *o_pathes)
+void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
 {
 	tstringi filename;
 #ifndef USE_INI
-	if (getFilenameFromRegistry(NULL, &filename, NULL) &&
+	if (i_config && getFilenameFromConfig(*i_config, NULL, &filename, NULL) &&
 			!filename.empty()) {
 		tregex getPath(_T("^(.*[/\\\\])[^/\\\\]*$"));
 		tsmatch getPathResult;

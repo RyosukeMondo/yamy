@@ -7,6 +7,7 @@
 
 #  include "setting.h"
 #  include "parser.h"
+#  include "../utils/config_store.h"
 
 ///
 class SettingLoader
@@ -31,6 +32,7 @@ private:
 
 private:
 	Setting *m_setting;				/// loaded setting
+	const ConfigStore *m_config;		/// config store
 	bool m_isThereAnyError;			/// is there any error ?
 
 	SyncObject *m_soLog;				/// guard log output stream
@@ -129,7 +131,7 @@ private:
 
 public:
 	///
-	SettingLoader(SyncObject *i_soLog, tostream *i_log);
+	SettingLoader(SyncObject *i_soLog, tostream *i_log, const ConfigStore *i_config = NULL);
 
 	/// load setting
 	bool load(Setting *o_setting, const tstringi &i_filename = _T(""));

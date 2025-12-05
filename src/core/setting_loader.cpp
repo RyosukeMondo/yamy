@@ -93,7 +93,7 @@ bool SettingLoader::getComma(bool i_doesThrow, const _TCHAR *i_name)
 // <INCLUDE>
 void SettingLoader::load_INCLUDE()
 {
-	SettingLoader loader(m_soLog, m_log);
+	SettingLoader loader(m_soLog, m_log, m_config);
 	loader.m_currentFilename = m_currentFilename;
 	loader.m_defaultAssignModifier = m_defaultAssignModifier;
 	loader.m_defaultKeySeqModifier = m_defaultKeySeqModifier;
@@ -1484,12 +1484,12 @@ bool SettingLoader::getFilename(const tstringi &i_name, tstringi *o_path,
 		// find file from registry
 		if (i_name.empty()) {			// called not from 'include'
 			Setting::Symbols symbols;
-			if (getFilenameFromRegistry(NULL, o_path, &symbols)) {
+			if (m_config && getFilenameFromConfig(*m_config, NULL, o_path, &symbols)) {
 				if (o_path->empty())
 					// find file from home directory
 				{
 					HomeDirectories pathes;
-					getHomeDirectories(&pathes);
+					getHomeDirectories(m_config, &pathes);
 					for (HomeDirectories::iterator
 							i = pathes.begin(); i != pathes.end(); ++ i) {
 						*o_path = *i + _T("\\") + name;
@@ -1522,7 +1522,7 @@ add_symbols:
 				pathes.push_back(dir);
 		}
 
-		getHomeDirectories(&pathes);
+		getHomeDirectories(m_config, &pathes);
 		for (HomeDirectories::iterator i = pathes.begin(); i != pathes.end(); ++ i) {
 			*o_path = *i + _T("\\") + name;
 			if (isReadable(*o_path, i_debugLevel))
@@ -1540,8 +1540,9 @@ add_symbols:
 
 
 // constructor
-SettingLoader::SettingLoader(SyncObject *i_soLog, tostream *i_log)
+SettingLoader::SettingLoader(SyncObject *i_soLog, tostream *i_log, const ConfigStore *i_config)
 		: m_setting(NULL),
+		m_config(i_config),
 		m_isThereAnyError(false),
 		m_soLog(i_soLog),
 		m_log(i_log),

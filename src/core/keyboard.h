@@ -6,7 +6,7 @@
 #  define _KEYBOARD_H
 
 #  include "misc.h"
-#  include "driver.h"
+#  include "input_event.h"
 #  include "stringtool.h"
 #  include <vector>
 #  include <list>

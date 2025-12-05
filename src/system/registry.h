@@ -6,17 +6,18 @@
 #  define _REGISTRY_H
 
 #  include "stringtool.h"
+#  include "../utils/config_store.h"
 #  include <list>
 
 
 /// registry access class
-class Registry
+class Registry : public ConfigStore
 {
 	HKEY m_root;					/// registry root
 	tstring m_path;				/// path from registry root
 
 public:
-	typedef std::list<tstring> tstrings;
+	typedef ConfigStore::tstrings tstrings;
 
 public:
 	///
@@ -47,43 +48,43 @@ public:
 	}
 
 	/// remvoe
-	bool remove(const tstring &i_name = _T("")) const {
+	bool remove(const tstring &i_name = _T("")) const override {
 		return remove(m_root, m_path, i_name);
 	}
 
 	/// does exist the key ?
-	bool doesExist() const {
+	bool doesExist() const override {
 		return doesExist(m_root, m_path);
 	}
 
 	/// read DWORD
 	bool read(const tstring &i_name, int *o_value, int i_defaultValue = 0)
-	const {
+	const override {
 		return read(m_root, m_path, i_name, o_value, i_defaultValue);
 	}
 	/// write DWORD
-	bool write(const tstring &i_name, int i_value) const {
+	bool write(const tstring &i_name, int i_value) const override {
 		return write(m_root, m_path, i_name, i_value);
 	}
 
 	/// read tstring
 	bool read(const tstring &i_name, tstring *o_value,
-			  const tstring &i_defaultValue = _T("")) const {
+			  const tstring &i_defaultValue = _T("")) const override {
 		return read(m_root, m_path, i_name, o_value, i_defaultValue);
 	}
 	/// write tstring
-	bool write(const tstring &i_name, const tstring &i_value) const {
+	bool write(const tstring &i_name, const tstring &i_value) const override {
 		return write(m_root, m_path, i_name, i_value);
 	}
 
 #ifndef USE_INI
 	/// read list of tstring
 	bool read(const tstring &i_name, tstrings *o_value,
-			  const tstrings &i_defaultValue = tstrings()) const {
+			  const tstrings &i_defaultValue = tstrings()) const override {
 		return read(m_root, m_path, i_name, o_value, i_defaultValue);
 	}
 	/// write list of tstring
-	bool write(const tstring &i_name, const tstrings &i_value) const {
+	bool write(const tstring &i_name, const tstrings &i_value) const override {
 		return write(m_root, m_path, i_name, i_value);
 	}
 #endif //!USE_INI
@@ -91,13 +92,13 @@ public:
 	/// read binary data
 	bool read(const tstring &i_name, BYTE *o_value, DWORD *i_valueSize,
 			  const BYTE *i_defaultValue = NULL, DWORD i_defaultValueSize = 0)
-	const {
+	const override {
 		return read(m_root, m_path, i_name, o_value, i_valueSize, i_defaultValue,
 					i_defaultValueSize);
 	}
 	/// write binary data
 	bool write(const tstring &i_name, const BYTE *i_value,
-			   DWORD i_valueSize) const {
+			   DWORD i_valueSize) const override {
 		return write(m_root, m_path, i_name, i_value, i_valueSize);
 	}
 

@@ -747,6 +747,7 @@ private:
 	/// load setting
 	void load() {
 		Setting *newSetting = new Setting;
+		Registry reg(MAYU_REGISTRY_ROOT);
 
 		// set symbol
 		for (int i = 1; i < __argc; ++ i) {
@@ -754,7 +755,7 @@ private:
 				newSetting->m_symbols.insert(__targv[i] + 2);
 		}
 
-		if (!SettingLoader(&m_log, &m_log).load(newSetting)) {
+		if (!SettingLoader(&m_log, &m_log, &reg).load(newSetting)) {
 			ShowWindow(m_hwndLog, SW_SHOW);
 			SetForegroundWindow(m_hwndLog);
 			delete newSetting;

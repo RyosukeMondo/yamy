@@ -9,6 +9,7 @@
 #  include "keymap.h"
 #  include "parser.h"
 #  include "multithread.h"
+#  include "../utils/config_store.h"
 #  include <set>
 
 
@@ -62,10 +63,10 @@ class SettingLoader;
 
 /// get home directory path
 typedef std::list<tstringi> HomeDirectories;
-extern void getHomeDirectories(HomeDirectories *o_path);
+extern void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_path);
 
-/// get mayu filename from registry
-extern bool getFilenameFromRegistry(
+/// get mayu filename from config
+extern bool getFilenameFromConfig(const ConfigStore &i_config,
 	tstringi *o_name, tstringi *o_filename, Setting::Symbols *o_symbols);
 
 

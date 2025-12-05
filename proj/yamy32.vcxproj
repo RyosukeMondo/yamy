@@ -128,6 +128,7 @@
     <ClInclude Include="..\src\utils\array.h" />
     <ClInclude Include="..\src\utils\compiler_specific.h" />
     <ClInclude Include="..\src\utils\compiler_specific_func.h" />
+    <ClInclude Include="..\src\utils\config_store.h" />
     <ClInclude Include="..\src\ui\dlgeditsetting.h" />
     <ClInclude Include="..\src\ui\dlginvestigate.h" />
     <ClInclude Include="..\src\ui\dlglog.h" />
@@ -141,6 +142,7 @@
     <ClInclude Include="..\src\core\function_data.h" />
     <ClInclude Include="..\src\core\function_friends.h" />
     <ClInclude Include="..\src\system\hook.h" />
+    <ClInclude Include="..\src\core\input_event.h" />
     <ClInclude Include="..\src\core\keyboard.h" />
     <ClInclude Include="..\src\core\keymap.h" />
     <ClInclude Include="..\src\core\layoutmanager.h" />

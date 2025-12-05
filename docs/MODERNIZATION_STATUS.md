@@ -6,7 +6,7 @@ The primary goal is to improve maintainability, testability, and remove legacy d
 
 **Note:** This document focuses on the tactical C++ refactoring. For the long-term strategic vision (e.g., Rust rewrite), refer to `ARCHITECTURE_FUTURE.md`.
 
-## Completed Achievements (Phase 0)
+## Completed Achievements (Phase 0 & Phase 1)
 
 ### 1. Dependency Removal
 *   **Boost.Regex Removed:** Successfully replaced the external Boost.Regex dependency with the standard C++11 `std::regex`.
@@ -72,18 +72,32 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   Removed `makefunc.vcxproj` dependency and obsolete files.
     *   Verified build with `scripts/build_yamy.bat` (including tests).
 
+## Phase 2: Platform Abstraction Layer (PAL) - In Progress
+
+### 1. Config Abstraction (Started)
+*   **ConfigStore Interface:** Created `src/utils/config_store.h` to abstract configuration storage (Registry, Ini, etc.).
+*   **Registry Implementation:** Updated `src/system/registry.h` to inherit from `ConfigStore`.
+*   **Dependency Injection:** Updated `SettingLoader` to accept `ConfigStore` interface, removing direct dependency on `Registry` class for file loading.
+*   **Refactoring:** Renamed `getFilenameFromRegistry` to `getFilenameFromConfig` and updated usage in `SettingLoader` and `Mayu` app.
+
+### 2. Input Driver Interface (Started)
+*   **Input Event Abstraction:** Created `src/core/input_event.h` defining `KEYBOARD_INPUT_DATA` to decouple core logic from `driver.h` (which depends on `winioctl.h`).
+*   **Decoupling:** Updated `src/core/keyboard.h` and `src/system/driver.h` to use the new `input_event.h`.
+
 ## Architectural Analysis (Current State)
 
 ### Issues
 1.  **Driver:** The kernel driver (`mayud.sys`) remains a legacy component that needs review for modern Windows security compliance.
 2.  **Legacy Macros:** Still using many preprocessor macros (`USE_INI`, etc.) which should be replaced with runtime configuration or const expressions.
+3.  **Direct Win32 API Calls:** `Engine` and `Mayu` classes still make many direct Win32 API calls (`SendInput`, `RegisterWindowMessage`, etc.).
 
 ## Roadmap
 
 ### Phase 2: Platform Abstraction Layer (PAL) - Long Term
 *   **Goal:** Enable swapping the OS layer for cross-platform support (Linux/macOS).
 *   **Input Driver Interface:** Abstract the communication with the kernel driver.
-*   **Config Abstraction:** Replace direct Registry usage with an abstract `SettingsStore`.
+*   **Config Abstraction:** Replace direct Registry usage with an abstract `SettingsStore` (In Progress).
+*   **Platform API Abstraction:** Create `Platform` interface for window management, input injection, and clipboard operations.
 
 ## Session Log (Recent Changes)
 *   **2023-12-05**:
@@ -98,3 +112,5 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   **Refactoring:** Successfully split `setting.cpp` into `setting.cpp` and `setting_loader.cpp` to separate concerns.
     *   **Build:** Updated project files and resolved circular dependency issues in `function.cpp`.
     *   **Cleanup:** Removed `SettingLoader` class from `setting.cpp` and ensured proper header inclusion.
+    *   **PAL (Phase 2):** Introduced `ConfigStore` interface and `input_event.h` to begin decoupling core logic from Windows Registry and Driver headers. Updated `SettingLoader` to use `ConfigStore`.
+
