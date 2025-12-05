@@ -6,6 +6,7 @@
 #  define _ARRAY_H
 
 #  include <memory>
+#  include <iterator>
 
 
 ///
@@ -49,8 +50,8 @@ public:
 	template <class InputIterator>
 	Array(InputIterator i_begin, InputIterator i_end,
 		  const Allocator& i_allocator = Allocator())
-			: m_allocator(i_allocator), m_size(distance(i_begin, i_end)),
-			m_buf(Allocator::allocate(m_size, 0)) {
+			: m_allocator(i_allocator), m_size(std::distance(i_begin, i_end)),
+			m_buf(m_allocator.allocate(m_size, 0)) {
 		std::uninitialized_copy(i_begin, i_end, m_buf);
 	}
 
@@ -139,7 +140,7 @@ public:
 	template <class InputIterator>
 	void resize(InputIterator i_begin, InputIterator i_end) {
 		clear();
-		m_size = distance(i_begin, i_end);
+		m_size = std::distance(i_begin, i_end);
 		m_buf = m_allocator.allocate(m_size, 0);
 		std::uninitialized_copy(i_begin, i_end, m_buf);
 	}

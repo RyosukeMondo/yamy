@@ -5,6 +5,7 @@
 // but for now we include them to avoid modifying vcxproj for every new test file.
 #include "test_stringtool.cpp"
 #include "test_setting.cpp"
+#include "test_misc.cpp"
 
 TEST(SanityCheck, BasicAssertion) {
     EXPECT_EQ(1 + 1, 2);
