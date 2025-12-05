@@ -11,6 +11,7 @@
 #include "test_keyboard.cpp"
 #include "test_function.cpp"
 #include "test_layoutmanager.cpp"
+#include "test_regex.cpp"
 
 TEST(SanityCheck, BasicAssertion) {
     EXPECT_EQ(1 + 1, 2);
