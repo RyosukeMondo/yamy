@@ -80,6 +80,14 @@ public:
 	void restrictLargestSize(Restrict i_restrict = RESTRICT_BOTH,
 							 SIZE *i_size = NULL);
 
+	/** Calculate new rectangle for a child window based on origins and parent resizing.
+	    Exposed for unit testing.
+	 */
+	static RECT calculateRect(const RECT& originalParentRect, 
+	                          const RECT& originalChildRect, 
+	                          const RECT& currentParentRect, 
+	                          const Origin origins[4]);
+
 	///
 	bool addItem(HWND i_hwnd,
 				 Origin i_originLeft = ORIGIN_LEFT_EDGE,

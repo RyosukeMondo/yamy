@@ -10,6 +10,7 @@
 #include "test_parser.cpp"
 #include "test_keyboard.cpp"
 #include "test_function.cpp"
+#include "test_layoutmanager.cpp"
 
 TEST(SanityCheck, BasicAssertion) {
     EXPECT_EQ(1 + 1, 2);

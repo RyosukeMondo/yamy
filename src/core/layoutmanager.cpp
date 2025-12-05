@@ -76,6 +76,40 @@ bool LayoutManager::addItem(HWND i_hwnd, Origin i_originLeft,
 	return true;
 }
 
+RECT LayoutManager::calculateRect(const RECT& originalParentRect, 
+                                  const RECT& originalChildRect, 
+                                  const RECT& currentParentRect, 
+                                  const Origin origins[4])
+{
+	RECT outRect = {0};
+	LONG* outPtrs[4] = { &outRect.left, &outRect.top, &outRect.right, &outRect.bottom };
+	LONG originalChildPos[4] = { originalChildRect.left, originalChildRect.top, originalChildRect.right, originalChildRect.bottom };
+	
+	// Helper lambdas or just calculation
+	int originalParentW = originalParentRect.right - originalParentRect.left;
+	int originalParentH = originalParentRect.bottom - originalParentRect.top;
+	int currentParentW = currentParentRect.right - currentParentRect.left;
+	int currentParentH = currentParentRect.bottom - currentParentRect.top;
+	
+	int originalParentDim[4] = { originalParentW, originalParentH, originalParentW, originalParentH };
+	int currentParentDim[4] = { currentParentW, currentParentH, currentParentW, currentParentH };
+	
+	for(int j=0; j<4; ++j) {
+		switch(origins[j]) {
+		case ORIGIN_LEFT_EDGE:
+			*outPtrs[j] = originalChildPos[j];
+			break;
+		case ORIGIN_CENTER:
+			*outPtrs[j] = currentParentDim[j] / 2 - (originalParentDim[j] / 2 - originalChildPos[j]);
+			break;
+		case ORIGIN_RIGHT_EDGE:
+			*outPtrs[j] = currentParentDim[j] - (originalParentDim[j] - originalChildPos[j]);
+			break;
+		}
+	}
+	return outRect;
+}
+
 //
 void LayoutManager::adjust() const
 {
@@ -83,34 +117,11 @@ void LayoutManager::adjust() const
 		RECT rc;
 		GetWindowRect(i->m_hwndParent, &rc);
 
-		struct {
-			int m_width, m_pos;
-			int m_curWidth;
-			LONG *m_out;
-		}
-		pos[4] = {
-			{ rcWidth(&i->m_rcParent), i->m_rc.left, rcWidth(&rc), &rc.left },
-			{ rcHeight(&i->m_rcParent), i->m_rc.top, rcHeight(&rc), &rc.top },
-			{ rcWidth(&i->m_rcParent), i->m_rc.right, rcWidth(&rc), &rc.right },
-			{ rcHeight(&i->m_rcParent), i->m_rc.bottom, rcHeight(&rc), &rc.bottom }
-		};
-		for (int j = 0; j < 4; ++ j) {
-			switch (i->m_origin[j]) {
-			case ORIGIN_LEFT_EDGE:
-				*pos[j].m_out = pos[j].m_pos;
-				break;
-			case ORIGIN_CENTER:
-				*pos[j].m_out = pos[j].m_curWidth / 2
-								- (pos[j].m_width / 2 - pos[j].m_pos);
-				break;
-			case ORIGIN_RIGHT_EDGE:
-				*pos[j].m_out = pos[j].m_curWidth
-								- (pos[j].m_width - pos[j].m_pos);
-				break;
-			}
-		}
-		MoveWindow(i->m_hwnd, rc.left, rc.top,
-				   rcWidth(&rc), rcHeight(&rc), FALSE);
+		RECT newChildRect = calculateRect(i->m_rcParent, i->m_rc, rc, i->m_origin);
+		
+		MoveWindow(i->m_hwnd, newChildRect.left, newChildRect.top,
+				   newChildRect.right - newChildRect.left, 
+				   newChildRect.bottom - newChildRect.top, FALSE);
 	}
 }
 
