@@ -11,6 +11,7 @@
 #  include <vector>
 #  include <list>
 #  include <map>
+#  include <array>
 
 
 /// a scan code with flags
@@ -71,25 +72,21 @@ public:
 private:
 	/// key name
 	Names m_names;
-	/// key scan code length
-	size_t m_scanCodesSize;
 	/// key scan code
-	ScanCode m_scanCodes[MAX_SCAN_CODES_SIZE];
+	std::vector<ScanCode> m_scanCodes;
 
 public:
 	///
 	Key()
 			: m_isPressed(false),
 			m_isPressedOnWin32(false),
-			m_isPressedByAssign(false),
-			m_scanCodesSize(0) { }
+			m_isPressedByAssign(false) { }
 
 	/// for Event::* only
 	Key(const tstringi &i_name)
 			: m_isPressed(false),
 			m_isPressedOnWin32(false),
-			m_isPressedByAssign(false),
-			m_scanCodesSize(0) {
+			m_isPressedByAssign(false) {
 		addName(i_name);
 		addScanCode(ScanCode());
 	}
@@ -101,11 +98,11 @@ public:
 
 	/// get scan codes
 	const ScanCode *getScanCodes() const {
-		return m_scanCodes;
+		return m_scanCodes.data();
 	}
 	///
 	size_t getScanCodesSize() const {
-		return m_scanCodesSize;
+		return m_scanCodes.size();
 	}
 
 	/// add a name of key
@@ -373,7 +370,7 @@ private:
 	typedef std::list<Substitute> Substitutes;	/// substitutes
 
 private:
-	Keys m_hashedKeys[HASHED_KEYS_SIZE];		///
+	std::array<Keys, HASHED_KEYS_SIZE> m_hashedKeys;		///
 	Aliases m_aliases;				///
 	Substitutes m_substitutes;			///
 	Key m_syncKey;				/// key used to synchronize
@@ -452,7 +449,7 @@ public:
 
 	/// get key iterator
 	KeyIterator getKeyIterator() {
-		return KeyIterator(&m_hashedKeys[0], HASHED_KEYS_SIZE);
+		return KeyIterator(m_hashedKeys.data(), HASHED_KEYS_SIZE);
 	}
 };
 

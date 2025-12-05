@@ -21,8 +21,7 @@ void Key::addName(const tstringi &i_name)
 // add a scan code
 void Key::addScanCode(const ScanCode &i_sc)
 {
-	ASSERT(m_scanCodesSize < MAX_SCAN_CODES_SIZE);
-	m_scanCodes[m_scanCodesSize ++] = i_sc;
+	m_scanCodes.push_back(i_sc);
 }
 
 
@@ -33,7 +32,7 @@ Key &Key::initialize()
 	m_isPressed = false;
 	m_isPressedOnWin32 = false;
 	m_isPressedByAssign = false;
-	m_scanCodesSize = 0;
+	m_scanCodes.clear();
 	return *this;
 }
 
@@ -48,7 +47,7 @@ bool Key::operator==(const tstringi &i_name) const
 // is the scan code of this key ?
 bool Key::isSameScanCode(const Key &i_key) const
 {
-	if (m_scanCodesSize != i_key.m_scanCodesSize)
+	if (m_scanCodes.size() != i_key.m_scanCodes.size())
 		return false;
 	return isPrefixScanCode(i_key);
 }
@@ -57,7 +56,7 @@ bool Key::isSameScanCode(const Key &i_key) const
 // is the key's scan code the prefix of this key's scan code ?
 bool Key::isPrefixScanCode(const Key &i_key) const
 {
-	for (size_t i = 0; i < i_key.m_scanCodesSize; ++ i)
+	for (size_t i = 0; i < i_key.m_scanCodes.size(); ++ i)
 		if (m_scanCodes[i] != i_key.m_scanCodes[i])
 			return false;
 	return true;
