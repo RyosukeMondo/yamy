@@ -168,7 +168,15 @@ Invoke-Task "Cleaning previous build artifacts" {
             try {
                 Remove-Item $d -Recurse -Force -ErrorAction Stop
             } catch {
-                Write-Warning "Could not remove $d. A file inside might be in use (e.g. by a running Yamy instance)."
+                # Fallback: Rename locked directory so we can proceed with a fresh build
+                $trash = "$d.trash." + [Guid]::NewGuid().ToString().Substring(0, 8)
+                try {
+                    Move-Item $d $trash -Force -ErrorAction Stop
+                    Write-Warning "Renamed locked directory '$d' to '$trash'. Please delete it manually after a reboot."
+                } catch {
+                    Write-Warning "Could not remove or rename '$d'. Please close processes using Yamy (or Explorer)."
+                    throw
+                }
             }
         }
     }
