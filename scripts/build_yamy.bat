@@ -57,6 +57,14 @@ msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=Win32 /t:Build
 if errorlevel 1 goto error
 
 echo ==========================================
+echo Running Tests...
+echo ==========================================
+msbuild proj\yamy_test.vcxproj /p:Configuration=Release /p:Platform=Win32 /t:Build
+if errorlevel 1 goto error
+Release\yamy_test.exe
+if errorlevel 1 goto error
+
+echo ==========================================
 echo Finalizing (Renaming executables)...
 echo ==========================================
 pushd Release
