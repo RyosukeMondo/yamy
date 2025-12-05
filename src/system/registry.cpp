@@ -287,11 +287,11 @@ static bool string2logfont(LOGFONT *o_lf, const tstring &i_strlf)
 {
 	// -13,0,0,0,400,0,0,0,128,1,2,1,1,Terminal
 	tregex lf(_T("^(-?\\d+),(-?\\d+),(-?\\d+),(-?\\d+),(-?\\d+),")
-			  _T("(-?\\d+),(-?\\d+),(-?\\d+),(-?\\d+),(-?\\d+),")
-			  _T("(-?\\d+),(-?\\d+),(-?\\d+),(.+)$"));
+				  _T("(-?\\d+),(-?\\d+),(-?\\d+),(-?\\d+),(-?\\d+),")
+				  _T("(-?\\d+),(-?\\d+),(-?\\d+),(.+)$"));
 	tsmatch what;
 
-	if (!boost::regex_match(i_strlf, what, lf))
+	if (!std::regex_match(i_strlf, what, lf))
 		return false;
 	o_lf->lfHeight         =       _ttoi(what.str(1).c_str());
 	o_lf->lfWidth          =       _ttoi(what.str(2).c_str());

@@ -1057,14 +1057,16 @@ static BOOL CALLBACK enumWindowsForSetForegroundWindow(
 	if (!GetClassName(i_hwnd, name, NUMBER_OF(name)))
 		return TRUE;
 	tsmatch what;
-	if (!boost::regex_search(tstring(name), what, ep.m_fd->m_windowClassName))
+	tstring className(name);
+	if (!std::regex_search(className, what, ep.m_fd->m_windowClassName))
 		if (ep.m_fd->m_logicalOp == LogicalOperatorType_and)
 			return TRUE;				// match failed
 
 	if (ep.m_fd->m_logicalOp == LogicalOperatorType_and) {
 		if (GetWindowText(i_hwnd, name, NUMBER_OF(name)) == 0)
 			name[0] = _T('\0');
-		if (!boost::regex_search(tstring(name), what,
+		tstring titleName(name);
+		if (!std::regex_search(titleName, what,
 								 ep.m_fd->m_windowTitleName))
 			return TRUE;				// match failed
 	}
@@ -1111,7 +1113,7 @@ void Engine::funcLoadSetting(FunctionParam *i_param, const StrExprArg &i_name)
 				break;
 
 			tsmatch what;
-			if (boost::regex_match(dot_mayu, what, split) &&
+			if (std::regex_match(dot_mayu, what, split) &&
 					what.str(1) == i_name.eval()) {
 				reg.write(_T(".mayuIndex"), (DWORD)i);
 				goto success;
@@ -1298,82 +1300,23 @@ void Engine::funcWindowHVMaximize(FunctionParam *i_param,
 	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt, &rc, &rcd))
 		return;
 
-	// erase non window
-	while (true) {
-		WindowPositions::iterator i = m_windowPositions.begin();
-		WindowPositions::iterator end = m_windowPositions.end();
-		for (; i != end; ++ i)
-			if (!IsWindow((*i).m_hwnd))
-				break;
-		if (i == end)
-			break;
-		m_windowPositions.erase(i);
+	int x = rc.left;
+	int y = rc.top;
+	int w = rcWidth(&rc);
+	int h = rcHeight(&rc);
+
+	if (i_isHorizontal) {
+		x = rcd.left;
+		w = rcWidth(&rcd);
+	} else {
+		y = rcd.top;
+		h = rcHeight(&rcd);
 	}
-
-	// find target
-	WindowPositions::iterator i = m_windowPositions.begin();
-	WindowPositions::iterator end = m_windowPositions.end();
-	WindowPositions::iterator target = end;
-	for (; i != end; ++ i)
-		if ((*i).m_hwnd == hwnd) {
-			target = i;
-			break;
-		}
-
-	if (IsZoomed(hwnd))
-		PostMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-	else {
-		WindowPosition::Mode mode = WindowPosition::Mode_normal;
-
-		if (target != end) {
-			WindowPosition &wp = *target;
-			rc = wp.m_rc;
-			if (wp.m_mode == WindowPosition::Mode_HV)
-				mode = wp.m_mode =
-						   i_isHorizontal ? WindowPosition::Mode_V : WindowPosition::Mode_H;
-			else if (( i_isHorizontal && wp.m_mode == WindowPosition::Mode_V) ||
-					 (!i_isHorizontal && wp.m_mode == WindowPosition::Mode_H))
-				mode = wp.m_mode = WindowPosition::Mode_HV;
-			else
-				m_windowPositions.erase(target);
-		} else {
-			mode = i_isHorizontal ? WindowPosition::Mode_H : WindowPosition::Mode_V;
-			m_windowPositions.push_front(WindowPosition(hwnd, rc, mode));
-		}
-
-		if (static_cast<int>(mode) & static_cast<int>(WindowPosition::Mode_H))
-			rc.left = rcd.left, rc.right = rcd.right;
-		if (static_cast<int>(mode) & static_cast<int>(WindowPosition::Mode_V))
-			rc.top = rcd.top, rc.bottom = rcd.bottom;
-
-		asyncMoveWindow(hwnd, rc.left, rc.top, rcWidth(&rc), rcHeight(&rc));
-	}
-}
-
-// maximize window horizontally
-void Engine::funcWindowHMaximize(FunctionParam *i_param,
-								 TargetWindowType i_twt)
-{
-	funcWindowHVMaximize(i_param, BooleanType_true, i_twt);
-}
-
-// maximize window virtically
-void Engine::funcWindowVMaximize(FunctionParam *i_param,
-								 TargetWindowType i_twt)
-{
-	funcWindowHVMaximize(i_param, BooleanType_false, i_twt);
-}
-
-// move window
-void Engine::funcWindowMove(FunctionParam *i_param, int i_dx, int i_dy,
-							TargetWindowType i_twt)
-{
-	funcWindowMoveTo(i_param, GravityType_C, i_dx, i_dy, i_twt);
+	asyncMoveWindow(hwnd, x, y, w, h);
 }
 
 // move window to ...
-void Engine::funcWindowMoveTo(FunctionParam *i_param,
-							  GravityType i_gravityType,
+void Engine::funcWindowMoveTo(FunctionParam *i_param, GravityType i_gravityType,
 							  int i_dx, int i_dy, TargetWindowType i_twt)
 {
 	HWND hwnd;
@@ -1393,6 +1336,29 @@ void Engine::funcWindowMoveTo(FunctionParam *i_param,
 	if (i_gravityType & GravityType_S)
 		y = i_dy + rcd.bottom - rcHeight(&rc);
 	asyncMoveWindow(hwnd, x, y);
+}
+
+// move window
+void Engine::funcWindowMove(FunctionParam *i_param, int i_dx, int i_dy,
+							TargetWindowType i_twt)
+{
+	HWND hwnd;
+	RECT rc, rcd;
+	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt, &rc, &rcd))
+		return;
+	asyncMoveWindow(hwnd, rc.left + i_dx, rc.top + i_dy);
+}
+
+// maximize window horizontally
+void Engine::funcWindowHMaximize(FunctionParam *i_param, TargetWindowType i_twt)
+{
+	funcWindowHVMaximize(i_param, BooleanType_true, i_twt);
+}
+
+// maximize window vertically
+void Engine::funcWindowVMaximize(FunctionParam *i_param, TargetWindowType i_twt)
+{
+	funcWindowHVMaximize(i_param, BooleanType_false, i_twt);
 }
 
 
@@ -1931,7 +1897,7 @@ public:
 
 class ParseDirectSSTPData
 {
-	typedef boost::match_results<boost::regex::const_iterator> MR;
+	typedef std::match_results<const char*> MR;
 
 public:
 	typedef std::map<tstring, DirectSSTPServer> DirectSSTPServers;
@@ -2006,10 +1972,10 @@ void Engine::funcDirectSSTP(FunctionParam *i_param,
 	long length = *(long *)data;
 	const char *begin = data + 4;
 	const char *end = data + length;
-	boost::regex getSakura("([0-9a-fA-F]{32})\\.([^\x01]+)\x01(.*?)\r\n");
+	std::regex getSakura("([0-9a-fA-F]{32})\\.([^\x01]+)\x01(.*?)\r\n");
 
 	ParseDirectSSTPData::DirectSSTPServers servers;
-	boost::regex_iterator<boost::regex::const_iterator>
+	std::regex_iterator<const char*>
 	it(begin, end, getSakura), last;
 	for (; it != last; ++it)
 		((ParseDirectSSTPData)(&servers))(*it);
@@ -2060,7 +2026,7 @@ void Engine::funcDirectSSTP(FunctionParam *i_param,
 	for (ParseDirectSSTPData::DirectSSTPServers::iterator
 			i = servers.begin(); i != servers.end(); ++ i) {
 		tsmatch what;
-		if (boost::regex_match(i->second.m_name, what, i_name)) {
+		if (std::regex_match(i->second.m_name, what, i_name)) {
 			COPYDATASTRUCT cd;
 			cd.dwData = 9801;
 #ifdef _UNICODE

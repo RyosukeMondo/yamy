@@ -12,7 +12,7 @@
 #  include <iosfwd>
 #  include <fstream>
 #  include <locale>
-#  include <boost/regex.hpp>
+#  include <regex>
 #  include <stdio.h>				// for snprintf
 
 
@@ -31,9 +31,50 @@ typedef std::basic_ifstream<_TCHAR> tifstream;
 /// ofstream for generic international text
 typedef std::basic_ofstream<_TCHAR> tofstream;
 /// basic_regex for generic international text
-typedef boost::basic_regex<_TCHAR> tregex;
+// Inherit from std::basic_regex to allow template deduction and passing to std functions
+class tregex : public std::basic_regex<_TCHAR>
+{
+public:
+    typedef std::basic_regex<_TCHAR> base_type;
+    typedef base_type::flag_type flag_type;
+    
+    // Map flags to std constants
+    static const flag_type normal = std::regex_constants::ECMAScript;
+    static const flag_type icase = std::regex_constants::icase;
+    static const flag_type nosubs = std::regex_constants::nosubs;
+    static const flag_type optimize = std::regex_constants::optimize;
+    static const flag_type collate = std::regex_constants::collate;
+
+private:
+    tstring m_pattern;
+
+public:
+    tregex() : base_type() {}
+    
+    tregex(const _TCHAR* p, flag_type f = normal) : base_type(p, f), m_pattern(p) {}
+    
+    tregex(const tstring& s, flag_type f = normal) : base_type(s, f), m_pattern(s) {}
+    
+    // Copy constructor
+    tregex(const tregex& other) : base_type(other), m_pattern(other.m_pattern) {}
+    
+    // Assignment
+    tregex& operator=(const tregex& other) {
+        base_type::operator=(other);
+        m_pattern = other.m_pattern;
+        return *this;
+    }
+    
+    void assign(const tstring& s, flag_type f = normal) {
+        base_type::assign(s, f);
+        m_pattern = s;
+    }
+    
+    const tstring& str() const { return m_pattern; }
+};
+
 /// match_results for generic international text
-typedef boost::match_results<tstring::const_iterator> tsmatch;
+typedef std::match_results<tstring::const_iterator> tsmatch;
 
 
 /// string with custom stream output

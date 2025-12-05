@@ -236,7 +236,7 @@ Keymap::Keymap(Type i_type,
 				m_windowClass.assign(i_windowClass, f);
 			if (!i_windowTitle.empty())
 				m_windowTitle.assign(i_windowTitle, f);
-		} catch (boost::bad_expression &i_e) {
+		} catch (std::regex_error &i_e) {
 			throw ErrorMessage() << i_e.what();
 		}
 }
@@ -299,16 +299,16 @@ bool Keymap::doesSameWindow(const tstringi i_className,
 		return false;
 
 	tsmatch what;
-	if (boost::regex_search(i_className, what, m_windowClass)) {
+	if (std::regex_search(i_className, what, m_windowClass)) {
 		if (m_type == Type_windowAnd)
-			return boost::regex_search(i_titleName, what, m_windowTitle);
+			return std::regex_search(i_titleName, what, m_windowTitle);
 		else // type == Type_windowOr
 			return true;
 	} else {
 		if (m_type == Type_windowAnd)
 			return false;
 		else // type == Type_windowOr
-			return boost::regex_search(i_titleName, what, m_windowTitle);
+			return std::regex_search(i_titleName, what, m_windowTitle);
 	}
 }
 
