@@ -19,7 +19,7 @@ TEST(KeySeqTest, AddAction) {
     
     EXPECT_EQ(ks.getActions().size(), 1);
     // verify content
-    const Action* act = ks.getActions()[0];
+    const Action* act = ks.getActions()[0].get();
     EXPECT_EQ(act->getType(), Action::Type_key);
 }
 
@@ -35,7 +35,7 @@ TEST(KeySeqTest, CopyConstruction) {
     EXPECT_EQ(ks2.getActions().size(), 1);
     
     // Should be deep copy (different pointers)
-    EXPECT_NE(ks2.getActions()[0], ks1.getActions()[0]); 
+    EXPECT_NE(ks2.getActions()[0].get(), ks1.getActions()[0].get()); 
     EXPECT_EQ(ks2.getActions()[0]->getType(), Action::Type_key);
 }
 

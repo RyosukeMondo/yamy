@@ -245,16 +245,16 @@ void Engine::generateKeySeqEvents(const Current &i_c, const KeySeq *i_keySeq,
 	if (actions.empty())
 		return;
 	if (i_part == Part_up)
-		generateActionEvents(i_c, actions[actions.size() - 1], false);
+		generateActionEvents(i_c, actions[actions.size() - 1].get(), false);
 	else {
 		size_t i;
 		for (i = 0 ; i < actions.size() - 1; ++ i) {
-			generateActionEvents(i_c, actions[i], true);
-			generateActionEvents(i_c, actions[i], false);
+			generateActionEvents(i_c, actions[i].get(), true);
+			generateActionEvents(i_c, actions[i].get(), false);
 		}
-		generateActionEvents(i_c, actions[i], true);
+		generateActionEvents(i_c, actions[i].get(), true);
 		if (i_part == Part_all)
-			generateActionEvents(i_c, actions[i], false);
+			generateActionEvents(i_c, actions[i].get(), false);
 	}
 }
 

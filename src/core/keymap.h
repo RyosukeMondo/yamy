@@ -8,6 +8,7 @@
 #  include "keyboard.h"
 #  include "function.h"
 #  include <vector>
+#  include <memory>
 
 
 ///
@@ -112,7 +113,7 @@ public:
 class KeySeq
 {
 public:
-	typedef std::vector<Action *> Actions;	///
+	typedef std::vector<std::unique_ptr<Action>> Actions;	///
 
 private:
 	Actions m_actions;				///

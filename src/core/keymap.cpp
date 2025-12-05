@@ -107,14 +107,13 @@ tostream &ActionFunction::output(tostream &i_ost) const
 void KeySeq::copy()
 {
 	for (Actions::iterator i = m_actions.begin(); i != m_actions.end(); ++ i)
-		(*i) = (*i)->clone();
+		(*i).reset((*i)->clone());
 }
 
 
 void KeySeq::clear()
 {
-	for (Actions::iterator i = m_actions.begin(); i != m_actions.end(); ++ i)
-		delete (*i);
+	m_actions.clear();
 }
 
 
@@ -126,11 +125,14 @@ KeySeq::KeySeq(const tstringi &i_name)
 
 
 KeySeq::KeySeq(const KeySeq &i_ks)
-		: m_actions(i_ks.m_actions),
-		m_name(i_ks.m_name),
+		: m_name(i_ks.m_name),
 		m_mode(i_ks.m_mode)
 {
-	copy();
+	// Deep copy actions
+	m_actions.reserve(i_ks.m_actions.size());
+	for (const auto& action : i_ks.m_actions) {
+		m_actions.push_back(std::unique_ptr<Action>(action->clone()));
+	}
 }
 
 
@@ -144,9 +146,14 @@ KeySeq &KeySeq::operator=(const KeySeq &i_ks)
 {
 	if (this != &i_ks) {
 		clear();
-		m_actions = i_ks.m_actions;
+		m_name = i_ks.m_name;
 		m_mode = i_ks.m_mode;
-		copy();
+		
+		// Deep copy actions
+		m_actions.reserve(i_ks.m_actions.size());
+		for (const auto& action : i_ks.m_actions) {
+			m_actions.push_back(std::unique_ptr<Action>(action->clone()));
+		}
 	}
 	return *this;
 }
@@ -154,7 +161,7 @@ KeySeq &KeySeq::operator=(const KeySeq &i_ks)
 
 KeySeq &KeySeq::add(const Action &i_action)
 {
-	m_actions.push_back(i_action.clone());
+	m_actions.push_back(std::unique_ptr<Action>(i_action.clone()));
 	return *this;
 }
 
@@ -163,7 +170,7 @@ KeySeq &KeySeq::add(const Action &i_action)
 ModifiedKey KeySeq::getFirstModifiedKey() const
 {
 	if (0 < m_actions.size()) {
-		const Action *a = m_actions.front();
+		const Action *a = m_actions.front().get();
 		switch (a->getType()) {
 		case Action::Type_key:
 			return reinterpret_cast<const ActionKey *>(a)->m_modifiedKey;
