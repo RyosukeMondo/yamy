@@ -22,6 +22,7 @@
 #include "multithread.h"
 #include "registry.h"
 #include "setting.h"
+#include "setting_loader.h"
 #include "target.h"
 #include "windowstool.h"
 #include "fixscancodemap.h"

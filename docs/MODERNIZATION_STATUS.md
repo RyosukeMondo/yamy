@@ -58,16 +58,23 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   Removed `<windows.h>` dependency from `multithread.h`.
     *   Verified with all 42 tests passing.
 
+### 8. Setting Loader Refactoring (Completed)
+*   **Separation of Concerns:** Split `src/core/setting.cpp` into:
+    *   `setting.cpp`: Contains only `Event` namespace and global utility functions (`getFilenameFromRegistry`, `getHomeDirectories`).
+    *   `setting_loader.cpp`: Encapsulates the `SettingLoader` class and configuration parsing logic.
+*   **Header Separation:** Ensured `SettingLoader` class definition is available via `setting_loader.h`.
+*   **Build System:** Updated all project files (`.vcxproj`) to include the new files.
+
 ## Architectural Analysis (Current State)
 
 ### Issues
-1.  **Setting Loader:** `src/core/setting.cpp` is still large and contains mixed concerns, though testing has improved.
-2.  **Driver:** The kernel driver (`mayud.sys`) remains a legacy component that needs review for modern Windows security compliance.
+1.  **Driver:** The kernel driver (`mayud.sys`) remains a legacy component that needs review for modern Windows security compliance.
+2.  **Legacy Macros:** Still using many preprocessor macros (`USE_INI`, etc.) which should be replaced with runtime configuration or const expressions.
 
 ## Roadmap
 
-### Phase 1: Setting Loader De-spaghettification (Next Priority)
-*   **Action:** Break down `setting.cpp` into smaller, focused parsers (e.g., `KeymapParser`, `DefParser`).
+### Phase 1: Further Refactoring
+*   **Functions:** `functions.h` and `function.cpp` are still heavily macro-dependent and complex.
 
 ### Phase 2: Platform Abstraction Layer (PAL) - Long Term
 *   **Goal:** Enable swapping the OS layer for cross-platform support (Linux/macOS).
@@ -83,3 +90,7 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   **Modifiers:** Expanded modifiers support to Mod10-Mod19.
     *   **Testing:** Migrated all tests to Google Test and expanded coverage significantly.
     *   **Bug Fix:** Fixed stuck modifier key bug (`0x59414D59` tag).
+*   **2025-12-05**:
+    *   **Refactoring:** Successfully split `setting.cpp` into `setting.cpp` and `setting_loader.cpp` to separate concerns.
+    *   **Build:** Updated project files and resolved circular dependency issues in `function.cpp`.
+    *   **Cleanup:** Removed `SettingLoader` class from `setting.cpp` and ensured proper header inclusion.

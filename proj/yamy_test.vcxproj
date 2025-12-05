@@ -119,6 +119,7 @@
     <ClCompile Include="..\src\core\parser.cpp" />
     <ClCompile Include="..\src\system\registry.cpp" />
     <ClCompile Include="..\src\core\setting.cpp" />
+    <ClCompile Include="..\src\core\setting_loader.cpp" />
     <ClCompile Include="..\src\core\strexpr.cpp" />
     <ClCompile Include="..\src\utils\stringtool.cpp" />
     <ClCompile Include="..\src\core\target.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="..\src\core\parser.h" />
     <ClInclude Include="..\src\system\registry.h" />
     <ClInclude Include="..\src\core\setting.h" />
+    <ClInclude Include="..\src\core\setting_loader.h" />
     <ClInclude Include="..\src\core\strexpr.h" />
     <ClInclude Include="..\src\utils\stringtool.h" />
     <ClInclude Include="..\src\core\target.h" />

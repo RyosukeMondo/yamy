@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 #include "../core/setting.h"
+#include "../core/setting_loader.h"
+#include "../utils/msgstream.h"
+#include "../core/setting_loader.h"
 #include "../utils/msgstream.h"
 #include "../utils/multithread.h" // For CriticalSection
 
