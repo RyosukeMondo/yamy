@@ -5,7 +5,7 @@
 #ifndef _MULTITHREAD_H
 #  define _MULTITHREAD_H
 
-#  include <windows.h>
+#  include <mutex>
 
 
 ///
@@ -26,24 +26,22 @@ public:
 ///
 class CriticalSection : public SyncObject
 {
-	CRITICAL_SECTION m_cs;			///
+	std::recursive_mutex m_mutex;			///
 
 public:
 	///
 	CriticalSection() {
-		InitializeCriticalSection(&m_cs);
 	}
 	///
 	~CriticalSection() {
-		DeleteCriticalSection(&m_cs);
 	}
 	///
-	void acquire() {
-		EnterCriticalSection(&m_cs);
+	void acquire() override {
+		m_mutex.lock();
 	}
 	///
-	void release() {
-		LeaveCriticalSection(&m_cs);
+	void release() override {
+		m_mutex.unlock();
 	}
 };
 
