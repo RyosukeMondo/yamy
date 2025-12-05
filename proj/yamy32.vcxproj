@@ -97,6 +97,15 @@
     <ClCompile Include="..\src\ui\dlgsetting.cpp" />
     <ClCompile Include="..\src\ui\dlgversion.cpp" />
     <ClCompile Include="..\src\core\engine.cpp" />
+    <ClCompile Include="..\src\core\engine_lifecycle.cpp" />
+    <ClCompile Include="..\src\core\engine_hook.cpp" />
+    <ClCompile Include="..\src\core\engine_input.cpp" />
+    <ClCompile Include="..\src\core\engine_modifier.cpp" />
+    <ClCompile Include="..\src\core\engine_generator.cpp" />
+    <ClCompile Include="..\src\core\engine_focus.cpp" />
+    <ClCompile Include="..\src\core\engine_window.cpp" />
+    <ClCompile Include="..\src\core\engine_setting.cpp" />
+    <ClCompile Include="..\src\core\engine_log.cpp" />
     <ClCompile Include="..\src\system\fixscancodemap.cpp" />
     <ClCompile Include="..\src\core\focus.cpp" />
     <ClCompile Include="..\src\core\function.cpp" />
