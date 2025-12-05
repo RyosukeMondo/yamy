@@ -25,22 +25,26 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   `LayoutManager`
     *   `SettingLoader` (basic parsing logic)
 
+### 4. Component Decoupling
+*   **StrExpr Subsystem Extracted:**
+    *   Extracted `StrExpr`, `StrExprArg`, and subclasses (`StrExprClipboard`, `StrExprWindowClassName`, `StrExprWindowTitleName`) from `src/core/function.cpp` to `src/core/strexpr.h` and `src/core/strexpr.cpp`.
+    *   Replaced raw pointers with `std::unique_ptr` for better memory management.
+    *   Introduced `StrExprSystem` interface to abstract system dependencies (clipboard, window info).
+    *   Implemented `StrExprSystem` in `Engine` (via `src/core/engine_window.cpp`).
+    *   Standardized clipboard access using `clipboardGetText` and `clipboardClose` in `src/system/windowstool.cpp`.
+
 ## Architectural Analysis (Current State)
 
 ### Issues
-1.  **Engine Coupling:** The `Engine` class is a monolithic entity. Many subsystems (like `StrExpr` in `function.cpp`) rely on global static pointers to `Engine`, making them impossible to test in isolation.
-2.  **Memory Management:** The codebase relies heavily on raw pointers (`new`/`delete`) and manual ownership transfer patterns (e.g., `clone()` methods in `StrExpr`).
-3.  **Threading:** Uses custom wrappers (`CriticalSection`, `Acquire`) around Windows primitives instead of standard C++ threading (`std::mutex`).
-4.  **File Structure:** `src/core/function.cpp` and `src/core/setting.cpp` are extremely large files containing mixed concerns.
+1.  **Engine Coupling:** The `Engine` class is a monolithic entity. Although `StrExpr` is decoupled via `StrExprSystem`, `Engine` still implements it directly.
+2.  **Threading:** Uses custom wrappers (`CriticalSection`, `Acquire`) around Windows primitives instead of standard C++ threading (`std::mutex`).
+3.  **File Structure:** `src/core/setting.cpp` is extremely large and contains mixed concerns.
 
 ## Roadmap
 
 ### Phase 1: Component Decoupling (Immediate Priority)
 The goal is to break the dependency on the monolithic `Engine` and Global State.
 
-*   **StrExpr Subsystem:**
-    *   **Action:** Extract `StrExpr`, `StrExprArg`, and subclasses from `src/core/function.cpp` into `src/core/strexpr.h` and `src/core/strexpr.cpp`.
-    *   **Improvement:** Introduce a `SystemInfoProvider` interface to abstract system calls (clipboard, window titles). Replace raw pointers with `std::unique_ptr`.
 *   **Threading Modernization:**
     *   **Action:** Replace `src/utils/multithread.h` classes with `std::recursive_mutex` and `std::lock_guard`.
     *   **Improvement:** Standardize concurrency.
@@ -54,6 +58,11 @@ The goal is to break the dependency on the monolithic `Engine` and Global State.
 
 ## Session Log (Recent Changes)
 *   **2023-12-05**:
+    *   Extracted `StrExpr` subsystem from `function.cpp` to `strexpr.h/cpp`.
+    *   Refactored `StrExpr` to use `std::unique_ptr`.
+    *   Created `StrExprSystem` interface and implemented it in `Engine`.
+    *   Moved clipboard logic to `windowstool.cpp`.
+    *   Verified build with `scripts/build_yamy.bat`.
     *   Implemented `tregex` wrapper for `std::regex`.
     *   Fixed `funcWindowHVMaximize` implementation in `function.cpp`.
     *   Restored missing functions: `funcWindowMoveTo`, `funcWindowMove`, `funcWindowHMaximize`, `funcWindowVMaximize`.

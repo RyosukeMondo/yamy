@@ -31,7 +31,7 @@ enum EngineNotify {
 
 
 ///
-class Engine
+class Engine : public StrExprSystem
 {
 private:
 	enum {
@@ -695,8 +695,12 @@ public:
 	const tstringi &getCurrentWindowTitleName() const {
 		return m_currentFocusOfThread->m_titleName;
 	}
-};
 
+	// StrExprSystem overrides
+	tstring getClipboardText() const override;
+	tstringq getStrExprWindowClassName() const override;
+	tstringq getStrExprWindowTitleName() const override;
+};
 
 ///
 class FunctionParam

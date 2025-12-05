@@ -65,7 +65,7 @@ Engine::Engine(tomsgstream &i_log)
 								 PIPE_ACCESS_OUTBOUND,
 								 PIPE_TYPE_BYTE, 1,
 								 0, 0, 0, NULL);
-	StrExprArg::setEngine(this);
+	StrExprArg::setSystem(this);
 
 	m_msllHookCurrent.pt.x = 0;
 	m_msllHookCurrent.pt.y = 0;

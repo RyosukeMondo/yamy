@@ -178,4 +178,14 @@ tstring pathRemoveFileSpec(const tstring &i_path);
 // check Windows version i_major.i_minor or later
 BOOL checkWindowsVersion(DWORD i_major, DWORD i_minor);
 
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Clipboard
+
+/// get clipboard text (you must call clipboardClose())
+extern const _TCHAR *clipboardGetText(HGLOBAL *o_hdata);
+
+/// close clipboard that opened by clipboardGetText()
+extern void clipboardClose(HGLOBAL i_hdata, HGLOBAL i_hdataNew = NULL);
+
 #endif // _WINDOWSTOOL_H

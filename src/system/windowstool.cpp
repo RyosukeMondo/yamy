@@ -528,3 +528,45 @@ BOOL checkWindowsVersion(DWORD i_major, DWORD i_minor)
     // Perform the test.
     return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION, conditionMask);
 }
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Clipboard
+
+// get clipboard text (you must call clipboardClose())
+const _TCHAR *clipboardGetText(HGLOBAL *o_hdata)
+{
+	*o_hdata = NULL;
+
+	if (!OpenClipboard(NULL))
+		return NULL;
+
+#ifdef UNICODE
+	*o_hdata = GetClipboardData(CF_UNICODETEXT);
+#else
+	*o_hdata = GetClipboardData(CF_TEXT);
+#endif
+	if (!*o_hdata)
+		return NULL;
+
+	_TCHAR *data = reinterpret_cast<_TCHAR *>(GlobalLock(*o_hdata));
+	if (!data)
+		return NULL;
+	return data;
+}
+
+// close clipboard that opened by clipboardGetText()
+void clipboardClose(HGLOBAL i_hdata, HGLOBAL i_hdataNew)
+{
+	if (i_hdata)
+		GlobalUnlock(i_hdata);
+	if (i_hdataNew) {
+		EmptyClipboard();
+#ifdef UNICODE
+		SetClipboardData(CF_UNICODETEXT, i_hdataNew);
+#else
+		SetClipboardData(CF_TEXT, i_hdataNew);
+#endif
+	}
+	CloseClipboard();
+}

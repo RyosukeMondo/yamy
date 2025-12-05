@@ -220,33 +220,6 @@ extern bool getTypeValue(WindowMonitorFromType *o_type, const tstring &i_name);
 extern tostream &operator<<(tostream &i_ost,
 								const std::list<tstringq> &i_data);
 
-
-/// string type expression
-class StrExpr;
-
-
-/// string type expression for function arguments
-class StrExprArg
-{
-private:
-	StrExpr *m_expr;
-public:
-	enum Type {
-		Literal,
-		Builtin,
-	};
-	StrExprArg();
-	StrExprArg(const StrExprArg &i_data);
-	StrExprArg(const tstringq &i_symbol, Type i_type);
-	~StrExprArg();
-	StrExprArg &operator=(const StrExprArg &i_data);
-	tstringq eval() const;
-	static void setEngine(const Engine *i_engine);
-};
-
-
-/// stream output
-tostream &operator<<(tostream &i_ost, const StrExprArg &i_data);
-
+#include "strexpr.h"
 
 #endif // !_FUNCTION_H

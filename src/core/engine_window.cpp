@@ -121,3 +121,24 @@ bool Engine::setShow(bool i_isMaximized, bool i_isMinimized,
 	m_log << std::endl;
 	return true;
 }
+
+
+// StrExprSystem implementation
+tstring Engine::getClipboardText() const
+{
+	HGLOBAL h;
+	const _TCHAR *text = clipboardGetText(&h);
+	tstring result = (text) ? text : _T("");
+	clipboardClose(h);
+	return result;
+}
+
+tstringq Engine::getStrExprWindowClassName() const
+{
+	return m_currentFocusOfThread->m_className;
+}
+
+tstringq Engine::getStrExprWindowTitleName() const
+{
+	return m_currentFocusOfThread->m_titleName;
+}

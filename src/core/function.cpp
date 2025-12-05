@@ -594,44 +594,6 @@ bool getSuitableMdiWindow(FunctionParam *i_param, HWND *o_hwnd,
 	return true;
 }
 
-// get clipboard text (you must call closeClopboard())
-static const _TCHAR *getTextFromClipboard(HGLOBAL *o_hdata)
-{
-	*o_hdata = NULL;
-
-	if (!OpenClipboard(NULL))
-		return NULL;
-
-#ifdef UNICODE
-	*o_hdata = GetClipboardData(CF_UNICODETEXT);
-#else
-	*o_hdata = GetClipboardData(CF_TEXT);
-#endif
-	if (!*o_hdata)
-		return NULL;
-
-	_TCHAR *data = reinterpret_cast<_TCHAR *>(GlobalLock(*o_hdata));
-	if (!data)
-		return NULL;
-	return data;
-}
-
-// close clipboard that opend by getTextFromClipboard()
-static void closeClipboard(HGLOBAL i_hdata, HGLOBAL i_hdataNew = NULL)
-{
-	if (i_hdata)
-		GlobalUnlock(i_hdata);
-	if (i_hdataNew) {
-		EmptyClipboard();
-#ifdef UNICODE
-		SetClipboardData(CF_UNICODETEXT, i_hdataNew);
-#else
-		SetClipboardData(CF_TEXT, i_hdataNew);
-#endif
-	}
-	CloseClipboard();
-}
-
 
 // EmacsEditKillLineFunc.
 // clear the contents of the clopboard
@@ -640,10 +602,10 @@ void Engine::EmacsEditKillLine::func()
 {
 	if (!m_buf.empty()) {
 		HGLOBAL g;
-		const _TCHAR *text = getTextFromClipboard(&g);
+		const _TCHAR *text = clipboardGetText(&g);
 		if (text == NULL || m_buf != text)
 			reset();
-		closeClipboard(g);
+		clipboardClose(g);
 	}
 	if (OpenClipboard(NULL)) {
 		EmptyClipboard();
@@ -703,10 +665,10 @@ HGLOBAL Engine::EmacsEditKillLine::makeNewKillLineBuf(
 int Engine::EmacsEditKillLine::pred()
 {
 	HGLOBAL g;
-	const _TCHAR *text = getTextFromClipboard(&g);
+	const _TCHAR *text = clipboardGetText(&g);
 	int retval;
 	HGLOBAL hdata = makeNewKillLineBuf(text ? text : _T(""), &retval);
-	closeClipboard(g, hdata);
+	clipboardClose(g, hdata);
 	return retval;
 }
 
@@ -1719,8 +1681,6 @@ void Engine::funcMouseWheel(FunctionParam *i_param, int i_delta)
 		return;
 	mouse_event(MOUSEEVENTF_WHEEL, 0, 0, i_delta, 0);
 }
-
-// convert the contents of the Clipboard to upper case
 void Engine::funcClipboardChangeCase(FunctionParam *i_param,
 									 BooleanType i_doesConvertToUpperCase)
 {
@@ -1728,28 +1688,27 @@ void Engine::funcClipboardChangeCase(FunctionParam *i_param,
 		return;
 
 	HGLOBAL hdata;
-	const _TCHAR *text = getTextFromClipboard(&hdata);
+	const _TCHAR *text = clipboardGetText(&hdata);
 	HGLOBAL hdataNew = NULL;
 	if (text) {
 		int size = static_cast<int>(GlobalSize(hdata));
 		hdataNew = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, size);
 		if (hdataNew) {
-			if (_TCHAR *dataNew = reinterpret_cast<_TCHAR *>(GlobalLock(hdataNew))) {
-				std::memcpy(dataNew, text, size);
-				_TCHAR *dataEnd = dataNew + size;
-				while (dataNew < dataEnd && *dataNew) {
-					_TCHAR c = *dataNew;
-					if (_istlead(c))
-						dataNew += 2;
-					else
-						*dataNew++ =
+			_TCHAR *dataNew = reinterpret_cast<_TCHAR *>(GlobalLock(hdataNew));
+			std::memcpy(dataNew, text, size);
+			_TCHAR *dataEnd = dataNew + size;
+			while (dataNew < dataEnd && *dataNew) {
+				_TCHAR c = *dataNew;
+				if (_istlead(c))
+					dataNew += 2;
+				else
+					*dataNew++ =
 							i_doesConvertToUpperCase ? _totupper(c) : _totlower(c);
-				}
-				GlobalUnlock(hdataNew);
 			}
+			GlobalUnlock(hdataNew);
 		}
 	}
-	closeClipboard(hdata, hdataNew);
+	clipboardClose(hdata, hdataNew);
 }
 
 // convert the contents of the Clipboard to upper case
@@ -1780,7 +1739,7 @@ void Engine::funcClipboardCopy(FunctionParam *i_param, const StrExprArg &i_text)
 	_TCHAR *dataNew = reinterpret_cast<_TCHAR *>(GlobalLock(hdataNew));
 	_tcscpy(dataNew, i_text.eval().c_str());
 	GlobalUnlock(hdataNew);
-	closeClipboard(NULL, hdataNew);
+	clipboardClose(NULL, hdataNew);
 }
 
 //
@@ -2222,165 +2181,6 @@ void Engine::funcCancelPrefix(FunctionParam *i_param)
 	m_isPrefix = false;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// StrExpr
-class StrExpr
-{
-private:
-	tstringq m_symbol;
-protected:
-	static const Engine *s_engine;
-public:
-	StrExpr(const tstringq &i_symbol) : m_symbol(i_symbol) {};
-
-	virtual ~StrExpr() {};
-
-	virtual StrExpr *clone() const {
-		return new StrExpr(*this);
-	}
-
-	virtual tstringq eval() const {
-		return m_symbol;
-	}
-
-	static void setEngine(const Engine *i_engine) {
-		s_engine = i_engine;
-	}
-};
-
-const Engine *StrExpr::s_engine = NULL;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// StrExprClipboard
-class StrExprClipboard : public StrExpr
-{
-public:
-	StrExprClipboard(const tstringq &i_symbol) : StrExpr(i_symbol) {};
 
-	~StrExprClipboard() {};
-
-	StrExpr *clone() const {
-		return new StrExprClipboard(*this);
-	}
-
-	tstringq eval() const {
-		HGLOBAL g;
-		const _TCHAR *text = getTextFromClipboard(&g);
-		const tstring value(text == NULL ? _T("") : text);
-		closeClipboard(g);
-		return value;
-	}
-};
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// StrExprWindowClassName
-class StrExprWindowClassName : public StrExpr
-{
-public:
-	StrExprWindowClassName(const tstringq &i_symbol) : StrExpr(i_symbol) {};
-
-	~StrExprWindowClassName() {};
-
-	StrExpr *clone() const {
-		return new StrExprWindowClassName(*this);
-	}
-
-	tstringq eval() const {
-		return s_engine->getCurrentWindowClassName();
-	}
-};
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// StrExprWindowTitleName
-class StrExprWindowTitleName : public StrExpr
-{
-public:
-	StrExprWindowTitleName(const tstringq &i_symbol) : StrExpr(i_symbol) {};
-
-	~StrExprWindowTitleName() {};
-
-	StrExpr *clone() const {
-		return new StrExprWindowTitleName(*this);
-	}
-
-	tstringq eval() const {
-		return s_engine->getCurrentWindowTitleName();
-	}
-};
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// StrExprArg
-
-
-// default constructor
-StrExprArg::StrExprArg()
-{
-	m_expr = new StrExpr(_T(""));
-}
-
-
-// copy contructor
-StrExprArg::StrExprArg(const StrExprArg &i_data)
-{
-	m_expr = i_data.m_expr->clone();
-}
-
-
-StrExprArg &StrExprArg::operator=(const StrExprArg &i_data)
-{
-	if (i_data.m_expr == m_expr)
-		return *this;
-
-	delete m_expr;
-	m_expr = i_data.m_expr->clone();
-
-	return *this;
-}
-
-
-// initializer
-StrExprArg::StrExprArg(const tstringq &i_symbol, Type i_type)
-{
-	switch (i_type) {
-	case Literal:
-		m_expr = new StrExpr(i_symbol);
-		break;
-	case Builtin:
-		if (i_symbol == _T("Clipboard"))
-			m_expr = new StrExprClipboard(i_symbol);
-		else if (i_symbol == _T("WindowClassName"))
-			m_expr = new StrExprWindowClassName(i_symbol);
-		else if (i_symbol == _T("WindowTitleName"))
-			m_expr = new StrExprWindowTitleName(i_symbol);
-		break;
-	default:
-		break;
-	}
-}
-
-
-StrExprArg::~StrExprArg()
-{
-	delete m_expr;
-}
-
-
-tstringq StrExprArg::eval() const
-{
-	return m_expr->eval();
-}
-
-void StrExprArg::setEngine(const Engine *i_engine)
-{
-	StrExpr::setEngine(i_engine);
-}
-
-// stream output
-tostream &operator<<(tostream &i_ost, const StrExprArg &i_data)
-{
-	i_ost << i_data.eval();
-	return i_ost;
-}
