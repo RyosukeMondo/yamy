@@ -9,6 +9,7 @@
 #include "test_keymap.cpp"
 #include "test_parser.cpp"
 #include "test_keyboard.cpp"
+#include "test_function.cpp"
 
 TEST(SanityCheck, BasicAssertion) {
     EXPECT_EQ(1 + 1, 2);
