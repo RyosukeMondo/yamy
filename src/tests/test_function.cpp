@@ -1,11 +1,7 @@
 #include <gtest/gtest.h>
 #include "../core/engine.h"
 #include "../core/function.h"
-
-// Define FUNCTION_DATA to enable class definitions in functions.h
-#define FUNCTION_DATA
-#include "../core/functions.h"
-#undef FUNCTION_DATA
+#include "../core/function_data.h"
 
 TEST(FunctionDataTest, DefaultFunction) {
     std::unique_ptr<FunctionData> fd(FunctionData_Default::create());

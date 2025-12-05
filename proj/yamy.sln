@@ -19,8 +19,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "regex64", "regex64.vcxproj"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "regex32", "regex32.vcxproj", "{2376FA78-C8B7-4ED0-B4E3-B5AD778A8C0F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makefunc", "makefunc.vcxproj", "{33AF9375-55C1-480E-93CC-52951D42858F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -115,16 +113,6 @@ Global
 		{2376FA78-C8B7-4ED0-B4E3-B5AD778A8C0F}.Release|Win32.ActiveCfg = Release|Win32
 		{2376FA78-C8B7-4ED0-B4E3-B5AD778A8C0F}.Release|Win32.Build.0 = Release|Win32
 		{2376FA78-C8B7-4ED0-B4E3-B5AD778A8C0F}.Release|x64.ActiveCfg = Release|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Debug|Win32.Build.0 = Debug|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Debug|x64.ActiveCfg = Debug|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Release|Win32.ActiveCfg = Release|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Release|Win32.Build.0 = Release|Win32
-		{33AF9375-55C1-480E-93CC-52951D42858F}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
