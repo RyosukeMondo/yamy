@@ -16,12 +16,6 @@ jobs:
       with:
         path: yamy
 
-    - name: Download Boost Headers
-      shell: cmd
-      run: |
-        curl -L -o boost_1_84_0.zip https://archives.boost.io/release/1.84.0/source/boost_1_84_0.zip
-        7z x boost_1_84_0.zip -o. -y -r -aos boost_1_84_0/boost/*
-      
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.3
 

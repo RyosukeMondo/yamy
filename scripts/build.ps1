@@ -178,31 +178,8 @@ Invoke-Task "Cleaning previous build artifacts" {
     }
 }
 
-# 2. Setup Libs
-Invoke-Task "Setting up dependencies (Boost)" {
-    $ErrorActionPreference = "Stop"
-    Set-Location $using:RepoRoot
-    
-    $dest64 = "proj\ext_lib64\Release"
-    $dest32 = "proj\ext_lib32\Release"
-    if (-not (Test-Path $dest64)) { New-Item -ItemType Directory -Path $dest64 -Force | Out-Null }
-    if (-not (Test-Path $dest32)) { New-Item -ItemType Directory -Path $dest32 -Force | Out-Null }
-    
-    # Assuming boost is at ..\boost_1_84_0 per original script
-    # We need to use absolute path for the source since we are in a Job
-    $boostSrc = Join-Path (Resolve-Path "$using:RepoRoot\..") "boost_1_84_0\libboost_regex-mt-s-1_84.lib"
-    
-    if (Test-Path $boostSrc) {
-        Copy-Item $boostSrc "$dest64\libboost_regex-mt-s-1_84.lib" -Force
-        Copy-Item $boostSrc "$dest32\libboost_regex-mt-s-1_84.lib" -Force
-    } else {
-        # Warning but not critical if libs are already there? No, build will fail.
-        # But maybe they are in place? Let's error if missing.
-        throw "Boost library not found at $boostSrc"
-    }
-}
 
-# 3. Build x64
+# 2. Build x64
 Invoke-Task "Building Yamy x64 ($Configuration)" {
     $ErrorActionPreference = "Stop"
     Set-Location $using:RepoRoot
@@ -211,7 +188,7 @@ Invoke-Task "Building Yamy x64 ($Configuration)" {
     if ($LASTEXITCODE -ne 0) { throw "MSBuild failed with exit code $LASTEXITCODE" }
 }
 
-# 4. Build Win32
+# 3. Build Win32
 Invoke-Task "Building Yamy Win32 ($Configuration)" {
     $ErrorActionPreference = "Stop"
     Set-Location $using:RepoRoot
@@ -231,7 +208,7 @@ Invoke-Task "Running Tests" {
     if ($LASTEXITCODE -ne 0) { throw "Tests failed" }
 }
 
-# 6. Finalize
+# 5. Finalize
 Invoke-Task "Packaging artifacts" {
     $ErrorActionPreference = "Stop"
     Set-Location $using:RepoRoot
@@ -254,7 +231,7 @@ Invoke-Task "Packaging artifacts" {
     Remove-Item "Release\*.pdb" -ErrorAction SilentlyContinue
 }
 
-# 7. Zip
+# 6. Zip
 Invoke-Task "Creating Distribution Zip" {
     $ErrorActionPreference = "Stop"
     Set-Location $using:RepoRoot
