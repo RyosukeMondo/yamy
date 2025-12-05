@@ -518,9 +518,7 @@ private:
 	void funcCancelPrefix(FunctionParam *i_param);
 
 	// END OF FUNCTION DEFINITION
-#  define FUNCTION_FRIEND
-#  include "functions.h"
-#  undef FUNCTION_FRIEND
+#include "function_friends.h"
 
 public:
 	///

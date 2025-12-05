@@ -65,6 +65,13 @@ The primary goal is to improve maintainability, testability, and remove legacy d
 *   **Header Separation:** Ensured `SettingLoader` class definition is available via `setting_loader.h`.
 *   **Build System:** Updated all project files (`.vcxproj`) to include the new files.
 
+### 9. Functions Refactoring (Phase 1 Completed)
+*   **Macro Elimination:** Eliminated `makefunc`-based code generation for `FunctionData` subclasses.
+    *   Converted `functions.h` (generated) into static C++ files: `src/core/function_data.h` (classes), `src/core/function_friends.h` (friend decls), and `src/core/function_creator.cpp` (factory).
+    *   Updated `function.cpp` and `engine.h` to use the new headers.
+    *   Removed `makefunc.vcxproj` dependency and obsolete files.
+    *   Verified build with `scripts/build_yamy.bat` (including tests).
+
 ## Architectural Analysis (Current State)
 
 ### Issues
@@ -72,9 +79,6 @@ The primary goal is to improve maintainability, testability, and remove legacy d
 2.  **Legacy Macros:** Still using many preprocessor macros (`USE_INI`, etc.) which should be replaced with runtime configuration or const expressions.
 
 ## Roadmap
-
-### Phase 1: Further Refactoring
-*   **Functions:** `functions.h` and `function.cpp` are still heavily macro-dependent and complex.
 
 ### Phase 2: Platform Abstraction Layer (PAL) - Long Term
 *   **Goal:** Enable swapping the OS layer for cross-platform support (Linux/macOS).

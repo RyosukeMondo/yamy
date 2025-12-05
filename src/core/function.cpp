@@ -14,9 +14,7 @@
 #include <algorithm>
 #include <process.h>
 
-#define FUNCTION_DATA
-#include "functions.h"
-#undef FUNCTION_DATA
+#include "function_data.h"
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -514,35 +512,6 @@ tostream &operator<<(tostream &i_ost, const FunctionData *i_data)
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// FunctionCreator
-
-
-///
-class FunctionCreator
-{
-public:
-	typedef FunctionData *(*Creator)();		///
-
-public:
-	const _TCHAR *m_name;				/// function name
-	Creator m_creator;				/// function data creator
-};
-
-
-// create function
-FunctionData *createFunctionData(const tstring &i_name)
-{
-	static
-#define FUNCTION_CREATOR
-#include "functions.h"
-#undef FUNCTION_CREATOR
-	;
-
-	for (size_t i = 0; i != NUMBER_OF(functionCreators); ++ i)
-		if (i_name == functionCreators[i].m_name)
-			return functionCreators[i].m_creator();
-	return NULL;
-}
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
