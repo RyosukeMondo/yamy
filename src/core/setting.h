@@ -181,6 +181,12 @@ public:
 
 	/// load setting
 	bool load(Setting *o_setting, const tstringi &i_filename = _T(""));
+
+	/// initialize setting
+	bool initialize(Setting *o_setting);
+
+	/// load setting from data string
+	void loadFromData(const tstring &data);
 };
 
 

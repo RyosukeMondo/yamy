@@ -1445,6 +1445,13 @@ void SettingLoader::load(const tstringi &i_filename)
 		return;
 	}
 
+	loadFromData(data);
+}
+
+
+// load setting from data string
+void SettingLoader::loadFromData(const tstring &data)
+{
 	// prefix
 	if (m_prefixesRefCcount == 0) {
 		static const _TCHAR *prefixes[] = {
@@ -1498,13 +1505,13 @@ void SettingLoader::load(const tstringi &i_filename)
 		} catch (WarningMessage &w) {
 			if (m_log && m_soLog) {
 				Acquire a(m_soLog);
-				*m_log << i_filename << _T("(") << parser.getLineNumber()
+				*m_log << m_currentFilename << _T("(") << parser.getLineNumber()
 				<< _T(") : warning: ") << w << std::endl;
 			}
 		} catch (ErrorMessage &e) {
 			if (m_log && m_soLog) {
 				Acquire a(m_soLog);
-				*m_log << i_filename << _T("(") << parser.getLineNumber()
+				*m_log << m_currentFilename << _T("(") << parser.getLineNumber()
 				<< _T(") : error: ") << e << std::endl;
 			}
 			m_isThereAnyError = true;
@@ -1671,14 +1678,31 @@ SettingLoader::SettingLoader(SyncObject *i_soLog, tostream *i_log)
 }
 
 
+// initialize
+bool SettingLoader::initialize(Setting *i_setting)
+{
+	m_setting = i_setting;
+	m_isThereAnyError = false;
+
+	// create global keymap's default keySeq
+	ActionFunction af(createFunctionData(_T("OtherWindowClass")));
+	KeySeq *globalDefault = m_setting->m_keySeqs.add(KeySeq(_T("")).add(af));
+
+	// add default keymap
+	m_currentKeymap = m_setting->m_keymaps.add(
+						  Keymap(Keymap::Type_windowOr, _T("Global"), _T(""), _T(""),
+								 globalDefault, NULL));
+	return true;
+}
+
+
 /* load m_setting
    If called by "include", 'filename' describes filename.
    Otherwise the 'filename' is empty.
  */
 bool SettingLoader::load(Setting *i_setting, const tstringi &i_filename)
 {
-	m_setting = i_setting;
-	m_isThereAnyError = false;
+	initialize(i_setting);
 
 	tstringi path;
 	if (!getFilename(i_filename, &path)) {
@@ -1690,15 +1714,6 @@ bool SettingLoader::load(Setting *i_setting, const tstringi &i_filename)
 			throw ErrorMessage() << _T("`") << i_filename
 			<< _T("': no such file or other error.");
 	}
-
-	// create global keymap's default keySeq
-	ActionFunction af(createFunctionData(_T("OtherWindowClass")));
-	KeySeq *globalDefault = m_setting->m_keySeqs.add(KeySeq(_T("")).add(af));
-
-	// add default keymap
-	m_currentKeymap = m_setting->m_keymaps.add(
-						  Keymap(Keymap::Type_windowOr, _T("Global"), _T(""), _T(""),
-								 globalDefault, NULL));
 
 	/*
 	// add keyboard layout name

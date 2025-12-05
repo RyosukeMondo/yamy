@@ -17,3 +17,4 @@ Backup/
 UpgradeLog.htm
 boost_1_84_0/
 boost_1_84_0.zip
+src/tests/googletest/
