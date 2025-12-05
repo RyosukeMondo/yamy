@@ -225,19 +225,21 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
 
 	tstringi line;
 	bool isTokenExist = false;
-continue_getLineLoop:
+
 	while (getLine(&line)) {
 		const _TCHAR *t = line.c_str();
+		bool continueToNextLine = false;
 
-continue_getTokenLoop:
 		while (true) {
 			// skip white space
 			while (*t != _T('\0') && _istspace(*t))
 				t ++;
 			if (*t == _T('\0') || *t == _T('#'))
-				goto break_getTokenLoop; // no more tokens exist
-			if (*t == _T('\\') && *(t + 1) == _T('\0'))
-				goto continue_getLineLoop; // continue to next line
+				break; // break inner loop
+			if (*t == _T('\\') && *(t + 1) == _T('\0')) {
+				continueToNextLine = true;
+				break; // break inner loop, continue outer loop
+			}
 
 			const _TCHAR *tokenStart = t;
 
@@ -248,7 +250,7 @@ continue_getTokenLoop:
 				isTokenExist = false;
 				o_tokens->push_back(Token(Token::Type_comma));
 				t ++;
-				goto continue_getTokenLoop;
+				continue;
 			}
 
 			// paren
@@ -256,7 +258,7 @@ continue_getTokenLoop:
 				o_tokens->push_back(Token(Token::Type_openParen));
 				isTokenExist = false;
 				t ++;
-				goto continue_getTokenLoop;
+				continue;
 			}
 			if (*t == _T(')')) {
 				if (!isTokenExist)
@@ -264,20 +266,23 @@ continue_getTokenLoop:
 				isTokenExist = true;
 				o_tokens->push_back(Token(Token::Type_closeParen));
 				t ++;
-				goto continue_getTokenLoop;
+				continue;
 			}
 
 			isTokenExist = true;
 
 			// prefix
+			bool matchedPrefix = false;
 			if (m_prefixes)
 				for (size_t i = 0; i < m_prefixes->size(); i ++)
 					if (_tcsnicmp(tokenStart, m_prefixes->at(i).c_str(),
 								  m_prefixes->at(i).size()) == 0) {
 						o_tokens->push_back(Token(m_prefixes->at(i), false));
 						t += m_prefixes->at(i).size();
-						goto continue_getTokenLoop;
+						matchedPrefix = true;
+						break;
 					}
+			if (matchedPrefix) continue;
 
 			// quoted or regexp
 			if (*t == _T('"') || *t == _T('\'') ||
@@ -314,7 +319,7 @@ continue_getTokenLoop:
 					o_tokens->push_back(Token(str, true, isRegexp));
 				if (*t != _T('\0'))
 					t ++;
-				goto continue_getTokenLoop;
+				continue;
 			}
 
 			// not quoted
@@ -357,10 +362,13 @@ continue_getTokenLoop:
 						Token(value, tstringi(tokenStart, numEnd - tokenStart)));
 					t = numEnd;
 				}
-				goto continue_getTokenLoop;
+				continue;
 			}
 		}
-break_getTokenLoop:
+		
+		if (continueToNextLine)
+			continue;
+
 		if (0 < o_tokens->size())
 			break;
 		m_lineNumber = m_internalLineNumber;
