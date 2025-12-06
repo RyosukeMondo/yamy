@@ -100,7 +100,6 @@
     <ClCompile Include="..\src\ui\dlgversion.cpp" />
     <ClCompile Include="..\src\core\engine\engine.cpp" />
     <ClCompile Include="..\src\core\engine\engine_lifecycle.cpp" />
-    <ClCompile Include="..\src\core\engine\engine_hook.cpp" />
     <ClCompile Include="..\src\core\engine\engine_input.cpp" />
     <ClCompile Include="..\src\core\engine\engine_modifier.cpp" />
     <ClCompile Include="..\src\core\engine\engine_generator.cpp" />
@@ -119,6 +118,10 @@
     <ClCompile Include="..\src\tests\test_main.cpp" />
     <ClCompile Include="..\src\core\settings\parser.cpp" />
     <ClCompile Include="..\src\platform\windows\registry.cpp" />
+    <ClCompile Include="..\src\platform\windows\window_system_win32.cpp" />
+    <ClCompile Include="..\src\platform\windows\input_injector_win32.cpp" />
+    <ClCompile Include="..\src\platform\windows\input_hook_win32.cpp" />
+    <ClCompile Include="..\src\platform\windows\input_driver_win32.cpp" />
     <ClCompile Include="..\src\core\settings\setting.cpp" />
     <ClCompile Include="..\src\core\settings\setting_loader.cpp" />
     <ClCompile Include="..\src\core\functions\strexpr.cpp" />
@@ -157,6 +160,14 @@
     <ClInclude Include="..\src\utils\multithread.h" />
     <ClInclude Include="..\src\core\settings\parser.h" />
     <ClInclude Include="..\src\platform\windows\registry.h" />
+    <ClInclude Include="..\src\core\window\window_system.h" />
+    <ClInclude Include="..\src\platform\windows\window_system_win32.h" />
+    <ClInclude Include="..\src\core\input\input_injector.h" />
+    <ClInclude Include="..\src\platform\windows\input_injector_win32.h" />
+    <ClInclude Include="..\src\core\input\input_hook.h" />
+    <ClInclude Include="..\src\platform\windows\input_hook_win32.h" />
+    <ClInclude Include="..\src\core\input\input_driver.h" />
+    <ClInclude Include="..\src\platform\windows\input_driver_win32.h" />
     <ClInclude Include="..\src\core\settings\setting.h" />
     <ClInclude Include="..\src\core\settings\setting_loader.h" />
     <ClInclude Include="..\src\core\functions\strexpr.h" />
@@ -170,10 +181,6 @@
     <ResourceCompile Include="..\src\ui\mayu.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="regex32.vcxproj">
-      <Project>{2376fa78-c8b7-4ed0-b4e3-b5ad778a8c0f}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="yamy32dll.vcxproj">
       <Project>{af8183b3-0ff2-4a6a-8b8d-9bb9baee6dcc}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

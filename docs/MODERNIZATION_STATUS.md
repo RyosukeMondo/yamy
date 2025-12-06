@@ -139,4 +139,6 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   **Structure:** Reorganized `src/core` and `src/platform` directories for better modularity and cross-platform preparation.
     *   **Fixes:** Resolved build issues in `mayu.cpp` and updated test suite include paths.
     *   **PAL (Phase 2):** Extended `WindowSystem` for cursor/screen support. Implemented `InputInjector` abstraction to remove direct `SendInput` calls. Verified full build success (32/64-bit) and tests.
+    *   **PAL (Phase 2):** Completed `InputHook` abstraction (moving `engine_hook.cpp` logic to `input_hook_win32.cpp`) and `InputDriver` abstraction (moving `DeviceIoControl` etc. to `input_driver_win32.cpp`).
+    *   **Cleanup:** Removed obsolete `engine_hook.cpp` from project.
 

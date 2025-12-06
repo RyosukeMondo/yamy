@@ -14,48 +14,8 @@
 #include <process.h>
 
 
-void Engine::manageTs4mayu(TCHAR *i_ts4mayuDllName,
-						   TCHAR *i_dependDllName,
-						   bool i_load, HMODULE *i_pTs4mayu) {
-	Acquire a(&m_log, 0);
+// manageTs4mayu removed (moved to InputDriver)
 
-	if (i_load == false) {
-		if (*i_pTs4mayu) {
-			bool (WINAPI *pTs4mayuTerm)();
-
-			pTs4mayuTerm = (bool (WINAPI*)())GetProcAddress(*i_pTs4mayu, "ts4mayuTerm");
-			if (pTs4mayuTerm() == true)
-				FreeLibrary(*i_pTs4mayu);
-			*i_pTs4mayu = NULL;
-			m_log << i_ts4mayuDllName <<_T(" unloaded") << std::endl;
-		}
-	} else {
-		if (*i_pTs4mayu) {
-			m_log << i_ts4mayuDllName << _T(" already loaded") << std::endl;
-		} else {
-			if (SearchPath(NULL, i_dependDllName, NULL, 0, NULL, NULL) == 0) {
-				m_log << _T("load ") << i_ts4mayuDllName
-				<< _T(" failed: can't find ") << i_dependDllName
-				<< std::endl;
-			} else {
-				*i_pTs4mayu = LoadLibrary(i_ts4mayuDllName);
-				if (*i_pTs4mayu == NULL) {
-					m_log << _T("load ") << i_ts4mayuDllName
-					<< _T(" failed: can't find it") << std::endl;
-				} else {
-					bool (WINAPI *pTs4mayuInit)(UINT);
-
-					pTs4mayuInit = (bool (WINAPI*)(UINT))GetProcAddress(*i_pTs4mayu, "ts4mayuInit");
-					if (pTs4mayuInit(m_threadId) == true)
-						m_log << i_ts4mayuDllName <<_T(" loaded") << std::endl;
-					else
-						m_log << i_ts4mayuDllName
-						<<_T(" load failed: can't initialize") << std::endl;
-				}
-			}
-		}
-	}
-}
 
 
 // set m_setting
@@ -85,10 +45,10 @@ bool Engine::setSetting(Setting *i_setting) {
 
 	m_setting = i_setting;
 
-	manageTs4mayu(_T("sts4mayu.dll"), _T("SynCOM.dll"),
-				  m_setting->m_sts4mayu, &m_sts4mayu);
-	manageTs4mayu(_T("cts4mayu.dll"), _T("TouchPad.dll"),
-				  m_setting->m_cts4mayu, &m_cts4mayu);
+	m_inputDriver->manageExtension(_T("sts4mayu.dll"), _T("SynCOM.dll"),
+				  m_setting->m_sts4mayu, (void**)&m_sts4mayu);
+	m_inputDriver->manageExtension(_T("cts4mayu.dll"), _T("TouchPad.dll"),
+				  m_setting->m_cts4mayu, (void**)&m_cts4mayu);
 
 	g_hookData->m_correctKanaLockHandling = m_setting->m_correctKanaLockHandling;
 	if (m_currentFocusOfThread) {

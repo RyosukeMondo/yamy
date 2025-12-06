@@ -17,9 +17,9 @@
 unsigned int Engine::injectInput(const KEYBOARD_INPUT_DATA *i_kid, const KBDLLHOOKSTRUCT *i_kidRaw)
 {
 	InjectionContext ctx;
-	ctx.isDragging = m_dragging;
-	ctx.dragStartPos.x = m_msllHookCurrent.pt.x;
-	ctx.dragStartPos.y = m_msllHookCurrent.pt.y;
+	ctx.isDragging = false; // TODO: Query from InputHook if necessary
+	ctx.dragStartPos.x = 0;
+	ctx.dragStartPos.y = 0;
 	
 	m_inputInjector->inject(i_kid, ctx, i_kidRaw);
 	return 1;

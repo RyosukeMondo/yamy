@@ -8,9 +8,10 @@
 #  include "multithread.h"
 #  include "setting.h"
 #  include "msgstream.h"
-#  include "hook.h"
 #  include "window_system.h"
 #  include "../input/input_injector.h"
+#  include "../input/input_hook.h"
+#  include "../input/input_driver.h"
 #  include <set>
 #  include <queue>
 
@@ -146,31 +147,7 @@ private:
 		InterruptThreadReason_Resume,
 	};
 
-	///
-	class InputHandler {
-	public:
-		typedef int (*INSTALL_HOOK)(INPUT_DETOUR i_keyboardDetour, Engine *i_engine, bool i_install);
-
-		static unsigned int WINAPI run(void *i_this);
-
-		InputHandler(INSTALL_HOOK i_installHook, INPUT_DETOUR i_inputDetour);
-
-		~InputHandler();
-
-		void run();
-
-		int start(Engine *i_engine);
-
-		int stop();
-
-	private:
-		unsigned m_threadId;
-		HANDLE m_hThread;
-		HANDLE m_hEvent; 
-		INSTALL_HOOK m_installHook;
-		INPUT_DETOUR m_inputDetour;
-		Engine *m_engine;
-	};
+	/* InputHandler removed (moved to Platform layer) */
 
 private:
 	CriticalSection m_cs;				/// criticalSection
@@ -181,17 +158,19 @@ private:
 	Setting * volatile m_setting;			/// setting
 	WindowSystem *m_windowSystem;			/// window system abstraction
 	InputInjector *m_inputInjector;			/// input injector abstraction
+	InputHook *m_inputHook;				/// input hook abstraction
+	InputDriver *m_inputDriver;			/// input driver abstraction
 
 	// engine thread state
 	HANDLE m_threadHandle;
 	unsigned m_threadId;
 	std::deque<KEYBOARD_INPUT_DATA> *m_inputQueue;
 	HANDLE m_queueMutex;
-	MSLLHOOKSTRUCT m_msllHookCurrent;
-	bool m_buttonPressed;
-	bool m_dragging;
-	InputHandler m_keyboardHandler;
-	InputHandler m_mouseHandler;
+	// MSLLHOOKSTRUCT m_msllHookCurrent; // Moved to InputHook
+	// bool m_buttonPressed; // Moved to InputHook
+	// bool m_dragging; // Moved to InputHook
+	// InputHandler m_keyboardHandler; // Moved to InputHook
+	// InputHandler m_mouseHandler; // Moved to InputHook
 	HANDLE m_readEvent;				/** reading from mayu device
                                                     has been completed */
 	OVERLAPPED m_ol;				/** for async read/write of
@@ -259,16 +238,17 @@ public:
 	tomsgstream &m_log;				/** log stream (output to log
                                                     dialog's edit) */
 
+	/// Push input event to the queue (Thread Safe)
+	void pushInputEvent(const KEYBOARD_INPUT_DATA &kid);
+
+	/// Get current setting (Thread Safe - check for NULL)
+	const Setting *getSetting() const { return m_setting; }
+
 public:
-	/// keyboard handler thread
-	static unsigned int WINAPI keyboardDetour(Engine *i_this, WPARAM i_wParam, LPARAM i_lParam);
-	/// mouse handler thread
-	static unsigned int WINAPI mouseDetour(Engine *i_this, WPARAM i_wParam, LPARAM i_lParam);
+	// keyboardDetour and mouseDetour removed (moved to Platform layer)
+
 private:
-	///
-	unsigned int keyboardDetour(KBDLLHOOKSTRUCT *i_kid);
-	///
-	unsigned int mouseDetour(WPARAM i_message, MSLLHOOKSTRUCT *i_mid);
+	// keyboardDetour and mouseDetour removed (moved to Platform layer)
 	///
 	unsigned int injectInput(const KEYBOARD_INPUT_DATA *i_kid, const KBDLLHOOKSTRUCT *i_kidRaw);
 
@@ -330,10 +310,6 @@ private:
 
 	/// close mayu device
 	void close();
-
-	/// load/unload [sc]ts4mayu.dll
-	void manageTs4mayu(TCHAR *i_ts4mayuDllName, TCHAR *i_dependDllName,
-					   bool i_load, HMODULE *i_pTs4mayu);
 
 private:
 	// BEGINING OF FUNCTION DEFINITION
@@ -526,7 +502,7 @@ private:
 
 public:
 	///
-	Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, InputInjector *i_inputInjector);
+	Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver);
 	///
 	~Engine();
 

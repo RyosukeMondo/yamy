@@ -14,15 +14,13 @@
 #include <process.h>
 
 
-Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, InputInjector *i_inputInjector)
+Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver)
 		: m_hwndAssocWindow(NULL),
 		m_setting(NULL),
 		m_windowSystem(i_windowSystem),
 		m_inputInjector(i_inputInjector),
-		m_buttonPressed(false),
-		m_dragging(false),
-		m_keyboardHandler(installKeyboardHook, Engine::keyboardDetour),
-		m_mouseHandler(installMouseHook, Engine::mouseDetour),
+		m_inputHook(i_inputHook),
+		m_inputDriver(i_inputDriver),
 		m_inputQueue(NULL),
 		m_readEvent(NULL),
 		m_queueMutex(NULL),
@@ -68,13 +66,6 @@ Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, InputInjector *
 								 PIPE_TYPE_BYTE, 1,
 								 0, 0, 0, NULL);
 	StrExprArg::setSystem(this);
-
-	m_msllHookCurrent.pt.x = 0;
-	m_msllHookCurrent.pt.y = 0;
-	m_msllHookCurrent.mouseData = 0;
-	m_msllHookCurrent.flags = 0;
-	m_msllHookCurrent.time = 0;
-	m_msllHookCurrent.dwExtraInfo = 0;
 }
 
 
@@ -91,8 +82,7 @@ Engine::~Engine() {
 
 // start keyboard handler thread
 void Engine::start() {
-	m_keyboardHandler.start(this);
-	m_mouseHandler.start(this);
+	m_inputHook->start(this);
 
 	CHECK_TRUE( m_inputQueue = new std::deque<KEYBOARD_INPUT_DATA> );
 	CHECK_TRUE( m_queueMutex = CreateMutex(NULL, FALSE, NULL) );
@@ -101,14 +91,16 @@ void Engine::start() {
 	m_ol.OffsetHigh = 0;
 	m_ol.hEvent = m_readEvent;
 
+	m_inputDriver->open(m_readEvent);
+
 	CHECK_TRUE( m_threadHandle = (HANDLE)_beginthreadex(NULL, 0, keyboardHandler, this, 0, &m_threadId) );
 }
 
 
 // stop keyboard handler thread
 void Engine::stop() {
-	m_mouseHandler.stop();
-	m_keyboardHandler.stop();
+	m_inputHook->stop();
+	m_inputDriver->close();
 
 	WaitForSingleObject(m_queueMutex, INFINITE);
 	delete m_inputQueue;
@@ -132,10 +124,10 @@ void Engine::stop() {
 
 bool Engine::prepairQuit() {
 	// terminate and unload DLL for ThumbSense support if loaded
-	manageTs4mayu(_T("sts4mayu.dll"), _T("SynCOM.dll"),
-				  false, &m_sts4mayu);
-	manageTs4mayu(_T("cts4mayu.dll"), _T("TouchPad.dll"),
-				  false, &m_cts4mayu);
+	m_inputDriver->manageExtension(_T("sts4mayu.dll"), _T("SynCOM.dll"),
+				  false, (void**)&m_sts4mayu);
+	m_inputDriver->manageExtension(_T("cts4mayu.dll"), _T("TouchPad.dll"),
+				  false, (void**)&m_cts4mayu);
 	return true;
 }
 
@@ -171,53 +163,13 @@ void Engine::setCurrentKeymap(const Keymap *i_keymap, bool i_doesAddToHistory)
 }
 
 
-unsigned int WINAPI Engine::InputHandler::run(void *i_this)
+void Engine::pushInputEvent(const KEYBOARD_INPUT_DATA &kid)
 {
-	reinterpret_cast<InputHandler*>(i_this)->run();
-	_endthreadex(0);
-	return 0;
-}
-
-Engine::InputHandler::InputHandler(INSTALL_HOOK i_installHook, INPUT_DETOUR i_inputDetour)
-	: m_installHook(i_installHook), m_inputDetour(i_inputDetour)
-{
-	CHECK_TRUE(m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL));
-	CHECK_TRUE(m_hThread = (HANDLE)_beginthreadex(NULL, 0, run, this, CREATE_SUSPENDED, &m_threadId));
-}
-
-Engine::InputHandler::~InputHandler()
-{
-	CloseHandle(m_hEvent);
-}
-
-void Engine::InputHandler::run()
-{
-	MSG msg;
-
-	CHECK_FALSE(m_installHook(m_inputDetour, m_engine, true));
-	PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
-	SetEvent(m_hEvent);
-
-	while (GetMessage(&msg, NULL, 0, 0)) {
-		// nothing to do...
+	WaitForSingleObject(m_queueMutex, INFINITE);
+	if (m_inputQueue) {
+		m_inputQueue->push_back(kid);
+		SetEvent(m_readEvent);
 	}
-
-	CHECK_FALSE(m_installHook(m_inputDetour, m_engine, false));
-
-	return;
+	ReleaseMutex(m_queueMutex);
 }
 
-int Engine::InputHandler::start(Engine *i_engine)
-{
-	m_engine = i_engine;
-	ResumeThread(m_hThread);
-	WaitForSingleObject(m_hEvent, INFINITE);
-	return 0;
-}
-
-int Engine::InputHandler::stop()
-{
-	PostThreadMessage(m_threadId, WM_QUIT, 0, 0);
-	WaitForSingleObject(m_hThread, INFINITE);
-	return 0;
-}

@@ -128,8 +128,7 @@ enum MouseHookType {
 	MouseHookType_WindowMove = 1 << 1,		/// window move
 };
 
-class Engine;
-typedef unsigned int (WINAPI *INPUT_DETOUR)(Engine *i_engine, WPARAM i_wParam, LPARAM i_lParam);
+typedef unsigned int (WINAPI *INPUT_DETOUR)(void *i_context, WPARAM i_wParam, LPARAM i_lParam);
 
 ///
 class HookData
@@ -157,8 +156,8 @@ public:
 extern DllImport HookData *g_hookData;
 extern DllImport int installMessageHook(DWORD i_hwndTaskTray);
 extern DllImport int uninstallMessageHook();
-extern DllImport int installKeyboardHook(INPUT_DETOUR i_keyboardDetour, Engine *i_engine, bool i_install);
-extern DllImport int installMouseHook(INPUT_DETOUR i_mouseDetour, Engine *i_engine, bool i_install);
+extern DllImport int installKeyboardHook(INPUT_DETOUR i_keyboardDetour, void *i_context, bool i_install);
+extern DllImport int installMouseHook(INPUT_DETOUR i_mouseDetour, void *i_context, bool i_install);
 extern DllImport bool notify(void *data, size_t sizeof_data);
 extern DllImport void notifyLockState();
 #  endif // !_HOOK_CPP

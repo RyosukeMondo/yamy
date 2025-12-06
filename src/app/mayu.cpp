@@ -29,6 +29,8 @@
 #include "vk2tchar.h"
 #include "window_system_win32.h"
 #include "input_injector_win32.h"
+#include "input_hook_win32.h"
+#include "input_driver_win32.h"
 #include <process.h>
 #include <time.h>
 #include <commctrl.h>
@@ -89,6 +91,8 @@ class Mayu
 
 	WindowSystem *m_windowSystem;			/// window system
 	InputInjector *m_inputInjector;			/// input injector
+	InputHook *m_inputHook;				/// input hook
+	InputDriver *m_inputDriver;			/// input driver
 	Engine m_engine;				/// engine
 
 	bool m_usingSN;		   /// using WTSRegisterSessionNotification() ?
@@ -1034,7 +1038,9 @@ public:
 			m_sessionState(0),
 			m_windowSystem(new WindowSystemWin32()),
 			m_inputInjector(new InputInjectorWin32(m_windowSystem)),
-			m_engine(m_log, m_windowSystem, m_inputInjector) {
+			m_inputHook(new InputHookWin32()),
+			m_inputDriver(new InputDriverWin32()),
+			m_engine(m_log, m_windowSystem, m_inputInjector, m_inputHook, m_inputDriver) {
 		Registry reg(MAYU_REGISTRY_ROOT);
 		int val;
 		reg.read(_T("escapeNLSKeys"), &m_escapeNlsKeys, 0);
@@ -1208,18 +1214,6 @@ public:
 		CancelIo(m_hNotifyMailslot);
 		SleepEx(0, TRUE);
 		CloseHandle(m_hNotifyMailslot);
-		CloseHandle(m_hNotifyEvent);
-		ReleaseMutex(m_mutex);
-		WaitForSingleObject(m_mutex, INFINITE);
-		// first, detach log from edit control to avoid deadlock
-		m_log.detach();
-#ifdef LOG_TO_FILE
-		m_logFile.close();
-#endif // LOG_TO_FILE
-
-		// destroy windows
-		CHECK_TRUE( DestroyWindow(m_hwndVersion) );
-		CHECK_TRUE( DestroyWindow(m_hwndInvestigate) );
 		CHECK_TRUE( DestroyWindow(m_hwndLog) );
 		CHECK_TRUE( DestroyWindow(m_hwndTaskTray) );
 
@@ -1240,7 +1234,8 @@ public:
 		}
 
 		// remove setting;
-		delete m_setting;
+		delete m_inputHook;
+		delete m_inputDriver;
 		delete m_inputInjector;
 		delete m_windowSystem;
 	}

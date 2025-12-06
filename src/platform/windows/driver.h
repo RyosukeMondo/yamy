@@ -6,7 +6,7 @@
 #  define _DRIVER_H
 
 #  include <winioctl.h>
-#  include "../core/input_event.h"
+#  include "../../core/input/input_event.h"
 
 
 /// mayu device file name

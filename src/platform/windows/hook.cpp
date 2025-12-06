@@ -74,7 +74,7 @@ struct Globals {
 	HHOOK m_hHookKeyboardProc;			///
 	INPUT_DETOUR m_keyboardDetour;
 	INPUT_DETOUR m_mouseDetour;
-	Engine *m_engine;
+	void *m_context;
 	DWORD m_hwndTaskTray;				///
 	HANDLE m_hMailslot;
 	bool m_isInitialized;
@@ -784,9 +784,9 @@ static LRESULT CALLBACK lowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lPara
 	if (!g_hookData || nCode < 0)
 		goto through;
 
-	if (g.m_mouseDetour && g.m_engine) {
+	if (g.m_mouseDetour && g.m_context) {
 		unsigned int result;
-		result = g.m_mouseDetour(g.m_engine, wParam, lParam);
+		result = g.m_mouseDetour(g.m_context, wParam, lParam);
 		if (result) {
 			return 1;
 		}
@@ -808,9 +808,9 @@ static LRESULT CALLBACK lowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lP
 	if (!g_hookData || nCode < 0)
 		goto through;
 
-	if (g.m_keyboardDetour && g.m_engine) {
+	if (g.m_keyboardDetour && g.m_context) {
 		unsigned int result;
-		result = g.m_keyboardDetour(g.m_engine, wParam, lParam);
+		result = g.m_keyboardDetour(g.m_context, wParam, lParam);
 		if (result) {
 			return 1;
 		}
@@ -855,14 +855,14 @@ DllExport int uninstallMessageHook()
 
 
 /// install keyboard hook
-DllExport int installKeyboardHook(INPUT_DETOUR i_keyboardDetour, Engine *i_engine, bool i_install)
+DllExport int installKeyboardHook(INPUT_DETOUR i_keyboardDetour, void *i_context, bool i_install)
 {
 	if (i_install) {
 		if (!g.m_isInitialized)
 			initialize(true);
 
 		g.m_keyboardDetour = i_keyboardDetour;
-		g.m_engine = i_engine;
+		g.m_context = i_context;
 		g.m_hHookKeyboardProc =
 			SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC)lowLevelKeyboardProc,
 							 g.m_hInstDLL, 0);
@@ -876,14 +876,14 @@ DllExport int installKeyboardHook(INPUT_DETOUR i_keyboardDetour, Engine *i_engin
 
 
 /// install mouse hook
-DllExport int installMouseHook(INPUT_DETOUR i_mouseDetour, Engine *i_engine, bool i_install)
+DllExport int installMouseHook(INPUT_DETOUR i_mouseDetour, void *i_context, bool i_install)
 {
 	if (i_install) {
 		if (!g.m_isInitialized)
 			initialize(true);
 
 		g.m_mouseDetour = i_mouseDetour;
-		g.m_engine = i_engine;
+		g.m_context = i_context;
 		g_hookData->m_mouseHookType = MouseHookType_None;
 		g.m_hHookMouseProc =
 			SetWindowsHookEx(WH_MOUSE_LL, (HOOKPROC)lowLevelMouseProc,
