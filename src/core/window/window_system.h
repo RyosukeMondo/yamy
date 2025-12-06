@@ -3,6 +3,7 @@
 
 #include "../utils/stringtool.h"
 #include <cstdint>
+#include <functional>
 
 enum class WindowShowCmd {
     Normal,
@@ -28,6 +29,13 @@ enum class SystemMetric {
     VirtualScreenHeight,
     ScreenWidth,
     ScreenHeight
+};
+
+enum class ZOrder {
+    Top,
+    Bottom,
+    TopMost,
+    NoTopMost
 };
 
 class WindowSystem {
@@ -64,10 +72,38 @@ public:
     virtual bool postMessage(WindowHandle window, unsigned int message, uintptr_t wParam, intptr_t lParam) = 0;
     virtual unsigned int registerWindowMessage(const tstring& name) = 0;
     
+    // Window Styling and Layering
+    virtual bool setWindowZOrder(WindowHandle window, ZOrder order) = 0;
+    virtual bool isWindowTopMost(WindowHandle window) = 0;
+    virtual bool isWindowLayered(WindowHandle window) = 0;
+    virtual bool setWindowLayered(WindowHandle window, bool enable) = 0;
+    virtual bool setLayeredWindowAttributes(WindowHandle window, unsigned long crKey, unsigned char bAlpha, unsigned long dwFlags) = 0;
+    virtual bool redrawWindow(WindowHandle window) = 0;
+
+    // Window Enumeration
+    typedef std::function<bool(WindowHandle)> WindowEnumCallback;
+    virtual bool enumerateWindows(WindowEnumCallback callback) = 0;
+
+    // Shell
+    virtual int shellExecute(const tstring& operation, const tstring& file, const tstring& parameters, const tstring& directory, int showCmd) = 0;
+
     // IPC / Pipe wrappers
     virtual bool disconnectNamedPipe(void* handle) = 0;
     virtual bool connectNamedPipe(void* handle, void* overlapped) = 0;
     virtual bool writeFile(void* handle, const void* buffer, unsigned int bytesToWrite, unsigned int* bytesWritten, void* overlapped) = 0;
+
+    // IPC (Mutex/Shared Memory)
+    virtual void* openMutex(const tstring& name) = 0;
+    virtual void* openFileMapping(const tstring& name) = 0;
+    virtual void* mapViewOfFile(void* handle) = 0;
+    virtual bool unmapViewOfFile(void* address) = 0;
+    virtual void closeHandle(void* handle) = 0;
+    virtual bool sendMessageTimeout(WindowHandle window, unsigned int msg, uintptr_t wParam, intptr_t lParam, unsigned int flags, unsigned int timeout, uintptr_t* result) = 0;
+
+    // Dynamic Library
+    virtual void* loadLibrary(const tstring& path) = 0;
+    virtual void* getProcAddress(void* module, const std::string& procName) = 0;
+    virtual bool freeLibrary(void* module) = 0;
 };
 
 
