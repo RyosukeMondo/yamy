@@ -19,6 +19,7 @@ public:
     bool getCursorPos(WindowPoint* outPoint) override;
     WindowHandle windowFromPoint(WindowPoint point) override;
     int getSystemMetrics(SystemMetric metric) override;
+    unsigned int mapVirtualKey(unsigned int vkey) override;
 };
 
 #endif // !_WINDOW_SYSTEM_WIN32_H

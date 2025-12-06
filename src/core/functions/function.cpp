@@ -1076,31 +1076,49 @@ void Engine::funcVK(FunctionParam *i_param, VKey i_vkey)
 	bool isUp       = !i_param->m_isPressed && !!(key & VKey_released);
 	bool isDown     = i_param->m_isPressed && !!(key & VKey_pressed);
 
-	if (vkey == VK_LBUTTON && isDown)
-		mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-	else if (vkey == VK_LBUTTON && isUp)
-		mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-	else if (vkey == VK_MBUTTON && isDown)
-		mouse_event(MOUSEEVENTF_MIDDLEDOWN, 0, 0, 0, 0);
-	else if (vkey == VK_MBUTTON && isUp)
-		mouse_event(MOUSEEVENTF_MIDDLEUP, 0, 0, 0, 0);
-	else if (vkey == VK_RBUTTON && isDown)
-		mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0);
-	else if (vkey == VK_RBUTTON && isUp)
-		mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
-	else if (vkey == VK_XBUTTON1 && isDown)
-		mouse_event(MOUSEEVENTF_XDOWN, 0, 0, XBUTTON1, 0);
-	else if (vkey == VK_XBUTTON1 && isUp)
-		mouse_event(MOUSEEVENTF_XUP, 0, 0, XBUTTON1, 0);
-	else if (vkey == VK_XBUTTON2 && isDown)
-		mouse_event(MOUSEEVENTF_XDOWN, 0, 0, XBUTTON2, 0);
-	else if (vkey == VK_XBUTTON2 && isUp)
-		mouse_event(MOUSEEVENTF_XUP, 0, 0, XBUTTON2, 0);
-	else if (isUp || isDown)
-		keybd_event(vkey,
-					static_cast<BYTE>(MapVirtualKey(vkey, 0)),
-					(isExtended ? KEYEVENTF_EXTENDEDKEY : 0) |
-					(i_param->m_isPressed ? 0 : KEYEVENTF_KEYUP), 0);
+	if (!isUp && !isDown)
+		return;
+
+	KEYBOARD_INPUT_DATA kid;
+	kid.UnitId = 0;
+	kid.ExtraInformation = 0;
+	kid.Reserved = 0;
+
+	if (vkey == VK_LBUTTON || vkey == VK_RBUTTON || vkey == VK_MBUTTON ||
+		vkey == VK_XBUTTON1 || vkey == VK_XBUTTON2) {
+		// Mouse event
+		kid.Flags = KEYBOARD_INPUT_DATA::E1;
+		if (isUp)
+			kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
+
+		if (vkey == VK_LBUTTON)
+			kid.MakeCode = 1;
+		else if (vkey == VK_RBUTTON)
+			kid.MakeCode = 2;
+		else if (vkey == VK_MBUTTON)
+			kid.MakeCode = 3;
+		else if (vkey == VK_XBUTTON1)
+			kid.MakeCode = 6;
+		else if (vkey == VK_XBUTTON2)
+			kid.MakeCode = 7;
+	} else {
+		// Keyboard event
+		kid.Flags = 0;
+		if (isExtended)
+			kid.Flags |= KEYBOARD_INPUT_DATA::E0;
+		if (isUp)
+			kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
+
+		// Use WindowSystem to map virtual key to scan code
+		kid.MakeCode = static_cast<unsigned short>(m_windowSystem->mapVirtualKey(vkey));
+	}
+
+	InjectionContext ctx;
+	ctx.isDragging = false; // funcVK doesn't seem to support dragging context explicitly?
+	
+	if (m_inputInjector) {
+		m_inputInjector->inject(&kid, ctx);
+	}
 }
 
 // wait

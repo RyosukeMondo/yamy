@@ -113,3 +113,7 @@ int WindowSystemWin32::getSystemMetrics(SystemMetric metric) {
     }
     return GetSystemMetrics(index);
 }
+
+unsigned int WindowSystemWin32::mapVirtualKey(unsigned int vkey) {
+    return MapVirtualKey(vkey, 0);
+}

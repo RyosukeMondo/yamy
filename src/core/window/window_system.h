@@ -43,6 +43,8 @@ public:
     virtual bool getCursorPos(WindowPoint* outPoint) = 0;
     virtual WindowHandle windowFromPoint(WindowPoint point) = 0;
     virtual int getSystemMetrics(SystemMetric metric) = 0;
+    
+    virtual unsigned int mapVirtualKey(unsigned int vkey) = 0;
 };
 
 #endif // !_WINDOW_SYSTEM_H
