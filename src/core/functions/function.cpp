@@ -889,7 +889,7 @@ void Engine::funcPostMessage(FunctionParam *i_param, ToWindowType i_window,
 	}
 
 	if (hwnd)
-		PostMessage(hwnd, i_message, i_wParam, i_lParam);
+		m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, i_message, (uintptr_t)i_wParam, (intptr_t)i_lParam);
 }
 
 

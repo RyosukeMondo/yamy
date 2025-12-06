@@ -20,6 +20,10 @@ public:
     WindowHandle windowFromPoint(WindowPoint point) override;
     int getSystemMetrics(SystemMetric metric) override;
     unsigned int mapVirtualKey(unsigned int vkey) override;
+
+    bool getWindowRect(WindowHandle window, WindowRect* outRect) override;
+    bool getClientRect(WindowHandle window, WindowRect* outRect) override;
+    bool postMessage(WindowHandle window, unsigned int message, uintptr_t wParam, intptr_t lParam) override;
 };
 
 #endif // !_WINDOW_SYSTEM_WIN32_H

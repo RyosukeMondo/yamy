@@ -117,3 +117,31 @@ int WindowSystemWin32::getSystemMetrics(SystemMetric metric) {
 unsigned int WindowSystemWin32::mapVirtualKey(unsigned int vkey) {
     return MapVirtualKey(vkey, 0);
 }
+
+bool WindowSystemWin32::getWindowRect(WindowHandle window, WindowRect* outRect) {
+    RECT rc;
+    if (GetWindowRect((HWND)window, &rc)) {
+        outRect->left = rc.left;
+        outRect->top = rc.top;
+        outRect->right = rc.right;
+        outRect->bottom = rc.bottom;
+        return true;
+    }
+    return false;
+}
+
+bool WindowSystemWin32::getClientRect(WindowHandle window, WindowRect* outRect) {
+    RECT rc;
+    if (GetClientRect((HWND)window, &rc)) {
+        outRect->left = rc.left;
+        outRect->top = rc.top;
+        outRect->right = rc.right;
+        outRect->bottom = rc.bottom;
+        return true;
+    }
+    return false;
+}
+
+bool WindowSystemWin32::postMessage(WindowHandle window, unsigned int message, uintptr_t wParam, intptr_t lParam) {
+    return PostMessage((HWND)window, message, (WPARAM)wParam, (LPARAM)lParam) != 0;
+}

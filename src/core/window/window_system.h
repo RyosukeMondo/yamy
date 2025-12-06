@@ -2,6 +2,7 @@
 #define _WINDOW_SYSTEM_H
 
 #include "../utils/stringtool.h"
+#include <cstdint>
 
 enum class WindowShowCmd {
     Normal,
@@ -13,6 +14,13 @@ enum class WindowShowCmd {
 struct WindowPoint {
     long x;
     long y;
+};
+
+struct WindowRect {
+    long left;
+    long top;
+    long right;
+    long bottom;
 };
 
 enum class SystemMetric {
@@ -45,6 +53,12 @@ public:
     virtual int getSystemMetrics(SystemMetric metric) = 0;
     
     virtual unsigned int mapVirtualKey(unsigned int vkey) = 0;
+    
+    // New methods for function.cpp refactoring
+    virtual bool getWindowRect(WindowHandle window, WindowRect* outRect) = 0;
+    virtual bool getClientRect(WindowHandle window, WindowRect* outRect) = 0;
+    virtual bool postMessage(WindowHandle window, unsigned int message, uintptr_t wParam, intptr_t lParam) = 0;
 };
+
 
 #endif // !_WINDOW_SYSTEM_H

@@ -146,4 +146,5 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   **Cleanup:** Removed obsolete `engine_hook.cpp` from project.
     *   **PAL (Phase 2):** Completed `ConfigStore` abstraction. Decoupled `Engine`, `Function`, `SettingLoader` from `Registry` class. `Mayu` app now injects `ConfigStore` dependency.
     *   **PAL (Phase 2):** Refactored `Engine::funcVK` in `function.cpp` to use `InputInjector` and `WindowSystem` instead of direct `mouse_event`, `keybd_event`, and `MapVirtualKey` calls. Added `mapVirtualKey` to `WindowSystem` interface. Verified build and tests.
+    *   **PAL (Phase 2):** Refactored `Engine::funcPostMessage` to use `WindowSystem::postMessage`. Added `postMessage`, `getWindowRect`, and `getClientRect` to `WindowSystem` interface and implemented them in `WindowSystemWin32`.
 
