@@ -74,11 +74,14 @@ The primary goal is to improve maintainability, testability, and remove legacy d
 
 ## Phase 2: Platform Abstraction Layer (PAL) - In Progress
 
-### 1. Config Abstraction (Started)
+### 1. Config Abstraction (Completed)
 *   **ConfigStore Interface:** Created `src/utils/config_store.h` to abstract configuration storage (Registry, Ini, etc.).
 *   **Registry Implementation:** Updated `src/system/registry.h` to inherit from `ConfigStore`.
 *   **Dependency Injection:** Updated `SettingLoader` to accept `ConfigStore` interface, removing direct dependency on `Registry` class for file loading.
 *   **Refactoring:** Renamed `getFilenameFromRegistry` to `getFilenameFromConfig` and updated usage in `SettingLoader` and `Mayu` app.
+*   **Engine Update:** Updated `Engine` to use `ConfigStore` interface instead of direct `Registry` usage.
+*   **Mayu Update:** Updated `Mayu` application to instantiate `Registry` (as `ConfigStore`) and pass it to `Engine`.
+*   **Dependency Removal:** Removed `registry.h` includes from `Core` components (`function.cpp`, `setting.cpp`, `setting_loader.cpp`).
 
 ### 2. Input Driver Interface (Started)
 *   **Input Event Abstraction:** Created `src/core/input_event.h` defining `KEYBOARD_INPUT_DATA` to decouple core logic from `driver.h` (which depends on `winioctl.h`).
@@ -141,4 +144,5 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   **PAL (Phase 2):** Extended `WindowSystem` for cursor/screen support. Implemented `InputInjector` abstraction to remove direct `SendInput` calls. Verified full build success (32/64-bit) and tests.
     *   **PAL (Phase 2):** Completed `InputHook` abstraction (moving `engine_hook.cpp` logic to `input_hook_win32.cpp`) and `InputDriver` abstraction (moving `DeviceIoControl` etc. to `input_driver_win32.cpp`).
     *   **Cleanup:** Removed obsolete `engine_hook.cpp` from project.
+    *   **PAL (Phase 2):** Completed `ConfigStore` abstraction. Decoupled `Engine`, `Function`, `SettingLoader` from `Registry` class. `Mayu` app now injects `ConfigStore` dependency.
 
