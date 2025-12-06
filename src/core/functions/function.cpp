@@ -572,7 +572,7 @@ bool getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd
 		}
 		if (o_rcParent) {
 			WindowRect wr;
-			if (ws->getClientRect((WindowSystem::WindowHandle)GetParent(*o_hwnd), &wr)) {
+			if (ws->getClientRect(ws->getParent((WindowSystem::WindowHandle)*o_hwnd), &wr)) {
 				o_rcParent->left = wr.left;
 				o_rcParent->top = wr.top;
 				o_rcParent->right = wr.right;
@@ -888,24 +888,19 @@ void Engine::funcPostMessage(FunctionParam *i_param, ToWindowType i_window,
 	HWND hwnd = i_param->m_hwnd;
 	if (0 < window) {
 		for (int i = 0; i < window; ++ i)
-			hwnd = GetParent(hwnd);
+			hwnd = (HWND)m_windowSystem->getParent((WindowSystem::WindowHandle)hwnd);
 	} else if (window == ToWindowType_toMainWindow) {
 		while (true) {
-			HWND p = GetParent(hwnd);
+			HWND p = (HWND)m_windowSystem->getParent((WindowSystem::WindowHandle)hwnd);
 			if (!p)
 				break;
 			hwnd = p;
 		}
 	} else if (window == ToWindowType_toOverlappedWindow) {
 		while (hwnd) {
-#ifdef MAYU64
-			LONG_PTR style = GetWindowLongPtr(hwnd, GWL_STYLE);
-#else
-			LONG style = GetWindowLong(hwnd, GWL_STYLE);
-#endif
-			if ((style & WS_CHILD) == 0)
+			if (!m_windowSystem->isChild((WindowSystem::WindowHandle)hwnd))
 				break;
-			hwnd = GetParent(hwnd);
+			hwnd = (HWND)m_windowSystem->getParent((WindowSystem::WindowHandle)hwnd);
 		}
 	}
 
@@ -925,7 +920,7 @@ void Engine::funcShellExecute(FunctionParam *i_param,
 	if (!i_param->m_isPressed)
 		return;
 	m_afShellExecute = i_param->m_af;
-	PostMessage(m_hwndAssocWindow,
+	m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndAssocWindow,
 				WM_APP_engineNotify, EngineNotify_shellExecute, 0);
 }
 
@@ -939,13 +934,12 @@ void Engine::shellExecute()
 		reinterpret_cast<FunctionData_ShellExecute *>(
 			m_afShellExecute->m_functionData);
 
-	int r = (int)(INT_PTR)ShellExecute(
-				NULL,
-				fd->m_operation.eval().empty() ? _T("open") : fd->m_operation.eval().c_str(),
-				fd->m_file.eval().empty() ? NULL : fd->m_file.eval().c_str(),
-				fd->m_parameters.eval().empty() ? NULL : fd->m_parameters.eval().c_str(),
-				fd->m_directory.eval().empty() ? NULL : fd->m_directory.eval().c_str(),
-				fd->m_showCommand);
+	int r = m_windowSystem->shellExecute(
+				fd->m_operation.eval().empty() ? _T("open") : fd->m_operation.eval(),
+				fd->m_file.eval(),
+				fd->m_parameters.eval(),
+				fd->m_directory.eval(),
+				static_cast<int>(fd->m_showCommand));
 	if (32 < r)
 		return; // success
 
@@ -985,47 +979,6 @@ void Engine::shellExecute()
 }
 
 
-struct EnumWindowsForSetForegroundWindowParam {
-	const FunctionData_SetForegroundWindow *m_fd;
-	HWND m_hwnd;
-
-public:
-	EnumWindowsForSetForegroundWindowParam(
-		const FunctionData_SetForegroundWindow *i_fd)
-			: m_fd(i_fd),
-			m_hwnd(NULL) {
-	}
-};
-
-
-/// enum windows for SetForegroundWindow
-static BOOL CALLBACK enumWindowsForSetForegroundWindow(
-	HWND i_hwnd, LPARAM i_lParam)
-{
-	EnumWindowsForSetForegroundWindowParam &ep =
-		*reinterpret_cast<EnumWindowsForSetForegroundWindowParam *>(i_lParam);
-
-	_TCHAR name[GANA_MAX_ATOM_LENGTH];
-	if (!GetClassName(i_hwnd, name, NUMBER_OF(name)))
-		return TRUE;
-	tsmatch what;
-	tstring className(name);
-	if (!std::regex_search(className, what, ep.m_fd->m_windowClassName))
-		if (ep.m_fd->m_logicalOp == LogicalOperatorType_and)
-			return TRUE;				// match failed
-
-	if (ep.m_fd->m_logicalOp == LogicalOperatorType_and) {
-		if (GetWindowText(i_hwnd, name, NUMBER_OF(name)) == 0)
-			name[0] = _T('\0');
-		tstring titleName(name);
-		if (!std::regex_search(titleName, what,
-								 ep.m_fd->m_windowTitleName))
-			return TRUE;				// match failed
-	}
-
-	ep.m_hwnd = i_hwnd;
-	return FALSE;
-}
 
 
 /// SetForegroundWindow
@@ -1034,15 +987,34 @@ void Engine::funcSetForegroundWindow(FunctionParam *i_param, const tregex &,
 {
 	if (!i_param->m_isPressed)
 		return;
-	EnumWindowsForSetForegroundWindowParam
-	ep(static_cast<const FunctionData_SetForegroundWindow *>(
-		   i_param->m_af->m_functionData));
-	EnumWindows(enumWindowsForSetForegroundWindow,
-				reinterpret_cast<LPARAM>(&ep));
-	if (ep.m_hwnd)
-		PostMessage(m_hwndAssocWindow,
+	const FunctionData_SetForegroundWindow *fd =
+		static_cast<const FunctionData_SetForegroundWindow *>(
+			i_param->m_af->m_functionData);
+
+	HWND targetHwnd = NULL;
+
+	m_windowSystem->enumerateWindows([&](WindowSystem::WindowHandle window) -> bool {
+		tstring className = m_windowSystem->getClassName(window);
+		tsmatch what;
+		if (!std::regex_search(className, what, fd->m_windowClassName)) {
+			if (fd->m_logicalOp == LogicalOperatorType_and)
+				return true; // continue
+		}
+
+		if (fd->m_logicalOp == LogicalOperatorType_and) {
+			tstring titleName = m_windowSystem->getTitleName(window);
+			if (!std::regex_search(titleName, what, fd->m_windowTitleName))
+				return true; // continue
+		}
+
+		targetHwnd = (HWND)window;
+		return false; // stop
+	});
+
+	if (targetHwnd)
+		m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndAssocWindow,
 					WM_APP_engineNotify, EngineNotify_setForegroundWindow,
-					reinterpret_cast<LPARAM>(ep.m_hwnd));
+					reinterpret_cast<LPARAM>(targetHwnd));
 
 }
 
@@ -1084,7 +1056,7 @@ void Engine::funcLoadSetting(FunctionParam *i_param, const StrExprArg &i_name)
 success:
 		;
 	}
-	PostMessage(m_hwndAssocWindow,
+	m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndAssocWindow,
 				WM_APP_engineNotify, EngineNotify_loadSetting, 0);
 }
 
@@ -1176,7 +1148,7 @@ void Engine::funcMayuDialog(FunctionParam *i_param, MayuDialogType i_dialog,
 {
 	if (!i_param->m_isPressed)
 		return;
-	PostMessage(getAssociatedWndow(), WM_APP_engineNotify, EngineNotify_showDlg,
+	m_windowSystem->postMessage((WindowSystem::WindowHandle)getAssociatedWndow(), WM_APP_engineNotify, EngineNotify_showDlg,
 				static_cast<LPARAM>(i_dialog) |
 				static_cast<LPARAM>(i_showCommand));
 }
@@ -1203,7 +1175,7 @@ void Engine::funcHelpMessage(FunctionParam *i_param, const StrExprArg &i_title,
 	m_helpTitle = i_title.eval();
 	m_helpMessage = i_message.eval();
 	bool doesShow = !(i_title.eval().size() == 0 && i_message.eval().size() == 0);
-	PostMessage(getAssociatedWndow(), WM_APP_engineNotify,
+	m_windowSystem->postMessage((WindowSystem::WindowHandle)getAssociatedWndow(), WM_APP_engineNotify,
 				EngineNotify_helpMessage, doesShow);
 }
 
@@ -1218,7 +1190,7 @@ void Engine::funcHelpVariable(FunctionParam *i_param, const StrExprArg &i_title)
 
 	m_helpTitle = i_title.eval();
 	m_helpMessage = buf;
-	PostMessage(getAssociatedWndow(), WM_APP_engineNotify,
+	m_windowSystem->postMessage((WindowSystem::WindowHandle)getAssociatedWndow(), WM_APP_engineNotify,
 				EngineNotify_helpMessage, true);
 }
 
@@ -1229,8 +1201,7 @@ void Engine::funcWindowRaise(FunctionParam *i_param,
 	HWND hwnd;
 	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
 		return;
-	SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0,
-				 SWP_ASYNCWINDOWPOS | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
+	m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, ZOrder::Top);
 }
 
 // lower window
@@ -1239,8 +1210,7 @@ void Engine::funcWindowLower(FunctionParam *i_param, TargetWindowType i_twt)
 	HWND hwnd;
 	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
 		return;
-	SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0,
-				 SWP_ASYNCWINDOWPOS | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
+	m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, ZOrder::Bottom);
 }
 
 // minimize window
@@ -1307,10 +1277,12 @@ void Engine::funcWindowToggleTopMost(FunctionParam *i_param)
 	HWND hwnd;
 	if (!getSuitableWindow(i_param, &hwnd))
 		return;
-	SetWindowPos(hwnd,
-				 (GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST) ?
-				 HWND_NOTOPMOST : HWND_TOPMOST,
-				 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+	ZOrder order = m_windowSystem->isWindowTopMost((WindowSystem::WindowHandle)hwnd) 
+		? ZOrder::NoTopMost 
+		: ZOrder::TopMost;
+	
+	m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, order);
 }
 
 // identify the window
@@ -1370,24 +1342,12 @@ void Engine::funcWindowSetAlpha(FunctionParam *i_param, int i_alpha)
 	if (i_alpha < 0) {	// remove all alpha
 		for (WindowsWithAlpha::iterator i = m_windowsWithAlpha.begin();
 				i != m_windowsWithAlpha.end(); ++ i) {
-#ifdef MAYU64
-			SetWindowLongPtr(*i, GWL_EXSTYLE,
-							 GetWindowLongPtr(*i, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-#else
-			SetWindowLong(*i, GWL_EXSTYLE,
-						  GetWindowLong(*i, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-#endif
-			RedrawWindow(*i, NULL, NULL,
-						 RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+			m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)*i, false);
+			m_windowSystem->redrawWindow((WindowSystem::WindowHandle)*i);
 		}
 		m_windowsWithAlpha.clear();
 	} else {
-#ifdef MAYU64
-		LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-#else
-		LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-#endif
-		if (exStyle & WS_EX_LAYERED) {	// remove alpha
+		if (m_windowSystem->isWindowLayered((WindowSystem::WindowHandle)hwnd)) {	// remove alpha
 			WindowsWithAlpha::iterator
 			i = std::find(m_windowsWithAlpha.begin(), m_windowsWithAlpha.end(),
 						  hwnd);
@@ -1396,30 +1356,21 @@ void Engine::funcWindowSetAlpha(FunctionParam *i_param, int i_alpha)
 
 			m_windowsWithAlpha.erase(i);
 
-#ifdef MAYU64
-			SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-#else
-			SetWindowLong(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-#endif
+			m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)hwnd, false);
 		} else {	// add alpha
-#ifdef MAYU64
-			SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
-#else
-			SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
-#endif
+			m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)hwnd, true);
 			i_alpha %= 101;
-			if (!setLayeredWindowAttributes(hwnd, 0,
-											(BYTE)(255 * i_alpha / 100), LWA_ALPHA)) {
+			if (!m_windowSystem->setLayeredWindowAttributes((WindowSystem::WindowHandle)hwnd, 0,
+											(unsigned char)(255 * i_alpha / 100), LWA_ALPHA)) {
 				Acquire a(&m_log, 0);
 				m_log << _T("error: &WindowSetAlpha(") << i_alpha
 				<< _T(") failed for HWND: ") << std::hex
-				<< hwnd << std::dec << std::endl;
+				<< reinterpret_cast<ULONG_PTR>(hwnd) << std::dec << std::endl;
 				return;
 			}
 			m_windowsWithAlpha.push_front(hwnd);
 		}
-		RedrawWindow(hwnd, NULL, NULL,
-					 RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+		m_windowSystem->redrawWindow((WindowSystem::WindowHandle)hwnd);
 	}
 }
 
@@ -1430,8 +1381,7 @@ void Engine::funcWindowRedraw(FunctionParam *i_param)
 	HWND hwnd;
 	if (!getSuitableWindow(i_param, &hwnd))
 		return;
-	RedrawWindow(hwnd, NULL, NULL,
-				 RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+	m_windowSystem->redrawWindow((WindowSystem::WindowHandle)hwnd);
 }
 
 // move window to ...
@@ -1603,8 +1553,8 @@ void Engine::funcWindowMonitorTo(
 	}
 
 	if (i_adjustPos && i_adjustSize) {
-		if (IsZoomed(hwnd))
-			PostMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+		if (m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Maximized)
+			m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 		asyncMoveWindow(hwnd, x, y, w, h);
 	} else {
 		asyncMoveWindow(hwnd, x, y);
@@ -1686,7 +1636,20 @@ void Engine::funcMouseWheel(FunctionParam *i_param, int i_delta)
 {
 	if (!i_param->m_isPressed)
 		return;
-	mouse_event(MOUSEEVENTF_WHEEL, 0, 0, i_delta, 0);
+
+	if (m_inputInjector) {
+		KEYBOARD_INPUT_DATA kid;
+		kid.UnitId = 0;
+		kid.MakeCode = 10; // Generic Wheel
+		kid.Flags = KEYBOARD_INPUT_DATA::E1; // Mouse event
+		kid.Reserved = 0;
+		kid.ExtraInformation = static_cast<unsigned long>(i_delta);
+
+		InjectionContext ctx;
+		ctx.isDragging = false;
+
+		m_inputInjector->inject(&kid, ctx);
+	}
 }
 void Engine::funcClipboardChangeCase(FunctionParam *i_param,
 									 BooleanType i_doesConvertToUpperCase)
@@ -1897,15 +1860,15 @@ void Engine::funcDirectSSTP(FunctionParam *i_param,
 		return;
 
 	// check Direct SSTP server exist ?
-	if (HANDLE hm = OpenMutex(MUTEX_ALL_ACCESS, FALSE, _T("sakura")))
-		CloseHandle(hm);
+	if (void* hm = m_windowSystem->openMutex(_T("sakura")))
+		m_windowSystem->closeHandle(hm);
 	else {
 		Acquire a(&m_log, 0);
 		m_log << _T(" Error(1): Direct SSTP server does not exist.");
 		return;
 	}
 
-	HANDLE hfm = OpenFileMapping(FILE_MAP_READ, FALSE, _T("Sakura"));
+	void* hfm = m_windowSystem->openFileMapping(_T("Sakura"));
 	if (!hfm) {
 		Acquire a(&m_log, 0);
 		m_log << _T(" Error(2): Direct SSTP server does not provide data.");
@@ -1913,9 +1876,9 @@ void Engine::funcDirectSSTP(FunctionParam *i_param,
 	}
 
 	char *data =
-		reinterpret_cast<char *>(MapViewOfFile(hfm, FILE_MAP_READ, 0, 0, 0));
+		reinterpret_cast<char *>(m_windowSystem->mapViewOfFile(hfm));
 	if (!data) {
-		CloseHandle(hfm);
+		m_windowSystem->closeHandle(hfm);
 		Acquire a(&m_log, 0);
 		m_log << _T(" Error(3): Direct SSTP server does not provide data.");
 		return;
@@ -1988,20 +1951,16 @@ void Engine::funcDirectSSTP(FunctionParam *i_param,
 			cd.cbData = (DWORD)request.size();
 			cd.lpData = (void *)request.c_str();
 #endif
-#ifdef MAYU64
-			DWORD_PTR result;
-#else
-			DWORD result;
-#endif
-			SendMessageTimeout(i->second.m_hwnd, WM_COPYDATA,
-							   reinterpret_cast<WPARAM>(m_hwndAssocWindow),
-							   reinterpret_cast<LPARAM>(&cd),
+			uintptr_t result;
+			m_windowSystem->sendMessageTimeout((WindowSystem::WindowHandle)i->second.m_hwnd, WM_COPYDATA,
+							   reinterpret_cast<uintptr_t>(m_hwndAssocWindow),
+							   reinterpret_cast<intptr_t>(&cd),
 							   SMTO_ABORTIFHUNG | SMTO_BLOCK, 5000, &result);
 		}
 	}
 
-	UnmapViewOfFile(data);
-	CloseHandle(hfm);
+	m_windowSystem->unmapViewOfFile(data);
+	m_windowSystem->closeHandle(hfm);
 }
 
 
@@ -2015,26 +1974,28 @@ class PlugIn
 	};
 
 private:
-	HMODULE m_dll;
-	FARPROC m_func;
+	WindowSystem* m_ws;
+	void* m_dll;
+	void* m_func;
 	Type m_type;
 	tstringq m_funcParam;
 
 public:
-	PlugIn() : m_dll(NULL) {
+	PlugIn(WindowSystem* ws) : m_ws(ws), m_dll(NULL), m_func(NULL) {
 	}
 
 	~PlugIn() {
-		FreeLibrary(m_dll);
+		if (m_dll)
+			m_ws->freeLibrary(m_dll);
 	}
 
 	bool load(const tstringq &i_dllName, const tstringq &i_funcName,
 			  const tstringq &i_funcParam, tomsgstream &i_log) {
-		m_dll = LoadLibrary((_T("Plugins\\") + i_dllName).c_str());
+		m_dll = m_ws->loadLibrary((_T("Plugins\\") + i_dllName).c_str());
 		if (!m_dll) {
-			m_dll = LoadLibrary((_T("Plugin\\") + i_dllName).c_str());
+			m_dll = m_ws->loadLibrary((_T("Plugin\\") + i_dllName).c_str());
 			if (!m_dll) {
-				m_dll = LoadLibrary(i_dllName.c_str());
+				m_dll = m_ws->loadLibrary(i_dllName.c_str());
 				if (!m_dll) {
 					Acquire a(&i_log);
 					i_log << std::endl;
@@ -2051,15 +2012,15 @@ public:
 #  define to_string
 #endif
 		m_type = Type_W;
-		m_func = GetProcAddress(m_dll, to_string(_T("mayu") + i_funcName + _T("W")).c_str());
+		m_func = m_ws->getProcAddress(m_dll, to_string(_T("mayu") + i_funcName + _T("W")));
 		if (!m_func) {
 			m_type = Type_A;
 			m_func
-			= GetProcAddress(m_dll, to_string(_T("mayu") + i_funcName + _T("A")).c_str());
+			= m_ws->getProcAddress(m_dll, to_string(_T("mayu") + i_funcName + _T("A")));
 			if (!m_func) {
-				m_func = GetProcAddress(m_dll, to_string(_T("mayu") + i_funcName).c_str());
+				m_func = m_ws->getProcAddress(m_dll, to_string(_T("mayu") + i_funcName));
 				if (!m_func) {
-					m_func = GetProcAddress(m_dll, to_string(i_funcName).c_str());
+					m_func = m_ws->getProcAddress(m_dll, to_string(i_funcName));
 					if (!m_func) {
 						Acquire a(&i_log);
 						i_log << std::endl;
@@ -2076,8 +2037,7 @@ public:
 	}
 
 	void exec() {
-		ASSERT( m_dll );
-		ASSERT( m_func );
+		if (!m_dll || !m_func) return;
 
 		typedef void (WINAPI * PLUGIN_FUNCTION_A)(const char *i_arg);
 		typedef void (WINAPI * PLUGIN_FUNCTION_W)(const wchar_t *i_arg);
@@ -2111,7 +2071,7 @@ void Engine::funcPlugIn(FunctionParam *i_param,
 	if (!i_param->m_isPressed)
 		return;
 
-	shu::PlugIn *plugin = new shu::PlugIn();
+	shu::PlugIn *plugin = new shu::PlugIn(m_windowSystem);
 	if (!plugin->load(i_dllName.eval(), i_funcName.eval(), i_funcParam.eval(), m_log)) {
 		delete plugin;
 		return;
@@ -2132,7 +2092,11 @@ void Engine::funcPlugIn(FunctionParam *i_param,
 void Engine::funcMouseHook(FunctionParam *i_param,
 						   MouseHookType i_hookType, int i_hookParam)
 {
-	GetCursorPos(&g_hookData->m_mousePos);
+	WindowPoint wp;
+	m_windowSystem->getCursorPos(&wp);
+	g_hookData->m_mousePos.x = wp.x;
+	g_hookData->m_mousePos.y = wp.y;
+
 	g_hookData->m_mouseHookType = i_hookType;
 	g_hookData->m_mouseHookParam = i_hookParam;
 
@@ -2152,19 +2116,18 @@ void Engine::funcMouseHook(FunctionParam *i_param,
 		// abs(i_hookParam) == 2: target is window under mouse cursor
 		// otherwise: target is current focus window
 		if (i_hookParam == 2 || i_hookParam == -2)
-			target = WindowFromPoint(g_hookData->m_mousePos);
+			target = (HWND)m_windowSystem->windowFromPoint(wp);
 		else
 			target = i_param->m_hwnd;
 
 		g_hookData->m_hwndMouseHookTarget =
 			(DWORD)((ULONG_PTR)getToplevelWindow(target, &isMDI));
 		break;
-		default:
-			g_hookData->m_hwndMouseHookTarget = NULL;
-			break;
-		}
 	}
-	return;
+	default:
+		g_hookData->m_hwndMouseHookTarget = NULL;
+		break;
+	}
 }
 
 
