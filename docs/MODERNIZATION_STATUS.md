@@ -147,4 +147,12 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   **PAL (Phase 2):** Completed `ConfigStore` abstraction. Decoupled `Engine`, `Function`, `SettingLoader` from `Registry` class. `Mayu` app now injects `ConfigStore` dependency.
     *   **PAL (Phase 2):** Refactored `Engine::funcVK` in `function.cpp` to use `InputInjector` and `WindowSystem` instead of direct `mouse_event`, `keybd_event`, and `MapVirtualKey` calls. Added `mapVirtualKey` to `WindowSystem` interface. Verified build and tests.
     *   **PAL (Phase 2):** Refactored `Engine::funcPostMessage` to use `WindowSystem::postMessage`. Added `postMessage`, `getWindowRect`, and `getClientRect` to `WindowSystem` interface and implemented them in `WindowSystemWin32`.
+    *   **PAL (Phase 2):** Refactored window management functions in `function.cpp` (`funcWindowClose`, `funcWindowResizeTo`, `funcWindowMove`, etc.) to use `WindowSystem`.
+    *   **PAL (Phase 2):** Refactored clipboard functions (`funcClipboardChangeCase`, `funcClipboardCopy`) to use `WindowSystem::getClipboardText` and `WindowSystem::setClipboardText`. Added these methods to `WindowSystem` interface and implemented in `WindowSystemWin32` (including Unicode support with `CF_TTEXT`).
+    *   **Fixes:** Fixed syntax error in `funcWindowClingToRight` and restored accidentally deleted functions (`funcWindowClingToTop`, `funcWindowClingToBottom`, `funcWindowClose`, etc.).
+
+## Next Steps (Immediate)
+*   **Input Injection:** Refactor `funcMouseWheel` in `function.cpp` to use `InputInjector` (currently uses `mouse_event`).
+*   **Window Styling:** Abstract window style modification (currently `SetWindowLong`/`GetWindowLong`) into `WindowSystem` methods (e.g., `setWindowStyle`, `toggleWindowTopMost`).
+*   **Cleanup:** Continue identifying and removing remaining direct Win32 API calls in `function.cpp` and `engine_*.cpp`.
 
