@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "../core/keymap.h"
-#include "../core/keyboard.h"
+#include "keymap.h"
+#include "keyboard.h"
 
 TEST(KeySeqTest, BasicConstruction) {
     KeySeq ks(_T("MySeq"));

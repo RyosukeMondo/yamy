@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../core/parser.h"
+#include "parser.h"
 
 TEST(ParserTest, BasicTokenization) {
     tstring input = _T("key A = B");

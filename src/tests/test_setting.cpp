@@ -1,10 +1,8 @@
 #include <gtest/gtest.h>
-#include "../core/setting.h"
-#include "../core/setting_loader.h"
-#include "../utils/msgstream.h"
-#include "../core/setting_loader.h"
-#include "../utils/msgstream.h"
-#include "../utils/multithread.h" // For CriticalSection
+#include "setting.h"
+#include "setting_loader.h"
+#include "msgstream.h"
+#include "multithread.h" // For CriticalSection
 
 class SettingLoaderTest : public ::testing::Test {
 protected:

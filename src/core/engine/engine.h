@@ -9,6 +9,7 @@
 #  include "setting.h"
 #  include "msgstream.h"
 #  include "hook.h"
+#  include "window_system.h"
 #  include <set>
 #  include <queue>
 
@@ -177,6 +178,7 @@ private:
 	HWND m_hwndAssocWindow;			/** associated window (we post
                                                     message to it) */
 	Setting * volatile m_setting;			/// setting
+	WindowSystem *m_windowSystem;			/// window system abstraction
 
 	// engine thread state
 	HANDLE m_threadHandle;
@@ -522,7 +524,7 @@ private:
 
 public:
 	///
-	Engine(tomsgstream &i_log);
+	Engine(tomsgstream &i_log, WindowSystem *i_windowSystem);
 	///
 	~Engine();
 

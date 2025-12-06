@@ -126,11 +126,7 @@ bool Engine::setShow(bool i_isMaximized, bool i_isMinimized,
 // StrExprSystem implementation
 tstring Engine::getClipboardText() const
 {
-	HGLOBAL h;
-	const _TCHAR *text = clipboardGetText(&h);
-	tstring result = (text) ? text : _T("");
-	clipboardClose(h);
-	return result;
+	return m_windowSystem->getClipboardText();
 }
 
 tstringq Engine::getStrExprWindowClassName() const

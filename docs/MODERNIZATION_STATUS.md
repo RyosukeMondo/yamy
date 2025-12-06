@@ -84,6 +84,20 @@ The primary goal is to improve maintainability, testability, and remove legacy d
 *   **Input Event Abstraction:** Created `src/core/input_event.h` defining `KEYBOARD_INPUT_DATA` to decouple core logic from `driver.h` (which depends on `winioctl.h`).
 *   **Decoupling:** Updated `src/core/keyboard.h` and `src/system/driver.h` to use the new `input_event.h`.
 
+### 3. Window System Abstraction (Completed)
+*   **WindowSystem Interface:** Created `src/core/window_system.h` to abstract window management (hierarchy, state) and clipboard operations.
+*   **Win32 Implementation:** Implemented `src/platform/windows/window_system_win32.h/cpp` encapsulating Win32 APIs (`GetParent`, `GetWindowPlacement`, `GetWindowLong`, `clipboardGetText`).
+*   **Injection:** Updated `Engine` to accept `WindowSystem` via dependency injection.
+*   **Refactoring:** Refactored `src/core/engine_window.cpp` to use `WindowSystem`, removing direct Win32 API calls and `#ifdef` blocks for `checkShow` and `getClipboardText`.
+*   **Symmetry:** Created `src/platform/linux/README.md` placeholder for future Linux implementation.
+
+### 4. Directory Structure Modernization (Completed)
+*   **Reorganization:** Reorganized `src/core` into `engine`, `functions`, `input`, `settings`, `window` subdirectories.
+*   **Platform Separation:** Renamed `src/system` to `src/platform/windows` and created `src/platform/linux`.
+*   **Build Update:** Updated `yamy.props` and all `.vcxproj` files to reflect the new directory structure.
+*   **Test Fixes:** Updated test files (`src/tests/*.cpp`) to use correct include paths.
+
+
 ## Architectural Analysis (Current State)
 
 ### Issues
@@ -113,4 +127,8 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   **Build:** Updated project files and resolved circular dependency issues in `function.cpp`.
     *   **Cleanup:** Removed `SettingLoader` class from `setting.cpp` and ensured proper header inclusion.
     *   **PAL (Phase 2):** Introduced `ConfigStore` interface and `input_event.h` to begin decoupling core logic from Windows Registry and Driver headers. Updated `SettingLoader` to use `ConfigStore`.
+*   **2025-12-06**:
+    *   **PAL (Phase 2):** Completed `WindowSystem` abstraction and Win32 implementation.
+    *   **Structure:** Reorganized `src/core` and `src/platform` directories for better modularity and cross-platform preparation.
+    *   **Fixes:** Resolved build issues in `mayu.cpp` and updated test suite include paths.
 

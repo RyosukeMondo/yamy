@@ -14,9 +14,10 @@
 #include <process.h>
 
 
-Engine::Engine(tomsgstream &i_log)
+Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem)
 		: m_hwndAssocWindow(NULL),
 		m_setting(NULL),
+		m_windowSystem(i_windowSystem),
 		m_buttonPressed(false),
 		m_dragging(false),
 		m_keyboardHandler(installKeyboardHook, Engine::keyboardDetour),

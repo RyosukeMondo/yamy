@@ -12,7 +12,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\src\core;..\src\ui;..\src\system;..\src\utils;..\src\app;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\core\engine;..\src\core\functions;..\src\core\input;..\src\core\settings;..\src\core\window;..\src\ui;..\src\platform\windows;..\src\utils;..\src\app;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION=&quot;$(VERSION)&quot;;LOGNAME=&quot;$(USERNAME)&quot;;COMPUTERNAME=&quot;$(COMPUTERNAME)&quot;;_CRT_SECURE_NO_WARNINGS;MAYU64;USE_INI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>

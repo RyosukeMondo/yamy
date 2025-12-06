@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../core/keyboard.h"
+#include "keyboard.h"
 
 TEST(ScanCodeTest, Equality) {
     ScanCode sc1(10, 0);

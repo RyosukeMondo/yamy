@@ -91,11 +91,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\system\hook.cpp" />
+    <ClCompile Include="..\src\platform\windows\hook.cpp" />
     <ClCompile Include="..\src\utils\stringtool.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\system\hook.h" />
+    <ClInclude Include="..\src\platform\windows\hook.h" />
     <ClInclude Include="..\src\utils\misc.h" />
     <ClInclude Include="..\src\utils\stringtool.h" />
   </ItemGroup>

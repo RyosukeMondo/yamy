@@ -27,6 +27,7 @@
 #include "windowstool.h"
 #include "fixscancodemap.h"
 #include "vk2tchar.h"
+#include "window_system_win32.h"
 #include <process.h>
 #include <time.h>
 #include <commctrl.h>
@@ -85,6 +86,7 @@ class Mayu
 	Setting *m_setting;				/// current setting
 	bool m_isSettingDialogOpened;			/// is setting dialog opened ?
 
+	WindowSystem *m_windowSystem;			/// window system
 	Engine m_engine;				/// engine
 
 	bool m_usingSN;		   /// using WTSRegisterSessionNotification() ?
@@ -1028,7 +1030,8 @@ public:
 			m_setting(NULL),
 			m_isSettingDialogOpened(false),
 			m_sessionState(0),
-			m_engine(m_log) {
+			m_windowSystem(new WindowSystemWin32()),
+			m_engine(m_log, m_windowSystem) {
 		Registry reg(MAYU_REGISTRY_ROOT);
 		reg.read(_T("escapeNLSKeys"), &m_escapeNlsKeys, 0);
 		m_hNotifyMailslot = CreateMailslot(NOTIFY_MAILSLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, (SECURITY_ATTRIBUTES *)NULL);
@@ -1234,6 +1237,7 @@ public:
 
 		// remove setting;
 		delete m_setting;
+		delete m_windowSystem;
 	}
 
 	/// message loop

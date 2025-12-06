@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../core/layoutmanager.h"
+#include "layoutmanager.h"
 
 TEST(LayoutManagerTest, CalculateRect_LeftTopOrigin) {
     RECT originalParent = {0, 0, 100, 100}; // 100x100

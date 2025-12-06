@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "../utils/array.h"
-#include "../utils/misc.h"
+#include "array.h"
+#include "misc.h"
 
 // Test for Array class
 TEST(ArrayTest, BasicConstructionAndAccess) {

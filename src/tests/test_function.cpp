@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include "../core/engine.h"
-#include "../core/function.h"
-#include "../core/function_data.h"
+#include "engine.h"
+#include "function.h"
+#include "function_data.h"
 
 TEST(FunctionDataTest, DefaultFunction) {
     std::unique_ptr<FunctionData> fd(FunctionData_Default::create());

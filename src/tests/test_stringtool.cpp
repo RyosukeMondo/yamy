@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../utils/stringtool.h"
+#include "stringtool.h"
 
 TEST(StringToolTest, ToWStringConversion) {
     std::string src = "Hello";

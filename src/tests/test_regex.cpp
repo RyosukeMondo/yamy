@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../utils/stringtool.h"
+#include "stringtool.h"
 
 TEST(RegexTest, BasicMatching) {
     tregex re(_T("abc"));
