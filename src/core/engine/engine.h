@@ -9,6 +9,7 @@
 #  include "setting.h"
 #  include "msgstream.h"
 #  include "window_system.h"
+#  include "../utils/config_store.h"
 #  include "../input/input_injector.h"
 #  include "../input/input_hook.h"
 #  include "../input/input_driver.h"
@@ -157,6 +158,7 @@ private:
                                                     message to it) */
 	Setting * volatile m_setting;			/// setting
 	WindowSystem *m_windowSystem;			/// window system abstraction
+	ConfigStore *m_configStore;			/// config store abstraction
 	InputInjector *m_inputInjector;			/// input injector abstraction
 	InputHook *m_inputHook;				/// input hook abstraction
 	InputDriver *m_inputDriver;			/// input driver abstraction
@@ -502,7 +504,7 @@ private:
 
 public:
 	///
-	Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver);
+	Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_configStore, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver);
 	///
 	~Engine();
 

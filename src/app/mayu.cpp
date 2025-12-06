@@ -90,6 +90,7 @@ class Mayu
 	bool m_isSettingDialogOpened;			/// is setting dialog opened ?
 
 	WindowSystem *m_windowSystem;			/// window system
+	ConfigStore *m_configStore;			/// config store
 	InputInjector *m_inputInjector;			/// input injector
 	InputHook *m_inputHook;				/// input hook
 	InputDriver *m_inputDriver;			/// input driver
@@ -452,9 +453,8 @@ private:
 
 						// create reload menu
 						HMENU hMenuSubSub = GetSubMenu(hMenuSub, 1);
-						Registry reg(MAYU_REGISTRY_ROOT);
 						int mayuIndex;
-						reg.read(_T(".mayuIndex"), &mayuIndex, 0);
+						This->m_configStore->read(_T(".mayuIndex"), &mayuIndex, 0);
 						while (DeleteMenu(hMenuSubSub, 0, MF_BYPOSITION))
 							;
 						tregex getName(_T("^([^;]*);"));
@@ -462,7 +462,7 @@ private:
 							_TCHAR buf[100];
 							_sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
 							tstringi dot_mayu;
-							if (!reg.read(buf, &dot_mayu))
+							if (!This->m_configStore->read(buf, &dot_mayu))
 								break;
 							tsmatch what;
 							if (std::regex_search(dot_mayu, what, getName)) {
@@ -530,8 +530,7 @@ private:
 					switch (id) {
 					default:
 						if (ID_MENUITEM_reloadBegin <= id) {
-							Registry reg(MAYU_REGISTRY_ROOT);
-							reg.write(_T(".mayuIndex"), id - ID_MENUITEM_reloadBegin);
+							This->m_configStore->write(_T(".mayuIndex"), id - ID_MENUITEM_reloadBegin);
 							This->load();
 						}
 						break;
@@ -755,7 +754,6 @@ private:
 	/// load setting
 	void load() {
 		Setting *newSetting = new Setting;
-		Registry reg(MAYU_REGISTRY_ROOT);
 
 		// set symbol
 		for (int i = 1; i < __argc; ++ i) {
@@ -763,7 +761,7 @@ private:
 				newSetting->m_symbols.insert(__targv[i] + 2);
 		}
 
-		if (!SettingLoader(&m_log, &m_log, &reg).load(newSetting)) {
+		if (!SettingLoader(&m_log, &m_log, m_configStore).load(newSetting)) {
 			ShowWindow(m_hwndLog, SW_SHOW);
 			SetForegroundWindow(m_hwndLog);
 			delete newSetting;
@@ -1033,17 +1031,26 @@ public:
 			m_canUseTasktrayBaloon(
 				PACKVERSION(5, 0) <= getDllVersion(_T("shlwapi.dll"))),
 			m_log(WM_APP_msgStreamNotify),
+#ifdef LOG_TO_FILE
+			m_logFile(_T("mayu.log")),
+#endif // LOG_TO_FILE
+			m_hMenuTaskTray(NULL),
+			m_hNotifyMailslot(INVALID_HANDLE_VALUE),
+			m_hNotifyEvent(NULL),
+			m_sessionState(0),
+			m_escapeNlsKeys(0),
 			m_setting(NULL),
 			m_isSettingDialogOpened(false),
-			m_sessionState(0),
-			m_windowSystem(new WindowSystemWin32()),
+			m_windowSystem(new WindowSystemWin32),
+			m_configStore(new Registry(MAYU_REGISTRY_ROOT)),
 			m_inputInjector(new InputInjectorWin32(m_windowSystem)),
-			m_inputHook(new InputHookWin32()),
-			m_inputDriver(new InputDriverWin32()),
-			m_engine(m_log, m_windowSystem, m_inputInjector, m_inputHook, m_inputDriver) {
-		Registry reg(MAYU_REGISTRY_ROOT);
-		int val;
-		reg.read(_T("escapeNLSKeys"), &m_escapeNlsKeys, 0);
+			m_inputHook(new InputHookWin32),
+			m_inputDriver(new InputDriverWin32),
+			m_engine(m_log, m_windowSystem, m_configStore, m_inputInjector, m_inputHook, m_inputDriver),
+			m_usingSN(false),
+			m_startTime(time(NULL))
+	{
+		m_configStore->read(_T("escapeNLSKeys"), &m_escapeNlsKeys, 0);
 		m_hNotifyMailslot = CreateMailslot(NOTIFY_MAILSLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, (SECURITY_ATTRIBUTES *)NULL);
 		ASSERT(m_hNotifyMailslot != INVALID_HANDLE_VALUE);
 		int err;
@@ -1237,6 +1244,7 @@ public:
 		delete m_inputHook;
 		delete m_inputDriver;
 		delete m_inputInjector;
+		delete m_configStore;
 		delete m_windowSystem;
 	}
 

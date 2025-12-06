@@ -7,7 +7,6 @@
 #include "mayu.h"
 #include "mayurc.h"
 #include "misc.h"
-#include "registry.h"
 #include "setting_loader.h"
 #include "vkeytable.h"
 #include "windowstool.h"
@@ -1034,20 +1033,23 @@ void Engine::funcLoadSetting(FunctionParam *i_param, const StrExprArg &i_name)
 		return;
 	if (!i_name.eval().empty()) {
 		// set MAYU_REGISTRY_ROOT\.mayuIndex which name is same with i_name
-		Registry reg(MAYU_REGISTRY_ROOT);
+		if (!m_configStore) {
+			// Should not happen if properly initialized
+			return;
+		}
 
 		tregex split(_T("^([^;]*);([^;]*);(.*)$"));
 		tstringi dot_mayu;
 		for (size_t i = 0; i < MAX_MAYU_REGISTRY_ENTRIES; ++ i) {
 			_TCHAR buf[100];
 			_sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), (int)i);
-			if (!reg.read(buf, &dot_mayu))
+			if (!m_configStore->read(buf, &dot_mayu))
 				break;
 
 			tsmatch what;
 			if (std::regex_match(dot_mayu, what, split) &&
 					what.str(1) == i_name.eval()) {
-				reg.write(_T(".mayuIndex"), (DWORD)i);
+				m_configStore->write(_T(".mayuIndex"), (DWORD)i);
 				goto success;
 			}
 		}

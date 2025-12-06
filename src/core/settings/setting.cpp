@@ -6,7 +6,6 @@
 #include "mayu.h"
 #include "stringtool.h"
 #include "windowstool.h"
-#include "registry.h"
 #include "setting.h"
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

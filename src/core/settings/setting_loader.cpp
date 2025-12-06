@@ -8,7 +8,6 @@
 #include "errormessage.h"
 #include "mayu.h"
 #include "mayurc.h"
-#include "registry.h"
 #include "setting.h"
 #include "setting_loader.h"
 #include "windowstool.h"

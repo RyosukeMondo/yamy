@@ -14,10 +14,11 @@
 #include <process.h>
 
 
-Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver)
+Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_configStore, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver)
 		: m_hwndAssocWindow(NULL),
 		m_setting(NULL),
 		m_windowSystem(i_windowSystem),
+		m_configStore(i_configStore),
 		m_inputInjector(i_inputInjector),
 		m_inputHook(i_inputHook),
 		m_inputDriver(i_inputDriver),
