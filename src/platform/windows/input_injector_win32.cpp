@@ -85,13 +85,22 @@ void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const Injectio
                 kid[0].mi.dwFlags = MOUSEEVENTF_HWHEEL;
             }
             break;
+        case 10:
+            if (i_kid->Flags & KEYBOARD_INPUT_DATA::BREAK) {
+                return;
+            } else {
+                kid[0].mi.mouseData = static_cast<DWORD>(i_kid->ExtraInformation);
+                kid[0].mi.dwFlags = MOUSEEVENTF_WHEEL;
+            }
+            break;
         default:
             return;
             break;
         }
         if (!(i_kid->Flags & KEYBOARD_INPUT_DATA::BREAK) &&
             i_kid->MakeCode != 4 && i_kid->MakeCode != 5 &&
-            i_kid->MakeCode != 8 && i_kid->MakeCode != 9) {
+            i_kid->MakeCode != 8 && i_kid->MakeCode != 9 &&
+            i_kid->MakeCode != 10) {
             WindowSystem::WindowHandle hwnd;
             WindowPoint pt;
 
