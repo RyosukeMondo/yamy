@@ -150,9 +150,33 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   **PAL (Phase 2):** Refactored window management functions in `function.cpp` (`funcWindowClose`, `funcWindowResizeTo`, `funcWindowMove`, etc.) to use `WindowSystem`.
     *   **PAL (Phase 2):** Refactored clipboard functions (`funcClipboardChangeCase`, `funcClipboardCopy`) to use `WindowSystem::getClipboardText` and `WindowSystem::setClipboardText`. Added these methods to `WindowSystem` interface and implemented in `WindowSystemWin32` (including Unicode support with `CF_TTEXT`).
     *   **Fixes:** Fixed syntax error in `funcWindowClingToRight` and restored accidentally deleted functions (`funcWindowClingToTop`, `funcWindowClingToBottom`, `funcWindowClose`, etc.).
+    *   **PAL (Phase 2):** Refactored `funcMouseWheel` in `function.cpp` to use `InputInjector`. Extended `InputInjectorWin32` to support generic wheel events (MakeCode 10) carrying delta in `ExtraInformation`. Verified build.
 
 ## Next Steps (Immediate)
-*   **Input Injection:** Refactor `funcMouseWheel` in `function.cpp` to use `InputInjector` (currently uses `mouse_event`).
 *   **Window Styling:** Abstract window style modification (currently `SetWindowLong`/`GetWindowLong`) into `WindowSystem` methods (e.g., `setWindowStyle`, `toggleWindowTopMost`).
 *   **Cleanup:** Continue identifying and removing remaining direct Win32 API calls in `function.cpp` and `engine_*.cpp`.
+
+### Recent Updates (2025-12-06 continued)
+*   **Window Styling (Completed):**
+    *   Extended `WindowSystem` with `setWindowZOrder`, `isWindowTopMost`, `isWindowLayered`, `setWindowLayered`, `setLayeredWindowAttributes`, `redrawWindow`.
+    *   Implemented these in `WindowSystemWin32` using `SetWindowPos`, `GetWindowLongPtr`, etc.
+    *   Refactored `funcWindowRaise`, `funcWindowLower`, `funcWindowToggleTopMost`, `funcWindowSetAlpha`, `funcWindowRedraw` in `function.cpp` to use these new methods.
+*   **Cleanup (In Progress):**
+    *   Replaced direct `PostMessage` calls in `funcShellExecute`, `funcSetForegroundWindow`, `funcLoadSetting`, `funcMayuDialog`, `funcHelpMessage`, `funcHelpVariable`, `funcWindowMonitorTo`, and `funcPostMessage` with `WindowSystem::postMessage`.
+    *   Replaced direct `GetParent` calls in `funcPostMessage` and `getSuitableMdiWindow` with `WindowSystem::getParent`.
+    *   Replaced `GetWindowLong` check for `WS_CHILD` in `funcPostMessage` with `WindowSystem::isChild`.
+    *   **Completed (2025-12-06 Late):**
+        *   **ShellExecute:** Refactored `Engine::shellExecute` to use `WindowSystem::shellExecute`. Added method to `WindowSystem` interface and Win32 implementation.
+        *   **SetForegroundWindow:** Refactored `funcSetForegroundWindow` to use `WindowSystem::enumerateWindows` with a lambda callback, replacing direct `EnumWindows`.
+        *   **MouseHook:** Refactored `funcMouseHook` to use `WindowSystem::getCursorPos` and `WindowSystem::windowFromPoint`.
+        *   Restored `funcMouseHook` and `funcCancelPrefix` after accidental deletion during refactoring.
+    *   **Completed (2025-12-06 Very Late):**
+        *   **Direct SSTP (IPC):** Refactored `funcDirectSSTP` to use `WindowSystem` IPC methods (`openMutex`, `openFileMapping`, `mapViewOfFile`, `unmapViewOfFile`, `sendMessageTimeout`).
+        *   **Plugins (Dynamic Libs):** Refactored `funcPlugIn` and `shu::PlugIn` to use `WindowSystem` dynamic library methods (`loadLibrary`, `getProcAddress`, `freeLibrary`).
+        *   **WindowSystem Extension:** Added IPC and Dynamic Library support methods to `WindowSystem` interface and `WindowSystemWin32` implementation.
+
+## Next Steps (Immediate)
+*   **Final Review:** Scan `src/core` for any lingering Win32 API calls (e.g., `GetWindowThreadProcessId`, `AttachThreadInput` in `engine_focus.cpp` or similar).
+*   **Linux Stub:** Begin implementing `src/platform/linux/window_system_linux.cpp` stub to verify compilation decoupling.
+
 
