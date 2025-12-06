@@ -28,6 +28,7 @@
 #include "fixscancodemap.h"
 #include "vk2tchar.h"
 #include "window_system_win32.h"
+#include "input_injector_win32.h"
 #include <process.h>
 #include <time.h>
 #include <commctrl.h>
@@ -87,6 +88,7 @@ class Mayu
 	bool m_isSettingDialogOpened;			/// is setting dialog opened ?
 
 	WindowSystem *m_windowSystem;			/// window system
+	InputInjector *m_inputInjector;			/// input injector
 	Engine m_engine;				/// engine
 
 	bool m_usingSN;		   /// using WTSRegisterSessionNotification() ?
@@ -1031,8 +1033,10 @@ public:
 			m_isSettingDialogOpened(false),
 			m_sessionState(0),
 			m_windowSystem(new WindowSystemWin32()),
-			m_engine(m_log, m_windowSystem) {
+			m_inputInjector(new InputInjectorWin32(m_windowSystem)),
+			m_engine(m_log, m_windowSystem, m_inputInjector) {
 		Registry reg(MAYU_REGISTRY_ROOT);
+		int val;
 		reg.read(_T("escapeNLSKeys"), &m_escapeNlsKeys, 0);
 		m_hNotifyMailslot = CreateMailslot(NOTIFY_MAILSLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, (SECURITY_ATTRIBUTES *)NULL);
 		ASSERT(m_hNotifyMailslot != INVALID_HANDLE_VALUE);
@@ -1237,6 +1241,7 @@ public:
 
 		// remove setting;
 		delete m_setting;
+		delete m_inputInjector;
 		delete m_windowSystem;
 	}
 

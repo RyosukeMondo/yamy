@@ -84,14 +84,21 @@ The primary goal is to improve maintainability, testability, and remove legacy d
 *   **Input Event Abstraction:** Created `src/core/input_event.h` defining `KEYBOARD_INPUT_DATA` to decouple core logic from `driver.h` (which depends on `winioctl.h`).
 *   **Decoupling:** Updated `src/core/keyboard.h` and `src/system/driver.h` to use the new `input_event.h`.
 
-### 3. Window System Abstraction (Completed)
+### 3. WindowSystem Abstraction (Completed)
 *   **WindowSystem Interface:** Created `src/core/window_system.h` to abstract window management (hierarchy, state) and clipboard operations.
-*   **Win32 Implementation:** Implemented `src/platform/windows/window_system_win32.h/cpp` encapsulating Win32 APIs (`GetParent`, `GetWindowPlacement`, `GetWindowLong`, `clipboardGetText`).
+    *   Extended with `getCursorPos`, `windowFromPoint`, and `getSystemMetrics` for input injection support.
+*   **Win32 Implementation:** Implemented `src/platform/windows/window_system_win32.h/cpp` encapsulating Win32 APIs.
 *   **Injection:** Updated `Engine` to accept `WindowSystem` via dependency injection.
-*   **Refactoring:** Refactored `src/core/engine_window.cpp` to use `WindowSystem`, removing direct Win32 API calls and `#ifdef` blocks for `checkShow` and `getClipboardText`.
+*   **Refactoring:** Refactored `src/core/engine_window.cpp` and `src/core/engine/engine_input.cpp` to use `WindowSystem`.
 *   **Symmetry:** Created `src/platform/linux/README.md` placeholder for future Linux implementation.
 
-### 4. Directory Structure Modernization (Completed)
+### 4. InputInjector Abstraction (Completed)
+*   **Interface:** Created `src/core/input/input_injector.h` defining `InputInjector` interface for injecting keyboard/mouse events.
+*   **Win32 Implementation:** Created `src/platform/windows/input_injector_win32.h/cpp` implementing the interface using `SendInput`.
+*   **Engine Update:** Updated `Engine` to use `InputInjector` for event injection, removing `SendInput` calls from `src/core/engine/engine_input.cpp`.
+*   **Dependency Injection:** `Mayu` application now instantiates `InputInjectorWin32` and passes it to `Engine`.
+
+### 5. Directory Structure Modernization (Completed)
 *   **Reorganization:** Reorganized `src/core` into `engine`, `functions`, `input`, `settings`, `window` subdirectories.
 *   **Platform Separation:** Renamed `src/system` to `src/platform/windows` and created `src/platform/linux`.
 *   **Build Update:** Updated `yamy.props` and all `.vcxproj` files to reflect the new directory structure.
@@ -131,4 +138,5 @@ The primary goal is to improve maintainability, testability, and remove legacy d
     *   **PAL (Phase 2):** Completed `WindowSystem` abstraction and Win32 implementation.
     *   **Structure:** Reorganized `src/core` and `src/platform` directories for better modularity and cross-platform preparation.
     *   **Fixes:** Resolved build issues in `mayu.cpp` and updated test suite include paths.
+    *   **PAL (Phase 2):** Extended `WindowSystem` for cursor/screen support. Implemented `InputInjector` abstraction to remove direct `SendInput` calls. Verified full build success (32/64-bit) and tests.
 

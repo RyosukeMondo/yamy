@@ -15,6 +15,10 @@ public:
     tstring getTitleName(WindowHandle window) override;
     bool isConsoleWindow(WindowHandle window) override;
     void setForegroundWindow(WindowHandle window) override;
+
+    bool getCursorPos(WindowPoint* outPoint) override;
+    WindowHandle windowFromPoint(WindowPoint point) override;
+    int getSystemMetrics(SystemMetric metric) override;
 };
 
 #endif // !_WINDOW_SYSTEM_WIN32_H

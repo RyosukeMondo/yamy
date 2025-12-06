@@ -10,6 +10,7 @@
 #  include "msgstream.h"
 #  include "hook.h"
 #  include "window_system.h"
+#  include "../input/input_injector.h"
 #  include <set>
 #  include <queue>
 
@@ -179,6 +180,7 @@ private:
                                                     message to it) */
 	Setting * volatile m_setting;			/// setting
 	WindowSystem *m_windowSystem;			/// window system abstraction
+	InputInjector *m_inputInjector;			/// input injector abstraction
 
 	// engine thread state
 	HANDLE m_threadHandle;
@@ -524,7 +526,7 @@ private:
 
 public:
 	///
-	Engine(tomsgstream &i_log, WindowSystem *i_windowSystem);
+	Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, InputInjector *i_inputInjector);
 	///
 	~Engine();
 

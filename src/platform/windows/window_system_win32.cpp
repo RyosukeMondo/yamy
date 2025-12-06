@@ -84,3 +84,32 @@ bool WindowSystemWin32::isConsoleWindow(WindowHandle window) {
 void WindowSystemWin32::setForegroundWindow(WindowHandle window) {
     SetForegroundWindow((HWND)window);
 }
+
+bool WindowSystemWin32::getCursorPos(WindowPoint* outPoint) {
+    POINT pt;
+    if (GetCursorPos(&pt)) {
+        outPoint->x = pt.x;
+        outPoint->y = pt.y;
+        return true;
+    }
+    return false;
+}
+
+WindowSystem::WindowHandle WindowSystemWin32::windowFromPoint(WindowPoint point) {
+    POINT pt;
+    pt.x = point.x;
+    pt.y = point.y;
+    return (WindowHandle)WindowFromPoint(pt);
+}
+
+int WindowSystemWin32::getSystemMetrics(SystemMetric metric) {
+    int index = 0;
+    switch (metric) {
+        case SystemMetric::VirtualScreenWidth: index = SM_CXVIRTUALSCREEN; break;
+        case SystemMetric::VirtualScreenHeight: index = SM_CYVIRTUALSCREEN; break;
+        case SystemMetric::ScreenWidth: index = SM_CXSCREEN; break;
+        case SystemMetric::ScreenHeight: index = SM_CYSCREEN; break;
+        default: return 0;
+    }
+    return GetSystemMetrics(index);
+}

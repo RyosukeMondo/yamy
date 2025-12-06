@@ -10,6 +10,18 @@ enum class WindowShowCmd {
     Unknown
 };
 
+struct WindowPoint {
+    long x;
+    long y;
+};
+
+enum class SystemMetric {
+    VirtualScreenWidth,
+    VirtualScreenHeight,
+    ScreenWidth,
+    ScreenHeight
+};
+
 class WindowSystem {
 public:
     virtual ~WindowSystem() = default;
@@ -26,6 +38,11 @@ public:
     virtual tstring getTitleName(WindowHandle window) = 0;
     virtual bool isConsoleWindow(WindowHandle window) = 0;
     virtual void setForegroundWindow(WindowHandle window) = 0;
+
+    // New Input/Screen methods
+    virtual bool getCursorPos(WindowPoint* outPoint) = 0;
+    virtual WindowHandle windowFromPoint(WindowPoint point) = 0;
+    virtual int getSystemMetrics(SystemMetric metric) = 0;
 };
 
 #endif // !_WINDOW_SYSTEM_H
