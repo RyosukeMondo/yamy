@@ -529,7 +529,7 @@ bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
 }
 
 //
-bool getSuitableMdiWindow(FunctionParam *i_param, HWND *o_hwnd,
+bool getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
 						  TargetWindowType *io_twt,
 						  RECT *o_rcWindow = NULL, RECT *o_rcParent = NULL)
 {
@@ -542,8 +542,15 @@ bool getSuitableMdiWindow(FunctionParam *i_param, HWND *o_hwnd,
 		return false;
 	switch (*io_twt) {
 	case TargetWindowType_overlapped:
-		if (o_rcWindow)
-			GetWindowRect(*o_hwnd, o_rcWindow);
+		if (o_rcWindow) {
+			WindowRect wr;
+			if (ws->getWindowRect((WindowSystem::WindowHandle)*o_hwnd, &wr)) {
+				o_rcWindow->left = wr.left;
+				o_rcWindow->top = wr.top;
+				o_rcWindow->right = wr.right;
+				o_rcWindow->bottom = wr.bottom;
+			}
+		}
 		if (o_rcParent) {
 			HMONITOR hm = monitorFromWindow(i_param->m_hwnd,
 											MONITOR_DEFAULTTONEAREST);
@@ -554,10 +561,24 @@ bool getSuitableMdiWindow(FunctionParam *i_param, HWND *o_hwnd,
 		}
 		break;
 	case TargetWindowType_mdi:
-		if (o_rcWindow)
-			getChildWindowRect(*o_hwnd, o_rcWindow);
-		if (o_rcParent)
-			GetClientRect(GetParent(*o_hwnd), o_rcParent);
+		if (o_rcWindow) {
+			WindowRect wr;
+			if (ws->getChildWindowRect((WindowSystem::WindowHandle)*o_hwnd, &wr)) {
+				o_rcWindow->left = wr.left;
+				o_rcWindow->top = wr.top;
+				o_rcWindow->right = wr.right;
+				o_rcWindow->bottom = wr.bottom;
+			}
+		}
+		if (o_rcParent) {
+			WindowRect wr;
+			if (ws->getClientRect((WindowSystem::WindowHandle)GetParent(*o_hwnd), &wr)) {
+				o_rcParent->left = wr.left;
+				o_rcParent->top = wr.top;
+				o_rcParent->right = wr.right;
+				o_rcParent->bottom = wr.bottom;
+			}
+		}
 		break;
 	}
 	return true;
@@ -1206,7 +1227,7 @@ void Engine::funcWindowRaise(FunctionParam *i_param,
 							 TargetWindowType i_twt)
 {
 	HWND hwnd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt))
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
 		return;
 	SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0,
 				 SWP_ASYNCWINDOWPOS | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
@@ -1216,7 +1237,7 @@ void Engine::funcWindowRaise(FunctionParam *i_param,
 void Engine::funcWindowLower(FunctionParam *i_param, TargetWindowType i_twt)
 {
 	HWND hwnd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt))
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
 		return;
 	SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0,
 				 SWP_ASYNCWINDOWPOS | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
@@ -1226,20 +1247,24 @@ void Engine::funcWindowLower(FunctionParam *i_param, TargetWindowType i_twt)
 void Engine::funcWindowMinimize(FunctionParam *i_param, TargetWindowType i_twt)
 {
 	HWND hwnd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt))
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
 		return;
-	PostMessage(hwnd, WM_SYSCOMMAND,
-				IsIconic(hwnd) ? SC_RESTORE : SC_MINIMIZE, 0);
+	
+	bool isIconic = (m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Minimized);
+	m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND,
+				isIconic ? SC_RESTORE : SC_MINIMIZE, 0);
 }
 
 // maximize window
 void Engine::funcWindowMaximize(FunctionParam *i_param, TargetWindowType i_twt)
 {
 	HWND hwnd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt))
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
 		return;
-	PostMessage(hwnd, WM_SYSCOMMAND,
-				IsZoomed(hwnd) ? SC_RESTORE : SC_MAXIMIZE, 0);
+	
+	bool isZoomed = (m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Maximized);
+	m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND,
+				isZoomed ? SC_RESTORE : SC_MAXIMIZE, 0);
 }
 
 // maximize horizontally or virtically
@@ -1249,7 +1274,7 @@ void Engine::funcWindowHVMaximize(FunctionParam *i_param,
 {
 	HWND hwnd;
 	RECT rc, rcd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt, &rc, &rcd))
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
 		return;
 
 	int x = rc.left;
@@ -1267,13 +1292,155 @@ void Engine::funcWindowHVMaximize(FunctionParam *i_param,
 	asyncMoveWindow(hwnd, x, y, w, h);
 }
 
+// close window
+void Engine::funcWindowClose(FunctionParam *i_param, TargetWindowType i_twt)
+{
+	HWND hwnd;
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
+		return;
+	m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
+}
+
+// toggle top-most flag of the window
+void Engine::funcWindowToggleTopMost(FunctionParam *i_param)
+{
+	HWND hwnd;
+	if (!getSuitableWindow(i_param, &hwnd))
+		return;
+	SetWindowPos(hwnd,
+				 (GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST) ?
+				 HWND_NOTOPMOST : HWND_TOPMOST,
+				 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+}
+
+// identify the window
+void Engine::funcWindowIdentify(FunctionParam *i_param)
+{
+	if (!i_param->m_isPressed)
+		return;
+
+	tstring className = m_windowSystem->getClassName((WindowSystem::WindowHandle)i_param->m_hwnd);
+	bool ok = false;
+	if (!className.empty()) {
+		if (_tcsicmp(className.c_str(), _T("ConsoleWindowClass")) == 0) {
+			tstring titleName = m_windowSystem->getTitleName((WindowSystem::WindowHandle)i_param->m_hwnd);
+			{
+				Acquire a(&m_log, 1);
+				m_log << _T("HWND:\t") << std::hex
+				<< reinterpret_cast<ULONG_PTR>(i_param->m_hwnd)
+				<< std::dec << std::endl;
+			}
+			Acquire a(&m_log, 0);
+			m_log << _T("CLASS:\t") << className << std::endl;
+			m_log << _T("TITLE:\t") << titleName << std::endl;
+
+			HWND hwnd = getToplevelWindow(i_param->m_hwnd, NULL);
+			WindowRect rc;
+			m_windowSystem->getWindowRect((WindowSystem::WindowHandle)hwnd, &rc);
+			m_log << _T("Toplevel Window Position/Size: (")
+			<< rc.left << _T(", ") << rc.top << _T(") / (")
+			<< (rc.right - rc.left) << _T("x") << (rc.bottom - rc.top)
+			<< _T(")") << std::endl;
+
+			m_windowSystem->getWorkArea(&rc);
+			m_log << _T("Desktop Window Position/Size: (")
+			<< rc.left << _T(", ") << rc.top << _T(") / (")
+			<< (rc.right - rc.left) << _T("x") << (rc.bottom - rc.top)
+			<< _T(")") << std::endl;
+
+			m_log << std::endl;
+			ok = true;
+		}
+	}
+	if (!ok) {
+		UINT WM_MAYU_MESSAGE = m_windowSystem->registerWindowMessage(
+								   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
+		CHECK_TRUE( m_windowSystem->postMessage((WindowSystem::WindowHandle)i_param->m_hwnd, WM_MAYU_MESSAGE,
+								MayuMessage_notifyName, 0) );
+	}
+}
+
+// set alpha blending parameter to the window
+void Engine::funcWindowSetAlpha(FunctionParam *i_param, int i_alpha)
+{
+	HWND hwnd;
+	if (!getSuitableWindow(i_param, &hwnd))
+		return;
+
+	if (i_alpha < 0) {	// remove all alpha
+		for (WindowsWithAlpha::iterator i = m_windowsWithAlpha.begin();
+				i != m_windowsWithAlpha.end(); ++ i) {
+#ifdef MAYU64
+			SetWindowLongPtr(*i, GWL_EXSTYLE,
+							 GetWindowLongPtr(*i, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+#else
+			SetWindowLong(*i, GWL_EXSTYLE,
+						  GetWindowLong(*i, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+#endif
+			RedrawWindow(*i, NULL, NULL,
+						 RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+		}
+		m_windowsWithAlpha.clear();
+	} else {
+#ifdef MAYU64
+		LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+#else
+		LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+#endif
+		if (exStyle & WS_EX_LAYERED) {	// remove alpha
+			WindowsWithAlpha::iterator
+			i = std::find(m_windowsWithAlpha.begin(), m_windowsWithAlpha.end(),
+						  hwnd);
+			if (i == m_windowsWithAlpha.end())
+				return;	// already layered by the application
+
+			m_windowsWithAlpha.erase(i);
+
+#ifdef MAYU64
+			SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+#else
+			SetWindowLong(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+#endif
+		} else {	// add alpha
+#ifdef MAYU64
+			SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+#else
+			SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+#endif
+			i_alpha %= 101;
+			if (!setLayeredWindowAttributes(hwnd, 0,
+											(BYTE)(255 * i_alpha / 100), LWA_ALPHA)) {
+				Acquire a(&m_log, 0);
+				m_log << _T("error: &WindowSetAlpha(") << i_alpha
+				<< _T(") failed for HWND: ") << std::hex
+				<< hwnd << std::dec << std::endl;
+				return;
+			}
+			m_windowsWithAlpha.push_front(hwnd);
+		}
+		RedrawWindow(hwnd, NULL, NULL,
+					 RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+	}
+}
+
+
+// redraw the window
+void Engine::funcWindowRedraw(FunctionParam *i_param)
+{
+	HWND hwnd;
+	if (!getSuitableWindow(i_param, &hwnd))
+		return;
+	RedrawWindow(hwnd, NULL, NULL,
+				 RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+}
+
 // move window to ...
 void Engine::funcWindowMoveTo(FunctionParam *i_param, GravityType i_gravityType,
 							  int i_dx, int i_dy, TargetWindowType i_twt)
 {
 	HWND hwnd;
 	RECT rc, rcd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt, &rc, &rcd))
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
 		return;
 
 	int x = rc.left + i_dx;
@@ -1296,7 +1463,7 @@ void Engine::funcWindowMove(FunctionParam *i_param, int i_dx, int i_dy,
 {
 	HWND hwnd;
 	RECT rc, rcd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt, &rc, &rcd))
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
 		return;
 	asyncMoveWindow(hwnd, rc.left + i_dx, rc.top + i_dy);
 }
@@ -1320,7 +1487,7 @@ void Engine::funcWindowMoveVisibly(FunctionParam *i_param,
 {
 	HWND hwnd;
 	RECT rc, rcd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt, &rc, &rcd))
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
 		return;
 
 	int x = rc.left;
@@ -1482,163 +1649,13 @@ void Engine::funcWindowClingToBottom(FunctionParam *i_param,
 	funcWindowMoveTo(i_param, GravityType_S, 0, 0, i_twt);
 }
 
-// close window
-void Engine::funcWindowClose(FunctionParam *i_param, TargetWindowType i_twt)
-{
-	HWND hwnd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt))
-		return;
-	PostMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
-}
-
-// toggle top-most flag of the window
-void Engine::funcWindowToggleTopMost(FunctionParam *i_param)
-{
-	HWND hwnd;
-	if (!getSuitableWindow(i_param, &hwnd))
-		return;
-	SetWindowPos(
-		hwnd,
-#ifdef MAYU64
-		(GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST) ?
-#else
-		(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST) ?
-#endif
-		HWND_NOTOPMOST : HWND_TOPMOST,
-		0, 0, 0, 0,
-		SWP_ASYNCWINDOWPOS | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSIZE);
-}
-
-// identify the window
-void Engine::funcWindowIdentify(FunctionParam *i_param)
-{
-	if (!i_param->m_isPressed)
-		return;
-
-	_TCHAR className[GANA_MAX_ATOM_LENGTH];
-	bool ok = false;
-	if (GetClassName(i_param->m_hwnd, className, NUMBER_OF(className))) {
-		if (_tcsicmp(className, _T("ConsoleWindowClass")) == 0) {
-			_TCHAR titleName[1024];
-			if (GetWindowText(i_param->m_hwnd, titleName, NUMBER_OF(titleName)) == 0)
-				titleName[0] = _T('\0');
-			{
-				Acquire a(&m_log, 1);
-				m_log << _T("HWND:\t") << std::hex
-				<< reinterpret_cast<ULONG_PTR>(i_param->m_hwnd)
-				<< std::dec << std::endl;
-			}
-			Acquire a(&m_log, 0);
-			m_log << _T("CLASS:\t") << className << std::endl;
-			m_log << _T("TITLE:\t") << titleName << std::endl;
-
-			HWND hwnd = getToplevelWindow(i_param->m_hwnd, NULL);
-			RECT rc;
-			GetWindowRect(hwnd, &rc);
-			m_log << _T("Toplevel Window Position/Size: (")
-			<< rc.left << _T(", ") << rc.top << _T(") / (")
-			<< rcWidth(&rc) << _T("x") << rcHeight(&rc)
-			<< _T(")") << std::endl;
-
-			SystemParametersInfo(SPI_GETWORKAREA, 0, (void *)&rc, FALSE);
-			m_log << _T("Desktop Window Position/Size: (")
-			<< rc.left << _T(", ") << rc.top << _T(") / (")
-			<< rcWidth(&rc) << _T("x") << rcHeight(&rc)
-			<< _T(")") << std::endl;
-
-			m_log << std::endl;
-			ok = true;
-		}
-	}
-	if (!ok) {
-		UINT WM_MAYU_MESSAGE = RegisterWindowMessage(
-								   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
-		CHECK_TRUE( PostMessage(i_param->m_hwnd, WM_MAYU_MESSAGE,
-								MayuMessage_notifyName, 0) );
-	}
-}
-
-// set alpha blending parameter to the window
-void Engine::funcWindowSetAlpha(FunctionParam *i_param, int i_alpha)
-{
-	HWND hwnd;
-	if (!getSuitableWindow(i_param, &hwnd))
-		return;
-
-	if (i_alpha < 0) {	// remove all alpha
-		for (WindowsWithAlpha::iterator i = m_windowsWithAlpha.begin();
-				i != m_windowsWithAlpha.end(); ++ i) {
-#ifdef MAYU64
-			SetWindowLongPtr(*i, GWL_EXSTYLE,
-							 GetWindowLongPtr(*i, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-#else
-			SetWindowLong(*i, GWL_EXSTYLE,
-						  GetWindowLong(*i, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-#endif
-			RedrawWindow(*i, NULL, NULL,
-						 RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
-		}
-		m_windowsWithAlpha.clear();
-	} else {
-#ifdef MAYU64
-		LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-#else
-		LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-#endif
-		if (exStyle & WS_EX_LAYERED) {	// remove alpha
-			WindowsWithAlpha::iterator
-			i = std::find(m_windowsWithAlpha.begin(), m_windowsWithAlpha.end(),
-						  hwnd);
-			if (i == m_windowsWithAlpha.end())
-				return;	// already layered by the application
-
-			m_windowsWithAlpha.erase(i);
-
-#ifdef MAYU64
-			SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-#else
-			SetWindowLong(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-#endif
-		} else {	// add alpha
-#ifdef MAYU64
-			SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
-#else
-			SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
-#endif
-			i_alpha %= 101;
-			if (!setLayeredWindowAttributes(hwnd, 0,
-											(BYTE)(255 * i_alpha / 100), LWA_ALPHA)) {
-				Acquire a(&m_log, 0);
-				m_log << _T("error: &WindowSetAlpha(") << i_alpha
-				<< _T(") failed for HWND: ") << std::hex
-				<< hwnd << std::dec << std::endl;
-				return;
-			}
-			m_windowsWithAlpha.push_front(hwnd);
-		}
-		RedrawWindow(hwnd, NULL, NULL,
-					 RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
-	}
-}
-
-
-// redraw the window
-void Engine::funcWindowRedraw(FunctionParam *i_param)
-{
-	HWND hwnd;
-	if (!getSuitableWindow(i_param, &hwnd))
-		return;
-	RedrawWindow(hwnd, NULL, NULL,
-				 RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
-}
-
 // resize window to
 void Engine::funcWindowResizeTo(FunctionParam *i_param, int i_width,
 								int i_height, TargetWindowType i_twt)
 {
 	HWND hwnd;
 	RECT rc, rcd;
-	if (!getSuitableMdiWindow(i_param, &hwnd, &i_twt, &rc, &rcd))
+	if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
 		return;
 
 	if (i_width == 0)
@@ -1659,9 +1676,9 @@ void Engine::funcMouseMove(FunctionParam *i_param, int i_dx, int i_dy)
 {
 	if (!i_param->m_isPressed)
 		return;
-	POINT pt;
-	GetCursorPos(&pt);
-	SetCursorPos(pt.x + i_dx, pt.y + i_dy);
+	WindowPoint pt;
+	m_windowSystem->getCursorPos(&pt);
+	m_windowSystem->setCursorPos(pt.x + i_dx, pt.y + i_dy);
 }
 
 // send a mouse-wheel-message to Windows
@@ -1677,28 +1694,26 @@ void Engine::funcClipboardChangeCase(FunctionParam *i_param,
 	if (!i_param->m_isPressed)
 		return;
 
-	HGLOBAL hdata;
-	const _TCHAR *text = clipboardGetText(&hdata);
-	HGLOBAL hdataNew = NULL;
-	if (text) {
-		int size = static_cast<int>(GlobalSize(hdata));
-		hdataNew = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, size);
-		if (hdataNew) {
-			_TCHAR *dataNew = reinterpret_cast<_TCHAR *>(GlobalLock(hdataNew));
-			std::memcpy(dataNew, text, size);
-			_TCHAR *dataEnd = dataNew + size;
-			while (dataNew < dataEnd && *dataNew) {
-				_TCHAR c = *dataNew;
-				if (_istlead(c))
-					dataNew += 2;
-				else
-					*dataNew++ =
-							i_doesConvertToUpperCase ? _totupper(c) : _totlower(c);
-			}
-			GlobalUnlock(hdataNew);
+	tstring text = m_windowSystem->getClipboardText();
+	if (text.empty())
+		return;
+
+	for (size_t i = 0; i < text.size(); ++i) {
+		_TCHAR c = text[i];
+		// Assuming _istlead check is handled if needed, but tstring might be wstring/string
+		// If tstring is std::string (MBCS), we need _istlead.
+		// If tstring is std::wstring (Unicode), we don't.
+		// WindowSystem::getClipboardText handles TCHAR.
+#ifndef _UNICODE
+		if (_istlead(c)) {
+			++i; // Skip next char as it is trail byte
+			continue;
 		}
+#endif
+		text[i] = i_doesConvertToUpperCase ? _totupper(c) : _totlower(c);
 	}
-	clipboardClose(hdata, hdataNew);
+	
+	m_windowSystem->setClipboardText(text);
 }
 
 // convert the contents of the Clipboard to upper case
@@ -1718,18 +1733,8 @@ void Engine::funcClipboardCopy(FunctionParam *i_param, const StrExprArg &i_text)
 {
 	if (!i_param->m_isPressed)
 		return;
-	if (!OpenClipboard(NULL))
-		return;
-
-	HGLOBAL hdataNew =
-		GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
-					(i_text.eval().size() + 1) * sizeof(_TCHAR));
-	if (!hdataNew)
-		return;
-	_TCHAR *dataNew = reinterpret_cast<_TCHAR *>(GlobalLock(hdataNew));
-	_tcscpy(dataNew, i_text.eval().c_str());
-	GlobalUnlock(hdataNew);
-	clipboardClose(NULL, hdataNew);
+	
+	m_windowSystem->setClipboardText(i_text.eval());
 }
 
 //
@@ -1766,19 +1771,17 @@ void Engine::funcLogClear(FunctionParam *i_param)
 {
 	if (!i_param->m_isPressed)
 		return;
-	PostMessage(getAssociatedWndow(), WM_APP_engineNotify,
+	m_windowSystem->postMessage(getAssociatedWndow(), WM_APP_engineNotify,
 				EngineNotify_clearLog, 0);
 }
 
 // recenter
 void Engine::funcRecenter(FunctionParam *i_param)
 {
-	if (!i_param->m_isPressed)
-		return;
 	if (m_hwndFocus) {
-		UINT WM_MAYU_MESSAGE = RegisterWindowMessage(
+		UINT WM_MAYU_MESSAGE = m_windowSystem->registerWindowMessage(
 								   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
-		PostMessage(m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcRecenter, 0);
+		m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcRecenter, 0);
 	}
 }
 
@@ -1788,7 +1791,7 @@ void Engine::funcSetImeStatus(FunctionParam *i_param, ToggleType i_toggle)
 	if (!i_param->m_isPressed)
 		return;
 	if (m_hwndFocus) {
-		UINT WM_MAYU_MESSAGE = RegisterWindowMessage(
+		UINT WM_MAYU_MESSAGE = m_windowSystem->registerWindowMessage(
 								   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
 		int status = -1;
 		switch (i_toggle) {
@@ -1802,7 +1805,7 @@ void Engine::funcSetImeStatus(FunctionParam *i_param, ToggleType i_toggle)
 			status = 1;
 			break;
 		}
-		PostMessage(m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcSetImeStatus, status);
+		m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcSetImeStatus, status);
 	}
 }
 
@@ -1812,16 +1815,16 @@ void Engine::funcSetImeString(FunctionParam *i_param, const StrExprArg &i_data)
 	if (!i_param->m_isPressed)
 		return;
 	if (m_hwndFocus) {
-		UINT WM_MAYU_MESSAGE = RegisterWindowMessage(
+		UINT WM_MAYU_MESSAGE = m_windowSystem->registerWindowMessage(
 								   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
-		PostMessage(m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcSetImeString, i_data.eval().size() * sizeof(_TCHAR));
+		m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcSetImeString, i_data.eval().size() * sizeof(_TCHAR));
 
-		DWORD len = 0;
-		DWORD error;
-		DisconnectNamedPipe(m_hookPipe);
-		ConnectNamedPipe(m_hookPipe, NULL);
-		error = WriteFile(m_hookPipe, i_data.eval().c_str(),
-						  (DWORD)(i_data.eval().size() * sizeof(_TCHAR)),
+		unsigned int len = 0;
+		unsigned int error;
+		m_windowSystem->disconnectNamedPipe(m_hookPipe);
+		m_windowSystem->connectNamedPipe(m_hookPipe, NULL);
+		error = m_windowSystem->writeFile(m_hookPipe, i_data.eval().c_str(),
+						  (unsigned int)(i_data.eval().size() * sizeof(_TCHAR)),
 						  &len, NULL);
 
 		//FlushFileBuffers(m_hookPipe);

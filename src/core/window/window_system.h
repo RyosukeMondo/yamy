@@ -41,6 +41,7 @@ public:
     virtual bool isChild(WindowHandle window) = 0;
     virtual WindowShowCmd getShowCommand(WindowHandle window) = 0;
     virtual tstring getClipboardText() = 0;
+    virtual bool setClipboardText(const tstring& text) = 0;
     
     virtual tstring getClassName(WindowHandle window) = 0;
     virtual tstring getTitleName(WindowHandle window) = 0;
@@ -49,6 +50,7 @@ public:
 
     // New Input/Screen methods
     virtual bool getCursorPos(WindowPoint* outPoint) = 0;
+    virtual bool setCursorPos(int x, int y) = 0;
     virtual WindowHandle windowFromPoint(WindowPoint point) = 0;
     virtual int getSystemMetrics(SystemMetric metric) = 0;
     
@@ -57,7 +59,15 @@ public:
     // New methods for function.cpp refactoring
     virtual bool getWindowRect(WindowHandle window, WindowRect* outRect) = 0;
     virtual bool getClientRect(WindowHandle window, WindowRect* outRect) = 0;
+    virtual bool getChildWindowRect(WindowHandle window, WindowRect* outRect) = 0;
+    virtual bool getWorkArea(WindowRect* outRect) = 0;
     virtual bool postMessage(WindowHandle window, unsigned int message, uintptr_t wParam, intptr_t lParam) = 0;
+    virtual unsigned int registerWindowMessage(const tstring& name) = 0;
+    
+    // IPC / Pipe wrappers
+    virtual bool disconnectNamedPipe(void* handle) = 0;
+    virtual bool connectNamedPipe(void* handle, void* overlapped) = 0;
+    virtual bool writeFile(void* handle, const void* buffer, unsigned int bytesToWrite, unsigned int* bytesWritten, void* overlapped) = 0;
 };
 
 
