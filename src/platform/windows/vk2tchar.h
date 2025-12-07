@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 _TCHAR *VK2TCHAR[] = {
     _T("VK_Unknown_0x00"),
     _T("VK_LBUTTON"),

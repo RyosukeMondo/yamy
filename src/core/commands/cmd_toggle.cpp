@@ -1,4 +1,4 @@
-#include "cmd_toggle.h"
+﻿#include "cmd_toggle.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
 #include <iostream>

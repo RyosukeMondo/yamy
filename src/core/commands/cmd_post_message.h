@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_POST_MESSAGE_H
 #define _CMD_POST_MESSAGE_H
 

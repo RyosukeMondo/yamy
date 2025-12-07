@@ -1,4 +1,4 @@
-#include "cmd_vk.h"
+﻿#include "cmd_vk.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
 #include "../../platform/windows/driver.h" // For KEYBOARD_INPUT_DATA

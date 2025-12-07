@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_WAIT_H
 #define _CMD_WAIT_H
 
