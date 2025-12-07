@@ -1,0 +1,55 @@
+[  5%] Building CXX object CMakeFiles/yamyd.dir/src/app/yamyd.cpp.o
+In file included from /mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h:10,
+                 from /mnt/c/Users/ryosu/repos/yamy/src/app/yamyd.cpp:6:
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h: In destructor ‘basic_msgbuf<T, SIZE, TR, A>::~basic_msgbuf()’:
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h:72:17: error: there are no arguments to ‘sync’ that depend on a template parameter, so a declaration of ‘sync’ must be available [-fpermissive]
+   72 |                 sync();
+      |                 ^~~~
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h:72:17: note: (if you use ‘-fpermissive’, G++ will accept your code, but allowing the use of an undeclared name is deprecated)
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h: In member function ‘basic_msgbuf<T, SIZE, TR, A>* basic_msgbuf<T, SIZE, TR, A>::detach()’:
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h:92:17: error: there are no arguments to ‘sync’ that depend on a template parameter, so a declaration of ‘sync’ must be available [-fpermissive]
+   92 |                 sync();
+      |                 ^~~~
+/mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h: At global scope:
+/mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h:22:31: error: ‘WM_APP’ was not declared in this scope
+   22 |         WM_APP_engineNotify = WM_APP + 110,
+      |                               ^~~~~~
+/mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h:178:9: error: ‘OVERLAPPED’ does not name a type
+  178 |         OVERLAPPED m_ol;                                /** for async read/write of
+      |         ^~~~~~~~~~
+/mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h:255:74: error: ‘KBDLLHOOKSTRUCT’ does not name a type
+  255 |         unsigned int injectInput(const KEYBOARD_INPUT_DATA *i_kid, const KBDLLHOOKSTRUCT *i_kidRaw);
+      |                                                                          ^~~~~~~~~~~~~~~
+/mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h:259:29: error: expected ‘;’ at end of member declaration
+  259 |         static unsigned int WINAPI keyboardHandler(void *i_this);
+      |                             ^~~~~~
+      |                                   ;
+/mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h:259:36: error: ISO C++ forbids declaration of ‘keyboardHandler’ with no type [-fpermissive]
+  259 |         static unsigned int WINAPI keyboardHandler(void *i_this);
+      |                                    ^~~~~~~~~~~~~~~
+/mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h: In member function ‘void Engine::commandNotify(HWND, UINT, WPARAM_T, LPARAM_T)’:
+/mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h:654:34: error: ‘WM_COMMAND’ was not declared in this scope
+  654 |                 if (i_message == WM_COMMAND)
+      |                                  ^~~~~~~~~~
+/mnt/c/Users/ryosu/repos/yamy/src/app/../core/engine/engine.h:656:39: error: ‘WM_SYSCOMMAND’ was not declared in this scope
+  656 |                 else if (i_message == WM_SYSCOMMAND)
+      |                                       ^~~~~~~~~~~~~
+In file included from /mnt/c/Users/ryosu/repos/yamy/src/app/yamyd.cpp:10:
+/mnt/c/Users/ryosu/repos/yamy/src/app/../platform/linux/config_store_file.h: At global scope:
+/mnt/c/Users/ryosu/repos/yamy/src/app/../platform/linux/config_store_file.h:14:18: error: ‘virtual bool ConfigStoreFile::load()’ marked ‘override’, but does not override
+   14 |     virtual bool load() override;
+      |                  ^~~~
+/mnt/c/Users/ryosu/repos/yamy/src/app/../platform/linux/config_store_file.h:15:18: error: ‘virtual bool ConfigStoreFile::save()’ marked ‘override’, but does not override
+   15 |     virtual bool save() override;
+      |                  ^~~~
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h: In instantiation of ‘basic_msgbuf<T, SIZE, TR, A>::basic_msgbuf(UINT, HWND) [with T = char; long unsigned int SIZE = 1024; TR = std::char_traits<char>; A = std::allocator<char>; UINT = unsigned int; HWND = void*]’:
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h:176:27:   required from ‘basic_omsgstream<T, SIZE, TR, A>::basic_omsgstream(UINT, HWND) [with T = char; long unsigned int SIZE = 1024; TR = std::char_traits<char>; A = std::allocator<char>; UINT = unsigned int; HWND = void*]’
+/mnt/c/Users/ryosu/repos/yamy/src/app/yamyd.cpp:63:28:   required from here
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h:67:21: error: ‘setp’ was not declared in this scope, and no declarations were found by argument-dependent lookup at the point of instantiation
+   67 |                 setp(m_buf, m_buf + SIZE);
+      |                 ~~~~^~~~~~~~~~~~~~~~~~~~~
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h:67:21: note: declarations in dependent base ‘std::basic_streambuf<char>’ are not found by unqualified lookup
+/mnt/c/Users/ryosu/repos/yamy/src/utils/msgstream.h:67:21: note: use ‘this->setp’ instead
+make[2]: *** [CMakeFiles/yamyd.dir/build.make:76: CMakeFiles/yamyd.dir/src/app/yamyd.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:83: CMakeFiles/yamyd.dir/all] Error 2
+make: *** [Makefile:91: all] Error 2

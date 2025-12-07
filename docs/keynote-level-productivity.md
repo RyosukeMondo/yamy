@@ -1,0 +1,41 @@
+# Keynote-Level Productivity Plan
+
+## Vision
+To transform the Yamy codebase from a legacy Win32-centric application into a modern, high-velocity, cross-platform C++ project. The goal is to maximize developer productivity (velocity) and enable portability (Linux support) without a "Big Bang" rewrite.
+
+## Core Philosophy
+1.  **Velocity First:** Prioritize changes that improve the "Edit-Build-Test" loop.
+2.  **Data Over Boilerplate:** Reduce repetitive code through data-driven design or metaprogramming.
+3.  **Modern Standards:** Embrace standard C++ (UTF-8, CMake, std::*) over legacy Windowsisms (`TCHAR`, `.vcxproj`, `MAX_PATH`).
+
+## Roadmap
+
+### Phase 1: The Build Foundation (Immediate Impact)
+**Goal:** Unified, declarative build system.
+-   [ ] **Migrate to CMake:** Create a root `CMakeLists.txt` to replace manual `.vcxproj` management.
+-   [ ] **Automate Dependencies:** Use CMake to manage dependencies (GTest, potentially Boost if re-added) instead of manual path configuration.
+-   [ ] **Cross-Platform Readiness:** CMake is the standard build system for Linux, making the future port seamless.
+
+### Phase 2: Refactor the "Boilerplate Factory" (High Velocity)
+**Goal:** Add a new command in 3 lines of code, not 50.
+-   [ ] **Analyze `FunctionData`:** `src/core/functions/function_data.h` contains massive boilerplate for every command.
+-   [ ] **Metaprogramming/Macros:** Implement a `DEFINE_COMMAND` macro or template system to generate the `create`, `load`, `exec`, `output`, and `clone` methods automatically.
+-   [ ] **Decouple Implementation:** Move command logic out of the monolithic `function.cpp` into smaller, cohesive units (e.g., `src/core/commands/`).
+
+### Phase 3: String Unification (Cognitive Load Reduction)
+**Goal:** `std::string` (UTF-8) everywhere.
+-   [ ] **Internal Standard:** Adopt `std::string` as the internal string type.
+-   [ ] **The "Edge" Strategy:** Only convert to `std::wstring` (UTF-16) at the Windows API boundary (PAL).
+-   [ ] **Remove `TCHAR`:** Eliminate `_T()`, `tstring`, and `tregex`. This removes the constant mental overhead of "Wide vs Narrow" and prepares the code for Linux (which uses UTF-8).
+
+### Phase 4: Platform Abstraction Layer (PAL) Completion
+**Goal:** Zero `#include <windows.h>` in `src/core`.
+-   [ ] **Audit Core:** Ensure no Win32 types (`HWND`, `DWORD`, `MSG`) leak into `src/core`.
+-   [ ] **Input/Window Abstraction:** Continue the work on `WindowSystem` and `InputInjector`.
+-   [ ] **Linux Stub:** Implement a "Headless" or "Stub" Linux backend to verify architectural decoupling in CI.
+
+## Evaluation of Past Modernization Attempts
+(To be populated with analysis of recent commits)
+-   **Successes:** Removal of Boost, initial PAL work.
+-   **Challenges:** "Pragma/Macro Mess" in feature branches often results from trying to support multiple platforms *inside* the same file (e.g., `#ifdef _WIN32`).
+-   **Correction:** Use **File-Based Polymorphism** (separate files for `window_system_win32.cpp` vs `window_system_linux.cpp`) coupled with CMake configuration, rather than `#ifdef` soup.
