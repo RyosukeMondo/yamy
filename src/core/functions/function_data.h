@@ -42,139 +42,14 @@
 // FunctionData_Variable is now Command_Variable in commands/cmd_variable.h
 // Replaced by generic Command template system.
 
-class FunctionData_Repeat : public FunctionData
-{
-public:
-  const KeySeq * m_keySeq;
-  int m_max;
+// FunctionData_Repeat is now Command_Repeat in commands/cmd_repeat.h
+// Replaced by generic Command template system.
 
-public:
-  static FunctionData *create()
-  {
-    FunctionData_Repeat *fd
-      = new FunctionData_Repeat;
-    fd->m_max = 10;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    i_sl->getOpenParen(true, FunctionData_Repeat::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_keySeq);
-    if (i_sl->getCloseParen(false, FunctionData_Repeat::getName()))
-      return;
-    i_sl->getComma(false, FunctionData_Repeat::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_max);
-    i_sl->getCloseParen(true, FunctionData_Repeat::getName()); // throw ...
-  }
+// FunctionData_Undefined is now Command_Undefined in commands/cmd_undefined.h
+// Replaced by generic Command template system.
 
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcRepeat(i_param, m_keySeq, m_max);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("Repeat");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_keySeq << _T(", ");
-    i_ost << m_max;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_Repeat(*this);
-  }
-};
-
-class FunctionData_Undefined : public FunctionData
-{
-public:
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_Undefined *fd
-      = new FunctionData_Undefined;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    if (!i_sl->getOpenParen(false, FunctionData_Undefined::getName()))
-      return;
-    i_sl->getCloseParen(true, FunctionData_Undefined::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcUndefined(i_param);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("Undefined");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_Undefined(*this);
-  }
-};
-
-class FunctionData_Ignore : public FunctionData
-{
-public:
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_Ignore *fd
-      = new FunctionData_Ignore;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    if (!i_sl->getOpenParen(false, FunctionData_Ignore::getName()))
-      return;
-    i_sl->getCloseParen(true, FunctionData_Ignore::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcIgnore(i_param);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("Ignore");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_Ignore(*this);
-  }
-};
+// FunctionData_Ignore is now Command_Ignore in commands/cmd_ignore.h
+// Replaced by generic Command template system.
 
 class FunctionData_PostMessage : public FunctionData
 {

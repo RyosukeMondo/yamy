@@ -711,33 +711,9 @@ void Engine::funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous)
 // funcEditNextModifier moved to src/core/commands/cmd_edit_next_modifier.cpp
 // funcVariable moved to src/core/commands/cmd_variable.cpp
 
-// repeat N times
-void Engine::funcRepeat(FunctionParam *i_param, const KeySeq *i_keySeq,
-						int i_max)
-{
-	if (i_param->m_isPressed) {
-		int end = MIN(m_variable, i_max);
-		for (int i = 0; i < end - 1; ++ i)
-			generateKeySeqEvents(i_param->m_c, i_keySeq, Part_all);
-		if (0 < end)
-			generateKeySeqEvents(i_param->m_c, i_keySeq, Part_down);
-	} else
-		generateKeySeqEvents(i_param->m_c, i_keySeq, Part_up);
-}
-
-// undefined (bell)
-void Engine::funcUndefined(FunctionParam *i_param)
-{
-	if (!i_param->m_isPressed)
-		return;
-	MessageBeep(MB_OK);
-}
-
-// ignore
-void Engine::funcIgnore(FunctionParam *)
-{
-	// do nothing
-}
+// funcRepeat moved to src/core/commands/cmd_repeat.cpp
+// funcUndefined moved to src/core/commands/cmd_undefined.cpp
+// funcIgnore moved to src/core/commands/cmd_ignore.cpp
 
 // post message
 void Engine::funcPostMessage(FunctionParam *i_param, ToWindowType i_window,

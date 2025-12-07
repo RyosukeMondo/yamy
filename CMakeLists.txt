@@ -106,6 +106,9 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_toggle.cpp
     src/core/commands/cmd_edit_next_modifier.cpp
     src/core/commands/cmd_variable.cpp
+    src/core/commands/cmd_repeat.cpp
+    src/core/commands/cmd_undefined.cpp
+    src/core/commands/cmd_ignore.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/window/layoutmanager.cpp

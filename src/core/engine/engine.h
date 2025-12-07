@@ -84,6 +84,8 @@ private:
 
 	friend class FunctionParam;
 
+#include "../functions/function_friends.h"
+
 	/// part of keySeq
 	enum Part {
 		Part_all,					///
@@ -329,13 +331,9 @@ public:
 // funcToggle removed (moved to Command_Toggle)
 // funcEditNextModifier removed (moved to Command_EditNextModifier)
 // funcVariable removed (moved to Command_Variable)
-	/// repeat N times
-	void funcRepeat(FunctionParam *i_param, const KeySeq *i_keySeq,
-					int i_max = 10);
-	/// undefined (bell)
-	void funcUndefined(FunctionParam *i_param);
-	/// ignore
-	void funcIgnore(FunctionParam *i_param);
+// funcRepeat removed (moved to Command_Repeat)
+// funcUndefined removed (moved to Command_Undefined)
+// funcIgnore removed (moved to Command_Ignore)
 	/// post message
 	void funcPostMessage(FunctionParam *i_param, ToWindowType i_window,
 						 UINT i_message, WPARAM i_wParam, LPARAM i_lParam);

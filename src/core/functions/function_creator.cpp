@@ -13,6 +13,9 @@
 #include "../commands/cmd_toggle.h"
 #include "../commands/cmd_edit_next_modifier.h"
 #include "../commands/cmd_variable.h"
+#include "../commands/cmd_repeat.h"
+#include "../commands/cmd_undefined.h"
+#include "../commands/cmd_ignore.h"
 
 class FunctionCreator
 {
@@ -29,21 +32,6 @@ FunctionData *createFunctionData(const tstring &i_name)
 	static FunctionCreator functionCreators[] = {
   { _T("Default"), Command_Default::create },
   { _T("KeymapParent"), Command_KeymapParent::create },
-  { _T("KeymapWindow"), Command_KeymapWindow::create },
-  { _T("KeymapPrevPrefix"), Command_KeymapPrevPrefix::create },
-  { _T("OtherWindowClass"), Command_OtherWindowClass::create },
-  { _T("Prefix"), Command_Prefix::create },
-  { _T("Keymap"), Command_Keymap::create },
-  { _T("Sync"), Command_Sync::create },
-  { _T("Toggle"), Command_Toggle::create },
-  { _T("EditNextModifier"), Command_EditNextModifier::create },
-  { _T("Variable"), Command_Variable::create },
-  { _T("Repeat"), FunctionData_Repeat::create },
-  { _T("Undefined"), FunctionData_Undefined::create },
-  { _T("Ignore"), FunctionData_Ignore::create },
-  { _T("PostMessage"), FunctionData_PostMessage::create },
-  { _T("ShellExecute"), FunctionData_ShellExecute::create },
-  { _T("SetForegroundWindow"), FunctionData_SetForegroundWindow::create },
   { _T("LoadSetting"), FunctionData_LoadSetting::create },
   { _T("VK"), FunctionData_VK::create },
   { _T("Wait"), FunctionData_Wait::create },
