@@ -26,7 +26,75 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
 **Goal:** Add a new command in 3 lines of code, not 50.
 -   [x] **Analyze `FunctionData`:** `src/core/functions/function_data.h` contains massive boilerplate for every command.
 -   [x] **Metaprogramming/Templates:** Implemented `Command<Derived, Args...>` template system (C++17) to generate boilerplates automatically.
--   [ ] **Decouple Implementation:** Move command logic out of the monolithic `function.cpp` into smaller, cohesive units (e.g., `src/core/commands/`). (Migrated `Default`, `KeymapPrevPrefix`, `KeymapParent`, `KeymapWindow`, `OtherWindowClass`, `Prefix`, `Keymap`, `Sync`)
+-   [ ] **Decouple Implementation:** Move command logic out of the monolithic `function.cpp` into smaller, cohesive units (e.g., `src/core/commands/`).
+    
+    <details>
+    <summary>Command Migration Status (15/63 Decoupled)</summary>
+
+    - [x] `KeymapParent` (Removed from Engine)
+    - [x] `KeymapWindow` (Removed from Engine)
+    - [x] `OtherWindowClass` (Removed from Engine)
+    - [x] `Prefix` (Removed from Engine)
+    - [x] `Keymap` (Removed from Engine)
+    - [x] `Sync` (Removed from Engine)
+    - [x] `Toggle` (Removed from Engine)
+    - [x] `EditNextModifier` (Removed from Engine)
+    - [x] `Variable` (Removed from Engine)
+    - [x] `Repeat` (Removed from Engine)
+    - [x] `Undefined` (Removed from Engine)
+    - [x] `Ignore` (Removed from Engine)
+    - [x] `PostMessage` (Removed from Engine)
+    - [x] `VK` (Removed from Engine)
+    - [x] `Wait` (Removed from Engine)
+    - [/] `Default` (Logic still in Engine)
+    - [/] `KeymapPrevPrefix` (Logic still in Engine)
+    - [ ] `LoadSetting`
+    - [ ] `ShellExecute`
+    - [ ] `SetForegroundWindow`
+    - [ ] `InvestigateCommand`
+    - [ ] `MayuDialog`
+    - [ ] `DescribeBindings`
+    - [ ] `HelpMessage`
+    - [ ] `HelpVariable`
+    - [ ] `WindowRaise`
+    - [ ] `WindowLower`
+    - [ ] `WindowMinimize`
+    - [ ] `WindowMaximize`
+    - [ ] `WindowHMaximize`
+    - [ ] `WindowVMaximize`
+    - [ ] `WindowHVMaximize`
+    - [ ] `WindowMove`
+    - [ ] `WindowMoveTo`
+    - [ ] `WindowMoveVisibly`
+    - [ ] `WindowMonitorTo`
+    - [ ] `WindowMonitor`
+    - [ ] `WindowClingToLeft`
+    - [ ] `WindowClingToRight`
+    - [ ] `WindowClingToTop`
+    - [ ] `WindowClingToBottom`
+    - [ ] `WindowClose`
+    - [ ] `WindowToggleTopMost`
+    - [ ] `WindowIdentify`
+    - [ ] `WindowSetAlpha`
+    - [ ] `WindowRedraw`
+    - [ ] `WindowResizeTo`
+    - [ ] `MouseMove`
+    - [ ] `MouseWheel`
+    - [ ] `ClipboardChangeCase`
+    - [ ] `ClipboardUpcaseWord`
+    - [ ] `ClipboardDowncaseWord`
+    - [ ] `ClipboardCopy`
+    - [ ] `EmacsEditKillLinePred`
+    - [ ] `EmacsEditKillLineFunc`
+    - [ ] `LogClear`
+    - [ ] `Recenter`
+    - [ ] `DirectSSTP`
+    - [ ] `PlugIn`
+    - [ ] `SetImeStatus`
+    - [ ] `SetImeString`
+    - [ ] `MouseHook`
+    - [ ] `CancelPrefix`
+    </details>
 
 ### Phase 3: String Unification (Cognitive Load Reduction)
 **Goal:** `std::string` (UTF-8) everywhere.
