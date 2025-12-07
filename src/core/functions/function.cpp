@@ -706,51 +706,10 @@ void Engine::funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous)
 // funcPrefix moved to src/core/commands/cmd_prefix.cpp
 
 // funcKeymap moved to src/core/commands/cmd_keymap.cpp
-
 // funcSync moved to src/core/commands/cmd_sync.cpp
-
-// toggle lock
-void Engine::funcToggle(FunctionParam *i_param, ModifierLockType i_lock,
-						ToggleType i_toggle)
-{
-	if (i_param->m_isPressed)			// ignore PRESS
-		return;
-
-	Modifier::Type mt = static_cast<Modifier::Type>(i_lock);
-	switch (i_toggle) {
-	case ToggleType_toggle:
-		m_currentLock.press(mt, !m_currentLock.isPressed(mt));
-		break;
-	case ToggleType_off:
-		m_currentLock.press(mt, false);
-		break;
-	case ToggleType_on:
-		m_currentLock.press(mt, true);
-		break;
-	}
-}
-
-// edit next user input key's modifier
-void Engine::funcEditNextModifier(FunctionParam *i_param,
-								  const Modifier &i_modifier)
-{
-	if (!i_param->m_isPressed)
-		return;
-
-	m_isPrefix = true;
-	m_doesEditNextModifier = true;
-	m_doesIgnoreModifierForPrefix = true;
-	m_modifierForNextKey = i_modifier;
-}
-
-// variable
-void Engine::funcVariable(FunctionParam *i_param, int i_mag, int i_inc)
-{
-	if (!i_param->m_isPressed)
-		return;
-	m_variable *= i_mag;
-	m_variable += i_inc;
-}
+// funcToggle moved to src/core/commands/cmd_toggle.cpp
+// funcEditNextModifier moved to src/core/commands/cmd_edit_next_modifier.cpp
+// funcVariable moved to src/core/commands/cmd_variable.cpp
 
 // repeat N times
 void Engine::funcRepeat(FunctionParam *i_param, const KeySeq *i_keySeq,

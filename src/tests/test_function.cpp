@@ -5,6 +5,7 @@
 #include "../core/commands/cmd_default.h"
 #include "../core/commands/cmd_keymap_prev_prefix.h"
 #include "../core/commands/cmd_keymap.h"
+#include "../core/commands/cmd_variable.h"
 
 TEST(FunctionDataTest, DefaultFunction) {
     std::unique_ptr<FunctionData> fd(Command_Default::create());
@@ -37,24 +38,23 @@ TEST(FunctionDataTest, KeymapPrevPrefixFunction) {
 }
 
 TEST(FunctionDataTest, VariableFunction) {
-    std::unique_ptr<FunctionData> fd(FunctionData_Variable::create());
-    FunctionData_Variable* vfd = static_cast<FunctionData_Variable*>(fd.get());
-    // Initial values
-    vfd->m_mag = 1;
-    vfd->m_inc = 0;
+    std::unique_ptr<FunctionData> fd(Command_Variable::create());
+    Command_Variable* vfd = static_cast<Command_Variable*>(fd.get());
+    // Initial values (default is typically 0 or similar, but let's see constructor)
+    // Command_Variable args: int m_mag, int m_inc
     
     // Set some values
-    vfd->m_mag = 10;
-    vfd->m_inc = 5;
+    vfd->getArg<0>() = 10;
+    vfd->getArg<1>() = 5;
     
     tstringstream ss;
     fd->output(ss);
     EXPECT_EQ(ss.str(), _T("&Variable(10, 5) "));
     
     std::unique_ptr<FunctionData> clone(fd->clone());
-    FunctionData_Variable* vclone = static_cast<FunctionData_Variable*>(clone.get());
-    EXPECT_EQ(vclone->m_mag, 10);
-    EXPECT_EQ(vclone->m_inc, 5);
+    Command_Variable* vclone = static_cast<Command_Variable*>(clone.get());
+    EXPECT_EQ(vclone->getArg<0>(), 10);
+    EXPECT_EQ(vclone->getArg<1>(), 5);
 }
 
 TEST(FunctionDataTest, KeymapFunction) {

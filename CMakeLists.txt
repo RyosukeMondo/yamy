@@ -103,6 +103,9 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_prefix.cpp
     src/core/commands/cmd_keymap.cpp
     src/core/commands/cmd_sync.cpp
+    src/core/commands/cmd_toggle.cpp
+    src/core/commands/cmd_edit_next_modifier.cpp
+    src/core/commands/cmd_variable.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/window/layoutmanager.cpp

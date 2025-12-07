@@ -10,6 +10,9 @@
 #include "../commands/cmd_prefix.h"
 #include "../commands/cmd_keymap.h"
 #include "../commands/cmd_sync.h"
+#include "../commands/cmd_toggle.h"
+#include "../commands/cmd_edit_next_modifier.h"
+#include "../commands/cmd_variable.h"
 
 class FunctionCreator
 {
@@ -32,9 +35,9 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("Prefix"), Command_Prefix::create },
   { _T("Keymap"), Command_Keymap::create },
   { _T("Sync"), Command_Sync::create },
-  { _T("Toggle"), FunctionData_Toggle::create },
-  { _T("EditNextModifier"), FunctionData_EditNextModifier::create },
-  { _T("Variable"), FunctionData_Variable::create },
+  { _T("Toggle"), Command_Toggle::create },
+  { _T("EditNextModifier"), Command_EditNextModifier::create },
+  { _T("Variable"), Command_Variable::create },
   { _T("Repeat"), FunctionData_Repeat::create },
   { _T("Undefined"), FunctionData_Undefined::create },
   { _T("Ignore"), FunctionData_Ignore::create },

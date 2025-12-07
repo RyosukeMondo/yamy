@@ -15,6 +15,7 @@
 #  include "../input/input_driver.h"
 #  include <set>
 #  include <queue>
+#  include "../functions/function.h"
 
 
 enum {
@@ -325,14 +326,9 @@ public:
 // funcPrefix removed (moved to Command_Prefix)
 // funcKeymap removed (moved to Command_Keymap)
 // funcSync removed (moved to Command_Sync)
-	/// toggle lock
-	void funcToggle(FunctionParam *i_param, ModifierLockType i_lock,
-					ToggleType i_toggle = ToggleType_toggle);
-	/// edit next user input key's modifier
-	void funcEditNextModifier(FunctionParam *i_param,
-							  const Modifier &i_modifier);
-	/// variable
-	void funcVariable(FunctionParam *i_param, int i_mag, int i_inc);
+// funcToggle removed (moved to Command_Toggle)
+// funcEditNextModifier removed (moved to Command_EditNextModifier)
+// funcVariable removed (moved to Command_Variable)
 	/// repeat N times
 	void funcRepeat(FunctionParam *i_param, const KeySeq *i_keySeq,
 					int i_max = 10);
