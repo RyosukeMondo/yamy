@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // compiler_specific.h
 
@@ -61,8 +61,8 @@ extern wchar_t **_wargv;
 
 extern "C"
 {
-	int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE i_hPrevInstance,
-						 LPTSTR i_lpszCmdLine, int i_nCmdShow);
+    int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE i_hPrevInstance,
+                         LPTSTR i_lpszCmdLine, int i_nCmdShow);
 }
 
 #    define stati64_t stati64

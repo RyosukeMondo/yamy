@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #ifndef _CMD_POST_MESSAGE_H
 #define _CMD_POST_MESSAGE_H
 
@@ -8,11 +8,11 @@
 class Command_PostMessage : public Command<Command_PostMessage, ToWindowType, UINT, WPARAM, LPARAM>
 {
 public:
-	static constexpr const _TCHAR *Name = _T("PostMessage");
+    static constexpr const _TCHAR *Name = _T("PostMessage");
 
-	Command_PostMessage() = default;
+    Command_PostMessage() = default;
 
-	virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
+    virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };
 
 #endif // _CMD_POST_MESSAGE_H

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // dlginvestigate.h
 
@@ -15,15 +15,15 @@ INT_PTR CALLBACK dlgInvestigate_dlgProc(
 #else
 BOOL CALLBACK dlgInvestigate_dlgProc(
 #endif
-	HWND i_hwnd, UINT i_message, WPARAM i_wParam, LPARAM i_lParam);
+    HWND i_hwnd, UINT i_message, WPARAM i_wParam, LPARAM i_lParam);
 
 class Engine;
 
 /// parameters for "Investigate" dialog box
 class DlgInvestigateData {
 public:
-	Engine *m_engine;				/// engine
-	HWND m_hwndLog;				/// log
+    Engine *m_engine;                /// engine
+    HWND m_hwndLog;                /// log
 };
 
 

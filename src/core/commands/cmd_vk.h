@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #ifndef _CMD_VK_H
 #define _CMD_VK_H
 
@@ -8,11 +8,11 @@
 class Command_VK : public Command<Command_VK, VKey>
 {
 public:
-	static constexpr const _TCHAR *Name = _T("VK");
+    static constexpr const _TCHAR *Name = _T("VK");
 
-	Command_VK() = default;
+    Command_VK() = default;
 
-	virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
+    virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };
 
 #endif // _CMD_VK_H

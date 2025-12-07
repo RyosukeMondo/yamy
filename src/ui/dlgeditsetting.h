@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // dlgeditsetting.h
 
@@ -15,14 +15,14 @@ INT_PTR CALLBACK dlgEditSetting_dlgProc(
 #else
 BOOL CALLBACK dlgEditSetting_dlgProc(
 #endif
-	HWND i_hwnd, UINT i_message, WPARAM i_wParam, LPARAM i_lParam);
+    HWND i_hwnd, UINT i_message, WPARAM i_wParam, LPARAM i_lParam);
 
 /// parameters for "Edit Setting" dialog box
 class DlgEditSettingData {
 public:
-	tstringi m_name;				/// setting name
-	tstringi m_filename;				/// filename of setting
-	tstringi m_symbols;		/// symbol list (-Dsymbol1;-Dsymbol2;-D...)
+    tstringi m_name;                /// setting name
+    tstringi m_filename;                /// filename of setting
+    tstringi m_symbols;        /// symbol list (-Dsymbol1;-Dsymbol2;-D...)
 };
 
 

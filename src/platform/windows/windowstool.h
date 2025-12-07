@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // windowstool.h
 
@@ -78,9 +78,9 @@ extern bool setForegroundWindow(HWND i_hwnd);
 template <class T> inline T getUserData(HWND i_hwnd, T *i_wc)
 {
 #ifdef MAYU64
-	return (*i_wc = reinterpret_cast<T>(GetWindowLongPtr(i_hwnd, GWLP_USERDATA)));
+    return (*i_wc = reinterpret_cast<T>(GetWindowLongPtr(i_hwnd, GWLP_USERDATA)));
 #else
-	return (*i_wc = reinterpret_cast<T>(GetWindowLong(i_hwnd, GWL_USERDATA)));
+    return (*i_wc = reinterpret_cast<T>(GetWindowLong(i_hwnd, GWL_USERDATA)));
 #endif
 }
 
@@ -88,11 +88,11 @@ template <class T> inline T getUserData(HWND i_hwnd, T *i_wc)
 template <class T> inline T setUserData(HWND i_hwnd, T i_wc)
 {
 #ifdef MAYU64
-	SetWindowLongPtr(i_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(i_wc));
+    SetWindowLongPtr(i_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(i_wc));
 #else
-	SetWindowLong(i_hwnd, GWL_USERDATA, reinterpret_cast<long>(i_wc));
+    SetWindowLong(i_hwnd, GWL_USERDATA, reinterpret_cast<long>(i_wc));
 #endif
-	return i_wc;
+    return i_wc;
 }
 
 
@@ -102,22 +102,22 @@ template <class T> inline T setUserData(HWND i_hwnd, T i_wc)
 ///
 inline int rcWidth(const RECT *i_rc)
 {
-	return i_rc->right - i_rc->left;
+    return i_rc->right - i_rc->left;
 }
 
 ///
 inline int rcHeight(const RECT *i_rc)
 {
-	return i_rc->bottom - i_rc->top;
+    return i_rc->bottom - i_rc->top;
 }
 
 ///
 inline bool isRectInRect(const RECT *i_rcin, const RECT *i_rcout)
 {
-	return (i_rcout->left <= i_rcin->left &&
-			i_rcin->right <= i_rcout->right &&
-			i_rcout->top <= i_rcin->top &&
-			i_rcin->bottom <= i_rcout->bottom);
+    return (i_rcout->left <= i_rcin->left &&
+            i_rcin->right <= i_rcout->right &&
+            i_rcout->top <= i_rcin->top &&
+            i_rcin->bottom <= i_rcout->bottom);
 }
 
 
@@ -132,7 +132,7 @@ extern void editDeleteLine(HWND i_hwnd, size_t i_n);
 
 /// insert text at last
 extern void editInsertTextAtLast(HWND i_hwnd, const tstring &i_text,
-									 size_t i_threshold);
+                                     size_t i_threshold);
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,7 +151,7 @@ extern BOOL (WINAPI *getMonitorInfo)(HMONITOR hMonitor, LPMONITORINFO lpmi);
 
 /// EnumDisplayMonitors API
 extern BOOL (WINAPI *enumDisplayMonitors)
-	(HDC hdc, LPRECT lprcClip, MONITORENUMPROC lpfnEnum, LPARAM dwData);
+    (HDC hdc, LPRECT lprcClip, MONITORENUMPROC lpfnEnum, LPARAM dwData);
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

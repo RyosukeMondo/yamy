@@ -1,4 +1,4 @@
-﻿#include "function.h"
+#include "function.h"
 #include "function_data.h"
 #include "misc.h" // for NUMBER_OF
 #include "../commands/cmd_default.h"
@@ -23,16 +23,16 @@
 class FunctionCreator
 {
 public:
-	typedef FunctionData *(*Creator)();
+    typedef FunctionData *(*Creator)();
 
 public:
-	const _TCHAR *m_name;
-	Creator m_creator;
+    const _TCHAR *m_name;
+    Creator m_creator;
 };
 
 FunctionData *createFunctionData(const tstring &i_name)
 {
-	static FunctionCreator functionCreators[] = {
+    static FunctionCreator functionCreators[] = {
   { _T("Default"), Command_Default::create },
   { _T("KeymapParent"), Command_KeymapParent::create },
   { _T("LoadSetting"), FunctionData_LoadSetting::create },
@@ -82,10 +82,10 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("SetImeString"), FunctionData_SetImeString::create },
   { _T("MouseHook"), FunctionData_MouseHook::create },
   { _T("CancelPrefix"), FunctionData_CancelPrefix::create },
-	};
+    };
 
-	for (size_t i = 0; i != NUMBER_OF(functionCreators); ++ i)
-		if (i_name == functionCreators[i].m_name)
-			return functionCreators[i].m_creator();
-	return NULL;
+    for (size_t i = 0; i != NUMBER_OF(functionCreators); ++ i)
+        if (i_name == functionCreators[i].m_name)
+            return functionCreators[i].m_creator();
+    return NULL;
 }

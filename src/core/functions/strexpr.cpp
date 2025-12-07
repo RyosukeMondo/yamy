@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // strexpr.cpp
 
 
@@ -13,20 +13,20 @@ const StrExprSystem *StrExpr::s_system = NULL;
 class StrExprClipboard : public StrExpr
 {
 public:
-	StrExprClipboard(const tstringq &i_symbol) : StrExpr(i_symbol) {};
+    StrExprClipboard(const tstringq &i_symbol) : StrExpr(i_symbol) {};
 
-	~StrExprClipboard() {};
+    ~StrExprClipboard() {};
 
-	std::unique_ptr<StrExpr> clone() const override {
-		return std::make_unique<StrExprClipboard>(*this);
-	}
+    std::unique_ptr<StrExpr> clone() const override {
+        return std::make_unique<StrExprClipboard>(*this);
+    }
 
-	tstringq eval() const override {
-		if (s_system) {
-			return s_system->getClipboardText();
-		}
-		return _T("");
-	}
+    tstringq eval() const override {
+        if (s_system) {
+            return s_system->getClipboardText();
+        }
+        return _T("");
+    }
 };
 
 
@@ -35,20 +35,20 @@ public:
 class StrExprWindowClassName : public StrExpr
 {
 public:
-	StrExprWindowClassName(const tstringq &i_symbol) : StrExpr(i_symbol) {};
+    StrExprWindowClassName(const tstringq &i_symbol) : StrExpr(i_symbol) {};
 
-	~StrExprWindowClassName() {};
+    ~StrExprWindowClassName() {};
 
-	std::unique_ptr<StrExpr> clone() const override {
-		return std::make_unique<StrExprWindowClassName>(*this);
-	}
+    std::unique_ptr<StrExpr> clone() const override {
+        return std::make_unique<StrExprWindowClassName>(*this);
+    }
 
-	tstringq eval() const override {
-		if (s_system) {
-			return s_system->getStrExprWindowClassName();
-		}
-		return _T("");
-	}
+    tstringq eval() const override {
+        if (s_system) {
+            return s_system->getStrExprWindowClassName();
+        }
+        return _T("");
+    }
 };
 
 
@@ -57,20 +57,20 @@ public:
 class StrExprWindowTitleName : public StrExpr
 {
 public:
-	StrExprWindowTitleName(const tstringq &i_symbol) : StrExpr(i_symbol) {};
+    StrExprWindowTitleName(const tstringq &i_symbol) : StrExpr(i_symbol) {};
 
-	~StrExprWindowTitleName() {};
+    ~StrExprWindowTitleName() {};
 
-	std::unique_ptr<StrExpr> clone() const override {
-		return std::make_unique<StrExprWindowTitleName>(*this);
-	}
+    std::unique_ptr<StrExpr> clone() const override {
+        return std::make_unique<StrExprWindowTitleName>(*this);
+    }
 
-	tstringq eval() const override {
-		if (s_system) {
-			return s_system->getStrExprWindowTitleName();
-		}
-		return _T("");
-	}
+    tstringq eval() const override {
+        if (s_system) {
+            return s_system->getStrExprWindowTitleName();
+        }
+        return _T("");
+    }
 };
 
 
@@ -81,79 +81,79 @@ public:
 // default constructor
 StrExprArg::StrExprArg()
 {
-	m_expr = std::make_unique<StrExpr>(_T(""));
+    m_expr = std::make_unique<StrExpr>(_T(""));
 }
 
 
 // copy contructor
 StrExprArg::StrExprArg(const StrExprArg &i_data)
 {
-	if (i_data.m_expr) {
-		m_expr = i_data.m_expr->clone();
-	} else {
-		m_expr = std::make_unique<StrExpr>(_T(""));
-	}
+    if (i_data.m_expr) {
+        m_expr = i_data.m_expr->clone();
+    } else {
+        m_expr = std::make_unique<StrExpr>(_T(""));
+    }
 }
 
 
 StrExprArg &StrExprArg::operator=(const StrExprArg &i_data)
 {
-	if (this == &i_data)
-		return *this;
+    if (this == &i_data)
+        return *this;
 
-	if (i_data.m_expr) {
-		m_expr = i_data.m_expr->clone();
-	} else {
-		m_expr = std::make_unique<StrExpr>(_T(""));
-	}
+    if (i_data.m_expr) {
+        m_expr = i_data.m_expr->clone();
+    } else {
+        m_expr = std::make_unique<StrExpr>(_T(""));
+    }
 
-	return *this;
+    return *this;
 }
 
 
 // initializer
 StrExprArg::StrExprArg(const tstringq &i_symbol, Type i_type)
 {
-	switch (i_type) {
-	case Literal:
-		m_expr = std::make_unique<StrExpr>(i_symbol);
-		break;
-	case Builtin:
-		if (i_symbol == _T("Clipboard"))
-			m_expr = std::make_unique<StrExprClipboard>(i_symbol);
-		else if (i_symbol == _T("WindowClassName"))
-			m_expr = std::make_unique<StrExprWindowClassName>(i_symbol);
-		else if (i_symbol == _T("WindowTitleName"))
-			m_expr = std::make_unique<StrExprWindowTitleName>(i_symbol);
-		else
-			m_expr = std::make_unique<StrExpr>(i_symbol); // Fallback
-		break;
-	default:
-		m_expr = std::make_unique<StrExpr>(i_symbol);
-		break;
-	}
+    switch (i_type) {
+    case Literal:
+        m_expr = std::make_unique<StrExpr>(i_symbol);
+        break;
+    case Builtin:
+        if (i_symbol == _T("Clipboard"))
+            m_expr = std::make_unique<StrExprClipboard>(i_symbol);
+        else if (i_symbol == _T("WindowClassName"))
+            m_expr = std::make_unique<StrExprWindowClassName>(i_symbol);
+        else if (i_symbol == _T("WindowTitleName"))
+            m_expr = std::make_unique<StrExprWindowTitleName>(i_symbol);
+        else
+            m_expr = std::make_unique<StrExpr>(i_symbol); // Fallback
+        break;
+    default:
+        m_expr = std::make_unique<StrExpr>(i_symbol);
+        break;
+    }
 }
 
 
 StrExprArg::~StrExprArg()
 {
-	// unique_ptr handles deletion
+    // unique_ptr handles deletion
 }
 
 
 tstringq StrExprArg::eval() const
 {
-	return m_expr->eval();
+    return m_expr->eval();
 }
 
 void StrExprArg::setSystem(const StrExprSystem *i_system)
 {
-	StrExpr::setSystem(i_system);
+    StrExpr::setSystem(i_system);
 }
 
 // stream output
 tostream &operator<<(tostream &i_ost, const StrExprArg &i_data)
 {
-	i_ost << i_data.eval();
-	return i_ost;
+    i_ost << i_data.eval();
+    return i_ost;
 }

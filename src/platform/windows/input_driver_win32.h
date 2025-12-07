@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #ifndef _INPUT_DRIVER_WIN32_H
 #define _INPUT_DRIVER_WIN32_H
 
@@ -8,16 +8,16 @@
 class InputDriverWin32 : public InputDriver
 {
 public:
-	InputDriverWin32();
-	virtual ~InputDriverWin32();
+    InputDriverWin32();
+    virtual ~InputDriverWin32();
 
-	virtual bool open(void *readEvent);
-	virtual void close();
-	virtual void manageExtension(const void *dllName, const void *dependDllName, bool load, void **moduleHandle);
+    virtual bool open(void *readEvent);
+    virtual void close();
+    virtual void manageExtension(const void *dllName, const void *dependDllName, bool load, void **moduleHandle);
 
 private:
-	HANDLE m_hDevice;
-	OVERLAPPED m_ol;
+    HANDLE m_hDevice;
+    OVERLAPPED m_ol;
 };
 
 #endif // !_INPUT_DRIVER_WIN32_H

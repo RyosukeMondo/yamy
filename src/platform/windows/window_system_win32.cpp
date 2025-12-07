@@ -1,4 +1,4 @@
-﻿#include "window_system_win32.h"
+#include "window_system_win32.h"
 #include "../utils/stringtool.h"
 #include "windowstool.h"
 #include <vector>

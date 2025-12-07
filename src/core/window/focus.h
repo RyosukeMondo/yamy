@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // focus.h
 
@@ -13,8 +13,8 @@
 extern ATOM Register_focus();
 
 enum {
-	WM_APP_notifyFocus = WM_APP + 103,
-	WM_APP_notifyVKey  = WM_APP + 104,
+    WM_APP_notifyFocus = WM_APP + 103,
+    WM_APP_notifyVKey  = WM_APP + 104,
 };
 
 

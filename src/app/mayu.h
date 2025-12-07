@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // mayu.h
 
@@ -15,11 +15,11 @@
 #endif // !USE_INI
 
 ///
-#  define MUTEX_MAYU_EXCLUSIVE_RUNNING		\
+#  define MUTEX_MAYU_EXCLUSIVE_RUNNING        \
 _T("{46269F4D-D560-40f9-B38B-DB5E280FEF47}")
 
 ///
-#  define MUTEX_YAMYD_BLOCKER		\
+#  define MUTEX_YAMYD_BLOCKER        \
 _T("{267C9CA1-C4DC-4011-B78A-745781FD60F4}")
 
 ///

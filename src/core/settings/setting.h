@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // setting.h
 
@@ -18,29 +18,29 @@
 class Setting
 {
 public:
-	typedef std::set<tstringi> Symbols;		///
-	typedef std::list<Modifier> Modifiers;	///
+    typedef std::set<tstringi> Symbols;        ///
+    typedef std::list<Modifier> Modifiers;    ///
 
 public:
-	Keyboard m_keyboard;				///
-	Keymaps m_keymaps;				///
-	KeySeqs m_keySeqs;				///
-	Symbols m_symbols;				///
-	bool m_correctKanaLockHandling;		///
-	bool m_sts4mayu;				///
-	bool m_cts4mayu;				///
-	bool m_mouseEvent;				///
-	LONG m_dragThreshold;			///
-	unsigned int m_oneShotRepeatableDelay;	///
+    Keyboard m_keyboard;                ///
+    Keymaps m_keymaps;                ///
+    KeySeqs m_keySeqs;                ///
+    Symbols m_symbols;                ///
+    bool m_correctKanaLockHandling;        ///
+    bool m_sts4mayu;                ///
+    bool m_cts4mayu;                ///
+    bool m_mouseEvent;                ///
+    LONG m_dragThreshold;            ///
+    unsigned int m_oneShotRepeatableDelay;    ///
 
 public:
-	Setting()
-			: m_correctKanaLockHandling(false),
-			m_sts4mayu(false),
-			m_cts4mayu(false),
-			m_mouseEvent(false),
-			m_dragThreshold(0),
-			m_oneShotRepeatableDelay(0) { }
+    Setting()
+            : m_correctKanaLockHandling(false),
+            m_sts4mayu(false),
+            m_cts4mayu(false),
+            m_mouseEvent(false),
+            m_dragThreshold(0),
+            m_oneShotRepeatableDelay(0) { }
 };
 
 
@@ -68,7 +68,7 @@ extern void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_p
 
 /// get mayu filename from config
 extern bool getFilenameFromConfig(const ConfigStore &i_config,
-	tstringi *o_name, tstringi *o_filename, Setting::Symbols *o_symbols);
+    tstringi *o_name, tstringi *o_filename, Setting::Symbols *o_symbols);
 
 
 #endif // !_SETTING_H

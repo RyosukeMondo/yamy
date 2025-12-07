@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // dlgsetting.h
 
@@ -15,7 +15,7 @@ INT_PTR CALLBACK dlgSetting_dlgProc(
 #else
 BOOL CALLBACK dlgSetting_dlgProc(
 #endif
-	HWND i_hwnd, UINT i_message, WPARAM i_wParam, LPARAM i_lParam);
+    HWND i_hwnd, UINT i_message, WPARAM i_wParam, LPARAM i_lParam);
 
 
 #endif // !_DLGSETTING_H

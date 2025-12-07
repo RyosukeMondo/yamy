@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // vkeytable.h
 
@@ -14,12 +14,12 @@
 class VKeyTable
 {
 public:
-	u_int8 m_code;				/// VKey code
-	const _TCHAR *m_name;				/// VKey name
+    u_int8 m_code;                /// VKey code
+    const _TCHAR *m_name;                /// VKey name
 };
 
-extern const VKeyTable g_vkeyTable[];		/** Vkey table (terminated by
-						    NULL) */
+extern const VKeyTable g_vkeyTable[];        /** Vkey table (terminated by
+                            NULL) */
 
 
 #endif // !_VKEYTABLE_H

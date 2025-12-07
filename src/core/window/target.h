@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // target.h
 
@@ -14,8 +14,8 @@ extern ATOM Register_target();
 
 ///
 enum {
-	///
-	WM_APP_targetNotify = WM_APP + 102,
+    ///
+    WM_APP_targetNotify = WM_APP + 102,
 };
 
 
