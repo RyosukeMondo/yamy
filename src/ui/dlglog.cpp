@@ -28,9 +28,9 @@ public:
     DlgLog(HWND i_hwnd)
             : LayoutManager(i_hwnd),
             m_hwndEdit(GetDlgItem(m_hwnd, IDC_EDIT_log)),
-            m_hwndTaskTray(NULL),
+            m_hwndTaskTray(nullptr),
             m_hfontOriginal(GetWindowFont(m_hwnd)),
-            m_hfont(NULL) {
+            m_hfont(nullptr) {
     }
 
     /// WM_INITDIALOG

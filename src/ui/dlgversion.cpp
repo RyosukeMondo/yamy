@@ -89,8 +89,8 @@ public:
             return TRUE;
         }
         case IDC_BUTTON_download: {
-            ShellExecute(NULL, NULL, loadString(IDS_homepage).c_str(),
-                         NULL, NULL, SW_SHOWNORMAL);
+            ShellExecute(nullptr, nullptr, loadString(IDS_homepage).c_str(),
+                         nullptr, nullptr, SW_SHOWNORMAL);
             CHECK_TRUE( EndDialog(m_hwnd, 0) );
             return TRUE;
         }

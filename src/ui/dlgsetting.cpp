@@ -95,7 +95,7 @@ public:
     ///
     DlgSetting(HWND i_hwnd)
             : LayoutManager(i_hwnd),
-            m_hwndMayuPaths(NULL),
+            m_hwndMayuPaths(nullptr),
             m_reg(MAYU_REGISTRY_ROOT) {
     }
 
@@ -205,7 +205,7 @@ public:
         switch (i_id) {
         case IDC_LIST_mayuPaths:
             if (i_nmh->code == NM_DBLCLK)
-                FORWARD_WM_COMMAND(m_hwnd, IDC_BUTTON_edit, NULL, 0, SendMessage);
+                FORWARD_WM_COMMAND(m_hwnd, IDC_BUTTON_edit, nullptr, 0, SendMessage);
             return TRUE;
         }
         return TRUE;

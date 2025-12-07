@@ -23,10 +23,10 @@ public:
     ///
     DlgEditSetting(HWND i_hwnd)
             : LayoutManager(i_hwnd),
-            m_hwndMayuPathName(NULL),
-            m_hwndMayuPath(NULL),
-            m_hwndSymbols(NULL),
-            m_data(NULL) {
+            m_hwndMayuPathName(nullptr),
+            m_hwndMayuPath(nullptr),
+            m_hwndSymbols(nullptr),
+            m_data(nullptr) {
     }
 
     /// WM_INITDIALOG
