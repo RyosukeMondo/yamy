@@ -75,7 +75,7 @@ foreach ($file in $Files) {
         $skip = $false
         if ($check.ExcludePaths) {
             foreach ($exclude in $check.ExcludePaths) {
-                if ($relativePath -match $exclude) { $skip = $true; break }
+                if ($relativePath -cmatch $exclude) { $skip = $true; break }
             }
         }
         if ($skip) { continue }
@@ -83,11 +83,11 @@ foreach ($file in $Files) {
         # Check extensions
         if ($check.FileExtension -and $file.Extension -ne $check.FileExtension) { continue }
 
-        if ($content -match $check.Pattern) {
+        if ($content -cmatch $check.Pattern) {
             # Find line number (slower, so only do it on match)
             $lines = $content -split "`r`n"
             for ($i = 0; $i -lt $lines.Count; $i++) {
-                if ($lines[$i] -match $check.Pattern) {
+                if ($lines[$i] -cmatch $check.Pattern) {
                     $msg = "[$($check.Type)] $($check.Name): $relativePath`:($($i+1)) - $($check.Suggestion)"
                     if ($check.Type -eq "Error") {
                         Write-Host $msg -ForegroundColor Red
@@ -108,9 +108,8 @@ Write-Host "Errors: $ErrorCount" -ForegroundColor $(if ($ErrorCount -gt 0) { "Re
 Write-Host "Warnings: $WarningCount" -ForegroundColor $(if ($WarningCount -gt 0) { "Yellow" } else { "Green" })
 
 if ($ErrorCount -gt 0) {
-    Write-Host "Found $ErrorCount anti-pattern errors." -ForegroundColor Red
-    Write-Host "Build will continue (Soft-Fail Mode). Fix these issues to improve code quality." -ForegroundColor Magenta
-    # exit 1  <-- Disabled to avoid breaking build on legacy code
+    Write-Host "Found $ErrorCount anti-pattern errors. Build failed." -ForegroundColor Red
+    exit 1
 }
 
 exit 0

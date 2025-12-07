@@ -5,7 +5,6 @@
 #include "stringtool.h"
 #include <vector>
 #include <locale>
-#include <malloc.h>
 #include <mbstring.h>
 
 

@@ -114,8 +114,10 @@ static void WriteToLog(const char *data)
     DWORD count;
 
     WideCharToMultiByte(CP_THREAD_ACP, 0, g.m_moduleName, -1, buf, NUMBER_OF(buf), nullptr, nullptr);
-    strcat(buf, ": ");
-    strcat(buf, data);
+    size_t len = strlen(buf);
+    strncat(buf, ": ", NUMBER_OF(buf) - len - 1);
+    len = strlen(buf);
+    strncat(buf, data, NUMBER_OF(buf) - len - 1);
     SetFilePointer(g.m_logFile, 0, nullptr, FILE_END);
     WriteFile(g.m_logFile, buf, strlen(buf), &count, nullptr);
     FlushFileBuffers(g.m_logFile);

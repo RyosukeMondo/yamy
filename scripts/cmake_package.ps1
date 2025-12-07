@@ -10,6 +10,22 @@ if (Test-Path $distDir) { Remove-Item -Recurse -Force $distDir }
 New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
 
 # -----------------------------------------------------------------------------
+# Quality Checks
+# -----------------------------------------------------------------------------
+Write-Host "Running Anti-Pattern Check..." -ForegroundColor Cyan
+& "$PSScriptRoot\check_antipatterns.ps1"
+if ($LASTEXITCODE -ne 0) { throw "Anti-pattern check failed" }
+
+Write-Host "Running Missing Sources Check..." -ForegroundColor Cyan
+& "$PSScriptRoot\check_missing_sources.ps1"
+if ($LASTEXITCODE -ne 0) { throw "Missing sources check failed" }
+
+Write-Host "Running Encoding Check..." -ForegroundColor Cyan
+& "$PSScriptRoot\check_encoding.ps1"
+if ($LASTEXITCODE -ne 0) { throw "Encoding check failed" }
+
+
+# -----------------------------------------------------------------------------
 # Build 64-bit
 # -----------------------------------------------------------------------------
 Write-Host "Building 64-bit..." -ForegroundColor Cyan
