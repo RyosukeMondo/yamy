@@ -522,7 +522,7 @@ bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
 {
     if (!i_param->m_isPressed)
         return false;
-    *o_hwnd = getToplevelWindow(i_param->m_hwnd, NULL);
+    *o_hwnd = getToplevelWindow(i_param->m_hwnd, nullptr);
     if (!*o_hwnd)
         return false;
     return true;
@@ -531,7 +531,7 @@ bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
 //
 bool getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
                           TargetWindowType *io_twt,
-                          RECT *o_rcWindow = NULL, RECT *o_rcParent = NULL)
+                          RECT *o_rcWindow = nullptr, RECT *o_rcParent = nullptr)
 {
     if (!i_param->m_isPressed)
         return false;
@@ -593,11 +593,11 @@ void Engine::EmacsEditKillLine::func()
     if (!m_buf.empty()) {
         HGLOBAL g;
         const _TCHAR *text = clipboardGetText(&g);
-        if (text == NULL || m_buf != text)
+        if (text == nullptr || m_buf != text)
             reset();
         clipboardClose(g);
     }
-    if (OpenClipboard(NULL)) {
+    if (OpenClipboard(nullptr)) {
         EmptyClipboard();
         CloseClipboard();
     }
@@ -623,7 +623,7 @@ HGLOBAL Engine::EmacsEditKillLine::makeNewKillLineBuf(
     HGLOBAL hdata = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
                                 len * sizeof(_TCHAR));
     if (!hdata)
-        return NULL;
+        return nullptr;
     _TCHAR *dataNew = reinterpret_cast<_TCHAR *>(GlobalLock(hdata));
     *dataNew = _T('\0');
     if (!m_buf.empty())
@@ -795,7 +795,7 @@ void Engine::funcSetForegroundWindow(FunctionParam *i_param, const tregex &,
         static_cast<const FunctionData_SetForegroundWindow *>(
             i_param->m_af->m_functionData);
 
-    HWND targetHwnd = NULL;
+    HWND targetHwnd = nullptr;
 
     m_windowSystem->enumerateWindows([&](WindowSystem::WindowHandle window) -> bool {
         tstring className = m_windowSystem->getClassName(window);
@@ -1047,7 +1047,7 @@ void Engine::funcWindowIdentify(FunctionParam *i_param)
             m_log << _T("CLASS:\t") << className << std::endl;
             m_log << _T("TITLE:\t") << titleName << std::endl;
 
-            HWND hwnd = getToplevelWindow(i_param->m_hwnd, NULL);
+            HWND hwnd = getToplevelWindow(i_param->m_hwnd, nullptr);
             WindowRect rc;
             m_windowSystem->getWindowRect((WindowSystem::WindowHandle)hwnd, &rc);
             m_log << _T("Toplevel Window Position/Size: (")
@@ -1244,7 +1244,7 @@ void Engine::funcWindowMonitorTo(
     hmonCur = monitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 
     EnumDisplayMonitorsForWindowMonitorToParam ep(hmonCur);
-    enumDisplayMonitors(NULL, NULL, enumDisplayMonitorsForWindowMonitorTo,
+    enumDisplayMonitors(nullptr, nullptr, enumDisplayMonitorsForWindowMonitorTo,
                         reinterpret_cast<LPARAM>(&ep));
     if (ep.m_monitors.size() < 1 ||
             ep.m_primaryMonitorIdx < 0 || ep.m_currentMonitorIdx < 0)
@@ -1526,10 +1526,10 @@ void Engine::funcSetImeString(FunctionParam *i_param, const StrExprArg &i_data)
         unsigned int len = 0;
         unsigned int error;
         m_windowSystem->disconnectNamedPipe(m_hookPipe);
-        m_windowSystem->connectNamedPipe(m_hookPipe, NULL);
+        m_windowSystem->connectNamedPipe(m_hookPipe, nullptr);
         error = m_windowSystem->writeFile(m_hookPipe, i_data.eval().c_str(),
                           (unsigned int)(i_data.eval().size() * sizeof(_TCHAR)),
-                          &len, NULL);
+                          &len, nullptr);
 
         //FlushFileBuffers(m_hookPipe);
     }
@@ -1546,7 +1546,7 @@ public:
 
 public:
     DirectSSTPServer()
-            : m_hwnd(NULL) {
+            : m_hwnd(nullptr) {
     }
 };
 
@@ -1722,7 +1722,7 @@ private:
     tstringq m_funcParam;
 
 public:
-    PlugIn(WindowSystem* ws) : m_ws(ws), m_dll(NULL), m_func(NULL) {
+    PlugIn(WindowSystem* ws) : m_ws(ws), m_dll(nullptr), m_func(nullptr) {
     }
 
     ~PlugIn() {
@@ -1866,7 +1866,7 @@ void Engine::funcMouseHook(FunctionParam *i_param,
         break;
     }
     default:
-        g_hookData->m_hwndMouseHookTarget = NULL;
+        g_hookData->m_hwndMouseHookTarget = 0;
         break;
     }
 }

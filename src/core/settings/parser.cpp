@@ -27,7 +27,7 @@ Token::Token(int i_value, const tstringi &i_display)
         m_isValueQuoted(false),
         m_numericValue(i_value),
         m_stringValue(i_display),
-        m_data(NULL)
+        m_data(0)
 {
 }
 
@@ -36,7 +36,7 @@ Token::Token(const tstringi &i_value, bool i_isValueQuoted, bool i_isRegexp)
         m_isValueQuoted(i_isValueQuoted),
         m_numericValue(0),
         m_stringValue(i_value),
-        m_data(NULL)
+        m_data(0)
 {
 }
 
@@ -45,7 +45,7 @@ Token::Token(Type i_m_type)
         m_isValueQuoted(false),
         m_numericValue(0),
         m_stringValue(_T("")),
-        m_data(NULL)
+        m_data(0)
 {
     ASSERT(m_type == Type_openParen || m_type == Type_closeParen ||
            m_type == Type_comma);
@@ -133,7 +133,7 @@ tostream &operator<<(tostream &i_ost, const Token &i_token)
 
 Parser::Parser(const _TCHAR *i_str, size_t i_length)
         : m_lineNumber(1),
-        m_prefixes(NULL),
+        m_prefixes(nullptr),
         m_internalLineNumber(1),
         m_ptr(i_str),
         m_end(i_str + i_length)
@@ -352,7 +352,7 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
                     throw e;
                 }
 
-                _TCHAR *numEnd = NULL;
+                _TCHAR *numEnd = nullptr;
                 long value = _tcstol(tokenStart, &numEnd, 0);
                 if (tokenStart == numEnd) {
                     tstring str = interpretMetaCharacters(tokenStart, t - tokenStart);
