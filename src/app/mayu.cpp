@@ -1032,7 +1032,7 @@ public:
 				PACKVERSION(5, 0) <= getDllVersion(_T("shlwapi.dll"))),
 			m_log(WM_APP_msgStreamNotify),
 #ifdef LOG_TO_FILE
-			m_logFile(_T("mayu.log")),
+			m_logFile(_T("logs\\mayu.log")),
 #endif // LOG_TO_FILE
 			m_hMenuTaskTray(NULL),
 			m_hNotifyMailslot(INVALID_HANDLE_VALUE),
@@ -1386,6 +1386,7 @@ int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
 	}
 
 	try {
+		CreateDirectory(_T("logs"), NULL);
 		Mayu(mutex).messageLoop();
 	} catch (ErrorMessage &i_e) {
 		tstring title = loadString(IDS_mayu);

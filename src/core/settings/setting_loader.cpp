@@ -1450,7 +1450,7 @@ bool SettingLoader::isReadable(const tstringi &i_filename,
 	if (i_filename.empty())
 		return false;
 #ifdef UNICODE
-	tifstream ist(to_string(i_filename).c_str());
+	tifstream ist(i_filename.c_str());
 #else
 	tifstream ist(i_filename.c_str());
 #endif

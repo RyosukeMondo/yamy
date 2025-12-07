@@ -461,16 +461,16 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON_mayu           ICON    DISCARDABLE     "..\\resources\\mayu.ico"
-IDI_ICON_mayu_file      ICON    DISCARDABLE     "..\\resources\\mayufile.ico"
-IDI_ICON_mayu_disabled  ICON    DISCARDABLE     "..\\resources\\mayudisabled.ico"
+IDI_ICON_mayu           ICON    DISCARDABLE     "..\\..\\resources\\mayu.ico"
+IDI_ICON_mayu_file      ICON    DISCARDABLE     "..\\..\\resources\\mayufile.ico"
+IDI_ICON_mayu_disabled  ICON    DISCARDABLE     "..\\..\\resources\\mayudisabled.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_CURSOR_target       CURSOR  DISCARDABLE     "..\\resources\\target.cur"
+IDC_CURSOR_target       CURSOR  DISCARDABLE     "..\\..\\resources\\target.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
