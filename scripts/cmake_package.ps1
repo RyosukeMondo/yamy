@@ -16,7 +16,7 @@ Write-Host "Building 64-bit..." -ForegroundColor Cyan
 cmake -S $root -B "$root\build\x64" -A x64
 if ($LASTEXITCODE -ne 0) { throw "CMake Configure 64-bit failed" }
 
-cmake --build "$root\build\x64" --config Release
+cmake --build "$root\build\x64" --config Release > "$root\build_log_x64.txt" 2>&1
 if ($LASTEXITCODE -ne 0) { throw "CMake Build 64-bit failed" }
 
 # Copy 64-bit artifacts
@@ -31,7 +31,7 @@ Write-Host "Building 32-bit..." -ForegroundColor Cyan
 cmake -S $root -B "$root\build\x86" -A Win32
 if ($LASTEXITCODE -ne 0) { throw "CMake Configure 32-bit failed" }
 
-cmake --build "$root\build\x86" --config Release
+cmake --build "$root\build\x86" --config Release > "$root\build_log_x86.txt" 2>&1
 if ($LASTEXITCODE -ne 0) { throw "CMake Build 32-bit failed" }
 
 # Copy 32-bit artifacts

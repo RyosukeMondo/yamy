@@ -1,0 +1,145 @@
+#ifndef _COMMAND_BASE_H
+#define _COMMAND_BASE_H
+
+#include "../functions/function_data.h"
+#include <tuple>
+#include <utility>
+
+// Helper to check if a type is distinct from another (for SFINAE if needed, though not heavily used here yet)
+// We rely on standard C++17 features.
+
+// Generic Command Template
+// Derived: The specific command class (CRTP)
+// Args: The types of arguments this command accepts
+template <typename Derived, typename... Args>
+class Command : public FunctionData
+{
+public:
+    using TupleType = std::tuple<Args...>;
+    TupleType m_args;
+
+    // Helper to get argument by index
+    template <size_t I>
+    const auto& getArg() const {
+        return std::get<I>(m_args);
+    }
+
+    template <size_t I>
+    auto& getArg() {
+        return std::get<I>(m_args);
+    }
+
+    // --- Boilerplate Implementation ---
+
+    // 1. Create
+    static FunctionData *create()
+    {
+        return new Derived();
+    }
+
+    // 2. Clone
+    virtual FunctionData *clone() const override
+    {
+        return new Derived(static_cast<const Derived&>(*this));
+    }
+
+    // 3. GetName is delegated to Derived::Name
+    inline virtual const _TCHAR *getName() const override
+    {
+        return Derived::Name;
+    }
+
+    // 4. Load
+    // Logic: OpenParen -> Load Arg1 -> Comma -> Load Arg2 ... -> CloseParen
+    virtual void load(SettingLoader *i_sl) override
+    {
+        // First, check/consume OpenParen.
+        // If Args is empty, we might not expect params, but the original code often does:
+        // if (!i_sl->getOpenParen(false, getName())) return; 
+        // OR 
+        // i_sl->getOpenParen(true, getName());
+        
+        // This behavior varies slightly in legacy code. 
+        // "Default" uses getOpenParen(false), returns if missing.
+        // "KeymapPrevPrefix" uses getOpenParen(true) (throws if missing?).
+        // Providing a customization point or assuming a standard behavior.
+        // Most commands with args imply required parens.
+        // Commands without args usually check optional parens.
+        
+        if constexpr (sizeof...(Args) == 0) {
+            // No args: parens are optional but if present must be empty
+            if (!i_sl->getOpenParen(false, getName()))
+                return;
+            i_sl->getCloseParen(true, getName());
+        } else {
+            // Args present: parens required (heuristic based on majority of commands)
+            // If strict adherence to legacy "optional paren" logic is needed for commands with args, we might need a flag.
+            // For now, assume significant commands require parens.
+            
+            // Correction: Some legacy code might allow omitted parens even with defaults? 
+            // But usually arguments imply parens.
+            
+            // Let's support the generic flow:
+            // Check OpenParen (Strict = true because if we have args, we likely need to parse them)
+            i_sl->getOpenParen(true, getName());
+            
+            loadArgs(i_sl, std::make_index_sequence<sizeof...(Args)>{});
+            
+            i_sl->getCloseParen(true, getName());
+        }
+    }
+
+    // 5. Output
+    virtual tostream &output(tostream &i_ost) const override
+    {
+        i_ost << _T("&") << getName();
+        if constexpr (sizeof...(Args) > 0) {
+            i_ost << _T("(");
+            outputArgs(i_ost, std::make_index_sequence<sizeof...(Args)>{});
+            i_ost << _T(") ");
+        }
+        return i_ost;
+    }
+
+private:
+    // --- Load Helpers ---
+    template <size_t... Is>
+    void loadArgs(SettingLoader *i_sl, std::index_sequence<Is...>)
+    {
+        // We need to call load_ARGUMENT for each, with getComma in between.
+        // Fold expression approach:
+        // ( (loadOneArg<Is>(i_sl), (Is < sizeof...(Args)-1 ? i_sl->getComma(false, getName()) : void())), ... );
+        // Better: generic loop
+        
+        int dummy[] = { 0, (loadOneArg<Is>(i_sl, Is < sizeof...(Args) - 1), 0)... };
+        (void)dummy;
+    }
+
+    template <size_t I>
+    void loadOneArg(SettingLoader *i_sl, bool hasMore)
+    {
+        i_sl->load_ARGUMENT(&std::get<I>(m_args));
+        if (hasMore) {
+            i_sl->getComma(false, getName());
+        }
+    }
+
+    // --- Output Helpers ---
+    template <size_t... Is>
+    void outputArgs(tostream &i_ost, std::index_sequence<Is...>) const
+    {
+        int dummy[] = { 0, (outputOneArg<Is>(i_ost, Is < sizeof...(Args) - 1), 0)... };
+        (void)dummy;
+    }
+
+    template <size_t I>
+    void outputOneArg(tostream &i_ost, bool hasMore) const
+    {
+        i_ost << std::get<I>(m_args);
+        if (hasMore) {
+            i_ost << _T(", ");
+        }
+    }
+};
+
+#endif // _COMMAND_BASE_H

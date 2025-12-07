@@ -10,8 +10,14 @@
 #  include "../utils/config_store.h"
 
 ///
+///
+template <typename Derived, typename... Args>
+class Command;
+
 class SettingLoader
 {
+    template <typename Derived, typename... Args>
+    friend class Command;
 #  define FUNCTION_FRIEND
 #  include "functions.h"
 #  undef FUNCTION_FRIEND

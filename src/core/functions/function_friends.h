@@ -1,8 +1,13 @@
+// Forward declarations
+class Command_Default;
+class Command_KeymapPrevPrefix;
+
 // Friend declarations for FunctionData classes
-friend class FunctionData_Default;
+friend class Command_Default;
+friend class Command_KeymapPrevPrefix;
 friend class FunctionData_KeymapParent;
 friend class FunctionData_KeymapWindow;
-friend class FunctionData_KeymapPrevPrefix;
+// friend class FunctionData_KeymapPrevPrefix; // Replaced
 friend class FunctionData_OtherWindowClass;
 friend class FunctionData_Prefix;
 friend class FunctionData_Keymap;

@@ -1,6 +1,8 @@
 #include "function.h"
 #include "function_data.h"
 #include "misc.h" // for NUMBER_OF
+#include "../commands/cmd_default.h"
+#include "../commands/cmd_keymap_prev_prefix.h"
 
 class FunctionCreator
 {
@@ -15,10 +17,10 @@ public:
 FunctionData *createFunctionData(const tstring &i_name)
 {
 	static FunctionCreator functionCreators[] = {
-  { _T("Default"), FunctionData_Default::create },
+  { _T("Default"), Command_Default::create },
   { _T("KeymapParent"), FunctionData_KeymapParent::create },
   { _T("KeymapWindow"), FunctionData_KeymapWindow::create },
-  { _T("KeymapPrevPrefix"), FunctionData_KeymapPrevPrefix::create },
+  { _T("KeymapPrevPrefix"), Command_KeymapPrevPrefix::create },
   { _T("OtherWindowClass"), FunctionData_OtherWindowClass::create },
   { _T("Prefix"), FunctionData_Prefix::create },
   { _T("Keymap"), FunctionData_Keymap::create },

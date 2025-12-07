@@ -12,15 +12,16 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
 
 ### Phase 1: The Build Foundation (Immediate Impact)
 **Goal:** Unified, declarative build system.
--   [ ] **Migrate to CMake:** Create a root `CMakeLists.txt` to replace manual `.vcxproj` management.
--   [ ] **Automate Dependencies:** Use CMake to manage dependencies (GTest, potentially Boost if re-added) instead of manual path configuration.
--   [ ] **Cross-Platform Readiness:** CMake is the standard build system for Linux, making the future port seamless.
+-   [x] **Migrate to CMake:** Created root `CMakeLists.txt`, replaced `.vcxproj`.
+-   [x] **Automate Dependencies:** GTest is integrated; packaging script handles artifacts.
+-   [x] **Cross-Platform Readiness:** CMake build system is now the standard.
+-   [x] **Packaging & Distribution:** Automated via `scripts/cmake_package.ps1` (Zip, Multi-arch).
 
 ### Phase 2: Refactor the "Boilerplate Factory" (High Velocity)
 **Goal:** Add a new command in 3 lines of code, not 50.
--   [ ] **Analyze `FunctionData`:** `src/core/functions/function_data.h` contains massive boilerplate for every command.
--   [ ] **Metaprogramming/Macros:** Implement a `DEFINE_COMMAND` macro or template system to generate the `create`, `load`, `exec`, `output`, and `clone` methods automatically.
--   [ ] **Decouple Implementation:** Move command logic out of the monolithic `function.cpp` into smaller, cohesive units (e.g., `src/core/commands/`).
+-   [x] **Analyze `FunctionData`:** `src/core/functions/function_data.h` contains massive boilerplate for every command.
+-   [x] **Metaprogramming/Templates:** Implemented `Command<Derived, Args...>` template system (C++17) to generate boilerplates automatically.
+-   [ ] **Decouple Implementation:** Move command logic out of the monolithic `function.cpp` into smaller, cohesive units (e.g., `src/core/commands/`). (Started with `Default` and `KeymapPrevPrefix`)
 
 ### Phase 3: String Unification (Cognitive Load Reduction)
 **Goal:** `std::string` (UTF-8) everywhere.

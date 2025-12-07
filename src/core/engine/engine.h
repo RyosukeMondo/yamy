@@ -313,7 +313,7 @@ private:
 	/// close mayu device
 	void close();
 
-private:
+public:
 	// BEGINING OF FUNCTION DEFINITION
 	/// send a default key to Windows
 	void funcDefault(FunctionParam *i_param);

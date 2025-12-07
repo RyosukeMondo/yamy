@@ -9,46 +9,8 @@
 #include "utils/stringtool.h"
 
 
-class FunctionData_Default : public FunctionData
-{
-public:
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_Default *fd
-      = new FunctionData_Default;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    if (!i_sl->getOpenParen(false, FunctionData_Default::getName()))
-      return;
-    i_sl->getCloseParen(true, FunctionData_Default::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcDefault(i_param);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("Default");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_Default(*this);
-  }
-};
+// FunctionData_Default is now Command_Default in commands/cmd_default.h
+// Replaced by generic Command template system.
 
 class FunctionData_KeymapParent : public FunctionData
 {
@@ -132,50 +94,8 @@ public:
   }
 };
 
-class FunctionData_KeymapPrevPrefix : public FunctionData
-{
-public:
-  int m_previous;
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_KeymapPrevPrefix *fd
-      = new FunctionData_KeymapPrevPrefix;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    i_sl->getOpenParen(true, FunctionData_KeymapPrevPrefix::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_previous);
-    i_sl->getCloseParen(true, FunctionData_KeymapPrevPrefix::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcKeymapPrevPrefix(i_param, m_previous);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("KeymapPrevPrefix");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_previous;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_KeymapPrevPrefix(*this);
-  }
-};
+// FunctionData_KeymapPrevPrefix is now Command_KeymapPrevPrefix in commands/cmd_keymap_prev_prefix.h
+// Replaced by generic Command template system.
 
 class FunctionData_OtherWindowClass : public FunctionData
 {

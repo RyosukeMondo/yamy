@@ -2,9 +2,11 @@
 #include "engine.h"
 #include "function.h"
 #include "function_data.h"
+#include "../core/commands/cmd_default.h"
+#include "../core/commands/cmd_keymap_prev_prefix.h"
 
 TEST(FunctionDataTest, DefaultFunction) {
-    std::unique_ptr<FunctionData> fd(FunctionData_Default::create());
+    std::unique_ptr<FunctionData> fd(Command_Default::create());
     EXPECT_STREQ(fd->getName(), _T("Default"));
     
     tstringstream ss;
@@ -13,6 +15,24 @@ TEST(FunctionDataTest, DefaultFunction) {
     
     std::unique_ptr<FunctionData> clone(fd->clone());
     EXPECT_STREQ(clone->getName(), _T("Default"));
+}
+
+TEST(FunctionDataTest, KeymapPrevPrefixFunction) {
+    std::unique_ptr<FunctionData> fd(Command_KeymapPrevPrefix::create());
+    // Modify args via casting to Command_KeymapPrevPrefix
+    Command_KeymapPrevPrefix* cmd = static_cast<Command_KeymapPrevPrefix*>(fd.get());
+    cmd->getArg<0>() = 5;
+
+    EXPECT_STREQ(fd->getName(), _T("KeymapPrevPrefix"));
+    
+    tstringstream ss;
+    fd->output(ss);
+    EXPECT_EQ(ss.str(), _T("&KeymapPrevPrefix(5) "));
+
+    std::unique_ptr<FunctionData> clone(fd->clone());
+    tstringstream ss2;
+    clone->output(ss2);
+    EXPECT_EQ(ss2.str(), _T("&KeymapPrevPrefix(5) "));
 }
 
 TEST(FunctionDataTest, VariableFunction) {

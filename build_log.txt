@@ -1,0 +1,71 @@
+MSBuild 縺ｮ繝舌・繧ｸ繝ｧ繝ｳ 18.0.5+e22287bf1 (.NET Framework)
+
+  yamy_hook.vcxproj -> C:\Users\ryosu\repos\yamy\build\bin\Debug\yamy-64-hook.dll
+  function_creator.cpp
+C:\Users\ryosu\repos\yamy\src\core\commands\cmd_default.h(13,19): error C2248: 'Engine::funcDefault': private 繝｡繝ｳ繝舌・ (繧ｯ繝ｩ繧ｹ 'Engine' 縺ｧ螳｣險縺輔ｌ縺ｦ縺・ｋ) 縺ｫ繧｢繧ｯ繧ｻ繧ｹ縺ｧ縺阪∪縺帙ｓ縲・[C:\Users\ryosu\repos\yamy\build\yamy_engine.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/core/functions/function_creator.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\core\engine\engine.h(319,7):
+      'Engine::funcDefault' 縺ｮ螳｣險繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+      C:\Users\ryosu\repos\yamy\src\core\engine\engine.h(38,7):
+      'Engine' 縺ｮ螳｣險繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+  
+C:\Users\ryosu\repos\yamy\src\core\commands\cmd_keymap_prev_prefix.h(13,19): error C2248: 'Engine::funcKeymapPrevPrefix': private 繝｡繝ｳ繝舌・ (繧ｯ繝ｩ繧ｹ 'Engine' 縺ｧ螳｣險縺輔ｌ縺ｦ縺・ｋ) 縺ｫ繧｢繧ｯ繧ｻ繧ｹ縺ｧ縺阪∪縺帙ｓ縲・[C:\Users\ryosu\repos\yamy\build\yamy_engine.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/core/functions/function_creator.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\core\engine\engine.h(325,7):
+      'Engine::funcKeymapPrevPrefix' 縺ｮ螳｣險繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+      C:\Users\ryosu\repos\yamy\src\core\engine\engine.h(38,7):
+      'Engine' 縺ｮ螳｣險繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+  
+  yamy_launcher.vcxproj -> C:\Users\ryosu\repos\yamy\build\bin\Debug\yamy.exe
+  function_creator.cpp
+  test_main.cpp
+C:\Users\ryosu\repos\yamy\src\core\commands\cmd_default.h(13,19): error C2248: 'Engine::funcDefault': private 繝｡繝ｳ繝舌・ (繧ｯ繝ｩ繧ｹ 'Engine' 縺ｧ螳｣險縺輔ｌ縺ｦ縺・ｋ) 縺ｫ繧｢繧ｯ繧ｻ繧ｹ縺ｧ縺阪∪縺帙ｓ縲・[C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/core/functions/function_creator.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\core\engine\engine.h(319,7):
+      'Engine::funcDefault' 縺ｮ螳｣險繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+      C:\Users\ryosu\repos\yamy\src\core\engine\engine.h(38,7):
+      'Engine' 縺ｮ螳｣險繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+  
+C:\Users\ryosu\repos\yamy\src\core\commands\cmd_keymap_prev_prefix.h(13,19): error C2248: 'Engine::funcKeymapPrevPrefix': private 繝｡繝ｳ繝舌・ (繧ｯ繝ｩ繧ｹ 'Engine' 縺ｧ螳｣險縺輔ｌ縺ｦ縺・ｋ) 縺ｫ繧｢繧ｯ繧ｻ繧ｹ縺ｧ縺阪∪縺帙ｓ縲・[C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/core/functions/function_creator.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\core\engine\engine.h(325,7):
+      'Engine::funcKeymapPrevPrefix' 縺ｮ螳｣險繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+      C:\Users\ryosu\repos\yamy\src\core\engine\engine.h(38,7):
+      'Engine' 縺ｮ螳｣險繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(17,2): warning C4996: 'std::allocator<int>::reference': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\utils\array.h(17,2):
+      繝・Φ繝励Ξ繝ｼ繝医う繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹悶さ繝ｳ繝・く繧ｹ繝・(譛蛻昴↓譛繧ょ商縺・ｂ縺ｮ) 縺ｯ
+          C:\Users\ryosu\repos\yamy\src\tests\test_misc.cpp(7,16):
+          繧ｳ繝ｳ繝代う繝ｫ蟇ｾ雎｡縺ｮ 繧ｯ繝ｩ繧ｹ 繝・Φ繝励Ξ繝ｼ繝・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹・'Array<int,std::allocator<int>>' 縺ｮ繝ｪ繝輔ぃ繝ｬ繝ｳ繧ｹ繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(18,2): warning C4996: 'std::allocator<int>::const_reference': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(19,2): warning C4996: 'std::allocator<int>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(20,2): warning C4996: 'std::allocator<int>::const_pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(25,2): warning C4996: 'std::allocator<int>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(26,2): warning C4996: 'std::allocator<int>::const_pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(83,2): warning C4996: 'std::allocator<int>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(87,2): warning C4996: 'std::allocator<int>::const_pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\tests\test_function.cpp(7,60): error C2027: 隱崎ｭ倥〒縺阪↑縺・梛 'FunctionData_Default' 縺御ｽｿ繧上ｌ縺ｦ縺・∪縺吶・[C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\functions.h(3027,14):
+      'FunctionData_Default' 縺ｮ螳｣險繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+  
+C:\Users\ryosu\repos\yamy\src\tests\test_function.cpp(7,60): error C3861: 'create': 隴伜挨蟄舌′隕九▽縺九ｊ縺ｾ縺帙ｓ縺ｧ縺励◆ [C:\Users\ryosu\repos\yamy\build\yamy_test.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../src/tests/test_main.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
