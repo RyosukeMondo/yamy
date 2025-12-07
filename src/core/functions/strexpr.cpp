@@ -5,7 +5,7 @@
 #include "strexpr.h"
 
 
-const StrExprSystem *StrExpr::s_system = NULL;
+const StrExprSystem *StrExpr::s_system = nullptr;
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

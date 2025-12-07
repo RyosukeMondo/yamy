@@ -19,7 +19,7 @@ public:
 };
 
 extern const VKeyTable g_vkeyTable[];        /** Vkey table (terminated by
-                            NULL) */
+                            nullptr) */
 
 
 #endif // !_VKEYTABLE_H

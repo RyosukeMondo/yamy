@@ -287,7 +287,7 @@ Keymap::searchAssignment(const ModifiedKey &i_mk) const
         if ((*i).m_modifiedKey.m_key == i_mk.m_key &&
                 (*i).m_modifiedKey.m_modifier.doesMatch(i_mk.m_modifier))
             return &(*i);
-    return NULL;
+    return nullptr;
 }
 
 
@@ -518,7 +518,7 @@ Keymap *Keymaps::searchByName(const tstringi &i_name)
             i = m_keymapList.begin(); i != m_keymapList.end(); ++ i)
         if ((*i).getName() == i_name)
             return &*i;
-    return NULL;
+    return nullptr;
 }
 
 
@@ -578,5 +578,5 @@ KeySeq *KeySeqs::searchByName(const tstringi &i_name)
             i = m_keySeqList.begin(); i != m_keySeqList.end(); ++ i)
         if ((*i).getName() == i_name)
             return &(*i);
-    return NULL;
+    return nullptr;
 }

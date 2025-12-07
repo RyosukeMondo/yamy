@@ -6,7 +6,7 @@
 #include <ime.h>
 
 
-// Vkey table (terminated by NULL)
+// Vkey table (terminated by nullptr)
 const VKeyTable g_vkeyTable[] = {
 #define VK(name) { VK_##name, _T(#name) }
 
@@ -322,6 +322,6 @@ const VKeyTable g_vkeyTable[] = {
     VK(DBE_ENTERDLGCONVERSIONMODE),    // 0x0fd
 #endif
 
-    { 0, NULL },
+    { 0, nullptr },
 #undef VK
 };

@@ -44,7 +44,7 @@ public:
 
     /// read binary data
     virtual bool read(const tstring &i_name, BYTE *o_value, DWORD *i_valueSize,
-                      const BYTE *i_defaultValue = NULL, DWORD i_defaultValueSize = 0) const = 0;
+                      const BYTE *i_defaultValue = nullptr, DWORD i_defaultValueSize = 0) const = 0;
     
     /// write binary data
     virtual bool write(const tstring &i_name, const BYTE *i_value,

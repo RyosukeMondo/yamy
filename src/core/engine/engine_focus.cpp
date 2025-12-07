@@ -23,7 +23,7 @@ restart:
     count ++;
 
     HWND hwndFore = GetForegroundWindow();
-    DWORD threadId = GetWindowThreadProcessId(hwndFore, NULL);
+    DWORD threadId = GetWindowThreadProcessId(hwndFore, nullptr);
 
     if (hwndFore) {
         {
@@ -62,7 +62,7 @@ restart:
                 m_currentFocusOfThread = &((*i).second);
                 if (!m_currentFocusOfThread->m_isConsole || 2 <= count) {
                     if (m_currentFocusOfThread->m_keymaps.empty())
-                        setCurrentKeymap(NULL);
+                        setCurrentKeymap(nullptr);
                     else
                         setCurrentKeymap(*m_currentFocusOfThread->m_keymaps.begin());
                     m_hwndFocus = m_currentFocusOfThread->m_hwndFocus;
@@ -107,8 +107,8 @@ restart:
     if (m_globalFocus.m_keymaps.empty()) {
         Acquire a(&m_log, 1);
         m_log << _T("NO GLOBAL FOCUS") << std::endl;
-        m_currentFocusOfThread = NULL;
-        setCurrentKeymap(NULL);
+        m_currentFocusOfThread = nullptr;
+        setCurrentKeymap(nullptr);
     } else {
         if (m_currentFocusOfThread != &m_globalFocus) {
             Acquire a(&m_log, 1);
@@ -117,7 +117,7 @@ restart:
             setCurrentKeymap(m_globalFocus.m_keymaps.front());
         }
     }
-    m_hwndFocus = NULL;
+    m_hwndFocus = nullptr;
 }
 
 
@@ -128,7 +128,7 @@ bool Engine::setFocus(HWND i_hwndFocus, DWORD i_threadId,
     Acquire a(&m_cs);
     if (m_isSynchronizing)
         return false;
-    if (i_hwndFocus == NULL)
+    if (i_hwndFocus == nullptr)
         return true;
 
     // remove newly created thread's id from m_detachedThreadIds

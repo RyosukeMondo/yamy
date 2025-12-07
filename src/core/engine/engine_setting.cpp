@@ -67,6 +67,6 @@ bool Engine::setSetting(Setting *i_setting) {
     }
     m_currentFocusOfThread = &m_globalFocus;
     setCurrentKeymap(m_globalFocus.m_keymaps.front());
-    m_hwndFocus = NULL;
+    m_hwndFocus = nullptr;
     return true;
 }

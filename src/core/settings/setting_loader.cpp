@@ -339,7 +339,7 @@ Modifier SettingLoader::load_MODIFIER(
         isModifierSpecified.on(Modifier::Type(i));
     }
 
-    Token *t = NULL;
+    Token *t = nullptr;
 
 continue_loop:
     while (!isEOL()) {
@@ -506,8 +506,8 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
     Token *name = getToken();    // <KEYMAP_NAME>
     tstringi windowClassName;
     tstringi windowTitleName;
-    KeySeq *keySeq = NULL;
-    Keymap *parentKeymap = NULL;
+    KeySeq *keySeq = nullptr;
+    Keymap *parentKeymap = nullptr;
     bool isKeymap2 = false;
     bool doesLoadDefaultKeySeq = false;
 
@@ -548,7 +548,7 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
 
     m_currentKeymap = m_setting->m_keymaps.add(
                           Keymap(type, name->getString(), windowClassName, windowTitleName,
-                                 NULL, NULL));
+                                 nullptr, nullptr));
 
     if (doesLoadDefaultKeySeq) {
         Token *t = lookToken();
@@ -568,7 +568,7 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
             keySeq = SettingLoader::load_KEY_SEQUENCE();
         }
     }
-    if (keySeq == NULL) {
+    if (keySeq == nullptr) {
         FunctionData *fd;
         if (type == Keymap::Type_keymap && !isKeymap2)
             fd = createFunctionData(_T("KeymapParent"));
@@ -878,7 +878,7 @@ KeySeq *SettingLoader::load_KEY_SEQUENCE(
             getToken();
             t = getToken();
             KeySeq *ks = m_setting->m_keySeqs.searchByName(t->getString());
-            if (ks == NULL)
+            if (ks == nullptr)
                 throw ErrorMessage() << _T("`$") << *t
                 << _T("': unknown keyseq name.");
             if (!ks->isCorrectMode(i_mode))
@@ -893,7 +893,7 @@ KeySeq *SettingLoader::load_KEY_SEQUENCE(
 
             // search function
             ActionFunction af(createFunctionData(t->getString()), modifier);
-            if (af.m_functionData == NULL)
+            if (af.m_functionData == nullptr)
                 throw ErrorMessage() << _T("`&") << *t
                 << _T("': unknown function name.");
             af.m_functionData->load(this);
@@ -1019,7 +1019,7 @@ void SettingLoader::load_MODIFIER_ASSIGNMENT()
         if (am == Keymap::AM_notModifier)
             break;
 
-        m_currentKeymap->addModifier(mt, Keymap::AO_overwrite, am, NULL);
+        m_currentKeymap->addModifier(mt, Keymap::AO_overwrite, am, nullptr);
         if (isEOL())
             return;
         t = getToken();
@@ -1228,7 +1228,7 @@ static bool readFile(tstring *o_data, const tstringi &i_filename)
         fclose(fp);
         return false;
     }
-    buf.get()[sbuf.st_size] = 0;            // mbstowcs() requires NULL
+    buf.get()[sbuf.st_size] = 0;            // mbstowcs() requires nullptr
     // terminated string
 
 #ifdef _UNICODE
@@ -1319,7 +1319,7 @@ not_UTF_8:
     }
 
     // try multibyte charset
-    size_t wsize = mbstowcs(NULL, reinterpret_cast<char *>(buf.get()), 0);
+    size_t wsize = mbstowcs(nullptr, reinterpret_cast<char *>(buf.get()), 0);
     if (wsize != size_t(-1)) {
         Array<wchar_t> wbuf(wsize);
         mbstowcs(wbuf.get(), reinterpret_cast<char *>(buf.get()), wsize);
@@ -1483,7 +1483,7 @@ bool SettingLoader::getFilename(const tstringi &i_name, tstringi *o_path,
         // find file from registry
         if (i_name.empty()) {            // called not from 'include'
             Setting::Symbols symbols;
-            if (m_config && getFilenameFromConfig(*m_config, NULL, o_path, &symbols)) {
+            if (m_config && getFilenameFromConfig(*m_config, nullptr, o_path, &symbols)) {
                 if (o_path->empty())
                     // find file from home directory
                 {
@@ -1532,7 +1532,7 @@ add_symbols:
             return false;                // called by 'include'
 
         if (!DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_setting),
-                       NULL, dlgSetting_dlgProc))
+                       nullptr, dlgSetting_dlgProc))
             return false;
     }
 }
@@ -1540,12 +1540,12 @@ add_symbols:
 
 // constructor
 SettingLoader::SettingLoader(SyncObject *i_soLog, tostream *i_log, const ConfigStore *i_config)
-        : m_setting(NULL),
+        : m_setting(nullptr),
         m_config(i_config),
         m_isThereAnyError(false),
         m_soLog(i_soLog),
         m_log(i_log),
-        m_currentKeymap(NULL)
+        m_currentKeymap(nullptr)
 {
     m_defaultKeySeqModifier =
         m_defaultAssignModifier.release(Modifier::Type_ImeComp);
@@ -1565,7 +1565,7 @@ bool SettingLoader::initialize(Setting *i_setting)
     // add default keymap
     m_currentKeymap = m_setting->m_keymaps.add(
                           Keymap(Keymap::Type_windowOr, _T("Global"), _T(""), _T(""),
-                                 globalDefault, NULL));
+                                 globalDefault, nullptr));
     return true;
 }
 

@@ -221,7 +221,7 @@ BOOL LayoutManager::wmSize(DWORD /* i_fwSizeType */, short /* i_nWidth */,
                            short /* i_nHeight */)
 {
     adjust();
-    RedrawWindow(m_hwnd, NULL, NULL,
+    RedrawWindow(m_hwnd, nullptr, nullptr,
                  RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
     return TRUE;
 }

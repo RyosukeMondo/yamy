@@ -61,7 +61,7 @@ private:
 
     public:
         ///
-        FocusOfThread() : m_threadId(0), m_hwndFocus(NULL), m_isConsole(false) { }
+        FocusOfThread() : m_threadId(0), m_hwndFocus(nullptr), m_isConsole(false) { }
     };
     typedef std::map<DWORD /*ThreadId*/, FocusOfThread> FocusOfThreads;    ///
 
@@ -247,7 +247,7 @@ public:
     /// Push input event to the queue (Thread Safe)
     void pushInputEvent(const KEYBOARD_INPUT_DATA &kid);
 
-    /// Get current setting (Thread Safe - check for NULL)
+    /// Get current setting (Thread Safe - check for nullptr)
     const Setting *getSetting() const { return m_setting; }
 
 public:
@@ -582,11 +582,11 @@ public:
         if (!hf)
             return;
 
-        if (GetWindowThreadProcessId(hf, NULL) ==
-                GetWindowThreadProcessId(m_hwndAssocWindow, NULL))
+        if (GetWindowThreadProcessId(hf, nullptr) ==
+                GetWindowThreadProcessId(m_hwndAssocWindow, nullptr))
             return;    // inhibit the investigation of MADO TSUKAI NO YUUTSU
 
-        const _TCHAR *target = NULL;
+        const _TCHAR *target = nullptr;
         int number_target = 0;
 
         if (i_hwnd == hf)

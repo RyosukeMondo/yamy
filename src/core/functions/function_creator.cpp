@@ -87,5 +87,5 @@ FunctionData *createFunctionData(const tstring &i_name)
     for (size_t i = 0; i != NUMBER_OF(functionCreators); ++ i)
         if (i_name == functionCreators[i].m_name)
             return functionCreators[i].m_creator();
-    return NULL;
+    return nullptr;
 }

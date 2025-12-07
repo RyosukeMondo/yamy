@@ -51,10 +51,10 @@ void Engine::generateKeyEvent(Key *i_key, bool i_doPress, bool i_isByAssign)
                 kid.Flags = sc[i].m_flags;
                 if (!i_doPress)
                     kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
-                injectInput(&kid, NULL);
+                injectInput(&kid, nullptr);
             }
 
-            m_lastGeneratedKey = i_doPress ? i_key : NULL;
+            m_lastGeneratedKey = i_doPress ? i_key : nullptr;
         }
     }
 

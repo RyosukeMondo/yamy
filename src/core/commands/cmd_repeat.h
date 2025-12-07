@@ -13,7 +13,7 @@ public:
 
     Command_Repeat() {
         std::get<1>(m_args) = 10; // Default max = 10
-        std::get<0>(m_args) = NULL;
+        std::get<0>(m_args) = nullptr;
     }
     // Default copy constructor and destructor are sufficient as we don't own KeySeq
     // Command_Repeat(const Command_Repeat &i_o);

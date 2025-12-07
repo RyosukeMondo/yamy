@@ -27,7 +27,7 @@ static LRESULT CALLBACK WndProc(
     case WM_SETFOCUS: {
         RECT rc;
         GetClientRect(i_hwnd, &rc);
-        CreateCaret(i_hwnd, reinterpret_cast<HBITMAP>(NULL), 2,
+        CreateCaret(i_hwnd, reinterpret_cast<HBITMAP>(nullptr), 2,
                     rcHeight(&rc) / 2);
         ShowCaret(i_hwnd);
         SetCaretPos(rcWidth(&rc) / 2, rcHeight(&rc) / 4);
@@ -57,10 +57,10 @@ ATOM Register_focus()
     wc.cbClsExtra    = 0;
     wc.cbWndExtra    = 0;
     wc.hInstance     = g_hInst;
-    wc.hIcon         = NULL;
-    wc.hCursor       = LoadCursor(NULL, IDC_IBEAM);
+    wc.hIcon         = nullptr;
+    wc.hCursor       = LoadCursor(nullptr, IDC_IBEAM);
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
-    wc.lpszMenuName  = NULL;
+    wc.lpszMenuName  = nullptr;
     wc.lpszClassName = _T("mayuFocus");
     return RegisterClass(&wc);
 }

@@ -106,7 +106,7 @@ extern tostream &operator<<(tostream &i_ost, const tstringq &i_data);
 
 /// interpret meta characters such as \n
 tstring interpretMetaCharacters(const _TCHAR *i_str, size_t i_len,
-                                const _TCHAR *i_quote = NULL,
+                                const _TCHAR *i_quote = nullptr,
                                 bool i_doesUseRegexpBackReference = false);
 
 /// add session id to i_str

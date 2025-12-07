@@ -37,7 +37,7 @@ private:
 public:
     /// constructor
     explicit Array(const Allocator& i_allocator = Allocator())
-            : m_allocator(i_allocator), m_size(0), m_buf(NULL)  { }
+            : m_allocator(i_allocator), m_size(0), m_buf(nullptr)  { }
 
     /// constructor
     explicit Array(size_type i_size, const T& i_value = T(),
@@ -57,7 +57,7 @@ public:
     }
 
     /// copy constructor
-    Array(const Array& i_o) : m_size(0), m_buf(NULL) {
+    Array(const Array& i_o) : m_size(0), m_buf(nullptr) {
         operator=(i_o);
     }
 

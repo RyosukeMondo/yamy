@@ -43,8 +43,8 @@ class Target
     ///
     Target(HWND i_hwnd)
             : m_hwnd(i_hwnd),
-            m_preHwnd(NULL),
-            m_hCursor(NULL) {
+            m_preHwnd(nullptr),
+            m_hCursor(nullptr) {
     }
 
     /// WM_CREATE
@@ -142,7 +142,7 @@ class Target
     int wmLButtonDown(WORD /* i_keys */, int /* i_x */, int /* i_y */) {
         SetCapture(m_hwnd);
         SetCursor(m_hCursor);
-        CHECK_TRUE( InvalidateRect(m_hwnd, NULL, TRUE) );
+        CHECK_TRUE( InvalidateRect(m_hwnd, nullptr, TRUE) );
         CHECK_TRUE( UpdateWindow(m_hwnd) );
         return 0;
     }
@@ -151,9 +151,9 @@ class Target
     int wmLButtonUp(WORD /* i_keys */, int /* i_x */, int /* i_y */) {
         if (m_preHwnd)
             invertFrame(m_preHwnd);
-        m_preHwnd = NULL;
+        m_preHwnd = nullptr;
         ReleaseCapture();
-        CHECK_TRUE( InvalidateRect(m_hwnd, NULL, TRUE) );
+        CHECK_TRUE( InvalidateRect(m_hwnd, nullptr, TRUE) );
         CHECK_TRUE( UpdateWindow(m_hwnd) );
         return 0;
     }
@@ -201,10 +201,10 @@ ATOM Register_target()
     wc.cbClsExtra    = 0;
     wc.cbWndExtra    = 0;
     wc.hInstance     = g_hInst;
-    wc.hIcon         = NULL;
-    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    wc.hIcon         = nullptr;
+    wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wc.lpszMenuName  = NULL;
+    wc.lpszMenuName  = nullptr;
     wc.lpszClassName = _T("mayuTarget");
     return RegisterClass(&wc);
 }

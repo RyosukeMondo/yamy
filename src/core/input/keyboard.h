@@ -313,7 +313,7 @@ public:
 
 public:
     ///
-    ModifiedKey() : m_key(NULL) { }
+    ModifiedKey() : m_key(nullptr) { }
     ///
     ModifiedKey(Key *i_key) : m_key(i_key) { }
     ///

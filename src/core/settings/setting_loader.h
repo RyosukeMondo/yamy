@@ -86,7 +86,7 @@ private:
     void load_DEFINE_OPTION();            /// &lt;DEFINE_OPTION&gt;
     void load_KEYBOARD_DEFINITION();        /// &lt;KEYBOARD_DEFINITION&gt;
     Modifier load_MODIFIER(Modifier::Type i_mode, Modifier i_modifier,
-                           Modifier::Type *o_mode = NULL);
+                           Modifier::Type *o_mode = nullptr);
     /// &lt;..._MODIFIER&gt;
     Key *load_KEY_NAME();                /// &lt;KEY_NAME&gt;
     void load_KEYMAP_DEFINITION(const Token *i_which);
@@ -138,7 +138,7 @@ private:
 
 public:
     ///
-    SettingLoader(SyncObject *i_soLog, tostream *i_log, const ConfigStore *i_config = NULL);
+    SettingLoader(SyncObject *i_soLog, tostream *i_log, const ConfigStore *i_config = nullptr);
 
     /// load setting
     bool load(Setting *o_setting, const tstringi &i_filename = _T(""));

@@ -15,43 +15,43 @@
 
 
 Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_configStore, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver)
-        : m_hwndAssocWindow(NULL),
-        m_setting(NULL),
+        : m_hwndAssocWindow(nullptr),
+        m_setting(nullptr),
         m_windowSystem(i_windowSystem),
         m_configStore(i_configStore),
         m_inputInjector(i_inputInjector),
         m_inputHook(i_inputHook),
         m_inputDriver(i_inputDriver),
-        m_inputQueue(NULL),
-        m_readEvent(NULL),
-        m_queueMutex(NULL),
-        m_sts4mayu(NULL),
-        m_cts4mayu(NULL),
+        m_inputQueue(nullptr),
+        m_readEvent(nullptr),
+        m_queueMutex(nullptr),
+        m_sts4mayu(nullptr),
+        m_cts4mayu(nullptr),
         m_isLogMode(false),
         m_isEnabled(true),
         m_isSynchronizing(false),
-        m_eSync(NULL),
+        m_eSync(nullptr),
         m_generateKeyboardEventsRecursionGuard(0),
         m_currentKeyPressCount(0),
         m_currentKeyPressCountOnWin32(0),
-        m_lastGeneratedKey(NULL),
+        m_lastGeneratedKey(nullptr),
         m_oneShotRepeatableRepeatCount(0),
         m_isPrefix(false),
-        m_currentKeymap(NULL),
-        m_currentFocusOfThread(NULL),
-        m_hwndFocus(NULL),
-        m_afShellExecute(NULL),
+        m_currentKeymap(nullptr),
+        m_currentFocusOfThread(nullptr),
+        m_hwndFocus(nullptr),
+        m_afShellExecute(nullptr),
         m_variable(0),
         m_log(i_log) {
     BOOL (WINAPI *pChangeWindowMessageFilter)(UINT, DWORD) =
         reinterpret_cast<BOOL (WINAPI*)(UINT, DWORD)>(GetProcAddress(GetModuleHandle(_T("user32.dll")), "ChangeWindowMessageFilter"));
 
-    if(pChangeWindowMessageFilter != NULL) {
+    if(pChangeWindowMessageFilter != nullptr) {
         pChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
     }
 
     for (size_t i = 0; i < NUMBER_OF(m_lastPressedKey); ++ i)
-        m_lastPressedKey[i] = NULL;
+        m_lastPressedKey[i] = nullptr;
 
     // set default lock state
     for (int i = 0; i < Modifier::Type_end; ++ i)
@@ -60,12 +60,12 @@ Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_
         m_currentLock.release(static_cast<Modifier::Type>(i));
 
     // create event for sync
-    CHECK_TRUE( m_eSync = CreateEvent(NULL, FALSE, FALSE, NULL) );
+    CHECK_TRUE( m_eSync = CreateEvent(nullptr, FALSE, FALSE, nullptr) );
     // create named pipe for &SetImeString
     m_hookPipe = CreateNamedPipe(addSessionId(HOOK_PIPE_NAME).c_str(),
                                  PIPE_ACCESS_OUTBOUND,
                                  PIPE_TYPE_BYTE, 1,
-                                 0, 0, 0, NULL);
+                                 0, 0, 0, nullptr);
     StrExprArg::setSystem(this);
 }
 
@@ -86,15 +86,15 @@ void Engine::start() {
     m_inputHook->start(this);
 
     CHECK_TRUE( m_inputQueue = new std::deque<KEYBOARD_INPUT_DATA> );
-    CHECK_TRUE( m_queueMutex = CreateMutex(NULL, FALSE, NULL) );
-    CHECK_TRUE( m_readEvent = CreateEvent(NULL, TRUE, FALSE, NULL) );
+    CHECK_TRUE( m_queueMutex = CreateMutex(nullptr, FALSE, nullptr) );
+    CHECK_TRUE( m_readEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr) );
     m_ol.Offset = 0;
     m_ol.OffsetHigh = 0;
     m_ol.hEvent = m_readEvent;
 
     m_inputDriver->open(m_readEvent);
 
-    CHECK_TRUE( m_threadHandle = (HANDLE)_beginthreadex(NULL, 0, keyboardHandler, this, 0, &m_threadId) );
+    CHECK_TRUE( m_threadHandle = (HANDLE)_beginthreadex(nullptr, 0, keyboardHandler, this, 0, &m_threadId) );
 }
 
 
@@ -105,16 +105,16 @@ void Engine::stop() {
 
     WaitForSingleObject(m_queueMutex, INFINITE);
     delete m_inputQueue;
-    m_inputQueue = NULL;
+    m_inputQueue = nullptr;
     SetEvent(m_readEvent);
     ReleaseMutex(m_queueMutex);
 
     WaitForSingleObject(m_threadHandle, 2000);
     CHECK_TRUE( CloseHandle(m_threadHandle) );
-    m_threadHandle = NULL;
+    m_threadHandle = nullptr;
 
     CHECK_TRUE( CloseHandle(m_readEvent) );
-    m_readEvent = NULL;
+    m_readEvent = nullptr;
 
     for (ThreadIds::iterator i = m_attachedThreadIds.begin();
          i != m_attachedThreadIds.end(); i++) {

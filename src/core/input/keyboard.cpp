@@ -278,7 +278,7 @@ void Keyboard::KeyIterator::next()
 Key *Keyboard::KeyIterator::operator *()
 {
     if (m_hashedKeysSize == 0)
-        return NULL;
+        return nullptr;
     return &*m_i;
 }
 
@@ -333,7 +333,7 @@ Key *Keyboard::searchKey(const Key &i_key)
     for (Keys::iterator i = keys.begin(); i != keys.end(); ++ i)
         if ((*i).isSameScanCode(i_key))
             return &*i;
-    return NULL;
+    return nullptr;
 }
 
 
@@ -344,7 +344,7 @@ Key *Keyboard::searchPrefixKey(const Key &i_key)
     for (Keys::iterator i = keys.begin(); i != keys.end(); ++ i)
         if ((*i).isPrefixScanCode(i_key))
             return &*i;
-    return NULL;
+    return nullptr;
 }
 
 
@@ -367,7 +367,7 @@ Key *Keyboard::searchKeyByNonAliasName(const tstringi &i_name)
         if (i != keys.end())
             return &*i;
     }
-    return NULL;
+    return nullptr;
 }
 
 /// search a substitute
@@ -378,5 +378,5 @@ ModifiedKey Keyboard::searchSubstitute(const ModifiedKey &i_mkey)
         if (i->m_mkeyFrom.m_key == i_mkey.m_key &&
                 i->m_mkeyFrom.m_modifier.doesMatch(i_mkey.m_modifier))
             return i->m_mkeyTo;
-    return ModifiedKey();                // not found (.m_mkey is NULL)
+    return ModifiedKey();                // not found (.m_mkey is nullptr)
 }

@@ -30,7 +30,7 @@ void Engine::keyboardHandler()
 
         WaitForSingleObject(m_queueMutex, INFINITE);
         while (SignalObjectAndWait(m_queueMutex, m_readEvent, INFINITE, true) == WAIT_OBJECT_0) {
-            if (m_inputQueue == NULL) {
+            if (m_inputQueue == nullptr) {
                 ReleaseMutex(m_queueMutex);
                 return;
             }
@@ -52,7 +52,7 @@ void Engine::keyboardHandler()
             case WAIT_OBJECT_0 + NUMBER_OF(handles): {
                 MSG message;
 
-                while (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
+                while (PeekMessage(&message, nullptr, 0, 0, PM_REMOVE)) {
                     switch (message.message) {
                     case WM_APP + 201: {
                         if (message.wParam) {
@@ -87,12 +87,12 @@ void Engine::keyboardHandler()
                 outputToLog(&key, ModifiedKey(), 0);
                 if (kid.Flags & KEYBOARD_INPUT_DATA::E1) {
                     // through mouse event even if log mode
-                    injectInput(&kid, NULL);
+                    injectInput(&kid, nullptr);
                 }
             } else {
-                injectInput(&kid, NULL);
+                injectInput(&kid, nullptr);
             }
-            updateLastPressedKey(NULL);
+            updateLastPressedKey(nullptr);
             continue;
         }
 
@@ -100,15 +100,15 @@ void Engine::keyboardHandler()
 
         if (!m_currentFocusOfThread ||
                 !m_currentKeymap) {
-            injectInput(&kid, NULL);
+            injectInput(&kid, nullptr);
             Acquire a(&m_log, 0);
             if (!m_currentFocusOfThread)
-                m_log << _T("internal error: m_currentFocusOfThread == NULL")
+                m_log << _T("internal error: m_currentFocusOfThread == nullptr")
                 << std::endl;
             if (!m_currentKeymap)
-                m_log << _T("internal error: m_currentKeymap == NULL")
+                m_log << _T("internal error: m_currentKeymap == nullptr")
                 << std::endl;
-            updateLastPressedKey(NULL);
+            updateLastPressedKey(nullptr);
             continue;
         }
 
@@ -167,7 +167,7 @@ void Engine::keyboardHandler()
             outputToLog(pProcessingKey, c.m_mkey, 0);
             if (kid.Flags & KEYBOARD_INPUT_DATA::E1) {
                 // through mouse event even if log mode
-                injectInput(&kid, NULL);
+                injectInput(&kid, nullptr);
             }
         } else if (am == Keymap::AM_true) {
             {
@@ -215,20 +215,20 @@ void Engine::keyboardHandler()
                     cnew.m_mkey.m_modifier.off(Modifier::Type_Down);
                     beginGeneratingKeyboardEvents(cnew, false);
                 }
-                m_oneShotKey.m_key = NULL;
+                m_oneShotKey.m_key = nullptr;
                 m_oneShotRepeatableRepeatCount = 0;
             }
         } else if (c.m_mkey.m_key) {
             // normal key
             outputToLog(pProcessingKey, c.m_mkey, 1);
             if (isPhysicallyPressed)
-                m_oneShotKey.m_key = NULL;
+                m_oneShotKey.m_key = nullptr;
             beginGeneratingKeyboardEvents(c, isModifier);
         } else {
             // undefined key
             if (kid.Flags & KEYBOARD_INPUT_DATA::E1) {
                 // through mouse event even if undefined for fail safe
-                injectInput(&kid, NULL);
+                injectInput(&kid, nullptr);
             }
         }
 
@@ -243,13 +243,13 @@ void Engine::keyboardHandler()
                 keyboardResetOnWin32();
             m_currentKeyPressCount = 0;
             m_currentKeyPressCountOnWin32 = 0;
-            m_oneShotKey.m_key = NULL;
+            m_oneShotKey.m_key = nullptr;
             if (m_currentLock.isOn(Modifier::Type_Touchpad) == false)
                 m_currentLock.off(Modifier::Type_TouchpadSticky);
         }
 
         if (!isMouseEvent)
             key.initialize();
-        updateLastPressedKey(isPhysicallyPressed ? c.m_mkey.m_key : NULL);
+        updateLastPressedKey(isPhysicallyPressed ? c.m_mkey.m_key : nullptr);
     }
 }

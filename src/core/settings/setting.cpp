@@ -19,7 +19,7 @@ Key *events[] = {
     &prefixed,
     &before_key_down,
     &after_key_up,
-    NULL,
+    nullptr,
 };
 }
 
@@ -64,7 +64,7 @@ void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
 {
     tstringi filename;
 #ifndef USE_INI
-    if (i_config && getFilenameFromConfig(*i_config, NULL, &filename, NULL) &&
+    if (i_config && getFilenameFromConfig(*i_config, nullptr, &filename, nullptr) &&
             !filename.empty()) {
         tregex getPath(_T("^(.*[/\\\\])[^/\\\\]*$"));
         tsmatch getPathResult;
@@ -93,6 +93,6 @@ void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
     _TCHAR buf[GANA_MAX_PATH];
 #endif //USE_INI
 
-    if (GetModuleFileName(GetModuleHandle(NULL), buf, NUMBER_OF(buf)))
+    if (GetModuleFileName(GetModuleHandle(nullptr), buf, NUMBER_OF(buf)))
         o_pathes->push_back(pathRemoveFileSpec(buf));
 }

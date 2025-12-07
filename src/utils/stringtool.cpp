@@ -113,8 +113,8 @@ static inline size_t xstrlcpy(T *o_dest, const T *i_src, size_t i_destSize)
     const T *s = i_src;
     size_t n = i_destSize;
 
-    ASSERT( o_dest != NULL );
-    ASSERT( i_src != NULL );
+    ASSERT( o_dest != nullptr );
+    ASSERT( i_src != nullptr );
 
     // Copy as many bytes as will fit
     if (n != 0 && --n != 0) {
@@ -158,8 +158,8 @@ size_t mbslcpy(unsigned char *o_dest, const unsigned char *i_src,
     const unsigned char *s = i_src;
     size_t n = i_destSize;
 
-    ASSERT( o_dest != NULL );
-    ASSERT( i_src != NULL );
+    ASSERT( o_dest != nullptr );
+    ASSERT( i_src != nullptr );
 
     if (n == 0)
         return strlen(reinterpret_cast<const char *>(i_src));
@@ -420,7 +420,7 @@ std::string guardRegexpFromMbcs(const char *i_str)
 // converter
 std::wstring to_wstring(const std::string &i_str)
 {
-    size_t size = mbstowcs(NULL, i_str.c_str(), i_str.size() + 1);
+    size_t size = mbstowcs(nullptr, i_str.c_str(), i_str.size() + 1);
     if (size == (size_t)-1)
         return std::wstring();
     std::vector<wchar_t> result(size + 1);
@@ -432,7 +432,7 @@ std::wstring to_wstring(const std::string &i_str)
 // converter
 std::string to_string(const std::wstring &i_str)
 {
-    size_t size = wcstombs(NULL, i_str.c_str(), i_str.size() + 1);
+    size_t size = wcstombs(nullptr, i_str.c_str(), i_str.size() + 1);
     if (size == (size_t)-1)
         return std::string();
     std::vector<char> result(size + 1);

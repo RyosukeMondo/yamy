@@ -52,7 +52,7 @@ private:
 
     public:
         ///
-        SmallestSize() : m_hwnd(NULL) { }
+        SmallestSize() : m_hwnd(nullptr) { }
     };
 
     typedef std::list<Item> Items;        ///
@@ -74,12 +74,12 @@ public:
     /** restrict the smallest size of the window to the current size of it or
         specified by i_size */
     void restrictSmallestSize(Restrict i_restrict = RESTRICT_BOTH,
-                              SIZE *i_size = NULL);
+                              SIZE *i_size = nullptr);
 
     /** restrict the largest size of the window to the current size of it or
         specified by i_size */
     void restrictLargestSize(Restrict i_restrict = RESTRICT_BOTH,
-                             SIZE *i_size = NULL);
+                             SIZE *i_size = nullptr);
 
     /** Calculate new rectangle for a child window based on origins and parent resizing.
         Exposed for unit testing.

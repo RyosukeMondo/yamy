@@ -21,8 +21,8 @@ int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
     _TCHAR exeDrive[GANA_MAX_PATH];
     _TCHAR exeDir[GANA_MAX_PATH];
 
-    GetModuleFileName(NULL, exePath, GANA_MAX_PATH);
-    _tsplitpath_s(exePath, exeDrive, GANA_MAX_PATH, exeDir, GANA_MAX_PATH, NULL, 0, NULL, 0);
+    GetModuleFileName(nullptr, exePath, GANA_MAX_PATH);
+    _tsplitpath_s(exePath, exeDrive, GANA_MAX_PATH, exeDir, GANA_MAX_PATH, nullptr, 0, nullptr, 0);
     yamyPath = exeDrive;
     yamyPath += exeDir;
 
@@ -44,8 +44,8 @@ int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
         yamyPath += _T("yamy-32-hook.exe");
     }
 
-    result = CreateProcess(yamyPath.c_str(), NULL, NULL, NULL, FALSE,
-                           NORMAL_PRIORITY_CLASS, 0, NULL, &si, &pi);
+    result = CreateProcess(yamyPath.c_str(), nullptr, nullptr, nullptr, FALSE,
+                           NORMAL_PRIORITY_CLASS, 0, nullptr, &si, &pi);
 
     if (result == FALSE) {
         TCHAR buf[1024];
@@ -58,7 +58,7 @@ int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
                    title, sizeof(title)/sizeof(title[0]));
         _stprintf_s(buf, sizeof(buf)/sizeof(buf[0]),
                     text, yamyPath, GetLastError());
-        MessageBox((HWND)NULL, buf, title, MB_OK | MB_ICONSTOP);
+        MessageBox((HWND)nullptr, buf, title, MB_OK | MB_ICONSTOP);
     } else {
         CloseHandle(pi.hThread);
         CloseHandle(pi.hProcess);

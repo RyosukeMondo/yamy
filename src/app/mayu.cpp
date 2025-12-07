@@ -147,10 +147,10 @@ private:
         wc.cbClsExtra    = 0;
         wc.cbWndExtra    = sizeof(Mayu *);
         wc.hInstance     = g_hInst;
-        wc.hIcon         = NULL;
-        wc.hCursor       = NULL;
-        wc.hbrBackground = NULL;
-        wc.lpszMenuName  = NULL;
+        wc.hIcon         = nullptr;
+        wc.hCursor       = nullptr;
+        wc.hbrBackground = nullptr;
+        wc.lpszMenuName  = nullptr;
         wc.lpszClassName = _T("mayuTasktray");
         return RegisterClass(&wc);
     }
@@ -189,7 +189,7 @@ private:
                 << rc.left << _T(", ") << rc.top << _T(") / (")
                 << rcWidth(&rc) << _T("x") << rcHeight(&rc) << _T(")")
                 << std::endl;
-                hwnd = getToplevelWindow((HWND)(ULONG_PTR)n->m_hwnd, NULL);
+                hwnd = getToplevelWindow((HWND)(ULONG_PTR)n->m_hwnd, nullptr);
             }
 
             GetWindowRect(hwnd, &rc);
@@ -484,7 +484,7 @@ private:
 
                         // show popup menu
                         TrackPopupMenu(hMenuSub, TPM_LEFTALIGN,
-                                       p.x, p.y, 0, i_hwnd, NULL);
+                                       p.x, p.y, 0, i_hwnd, nullptr);
                         // TrackPopupMenu may fail (ERROR_POPUP_ALREADY_ACTIVE)
                         break;
                     }
@@ -556,7 +556,7 @@ private:
                         if (!This->m_isSettingDialogOpened) {
                             This->m_isSettingDialogOpened = true;
                             if (DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_setting),
-                                          NULL, dlgSetting_dlgProc))
+                                          nullptr, dlgSetting_dlgProc))
                                 This->load();
                             This->m_isSettingDialogOpened = false;
                         }
@@ -611,8 +611,8 @@ private:
                         tstringi helpFilename = pathRemoveFileSpec(buf);
                         helpFilename += _T("\\");
                         helpFilename += loadString(IDS_helpFilename);
-                        ShellExecute(NULL, _T("open"), helpFilename.c_str(),
-                                     NULL, NULL, SW_SHOWNORMAL);
+                        ShellExecute(nullptr, _T("open"), helpFilename.c_str(),
+                                     nullptr, nullptr, SW_SHOWNORMAL);
                         break;
                     }
                     case ID_MENUITEM_disable:
@@ -648,7 +648,7 @@ private:
                 case EngineNotify_showDlg: {
                     // show investigate/log window
                     int sw = (i_lParam & ~MayuDialogType_mask);
-                    HWND hwnd = NULL;
+                    HWND hwnd = nullptr;
                     switch (static_cast<MayuDialogType>(
                                 i_lParam & MayuDialogType_mask)) {
                     case MayuDialogType_investigate:
@@ -869,7 +869,7 @@ private:
 
         _sntprintf_s(title, NUMBER_OF(title), _TRUNCATE, loadString(IDS_mayu).c_str());
         _sntprintf_s(text, NUMBER_OF(text), _TRUNCATE, loadString(ids).c_str(), code);
-         return MessageBox((HWND)NULL, text, title, style);
+         return MessageBox((HWND)nullptr, text, title, style);
     }
 
     int enableToWriteByUser(HANDLE hdl)
@@ -878,9 +878,9 @@ private:
         DWORD userNameSize = NUMBER_OF(userName);
 
         SID_NAME_USE sidType;
-        PSID pSid = NULL;
+        PSID pSid = nullptr;
         DWORD sidSize = 0;
-        TCHAR *pDomain = NULL;
+        TCHAR *pDomain = nullptr;
         DWORD domainSize = 0;
 
         PSECURITY_DESCRIPTOR pSd;
@@ -903,7 +903,7 @@ private:
         }
 
         // get buffer size for pSid (and pDomain)
-        ret = LookupAccountName(NULL, userName, pSid, &sidSize, pDomain, &domainSize, &sidType);
+        ret = LookupAccountName(nullptr, userName, pSid, &sidSize, pDomain, &domainSize, &sidType);
         if (ret != FALSE || GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
             // above call should fail by ERROR_INSUFFICIENT_BUFFER
             err = YAMY_ERROR_ON_GET_LOGONUSERNAME;
@@ -912,13 +912,13 @@ private:
 
         pSid = reinterpret_cast<PSID>(LocalAlloc(LPTR, sidSize));
         pDomain = reinterpret_cast<TCHAR*>(LocalAlloc(LPTR, domainSize * sizeof(TCHAR)));
-        if (pSid == NULL || pDomain == NULL) {
+        if (pSid == nullptr || pDomain == nullptr) {
             err = YAMY_ERROR_NO_MEMORY;
             goto exit;
         }
 
         // get SID (and Domain) for logoned user
-        ret = LookupAccountName(NULL, userName, pSid, &sidSize, pDomain, &domainSize, &sidType);
+        ret = LookupAccountName(nullptr, userName, pSid, &sidSize, pDomain, &domainSize, &sidType);
         if (ret == FALSE) {
             // LookupAccountName() should success in this time
             err = YAMY_ERROR_ON_GET_LOGONUSERNAME;
@@ -926,7 +926,7 @@ private:
         }
 
         // get DACL for hdl
-        ret = GetSecurityInfo(hdl, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pOrigDacl, NULL, &pSd);
+        ret = GetSecurityInfo(hdl, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pOrigDacl, nullptr, &pSd);
         if (ret != ERROR_SUCCESS) {
             err = YAMY_ERROR_ON_GET_SECURITYINFO;
             goto exit;
@@ -944,7 +944,7 @@ private:
 
         // allocate memory for new DACL
         pNewDacl = reinterpret_cast<PACL>(LocalAlloc(LPTR, newDaclSize));
-        if (pNewDacl == NULL) {
+        if (pNewDacl == nullptr) {
             err = YAMY_ERROR_NO_MEMORY;
             goto exit;
         }
@@ -1006,7 +1006,7 @@ private:
             }
         }
 
-        ret = SetSecurityInfo(hdl, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pNewDacl, NULL);
+        ret = SetSecurityInfo(hdl, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pNewDacl, nullptr);
         if (ret != ERROR_SUCCESS) {
             err = YAMY_ERROR_ON_SET_SECURITYINFO;
         }
@@ -1023,9 +1023,9 @@ exit:
 public:
     ///
     Mayu(HANDLE i_mutex)
-            : m_hwndTaskTray(NULL),
+            : m_hwndTaskTray(nullptr),
             m_mutex(i_mutex),
-            m_hwndLog(NULL),
+            m_hwndLog(nullptr),
             m_WM_TaskbarRestart(RegisterWindowMessage(_T("TaskbarCreated"))),
             m_WM_MayuIPC(RegisterWindowMessage(WM_MayuIPC_NAME)),
             m_canUseTasktrayBaloon(
@@ -1034,12 +1034,12 @@ public:
 #ifdef LOG_TO_FILE
             m_logFile(_T("logs\\mayu.log")),
 #endif // LOG_TO_FILE
-            m_hMenuTaskTray(NULL),
+            m_hMenuTaskTray(nullptr),
             m_hNotifyMailslot(INVALID_HANDLE_VALUE),
-            m_hNotifyEvent(NULL),
+            m_hNotifyEvent(nullptr),
             m_sessionState(0),
             m_escapeNlsKeys(0),
-            m_setting(NULL),
+            m_setting(nullptr),
             m_isSettingDialogOpened(false),
             m_windowSystem(new WindowSystemWin32),
             m_configStore(new Registry(MAYU_REGISTRY_ROOT)),
@@ -1048,10 +1048,10 @@ public:
             m_inputDriver(new InputDriverWin32),
             m_engine(m_log, m_windowSystem, m_configStore, m_inputInjector, m_inputHook, m_inputDriver),
             m_usingSN(false),
-            m_startTime(time(NULL))
+            m_startTime(time(nullptr))
     {
         m_configStore->read(_T("escapeNLSKeys"), &m_escapeNlsKeys, 0);
-        m_hNotifyMailslot = CreateMailslot(NOTIFY_MAILSLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, (SECURITY_ATTRIBUTES *)NULL);
+        m_hNotifyMailslot = CreateMailslot(NOTIFY_MAILSLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, (SECURITY_ATTRIBUTES *)nullptr);
         ASSERT(m_hNotifyMailslot != INVALID_HANDLE_VALUE);
         int err;
         if (checkWindowsVersion(6, 0) != FALSE) { // enableToWriteByUser() is available only Vista or later
@@ -1061,7 +1061,7 @@ public:
             }
         }
 
-        m_hNotifyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+        m_hNotifyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         ASSERT(m_hNotifyEvent);
         m_olNotify.Offset = 0;
         m_olNotify.OffsetHigh = 0;
@@ -1087,7 +1087,7 @@ public:
                                       WS_OVERLAPPEDWINDOW,
                                       CW_USEDEFAULT, CW_USEDEFAULT,
                                       CW_USEDEFAULT, CW_USEDEFAULT,
-                                      NULL, NULL, g_hInst, this);
+                                      nullptr, nullptr, g_hInst, this);
         CHECK_TRUE( m_hwndTaskTray );
 
         // set window handle of tasktray to hooks
@@ -1099,7 +1099,7 @@ public:
         dld.m_log = &m_log;
         dld.m_hwndTaskTray = m_hwndTaskTray;
         m_hwndLog =
-            CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_log), NULL,
+            CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_log), nullptr,
                               dlgLog_dlgProc, (LPARAM)&dld);
         CHECK_TRUE( m_hwndLog );
 
@@ -1107,13 +1107,13 @@ public:
         did.m_engine = &m_engine;
         did.m_hwndLog = m_hwndLog;
         m_hwndInvestigate =
-            CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_investigate), NULL,
+            CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_investigate), nullptr,
                               dlgInvestigate_dlgProc, (LPARAM)&did);
         CHECK_TRUE( m_hwndInvestigate );
 
         m_hwndVersion =
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_version),
-                              NULL, dlgVersion_dlgProc,
+                              nullptr, dlgVersion_dlgProc,
                               (LPARAM)_T(""));
         CHECK_TRUE( m_hwndVersion );
 
@@ -1123,8 +1123,8 @@ public:
         _TCHAR exePath[GANA_MAX_PATH];
         _TCHAR exeDrive[GANA_MAX_PATH];
         _TCHAR exeDir[GANA_MAX_PATH];
-        GetModuleFileName(NULL, exePath, GANA_MAX_PATH);
-        _tsplitpath_s(exePath, exeDrive, GANA_MAX_PATH, exeDir, GANA_MAX_PATH, NULL, 0, NULL, 0);
+        GetModuleFileName(nullptr, exePath, GANA_MAX_PATH);
+        _tsplitpath_s(exePath, exeDrive, GANA_MAX_PATH, exeDir, GANA_MAX_PATH, nullptr, 0, nullptr, 0);
         path = exeDrive;
         path += exeDir;
         path += _T("mayu.log");
@@ -1169,34 +1169,34 @@ public:
         m_si.cb=sizeof(m_si);
 
         // create mutex to block yamyd
-        m_hMutexYamyd = CreateMutex((SECURITY_ATTRIBUTES *)NULL, TRUE, MUTEX_YAMYD_BLOCKER);
+        m_hMutexYamyd = CreateMutex((SECURITY_ATTRIBUTES *)nullptr, TRUE, MUTEX_YAMYD_BLOCKER);
 
         tstring yamydPath;
         _TCHAR exePath[GANA_MAX_PATH];
         _TCHAR exeDrive[GANA_MAX_PATH];
         _TCHAR exeDir[GANA_MAX_PATH];
 
-        GetModuleFileName(NULL, exePath, GANA_MAX_PATH);
-        _tsplitpath_s(exePath, exeDrive, GANA_MAX_PATH, exeDir, GANA_MAX_PATH, NULL, 0, NULL, 0);
+        GetModuleFileName(nullptr, exePath, GANA_MAX_PATH);
+        _tsplitpath_s(exePath, exeDrive, GANA_MAX_PATH, exeDir, GANA_MAX_PATH, nullptr, 0, nullptr, 0);
         yamydPath = exeDrive;
         yamydPath += exeDir;
         yamydPath += _T("yamyd32.exe");
 
-        BOOL result = CreateProcess(yamydPath.c_str(), NULL, NULL, NULL, FALSE,
-                               NORMAL_PRIORITY_CLASS, 0, NULL, &m_si, &m_pi);
+        BOOL result = CreateProcess(yamydPath.c_str(), nullptr, nullptr, nullptr, FALSE,
+                               NORMAL_PRIORITY_CLASS, 0, nullptr, &m_si, &m_pi);
         if (result == FALSE) {
             TCHAR buf[1024];
             TCHAR text[1024];
             TCHAR title[1024];
 
-            m_pi.hProcess = NULL;
-            LoadString(GetModuleHandle(NULL), IDS_cannotInvoke,
+            m_pi.hProcess = nullptr;
+            LoadString(GetModuleHandle(nullptr), IDS_cannotInvoke,
                        text, sizeof(text)/sizeof(text[0]));
-            LoadString(GetModuleHandle(NULL), IDS_mayu,
+            LoadString(GetModuleHandle(nullptr), IDS_mayu,
                        title, sizeof(title)/sizeof(title[0]));
             _stprintf_s(buf, sizeof(buf)/sizeof(buf[0]),
                         text, _T("yamyd32"), GetLastError());
-             MessageBox((HWND)NULL, buf, title, MB_OK | MB_ICONSTOP);
+             MessageBox((HWND)nullptr, buf, title, MB_OK | MB_ICONSTOP);
         } else {
             CloseHandle(m_pi.hThread);
         }
@@ -1264,7 +1264,7 @@ public:
 
             case WAIT_OBJECT_0 + NUMBER_OF(handles): {
                 MSG msg;
-                if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != 0) {
+                if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != 0) {
                     if (msg.message == WM_QUIT) {
                         return msg.wParam;
                     }
@@ -1370,7 +1370,7 @@ int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
 #endif // !USE_INI
 
     // is another mayu running ?
-    HANDLE mutex = CreateMutex((SECURITY_ATTRIBUTES *)NULL, TRUE,
+    HANDLE mutex = CreateMutex((SECURITY_ATTRIBUTES *)nullptr, TRUE,
                                MUTEX_MAYU_EXCLUSIVE_RUNNING);
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         // another mayu already running
@@ -1381,16 +1381,16 @@ int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
             PostMessage((HWND)(ULONG_PTR)g_hookData->m_hwndTaskTray,
                         WM_TaskbarRestart, 0, 0);
         }
-        MessageBox((HWND)NULL, text.c_str(), title.c_str(), MB_OK | MB_ICONSTOP);
+        MessageBox((HWND)nullptr, text.c_str(), title.c_str(), MB_OK | MB_ICONSTOP);
         return 1;
     }
 
     try {
-        CreateDirectory(_T("logs"), NULL);
+        CreateDirectory(_T("logs"), nullptr);
         Mayu(mutex).messageLoop();
     } catch (ErrorMessage &i_e) {
         tstring title = loadString(IDS_mayu);
-        MessageBox((HWND)NULL, i_e.getMessage().c_str(), title.c_str(),
+        MessageBox((HWND)nullptr, i_e.getMessage().c_str(), title.c_str(),
                    MB_OK | MB_ICONSTOP);
     }
 
