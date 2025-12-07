@@ -711,41 +711,6 @@ void Engine::funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous)
 // funcEditNextModifier moved to src/core/commands/cmd_edit_next_modifier.cpp
 // funcVariable moved to src/core/commands/cmd_variable.cpp
 
-// funcRepeat moved to src/core/commands/cmd_repeat.cpp
-// funcUndefined moved to src/core/commands/cmd_undefined.cpp
-// funcIgnore moved to src/core/commands/cmd_ignore.cpp
-
-// post message
-void Engine::funcPostMessage(FunctionParam *i_param, ToWindowType i_window,
-							 UINT i_message, WPARAM i_wParam, LPARAM i_lParam)
-{
-	if (!i_param->m_isPressed)
-		return;
-
-	int window = static_cast<int>(i_window);
-
-	HWND hwnd = i_param->m_hwnd;
-	if (0 < window) {
-		for (int i = 0; i < window; ++ i)
-			hwnd = (HWND)m_windowSystem->getParent((WindowSystem::WindowHandle)hwnd);
-	} else if (window == ToWindowType_toMainWindow) {
-		while (true) {
-			HWND p = (HWND)m_windowSystem->getParent((WindowSystem::WindowHandle)hwnd);
-			if (!p)
-				break;
-			hwnd = p;
-		}
-	} else if (window == ToWindowType_toOverlappedWindow) {
-		while (hwnd) {
-			if (!m_windowSystem->isChild((WindowSystem::WindowHandle)hwnd))
-				break;
-			hwnd = (HWND)m_windowSystem->getParent((WindowSystem::WindowHandle)hwnd);
-		}
-	}
-
-	if (hwnd)
-		m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, i_message, (uintptr_t)i_wParam, (intptr_t)i_lParam);
-}
 
 
 // ShellExecute
@@ -900,73 +865,10 @@ success:
 }
 
 // virtual key
-void Engine::funcVK(FunctionParam *i_param, VKey i_vkey)
-{
-	long key = static_cast<long>(i_vkey);
-	BYTE vkey = static_cast<BYTE>(i_vkey);
-	bool isExtended = !!(key & VKey_extended);
-	bool isUp       = !i_param->m_isPressed && !!(key & VKey_released);
-	bool isDown     = i_param->m_isPressed && !!(key & VKey_pressed);
 
-	if (!isUp && !isDown)
-		return;
-
-	KEYBOARD_INPUT_DATA kid;
-	kid.UnitId = 0;
-	kid.ExtraInformation = 0;
-	kid.Reserved = 0;
-
-	if (vkey == VK_LBUTTON || vkey == VK_RBUTTON || vkey == VK_MBUTTON ||
-		vkey == VK_XBUTTON1 || vkey == VK_XBUTTON2) {
-		// Mouse event
-		kid.Flags = KEYBOARD_INPUT_DATA::E1;
-		if (isUp)
-			kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
-
-		if (vkey == VK_LBUTTON)
-			kid.MakeCode = 1;
-		else if (vkey == VK_RBUTTON)
-			kid.MakeCode = 2;
-		else if (vkey == VK_MBUTTON)
-			kid.MakeCode = 3;
-		else if (vkey == VK_XBUTTON1)
-			kid.MakeCode = 6;
-		else if (vkey == VK_XBUTTON2)
-			kid.MakeCode = 7;
-	} else {
-		// Keyboard event
-		kid.Flags = 0;
-		if (isExtended)
-			kid.Flags |= KEYBOARD_INPUT_DATA::E0;
-		if (isUp)
-			kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
-
-		// Use WindowSystem to map virtual key to scan code
-		kid.MakeCode = static_cast<unsigned short>(m_windowSystem->mapVirtualKey(vkey));
-	}
-
-	InjectionContext ctx;
-	ctx.isDragging = false; // funcVK doesn't seem to support dragging context explicitly?
-	
-	if (m_inputInjector) {
-		m_inputInjector->inject(&kid, ctx);
-	}
-}
 
 // wait
-void Engine::funcWait(FunctionParam *i_param, int i_milliSecond)
-{
-	if (!i_param->m_isPressed)
-		return;
-	if (i_milliSecond < 0 || 5000 < i_milliSecond)	// too long wait
-		return;
 
-	m_isSynchronizing = true;
-	m_cs.release();
-	Sleep(i_milliSecond);
-	m_cs.acquire();
-	m_isSynchronizing = false;
-}
 
 // investigate WM_COMMAND, WM_SYSCOMMAND
 void Engine::funcInvestigateCommand(FunctionParam *i_param)

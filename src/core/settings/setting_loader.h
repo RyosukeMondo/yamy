@@ -19,7 +19,7 @@ class SettingLoader
     template <typename Derived, typename... Args>
     friend class Command;
 #  define FUNCTION_FRIEND
-#  include "functions.h"
+#  include "../functions/function_friends.h"
 #  undef FUNCTION_FRIEND
 
 public:

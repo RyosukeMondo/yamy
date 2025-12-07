@@ -6,6 +6,7 @@
 #include "../core/commands/cmd_keymap_prev_prefix.h"
 #include "../core/commands/cmd_keymap.h"
 #include "../core/commands/cmd_variable.h"
+#include "../core/commands/cmd_wait.h"
 
 TEST(FunctionDataTest, DefaultFunction) {
     std::unique_ptr<FunctionData> fd(Command_Default::create());
@@ -75,9 +76,9 @@ TEST(FunctionDataTest, KeymapFunction) {
 }
 
 TEST(FunctionDataTest, WaitFunction) {
-    std::unique_ptr<FunctionData> fd(FunctionData_Wait::create());
-    FunctionData_Wait* wfd = static_cast<FunctionData_Wait*>(fd.get());
-    wfd->m_milliSecond = 100;
+    std::unique_ptr<FunctionData> fd(Command_Wait::create());
+    Command_Wait* wfd = static_cast<Command_Wait*>(fd.get());
+    wfd->getArg<0>() = 100;
     
     tstringstream ss;
     fd->output(ss);

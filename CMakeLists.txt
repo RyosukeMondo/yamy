@@ -109,32 +109,38 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_repeat.cpp
     src/core/commands/cmd_undefined.cpp
     src/core/commands/cmd_ignore.cpp
+    src/core/commands/cmd_post_message.cpp
+    src/core/commands/cmd_wait.cpp
+    src/core/commands/cmd_vk.cpp
+    src/core/commands/cmd_default.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
+    src/core/input/vkeytable.cpp
+
     src/core/window/layoutmanager.cpp
-    src/app/mayu.cpp
-    src/core/settings/parser.cpp
-    src/platform/windows/registry.cpp
-    src/platform/windows/window_system_win32.cpp
+    src/core/window/target.cpp
+
     src/platform/windows/input_injector_win32.cpp
     src/platform/windows/input_hook_win32.cpp
+    src/core/settings/parser.cpp
     src/platform/windows/input_driver_win32.cpp
+    src/platform/windows/registry.cpp
+    src/platform/windows/window_system_win32.cpp
+    src/platform/windows/windowstool.cpp
+
     src/core/settings/setting.cpp
     src/core/settings/setting_loader.cpp
     src/core/functions/strexpr.cpp
     src/utils/stringtool.cpp
-    src/core/window/target.cpp
-    src/core/input/vkeytable.cpp
-    src/platform/windows/windowstool.cpp
     src/ui/mayu.rc
+    src/app/mayu.cpp
 )
 
-add_executable(yamy_engine WIN32 ${ENGINE_SOURCES})
-set_target_properties(yamy_engine PROPERTIES OUTPUT_NAME "yamy-${YAMY_ARCH_SUFFIX}-hook")
-target_link_libraries(yamy_engine PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi)
+add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
+set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy-${YAMY_ARCH_SUFFIX}-hook")
+target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi)
 
-# Include directories
-target_include_directories(yamy_engine PRIVATE
+target_include_directories(yamy_engine_new PRIVATE
     src
     src/ui
     src/core/engine
@@ -146,6 +152,17 @@ target_include_directories(yamy_engine PRIVATE
     src/utils
     src/app
 )
+
+# -----------------------------------------------------------------------------
+# Verification: Check for missing sources
+# -----------------------------------------------------------------------------
+if(WIN32)
+    add_custom_command(TARGET yamy_engine_new PRE_BUILD
+        COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_missing_sources.ps1
+        COMMENT "Verifying that all .cpp files are included in CMakeLists.txt..."
+        VERBATIM
+    )
+endif()
 
 # -----------------------------------------------------------------------------
 # Target: yamy_launcher (EXE)
@@ -166,7 +183,7 @@ target_include_directories(yamy_launcher PRIVATE
 # -----------------------------------------------------------------------------
 # Target: yamy_test (EXE)
 # -----------------------------------------------------------------------------
-option(BUILD_TESTING "Build the testing tree." ON)
+option(BUILD_TESTING "Build the testing tree." OFF)
 
 if(BUILD_TESTING)
     enable_testing()

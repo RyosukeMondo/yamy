@@ -16,6 +16,9 @@
 #include "../commands/cmd_repeat.h"
 #include "../commands/cmd_undefined.h"
 #include "../commands/cmd_ignore.h"
+#include "../commands/cmd_post_message.h"
+#include "../commands/cmd_wait.h"
+#include "../commands/cmd_vk.h"
 
 class FunctionCreator
 {
@@ -33,8 +36,9 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("Default"), Command_Default::create },
   { _T("KeymapParent"), Command_KeymapParent::create },
   { _T("LoadSetting"), FunctionData_LoadSetting::create },
-  { _T("VK"), FunctionData_VK::create },
-  { _T("Wait"), FunctionData_Wait::create },
+  { _T("VK"), Command_VK::create },
+  { _T("Wait"), Command_Wait::create },
+  { _T("PostMessage"), Command_PostMessage::create },
   { _T("InvestigateCommand"), FunctionData_InvestigateCommand::create },
   { _T("MayuDialog"), FunctionData_MayuDialog::create },
   { _T("DescribeBindings"), FunctionData_DescribeBindings::create },

@@ -17,9 +17,13 @@ friend class Command_Variable;
 friend class Command_Repeat;
 friend class Command_Undefined;
 friend class Command_Ignore;
+friend class Command_PostMessage;
+friend class Command_Wait;
+friend class Command_VK;
 friend class FunctionData_LoadSetting;
-friend class FunctionData_VK;
-friend class FunctionData_Wait;
+friend class FunctionData_ShellExecute;
+friend class FunctionData_SetForegroundWindow;
+
 friend class FunctionData_InvestigateCommand;
 friend class FunctionData_MayuDialog;
 friend class FunctionData_DescribeBindings;

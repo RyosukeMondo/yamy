@@ -335,8 +335,7 @@ public:
 // funcUndefined removed (moved to Command_Undefined)
 // funcIgnore removed (moved to Command_Ignore)
 	/// post message
-	void funcPostMessage(FunctionParam *i_param, ToWindowType i_window,
-						 UINT i_message, WPARAM i_wParam, LPARAM i_lParam);
+// funcPostMessage removed (moved to Command_PostMessage)
 	/// ShellExecute
 	void funcShellExecute(FunctionParam *i_param, const StrExprArg &i_operation,
 						  const StrExprArg &i_file, const StrExprArg &i_parameters,
@@ -352,10 +351,8 @@ public:
 	/// load setting
 	void funcLoadSetting(FunctionParam *i_param,
 						 const StrExprArg &i_name = StrExprArg());
-	/// virtual key
-	void funcVK(FunctionParam *i_param, VKey i_vkey);
-	/// wait
-	void funcWait(FunctionParam *i_param, int i_milliSecond);
+// funcVK removed (moved to Command_VK)
+// funcWait removed (moved to Command_Wait)
 	/// investigate WM_COMMAND, WM_SYSCOMMAND
 	void funcInvestigateCommand(FunctionParam *i_param);
 	/// show mayu dialog box

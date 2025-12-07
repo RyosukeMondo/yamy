@@ -51,62 +51,8 @@
 // FunctionData_Ignore is now Command_Ignore in commands/cmd_ignore.h
 // Replaced by generic Command template system.
 
-class FunctionData_PostMessage : public FunctionData
-{
-public:
-  ToWindowType m_window;
-  UINT m_message;
-  WPARAM m_wParam;
-  LPARAM m_lParam;
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_PostMessage *fd
-      = new FunctionData_PostMessage;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    i_sl->getOpenParen(true, FunctionData_PostMessage::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_window);
-    i_sl->getComma(false, FunctionData_PostMessage::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_message);
-    i_sl->getComma(false, FunctionData_PostMessage::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_wParam);
-    i_sl->getComma(false, FunctionData_PostMessage::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_lParam);
-    i_sl->getCloseParen(true, FunctionData_PostMessage::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcPostMessage(i_param, m_window, m_message, m_wParam, m_lParam);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("PostMessage");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_window << _T(", ");
-    i_ost << m_message << _T(", ");
-    i_ost << m_wParam << _T(", ");
-    i_ost << m_lParam;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_PostMessage(*this);
-  }
-};
+// FunctionData_PostMessage is now Command_PostMessage in commands/cmd_post_message.h
+// Replaced by generic Command template system.
 
 class FunctionData_ShellExecute : public FunctionData
 {
@@ -277,95 +223,11 @@ public:
   }
 };
 
-class FunctionData_VK : public FunctionData
-{
-public:
-  VKey m_vkey;
+// FunctionData_VK is now Command_VK in commands/cmd_vk.h
+// Replaced by generic Command template system.
 
-public:
-  static FunctionData *create()
-  {
-    FunctionData_VK *fd
-      = new FunctionData_VK;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    i_sl->getOpenParen(true, FunctionData_VK::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_vkey);
-    i_sl->getCloseParen(true, FunctionData_VK::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcVK(i_param, m_vkey);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("VK");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_vkey;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_VK(*this);
-  }
-};
-
-class FunctionData_Wait : public FunctionData
-{
-public:
-  int m_milliSecond;
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_Wait *fd
-      = new FunctionData_Wait;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    i_sl->getOpenParen(true, FunctionData_Wait::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_milliSecond);
-    i_sl->getCloseParen(true, FunctionData_Wait::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcWait(i_param, m_milliSecond);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("Wait");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_milliSecond;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_Wait(*this);
-  }
-};
+// FunctionData_Wait is now Command_Wait in commands/cmd_wait.h
+// Replaced by generic Command template system.
 
 class FunctionData_InvestigateCommand : public FunctionData
 {
