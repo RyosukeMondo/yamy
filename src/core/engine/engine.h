@@ -317,14 +317,11 @@ public:
 	// BEGINING OF FUNCTION DEFINITION
 	/// send a default key to Windows
 	void funcDefault(FunctionParam *i_param);
-	/// use a corresponding key of a parent keymap
-	void funcKeymapParent(FunctionParam *i_param);
-	/// use a corresponding key of a current window
-	void funcKeymapWindow(FunctionParam *i_param);
+// funcKeymapParent removed (moved to Command_KeymapParent)
+// funcKeymapWindow removed (moved to Command_KeymapWindow)
 	/// use a corresponding key of the previous prefixed keymap
 	void funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous);
-	/// use a corresponding key of an other window class, or use a default key
-	void funcOtherWindowClass(FunctionParam *i_param);
+// funcOtherWindowClass removed (moved to Command_OtherWindowClass)
 	/// prefix key
 	void funcPrefix(FunctionParam *i_param, const Keymap *i_keymap,
 					BooleanType i_doesIgnoreModifiers = BooleanType_true);

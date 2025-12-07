@@ -681,31 +681,10 @@ void Engine::funcDefault(FunctionParam *i_param)
 }
 
 // use a corresponding key of a parent keymap
-void Engine::funcKeymapParent(FunctionParam *i_param)
-{
-	Current c(i_param->m_c);
-	c.m_keymap = c.m_keymap->getParentKeymap();
-	if (!c.m_keymap) {
-		funcDefault(i_param);
-		return;
-	}
-
-	{
-		Acquire a(&m_log, 1);
-		m_log << _T("(") << c.m_keymap->getName() << _T(")") << std::endl;
-	}
-	i_param->m_doesNeedEndl = false;
-	generateKeyboardEvents(c);
-}
+// funcKeymapParent moved to src/core/commands/cmd_keymap_parent.cpp
 
 // use a corresponding key of a current window
-void Engine::funcKeymapWindow(FunctionParam *i_param)
-{
-	Current c(i_param->m_c);
-	c.m_keymap = m_currentFocusOfThread->m_keymaps.front();
-	c.m_i = m_currentFocusOfThread->m_keymaps.begin();
-	generateKeyboardEvents(c);
-}
+// funcKeymapWindow moved to src/core/commands/cmd_keymap_window.cpp
 
 // use a corresponding key of the previous prefixed keymap
 void Engine::funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous)
@@ -722,23 +701,7 @@ void Engine::funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous)
 }
 
 // use a corresponding key of an other window class, or use a default key
-void Engine::funcOtherWindowClass(FunctionParam *i_param)
-{
-	Current c(i_param->m_c);
-	++ c.m_i;
-	if (c.m_i == m_currentFocusOfThread->m_keymaps.end()) {
-		funcDefault(i_param);
-		return;
-	}
-
-	c.m_keymap = *c.m_i;
-	{
-		Acquire a(&m_log, 1);
-		m_log << _T("(") << c.m_keymap->getName() << _T(")") << std::endl;
-	}
-	i_param->m_doesNeedEndl = false;
-	generateKeyboardEvents(c);
-}
+// funcOtherWindowClass moved to src/core/commands/cmd_other_window_class.cpp
 
 // prefix key
 void Engine::funcPrefix(FunctionParam *i_param, const Keymap *i_keymap,

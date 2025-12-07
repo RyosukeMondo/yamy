@@ -97,6 +97,9 @@ set(ENGINE_SOURCES
     src/core/window/focus.cpp
     src/core/functions/function.cpp
     src/core/functions/function_creator.cpp
+    src/core/commands/cmd_keymap_parent.cpp
+    src/core/commands/cmd_keymap_window.cpp
+    src/core/commands/cmd_other_window_class.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/window/layoutmanager.cpp

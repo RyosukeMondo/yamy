@@ -12,131 +12,17 @@
 // FunctionData_Default is now Command_Default in commands/cmd_default.h
 // Replaced by generic Command template system.
 
-class FunctionData_KeymapParent : public FunctionData
-{
-public:
+// FunctionData_KeymapParent is now Command_KeymapParent in commands/cmd_keymap_parent.h
+// Replaced by generic Command template system.
 
-public:
-  static FunctionData *create()
-  {
-    FunctionData_KeymapParent *fd
-      = new FunctionData_KeymapParent;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    if (!i_sl->getOpenParen(false, FunctionData_KeymapParent::getName()))
-      return;
-    i_sl->getCloseParen(true, FunctionData_KeymapParent::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcKeymapParent(i_param);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("KeymapParent");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_KeymapParent(*this);
-  }
-};
-
-class FunctionData_KeymapWindow : public FunctionData
-{
-public:
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_KeymapWindow *fd
-      = new FunctionData_KeymapWindow;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    if (!i_sl->getOpenParen(false, FunctionData_KeymapWindow::getName()))
-      return;
-    i_sl->getCloseParen(true, FunctionData_KeymapWindow::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcKeymapWindow(i_param);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("KeymapWindow");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_KeymapWindow(*this);
-  }
-};
+// FunctionData_KeymapWindow is now Command_KeymapWindow in commands/cmd_keymap_window.h
+// Replaced by generic Command template system.
 
 // FunctionData_KeymapPrevPrefix is now Command_KeymapPrevPrefix in commands/cmd_keymap_prev_prefix.h
 // Replaced by generic Command template system.
 
-class FunctionData_OtherWindowClass : public FunctionData
-{
-public:
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_OtherWindowClass *fd
-      = new FunctionData_OtherWindowClass;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    if (!i_sl->getOpenParen(false, FunctionData_OtherWindowClass::getName()))
-      return;
-    i_sl->getCloseParen(true, FunctionData_OtherWindowClass::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcOtherWindowClass(i_param);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("OtherWindowClass");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_OtherWindowClass(*this);
-  }
-};
+// FunctionData_OtherWindowClass is now Command_OtherWindowClass in commands/cmd_other_window_class.h
+// Replaced by generic Command template system.
 
 class FunctionData_Prefix : public FunctionData
 {

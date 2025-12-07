@@ -1,14 +1,14 @@
 // Forward declarations
-class Command_Default;
-class Command_KeymapPrevPrefix;
+// Forward declarations removed to avoid nested class creation inside Engine
+// friend class X; is sufficient for global class X if Engine is global
 
 // Friend declarations for FunctionData classes
 friend class Command_Default;
 friend class Command_KeymapPrevPrefix;
-friend class FunctionData_KeymapParent;
-friend class FunctionData_KeymapWindow;
+friend class Command_KeymapParent;
+friend class Command_KeymapWindow;
 // friend class FunctionData_KeymapPrevPrefix; // Replaced
-friend class FunctionData_OtherWindowClass;
+friend class Command_OtherWindowClass;
 friend class FunctionData_Prefix;
 friend class FunctionData_Keymap;
 friend class FunctionData_Sync;
