@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CMD_REPEAT_H
 #define _CMD_REPEAT_H
 

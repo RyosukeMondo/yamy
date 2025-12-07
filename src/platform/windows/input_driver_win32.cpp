@@ -1,4 +1,4 @@
-#include "input_driver_win32.h"
+﻿#include "input_driver_win32.h"
 #include "driver.h"
 #include "misc.h"
 #include "windowstool.h" // For addSessionId?

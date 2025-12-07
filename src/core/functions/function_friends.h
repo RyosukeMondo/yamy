@@ -1,3 +1,6 @@
+﻿// #pragma once is INTENTIONALLY OMITTED.
+// This file is included multiple times (in SettingLoader and Engine) to inject friend declarations.
+
 // Forward declarations
 // Forward declarations removed to avoid nested class creation inside Engine
 // friend class X; is sufficient for global class X if Engine is global

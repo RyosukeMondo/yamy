@@ -1,4 +1,4 @@
-#include "function.h"
+﻿#include "function.h"
 #include "function_data.h"
 #include "misc.h" // for NUMBER_OF
 #include "../commands/cmd_default.h"

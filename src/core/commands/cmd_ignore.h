@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CMD_IGNORE_H
 #define _CMD_IGNORE_H
 

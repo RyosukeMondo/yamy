@@ -1,3 +1,4 @@
+﻿#pragma once
 #include <list>
 #include <windows.h>
 #include "registry.h"

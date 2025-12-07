@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _WINDOW_SYSTEM_H
 #define _WINDOW_SYSTEM_H
 

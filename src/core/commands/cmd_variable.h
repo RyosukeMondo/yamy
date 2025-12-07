@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CMD_VARIABLE_H
 #define _CMD_VARIABLE_H
 

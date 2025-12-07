@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _FUNCTION_DATA_H
 #define _FUNCTION_DATA_H
 

@@ -1,4 +1,4 @@
-#include "cmd_repeat.h"
+﻿#include "cmd_repeat.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
 #include "../settings/setting_loader.h"

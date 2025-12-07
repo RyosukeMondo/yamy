@@ -1,0 +1,196 @@
+MSBuild 縺ｮ繝舌・繧ｸ繝ｧ繝ｳ 18.0.5+e22287bf1 (.NET Framework)
+
+  yamy_hook.vcxproj -> C:\Users\ryosu\repos\yamy\build\x64\bin\Release\yamy-64-hook.dll
+  Running QA Checks: Sources, Header Guards, Encoding...
+  Checking for missing sources in CMakeLists.txt...
+  All .cpp files appear to be included in CMakeLists.txt.
+  Checking for #pragma once in headers...
+  All headers have #pragma once.
+  Checking for UTF-8 BOM in source files...
+  All source files have UTF-8 BOM.
+  dlginvestigate.cpp
+  engine.cpp
+  engine_lifecycle.cpp
+  engine_input.cpp
+  engine_modifier.cpp
+  engine_generator.cpp
+  engine_focus.cpp
+  engine_window.cpp
+  engine_setting.cpp
+  engine_log.cpp
+  function.cpp
+  function_creator.cpp
+  cmd_keymap_parent.cpp
+  cmd_keymap_window.cpp
+  cmd_other_window_class.cpp
+  cmd_prefix.cpp
+  cmd_keymap.cpp
+  cmd_sync.cpp
+  cmd_toggle.cpp
+  cmd_edit_next_modifier.cpp
+  cmd_variable.cpp
+  cmd_repeat.cpp
+  cmd_undefined.cpp
+  cmd_ignore.cpp
+  cmd_post_message.cpp
+  cmd_wait.cpp
+  cmd_vk.cpp
+  cmd_default.cpp
+  input_hook_win32.cpp
+  setting_loader.cpp
+  mayu.cpp
+C:\Users\ryosu\repos\yamy\src\utils\array.h(18,2): warning C4996: 'std::allocator<T>::reference': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(18,2): warning C4996:         with [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(18,2): warning C4996:         [ [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(18,2): warning C4996:             T=BYTE [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(18,2): warning C4996:         ] [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\utils\array.h(18,2):
+      繝・Φ繝励Ξ繝ｼ繝医う繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹悶さ繝ｳ繝・く繧ｹ繝・(譛蛻昴↓譛繧ょ商縺・ｂ縺ｮ) 縺ｯ
+          C:\Users\ryosu\repos\yamy\src\core\settings\setting_loader.cpp(1226,14):
+          繧ｳ繝ｳ繝代う繝ｫ蟇ｾ雎｡縺ｮ 繧ｯ繝ｩ繧ｹ 繝・Φ繝励Ξ繝ｼ繝・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹・'Array<BYTE,std::allocator<T>>' 縺ｮ繝ｪ繝輔ぃ繝ｬ繝ｳ繧ｹ繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+          with
+          [
+              T=BYTE
+          ]
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(19,2): warning C4996: 'std::allocator<T>::const_reference': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(19,2): warning C4996:         with [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(19,2): warning C4996:         [ [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(19,2): warning C4996:             T=BYTE [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(19,2): warning C4996:         ] [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(20,2): warning C4996: 'std::allocator<T>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(20,2): warning C4996:         with [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(20,2): warning C4996:         [ [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(20,2): warning C4996:             T=BYTE [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(20,2): warning C4996:         ] [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(21,2): warning C4996: 'std::allocator<T>::const_pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(21,2): warning C4996:         with [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(21,2): warning C4996:         [ [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(21,2): warning C4996:             T=BYTE [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(21,2): warning C4996:         ] [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(26,2): warning C4996: 'std::allocator<T>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(26,2): warning C4996:         with [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(26,2): warning C4996:         [ [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(26,2): warning C4996:             T=BYTE [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(26,2): warning C4996:         ] [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(27,2): warning C4996: 'std::allocator<T>::const_pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(27,2): warning C4996:         with [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(27,2): warning C4996:         [ [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(27,2): warning C4996:             T=BYTE [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(27,2): warning C4996:         ] [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(84,2): warning C4996: 'std::allocator<T>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(84,2): warning C4996:         with [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(84,2): warning C4996:         [ [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(84,2): warning C4996:             T=BYTE [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(84,2): warning C4996:         ] [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(88,2): warning C4996: 'std::allocator<T>::const_pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(88,2): warning C4996:         with [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(88,2): warning C4996:         [ [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(88,2): warning C4996:             T=BYTE [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+C:\Users\ryosu\repos\yamy\src\utils\array.h(88,2): warning C4996:         ] [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(18,2): warning C4996: 'std::allocator<wchar_t>::reference': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\utils\array.h(18,2):
+      繝・Φ繝励Ξ繝ｼ繝医う繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹悶さ繝ｳ繝・く繧ｹ繝・(譛蛻昴↓譛繧ょ商縺・ｂ縺ｮ) 縺ｯ
+          C:\Users\ryosu\repos\yamy\src\core\settings\setting_loader.cpp(1271,18):
+          繧ｳ繝ｳ繝代う繝ｫ蟇ｾ雎｡縺ｮ 繧ｯ繝ｩ繧ｹ 繝・Φ繝励Ξ繝ｼ繝・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹・'Array<wchar_t,std::allocator<wchar_t>>' 縺ｮ繝ｪ繝輔ぃ繝ｬ繝ｳ繧ｹ繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(19,2): warning C4996: 'std::allocator<wchar_t>::const_reference': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(20,2): warning C4996: 'std::allocator<wchar_t>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(21,2): warning C4996: 'std::allocator<wchar_t>::const_pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(26,2): warning C4996: 'std::allocator<wchar_t>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(27,2): warning C4996: 'std::allocator<wchar_t>::const_pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(84,2): warning C4996: 'std::allocator<wchar_t>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(88,2): warning C4996: 'std::allocator<wchar_t>::const_pointer': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(46,22): warning C4996: 'std::allocator<wchar_t>::allocate': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\utils\array.h(46,22):
+      繝・Φ繝励Ξ繝ｼ繝医う繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹悶さ繝ｳ繝・く繧ｹ繝・(譛蛻昴↓譛繧ょ商縺・ｂ縺ｮ) 縺ｯ
+          C:\Users\ryosu\repos\yamy\src\core\settings\setting_loader.cpp(1271,18):
+          繧ｳ繝ｳ繝代う繝ｫ蟇ｾ雎｡縺ｮ 繧ｯ繝ｩ繧ｹ 繝・Φ繝励Ξ繝ｼ繝・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹・'Array<wchar_t,std::allocator<wchar_t>>' 縺ｮ繝ｪ繝輔ぃ繝ｬ繝ｳ繧ｹ繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+          C:\Users\ryosu\repos\yamy\src\utils\array.h(43,2):
+          繧ｯ繝ｩ繧ｹ 繝・Φ繝励Ξ繝ｼ繝・繝｡繝ｳ繝舌・髢｢謨ｰ 'Array<wchar_t,std::allocator<wchar_t>>::Array(unsigned __int64,const T &,const Allocator &)' 縺ｮ繧ｳ繝ｳ繝代う繝ｫ荳ｭ
+          with
+          [
+              T=wchar_t,
+              Allocator=std::allocator<wchar_t>
+          ]
+              C:\Users\ryosu\repos\yamy\src\core\settings\setting_loader.cpp(1271,22):
+              'readFile' 縺ｮ 'Array<wchar_t,std::allocator<wchar_t>>::Array' 縺ｸ縺ｮ譛蛻昴・蜿ら・繧貞盾辣ｧ縺励※縺上□縺輔＞
+  
+C:\Users\ryosu\repos\yamy\src\utils\array.h(213,17): warning C4996: 'std::allocator<wchar_t>::destroy': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/core/settings/setting_loader.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\utils\array.h(213,17):
+      繝・Φ繝励Ξ繝ｼ繝医う繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹悶さ繝ｳ繝・く繧ｹ繝・(譛蛻昴↓譛繧ょ商縺・ｂ縺ｮ) 縺ｯ
+          C:\Users\ryosu\repos\yamy\src\utils\array.h(210,7):
+          繧ｯ繝ｩ繧ｹ 繝・Φ繝励Ξ繝ｼ繝・繝｡繝ｳ繝舌・髢｢謨ｰ 'void Array<wchar_t,std::allocator<wchar_t>>::clear(void)' 縺ｮ繧ｳ繝ｳ繝代う繝ｫ荳ｭ
+              C:\Users\ryosu\repos\yamy\src\utils\array.h(66,8):
+              'Array<wchar_t,std::allocator<wchar_t>>::~Array' 縺ｮ 'Array<wchar_t,std::allocator<wchar_t>>::clear' 縺ｸ縺ｮ譛蛻昴・蜿ら・繧貞盾辣ｧ縺励※縺上□縺輔＞
+              C:\Users\ryosu\repos\yamy\src\core\settings\setting_loader.cpp(1271,22):
+              'readFile' 縺ｮ 'Array<wchar_t,std::allocator<wchar_t>>::~Array' 縺ｸ縺ｮ譛蛻昴・蜿ら・繧貞盾辣ｧ縺励※縺上□縺輔＞
+  
+C:\Users\ryosu\repos\yamy\src\utils\msgstream.h(63,22): warning C4996: 'std::allocator<wchar_t>::allocate': warning STL4010: Various members of std::allocator are deprecated in C++17. Use std::allocator_traits instead of accessing these members directly. You can define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to suppress this warning. [C:\Users\ryosu\repos\yamy\build\x64\yamy_engine_new.vcxproj]
+  (繧ｽ繝ｼ繧ｹ 繝輔ぃ繧､繝ｫ '../../src/app/mayu.cpp' 繧偵さ繝ｳ繝代う繝ｫ縺励※縺・∪縺・
+      C:\Users\ryosu\repos\yamy\src\utils\msgstream.h(63,22):
+      繝・Φ繝励Ξ繝ｼ繝医う繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹悶さ繝ｳ繝・く繧ｹ繝・(譛蛻昴↓譛繧ょ商縺・ｂ縺ｮ) 縺ｯ
+          C:\Users\ryosu\repos\yamy\src\app\mayu.cpp(65,14):
+          繧ｳ繝ｳ繝代う繝ｫ蟇ｾ雎｡縺ｮ 繧ｯ繝ｩ繧ｹ 繝・Φ繝励Ξ繝ｼ繝・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹・'basic_omsgstream<_TCHAR,1024,std::char_traits<wchar_t>,std::allocator<wchar_t>>' 縺ｮ繝ｪ繝輔ぃ繝ｬ繝ｳ繧ｹ繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+          C:\Users\ryosu\repos\yamy\src\utils\msgstream.h(195,12):
+          繧ｳ繝ｳ繝代う繝ｫ蟇ｾ雎｡縺ｮ 繧ｯ繝ｩ繧ｹ 繝・Φ繝励Ξ繝ｼ繝・繧､繝ｳ繧ｹ繧ｿ繝ｳ繧ｹ蛹・'basic_msgbuf<T,1024,TR,A>' 縺ｮ繝ｪ繝輔ぃ繝ｬ繝ｳ繧ｹ繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞
+          with
+          [
+              T=_TCHAR,
+              TR=std::char_traits<wchar_t>,
+              A=std::allocator<wchar_t>
+          ]
+          C:\Users\ryosu\repos\yamy\src\utils\msgstream.h(60,2):
+          繧ｯ繝ｩ繧ｹ 繝・Φ繝励Ξ繝ｼ繝・繝｡繝ｳ繝舌・髢｢謨ｰ 'basic_msgbuf<T,1024,TR,A>::basic_msgbuf(UINT,HWND)' 縺ｮ繧ｳ繝ｳ繝代う繝ｫ荳ｭ
+          with
+          [
+              T=_TCHAR,
+              TR=std::char_traits<wchar_t>,
+              A=std::allocator<wchar_t>
+          ]
+              C:\Users\ryosu\repos\yamy\src\utils\msgstream.h(200,38):
+              'basic_omsgstream<_TCHAR,1024,std::char_traits<wchar_t>,std::allocator<wchar_t>>::basic_omsgstream' 縺ｮ 'basic_msgbuf<T,1024,TR,A>::basic_msgbuf' 縺ｸ縺ｮ譛蛻昴・蜿ら・繧貞盾辣ｧ縺励※縺上□縺輔＞
+          with
+          [
+              T=_TCHAR,
+              TR=std::char_traits<wchar_t>,
+              A=std::allocator<wchar_t>
+          ]
+              C:\Users\ryosu\repos\yamy\src\app\mayu.cpp(1033,9):
+              'Mayu::Mayu' 縺ｮ 'basic_omsgstream<_TCHAR,1024,std::char_traits<wchar_t>,std::allocator<wchar_t>>::basic_omsgstream' 縺ｸ縺ｮ譛蛻昴・蜿ら・繧貞盾辣ｧ縺励※縺上□縺輔＞
+  
+  yamy_engine_new.vcxproj -> C:\Users\ryosu\repos\yamy\build\x64\bin\Release\yamy-64-hook.exe
+  yamy_launcher.vcxproj -> C:\Users\ryosu\repos\yamy\build\x64\bin\Release\yamy.exe
+  Building Custom Rule C:/Users/ryosu/repos/yamy/CMakeLists.txt

@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CMD_DEFAULT_H
 #define _CMD_DEFAULT_H
 

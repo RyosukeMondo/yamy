@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _INPUT_HOOK_H
 #define _INPUT_HOOK_H
 

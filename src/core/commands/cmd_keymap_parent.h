@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CMD_KEYMAP_PARENT_H
 #define _CMD_KEYMAP_PARENT_H
 

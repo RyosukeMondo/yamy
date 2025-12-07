@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CMD_UNDEFINED_H
 #define _CMD_UNDEFINED_H
 

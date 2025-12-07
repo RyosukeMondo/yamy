@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CMD_EDIT_NEXT_MODIFIER_H
 #define _CMD_EDIT_NEXT_MODIFIER_H
 

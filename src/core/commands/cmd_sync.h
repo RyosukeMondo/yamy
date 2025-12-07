@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CMD_SYNC_H
 #define _CMD_SYNC_H
 

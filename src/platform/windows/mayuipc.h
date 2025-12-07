@@ -1,3 +1,4 @@
+﻿#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // mayuipc.h - mayu inter process communication
 

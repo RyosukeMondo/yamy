@@ -1,4 +1,4 @@
-#include "cmd_other_window_class.h"
+﻿#include "cmd_other_window_class.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
 #include "../input/keymap.h"

@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CONFIG_STORE_H
 #define _CONFIG_STORE_H
 

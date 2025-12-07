@@ -1,4 +1,4 @@
-#include "cmd_ignore.h"
+﻿#include "cmd_ignore.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
 

@@ -1,4 +1,4 @@
-#include "input_injector_win32.h"
+﻿#include "input_injector_win32.h"
 #include <tchar.h>
 
 void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const InjectionContext &ctx, const void *rawData)

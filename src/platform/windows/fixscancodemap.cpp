@@ -1,4 +1,4 @@
-#include "fixscancodemap.h"
+﻿#include "fixscancodemap.h"
 #include "misc.h"
 #include "windowstool.h"
 #include <tchar.h>

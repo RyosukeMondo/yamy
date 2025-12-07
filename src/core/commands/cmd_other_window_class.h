@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _CMD_OTHER_WINDOW_CLASS_H
 #define _CMD_OTHER_WINDOW_CLASS_H
 

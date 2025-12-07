@@ -1,4 +1,4 @@
-#include "cmd_variable.h"
+﻿#include "cmd_variable.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
 #include <iostream>

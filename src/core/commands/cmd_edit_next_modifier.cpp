@@ -1,4 +1,4 @@
-#include "cmd_edit_next_modifier.h"
+﻿#include "cmd_edit_next_modifier.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
 #include <iostream>

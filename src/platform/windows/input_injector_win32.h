@@ -1,3 +1,4 @@
+﻿#pragma once
 #ifndef _INPUT_INJECTOR_WIN32_H
 #define _INPUT_INJECTOR_WIN32_H
 

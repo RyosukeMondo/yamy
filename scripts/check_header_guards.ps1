@@ -19,8 +19,10 @@ foreach ($file in $files) {
     # Relative path for cleaner output/matching
     $relativePath = $file.Substring($RepoRoot.Length + 1).Replace("\", "/")
     
-    # Exclude tests, legacy, or 3rd party libraries if needed
-    if ($relativePath -match "^src/tests/" -or $relativePath -match "^src/ts4mayu/") {
+    # Exclude tests, legacy, or specific friend-injection headers
+    if ($relativePath -match "^src/tests/" -or 
+        $relativePath -match "^src/ts4mayu/" -or 
+        $relativePath -match "function_friends.h") {
          continue
     }
 

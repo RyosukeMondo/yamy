@@ -1,4 +1,4 @@
-#include "cmd_sync.h"
+﻿#include "cmd_sync.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
 #include "../platform/windows/hook.h" // For g_hookData

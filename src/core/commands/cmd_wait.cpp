@@ -1,4 +1,4 @@
-#include "cmd_wait.h"
+﻿#include "cmd_wait.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
 #include <windows.h> // For Sleep
