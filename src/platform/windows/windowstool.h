@@ -39,11 +39,11 @@ extern bool resizeWindow(HWND i_hwnd, int i_w, int i_h, bool i_doRepaint);
 extern bool getChildWindowRect(HWND i_hwnd, RECT *o_rc);
 
 /** set small icon to the specified window.
-    @return handle of previous icon or NULL */
+    @return handle of previous icon or nullptr */
 extern HICON setSmallIcon(HWND i_hwnd, UINT i_id);
 
 /** set big icon to the specified window.
-    @return handle of previous icon or NULL */
+    @return handle of previous icon or nullptr */
 extern HICON setBigIcon(HWND i_hwnd, UINT i_id);
 
 /// remove icon from a window that is set by setSmallIcon
@@ -187,6 +187,6 @@ BOOL checkWindowsVersion(DWORD i_major, DWORD i_minor);
 extern const _TCHAR *clipboardGetText(HGLOBAL *o_hdata);
 
 /// close clipboard that opened by clipboardGetText()
-extern void clipboardClose(HGLOBAL i_hdata, HGLOBAL i_hdataNew = NULL);
+extern void clipboardClose(HGLOBAL i_hdata, HGLOBAL i_hdataNew = nullptr);
 
 #endif // _WINDOWSTOOL_H

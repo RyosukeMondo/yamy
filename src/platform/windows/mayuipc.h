@@ -36,8 +36,8 @@ extern "C"
             }
         }
 
-        hwnd = FindWindow(_T("mayuTasktray"), NULL);
-        if (hwnd == NULL) {
+        hwnd = FindWindow(_T("mayuTasktray"), nullptr);
+        if (hwnd == nullptr) {
             return FALSE;
         }
         PostMessage(hwnd, WM_MayuIPC, i_command, i_lParam);

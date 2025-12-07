@@ -17,7 +17,7 @@
 
 
 // instance handle of this application
-HINSTANCE g_hInst = NULL;
+HINSTANCE g_hInst = nullptr;
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,10 +52,10 @@ HICON loadBigIcon(UINT i_id)
 
 
 // set small icon to the specified window.
-// @return handle of previous icon or NULL
+// @return handle of previous icon or nullptr
 HICON setSmallIcon(HWND i_hwnd, UINT i_id)
 {
-    HICON hicon = (i_id == static_cast<UINT>(-1)) ? NULL : loadSmallIcon(i_id);
+    HICON hicon = (i_id == static_cast<UINT>(-1)) ? nullptr : loadSmallIcon(i_id);
     return reinterpret_cast<HICON>(
                SendMessage(i_hwnd, WM_SETICON, static_cast<WPARAM>(ICON_SMALL),
                            reinterpret_cast<LPARAM>(hicon)));
@@ -63,10 +63,10 @@ HICON setSmallIcon(HWND i_hwnd, UINT i_id)
 
 
 // set big icon to the specified window.
-// @return handle of previous icon or NULL
+// @return handle of previous icon or nullptr
 HICON setBigIcon(HWND i_hwnd, UINT i_id)
 {
-    HICON hicon = (i_id == static_cast<UINT>(-1)) ? NULL : loadBigIcon(i_id);
+    HICON hicon = (i_id == static_cast<UINT>(-1)) ? nullptr : loadBigIcon(i_id);
     return reinterpret_cast<HICON>(
                SendMessage(i_hwnd, WM_SETICON, static_cast<WPARAM>(ICON_BIG),
                            reinterpret_cast<LPARAM>(hicon)));
@@ -97,7 +97,7 @@ bool resizeWindow(HWND i_hwnd, int i_w, int i_h, bool i_doRepaint)
     UINT flag = SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER;
     if (!i_doRepaint)
         flag |= SWP_NOREDRAW;
-    return !!SetWindowPos(i_hwnd, NULL, 0, 0, i_w, i_h, flag);
+    return !!SetWindowPos(i_hwnd, nullptr, 0, 0, i_w, i_h, flag);
 }
 
 
@@ -155,7 +155,7 @@ HWND getToplevelWindow(HWND i_hwnd, bool *io_isMDI)
 // move window asynchronously
 void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y)
 {
-    SetWindowPos(i_hwnd, NULL, i_x, i_y, 0, 0,
+    SetWindowPos(i_hwnd, nullptr, i_x, i_y, 0, 0,
                  SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOOWNERZORDER |
                  SWP_NOSIZE | SWP_NOZORDER);
 }
@@ -164,7 +164,7 @@ void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y)
 // move window asynchronously
 void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y, int i_w, int i_h)
 {
-    SetWindowPos(i_hwnd, NULL, i_x, i_y, i_w, i_h,
+    SetWindowPos(i_hwnd, nullptr, i_x, i_y, i_w, i_h,
                  SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOOWNERZORDER |
                  SWP_NOZORDER);
 }
@@ -173,7 +173,7 @@ void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y, int i_w, int i_h)
 // resize asynchronously
 void asyncResize(HWND i_hwnd, int i_w, int i_h)
 {
-    SetWindowPos(i_hwnd, NULL, 0, 0, i_w, i_h,
+    SetWindowPos(i_hwnd, nullptr, 0, 0, i_w, i_h,
                  SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOOWNERZORDER |
                  SWP_NOMOVE | SWP_NOZORDER);
 }
@@ -211,8 +211,8 @@ DWORD getDllVersion(const _TCHAR *i_dllname)
 // workaround of SetForegroundWindow
 bool setForegroundWindow(HWND i_hwnd)
 {
-    int nForegroundID = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
-    int nTargetID = GetWindowThreadProcessId(i_hwnd, NULL);
+    int nForegroundID = GetWindowThreadProcessId(GetForegroundWindow(), nullptr);
+    int nTargetID = GetWindowThreadProcessId(i_hwnd, nullptr);
 
     //if (!AttachThreadInput(nTargetID, nForegroundID, TRUE))
     //return false;
@@ -536,10 +536,10 @@ BOOL checkWindowsVersion(DWORD i_major, DWORD i_minor)
 // get clipboard text (you must call clipboardClose())
 const _TCHAR *clipboardGetText(HGLOBAL *o_hdata)
 {
-    *o_hdata = NULL;
+    *o_hdata = nullptr;
 
-    if (!OpenClipboard(NULL))
-        return NULL;
+    if (!OpenClipboard(nullptr))
+        return nullptr;
 
 #ifdef UNICODE
     *o_hdata = GetClipboardData(CF_UNICODETEXT);
@@ -547,11 +547,11 @@ const _TCHAR *clipboardGetText(HGLOBAL *o_hdata)
     *o_hdata = GetClipboardData(CF_TEXT);
 #endif
     if (!*o_hdata)
-        return NULL;
+        return nullptr;
 
     _TCHAR *data = reinterpret_cast<_TCHAR *>(GlobalLock(*o_hdata));
     if (!data)
-        return NULL;
+        return nullptr;
     return data;
 }
 

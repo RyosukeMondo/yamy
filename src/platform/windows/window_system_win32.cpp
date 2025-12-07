@@ -68,7 +68,7 @@ tstring WindowSystemWin32::getClipboardText() {
 }
 
 bool WindowSystemWin32::setClipboardText(const tstring& text) {
-    if (!OpenClipboard(NULL))
+    if (!OpenClipboard(nullptr))
         return false;
 
     HGLOBAL hdataNew = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
@@ -82,9 +82,9 @@ bool WindowSystemWin32::setClipboardText(const tstring& text) {
     GlobalUnlock(hdataNew);
     
     EmptyClipboard();
-    bool result = SetClipboardData(CF_TTEXT, hdataNew) != NULL;
+    bool result = SetClipboardData(CF_TTEXT, hdataNew) != nullptr;
     
-    clipboardClose(NULL, result ? NULL : hdataNew); 
+    clipboardClose(nullptr, result ? nullptr : hdataNew); 
     return result;
 }
 
@@ -291,7 +291,7 @@ bool WindowSystemWin32::setLayeredWindowAttributes(WindowHandle window, unsigned
 }
 
 bool WindowSystemWin32::redrawWindow(WindowHandle window) {
-    return RedrawWindow((HWND)window, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN) != 0;
+    return RedrawWindow((HWND)window, nullptr, nullptr, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN) != 0;
 }
 
 static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
@@ -305,11 +305,11 @@ bool WindowSystemWin32::enumerateWindows(WindowEnumCallback callback) {
 
 int WindowSystemWin32::shellExecute(const tstring& operation, const tstring& file, const tstring& parameters, const tstring& directory, int showCmd) {
     return (int)(INT_PTR)ShellExecute(
-        NULL,
-        operation.empty() ? NULL : operation.c_str(),
-        file.empty() ? NULL : file.c_str(),
-        parameters.empty() ? NULL : parameters.c_str(),
-        directory.empty() ? NULL : directory.c_str(),
+        nullptr,
+        operation.empty() ? nullptr : operation.c_str(),
+        file.empty() ? nullptr : file.c_str(),
+        parameters.empty() ? nullptr : parameters.c_str(),
+        directory.empty() ? nullptr : directory.c_str(),
         showCmd);
 }
 

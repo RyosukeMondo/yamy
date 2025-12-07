@@ -24,7 +24,7 @@ static DWORD WINAPI invokeFunc(InjectInfo *info)
     pOpenProcessToken = (FpOpenProcessToken)info->pGetProcAddress(hAdvapi32, info->openProcessToken_);
 
     HANDLE hProcess = info->pOpenProcess(PROCESS_QUERY_INFORMATION, FALSE, info->pid_);
-    if (hProcess == NULL) {
+    if (hProcess == nullptr) {
         result = YAMY_ERROR_ON_OPEN_YAMY_PROCESS;
         goto exit;
     }
@@ -54,11 +54,11 @@ static DWORD WINAPI invokeFunc(InjectInfo *info)
     }
 
 exit:
-    if (hToken != NULL) {
+    if (hToken != nullptr) {
         info->pCloseHandle(hToken);
     }
 
-    if (hProcess != NULL) {
+    if (hProcess != nullptr) {
         info->pCloseHandle(hProcess);
     }
 
@@ -85,7 +85,7 @@ const DWORD FixScancodeMap::s_fixEntry[] = {
 int FixScancodeMap::acquirePrivileges()
 {
     int ret = 0;
-    HANDLE hToken = NULL;
+    HANDLE hToken = nullptr;
 
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken)) {
         ret = YAMY_ERROR_ON_OPEN_CURRENT_PROCESS;
@@ -93,7 +93,7 @@ int FixScancodeMap::acquirePrivileges()
     }
 
     LUID luid;
-    if (!LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luid)) {
+    if (!LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &luid)) {
         ret = YAMY_ERROR_ON_LOOKUP_PRIVILEGE;
         goto exit;
     }
@@ -103,13 +103,13 @@ int FixScancodeMap::acquirePrivileges()
     tk_priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
     tk_priv.Privileges[0].Luid = luid;
 
-    if (!AdjustTokenPrivileges(hToken, FALSE, &tk_priv, 0, NULL, NULL)) {
+    if (!AdjustTokenPrivileges(hToken, FALSE, &tk_priv, 0, nullptr, nullptr)) {
         ret = YAMY_ERROR_ON_ADJUST_PRIVILEGE;
         goto exit;
     }
 
 exit:
-    if (hToken != NULL) {
+    if (hToken != nullptr) {
         CloseHandle(hToken);
     }
     return ret;
@@ -157,7 +157,7 @@ bool FixScancodeMap::clean(WlInfo wl)
 {
     int ret = 0;
 
-    if (wl.m_hThread != NULL) {
+    if (wl.m_hThread != nullptr) {
         DWORD result;
 
         if (WaitForSingleObject(wl.m_hThread, 5000) == WAIT_TIMEOUT) {
@@ -167,15 +167,15 @@ bool FixScancodeMap::clean(WlInfo wl)
         GetExitCodeThread(wl.m_hThread, &result);
         CloseHandle(wl.m_hThread);
 
-        if (wl.m_remoteMem != NULL && wl.m_hProcess != NULL) {
+        if (wl.m_remoteMem != nullptr && wl.m_hProcess != nullptr) {
             VirtualFreeEx(wl.m_hProcess, wl.m_remoteMem, 0, MEM_RELEASE);
         }
 
-        if (wl.m_remoteInfo != NULL && wl.m_hProcess != NULL) {
+        if (wl.m_remoteInfo != nullptr && wl.m_hProcess != nullptr) {
             VirtualFreeEx(wl.m_hProcess, wl.m_remoteInfo, 0, MEM_RELEASE);
         }
 
-        if (wl.m_hProcess != NULL) {
+        if (wl.m_hProcess != nullptr) {
             CloseHandle(wl.m_hProcess);
         }
     }
@@ -191,22 +191,22 @@ int FixScancodeMap::injectThread(DWORD dwPID)
     BOOL wFlag;
     WlInfo wi;
 
-    wi.m_hProcess = NULL;
-    wi.m_remoteMem = NULL;
-    wi.m_remoteInfo = NULL;
-    wi.m_hThread = NULL;
+    wi.m_hProcess = nullptr;
+    wi.m_remoteMem = nullptr;
+    wi.m_remoteInfo = nullptr;
+    wi.m_hThread = nullptr;
 
     ULONG_PTR invokeFuncAddr = (ULONG_PTR)invokeFunc;
     ULONG_PTR afterFuncAddr = (ULONG_PTR)afterFunc;
     SIZE_T memSize =  afterFuncAddr - invokeFuncAddr;
 
-    if ((wi.m_hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID)) == NULL) {
+    if ((wi.m_hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPID)) == nullptr) {
         ret = YAMY_ERROR_ON_OPEN_WINLOGON_PROCESS;
         goto exit;
     }
 
-    wi.m_remoteMem = VirtualAllocEx(wi.m_hProcess, NULL, memSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-    if (wi.m_remoteMem == NULL) {
+    wi.m_remoteMem = VirtualAllocEx(wi.m_hProcess, nullptr, memSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    if (wi.m_remoteMem == nullptr) {
         ret = YAMY_ERROR_ON_VIRTUALALLOCEX;
         err = GetLastError();
         goto exit;
@@ -218,8 +218,8 @@ int FixScancodeMap::injectThread(DWORD dwPID)
         goto exit;
     }
 
-    wi.m_remoteInfo = VirtualAllocEx(wi.m_hProcess, NULL, sizeof(m_info), MEM_COMMIT, PAGE_READWRITE);
-    if (wi.m_remoteInfo == NULL) {
+    wi.m_remoteInfo = VirtualAllocEx(wi.m_hProcess, nullptr, sizeof(m_info), MEM_COMMIT, PAGE_READWRITE);
+    if (wi.m_remoteInfo == nullptr) {
         ret = YAMY_ERROR_ON_VIRTUALALLOCEX;
         err = GetLastError();
         goto exit;
@@ -231,9 +231,9 @@ int FixScancodeMap::injectThread(DWORD dwPID)
         goto exit;
     }
 
-    wi.m_hThread = CreateRemoteThread(wi.m_hProcess, NULL, 0, 
-        (LPTHREAD_START_ROUTINE)wi.m_remoteMem, wi.m_remoteInfo, 0, NULL);
-    if (wi.m_hThread == NULL) {
+    wi.m_hThread = CreateRemoteThread(wi.m_hProcess, nullptr, 0, 
+        (LPTHREAD_START_ROUTINE)wi.m_remoteMem, wi.m_remoteInfo, 0, nullptr);
+    if (wi.m_hThread == nullptr) {
         ret = YAMY_ERROR_ON_CREATEREMOTETHREAD;
         goto exit;
     }
@@ -247,22 +247,22 @@ int FixScancodeMap::injectThread(DWORD dwPID)
     GetExitCodeThread(wi.m_hThread, &result);
     ret = result;
     CloseHandle(wi.m_hThread);
-    wi.m_hThread = NULL;
+    wi.m_hThread = nullptr;
 
 exit:
-    if (wi.m_remoteMem != NULL && wi.m_hProcess != NULL) {
+    if (wi.m_remoteMem != nullptr && wi.m_hProcess != nullptr) {
         VirtualFreeEx(wi.m_hProcess, wi.m_remoteMem, 0, MEM_RELEASE);
-        wi.m_remoteMem = NULL;
+        wi.m_remoteMem = nullptr;
     }
 
-    if (wi.m_remoteInfo != NULL && wi.m_hProcess != NULL) {
+    if (wi.m_remoteInfo != nullptr && wi.m_hProcess != nullptr) {
         VirtualFreeEx(wi.m_hProcess, wi.m_remoteInfo, 0, MEM_RELEASE);
-        wi.m_remoteInfo = NULL;
+        wi.m_remoteInfo = nullptr;
     }
 
-    if (wi.m_hProcess != NULL) {
+    if (wi.m_hProcess != nullptr) {
         CloseHandle(wi.m_hProcess);
-        wi.m_hProcess = NULL;
+        wi.m_hProcess = nullptr;
     }
 
 dirty_exit:
@@ -309,15 +309,15 @@ int FixScancodeMap::fix()
     int result = 0;
 
     // save original Scancode Map
-    ret = m_pReg->read(_T("Scancode Map"), NULL, &origSize, NULL, 0);
+    ret = m_pReg->read(_T("Scancode Map"), nullptr, &origSize, nullptr, 0);
     if (ret) {
         origMap = reinterpret_cast<ScancodeMap*>(malloc(origSize));
-        if (origMap == NULL) {
+        if (origMap == nullptr) {
             result = YAMY_ERROR_NO_MEMORY;
             goto exit;
         }
 
-        ret = m_pReg->read(_T("Scancode Map"), reinterpret_cast<BYTE*>(origMap), &origSize, NULL, 0);
+        ret = m_pReg->read(_T("Scancode Map"), reinterpret_cast<BYTE*>(origMap), &origSize, nullptr, 0);
         if (ret == false) {
             result = YAMY_ERROR_ON_READ_SCANCODE_MAP;
             goto exit;
@@ -325,7 +325,7 @@ int FixScancodeMap::fix()
 
         fixSize = origSize;
         fixMap = reinterpret_cast<ScancodeMap*>(malloc(origSize + s_fixEntryNum * sizeof(s_fixEntry[0])));
-        if (fixMap == NULL) {
+        if (fixMap == nullptr) {
             result = YAMY_ERROR_NO_MEMORY;
             goto exit;
         }
@@ -333,11 +333,11 @@ int FixScancodeMap::fix()
         memcpy_s(fixMap, origSize + s_fixEntryNum, origMap, origSize);
     } else {
         origSize = 0;
-        origMap = NULL;
+        origMap = nullptr;
 
         fixSize = sizeof(ScancodeMap);
         fixMap = reinterpret_cast<ScancodeMap*>(malloc(sizeof(ScancodeMap) + s_fixEntryNum * sizeof(s_fixEntry[0])));
-        if (fixMap == NULL) {
+        if (fixMap == nullptr) {
             result = YAMY_ERROR_NO_MEMORY;
             goto exit;
         }
@@ -391,10 +391,10 @@ int FixScancodeMap::fix()
 
 exit:
     free(origMap);
-    origMap = NULL;
+    origMap = nullptr;
 
     free(fixMap);
-    fixMap = NULL;
+    fixMap = nullptr;
 
     return result;
 }
@@ -452,13 +452,13 @@ int FixScancodeMap::init(HWND i_hwnd, UINT i_messageOnFail)
 }
 
 FixScancodeMap::FixScancodeMap() :
-    m_hwnd(NULL),
+    m_hwnd(nullptr),
     m_messageOnFail(WM_NULL),
     m_errorOnConstruct(0),
     m_winlogonPid(0),
     m_regHKCU(HKEY_CURRENT_USER, _T("Keyboard Layout")),
     m_regHKLM(HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\Control\\Keyboard Layout")),
-    m_pReg(NULL)
+    m_pReg(nullptr)
 {
     HMODULE hMod;
 
@@ -469,43 +469,43 @@ FixScancodeMap::FixScancodeMap() :
     memcpy(&m_info.revertToSelf_, "RevertToSelf", sizeof(m_info.revertToSelf_));
     memcpy(&m_info.openProcessToken_, "OpenProcessToken", sizeof(m_info.openProcessToken_));
 
-    m_hFixEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    m_hFixEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
     ASSERT(m_hFixEvent);
-    m_hRestoreEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    m_hRestoreEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
     ASSERT(m_hRestoreEvent);
-    m_hQuitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    m_hQuitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
     ASSERT(m_hQuitEvent);
 
-    m_hThread = (HANDLE)_beginthreadex(NULL, 0, threadLoop, this, 0, &m_threadId);
+    m_hThread = (HANDLE)_beginthreadex(nullptr, 0, threadLoop, this, 0, &m_threadId);
 
     hMod = GetModuleHandle(_T("user32.dll"));
-    if (hMod != NULL) {
+    if (hMod != nullptr) {
         m_info.pUpdate4 = (FpUpdatePerUserSystemParameters4)GetProcAddress(hMod, "UpdatePerUserSystemParameters");
         m_info.pUpdate8 = (FpUpdatePerUserSystemParameters8)m_info.pUpdate4;
-        if (m_info.pUpdate4 == NULL) {
+        if (m_info.pUpdate4 == nullptr) {
             return;
         }
     }
 
     hMod = GetModuleHandle(_T("kernel32.dll"));
-    if (hMod != NULL) {
+    if (hMod != nullptr) {
         m_info.pGetModuleHandle = (FpGetModuleHandleW)GetProcAddress(hMod, "GetModuleHandleW");
-        if (m_info.pGetModuleHandle == NULL) {
+        if (m_info.pGetModuleHandle == nullptr) {
             return;
         }
 
         m_info.pGetProcAddress = (FpGetProcAddress)GetProcAddress(hMod, "GetProcAddress");
-        if (m_info.pGetProcAddress == NULL) {
+        if (m_info.pGetProcAddress == nullptr) {
             return;
         }
 
         m_info.pOpenProcess = (FpOpenProcess)GetProcAddress(hMod, "OpenProcess");
-        if (m_info.pOpenProcess == NULL) {
+        if (m_info.pOpenProcess == nullptr) {
             return;
         }
 
         m_info.pCloseHandle = (FpCloseHandle)GetProcAddress(hMod, "CloseHandle");
-        if (m_info.pCloseHandle == NULL) {
+        if (m_info.pCloseHandle == nullptr) {
             return;
         }
     }

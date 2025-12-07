@@ -113,11 +113,11 @@ static void WriteToLog(const char *data)
     char buf[1024];
     DWORD count;
 
-    WideCharToMultiByte(CP_THREAD_ACP, 0, g.m_moduleName, -1, buf, NUMBER_OF(buf), NULL, NULL);
+    WideCharToMultiByte(CP_THREAD_ACP, 0, g.m_moduleName, -1, buf, NUMBER_OF(buf), nullptr, nullptr);
     strcat(buf, ": ");
     strcat(buf, data);
-    SetFilePointer(g.m_logFile, 0, NULL, FILE_END);
-    WriteFile(g.m_logFile, buf, strlen(buf), &count, NULL);
+    SetFilePointer(g.m_logFile, 0, nullptr, FILE_END);
+    WriteFile(g.m_logFile, buf, strlen(buf), &count, nullptr);
     FlushFileBuffers(g.m_logFile);
 }
 #else // !HOOK_LOG_TO_FILE
@@ -128,8 +128,8 @@ bool initialize(bool i_isYamy)
 {
 #ifndef NDEBUG
     _TCHAR path[GANA_MAX_PATH];
-    GetModuleFileName(NULL, path, GANA_MAX_PATH);
-    _tsplitpath_s(path, NULL, 0, NULL, 0, g.m_moduleName, GANA_MAX_PATH, NULL, 0);
+    GetModuleFileName(nullptr, path, GANA_MAX_PATH);
+    _tsplitpath_s(path, nullptr, 0, nullptr, 0, g.m_moduleName, GANA_MAX_PATH, nullptr, 0);
     if (_tcsnicmp(g.m_moduleName, _T("Dbgview"), sizeof(_T("Dbgview"))/sizeof(_TCHAR)) != 0 &&
             _tcsnicmp(g.m_moduleName, _T("windbg"), sizeof(_T("windbg"))/sizeof(_TCHAR)) != 0) {
         g.m_isLogging = true;
@@ -139,15 +139,15 @@ bool initialize(bool i_isYamy)
     _TCHAR logFileName[GANA_MAX_PATH];
     GetEnvironmentVariable(_T("USERPROFILE"), logFileName, NUMBER_OF(logFileName));
     _tcsncat(logFileName, _T("\\AppData\\LocalLow\\yamydll.txt"), _tcslen(_T("\\AppData\\LocalLow\\yamydll.log")));
-    g.m_logFile = CreateFile(logFileName, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+    g.m_logFile = CreateFile(logFileName, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
         OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 #endif // HOOK_LOG_TO_FILE
     WriteToLog("try to open mailslot\r\n");
     g.m_hMailslot =
         CreateFile(NOTIFY_MAILSLOT_NAME, GENERIC_WRITE,
                    FILE_SHARE_READ | FILE_SHARE_WRITE,
-                   (SECURITY_ATTRIBUTES *)NULL, OPEN_EXISTING,
-                   FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
+                   (SECURITY_ATTRIBUTES *)nullptr, OPEN_EXISTING,
+                   FILE_ATTRIBUTE_NORMAL, (HANDLE)nullptr);
     if (g.m_hMailslot == INVALID_HANDLE_VALUE) {
         HOOK_RPT2("MAYU: %S create mailslot failed(0x%08x)\r\n", g.m_moduleName, GetLastError());
         WriteToLog("open mailslot NG\r\n");
@@ -217,21 +217,21 @@ static bool mapHookData(bool i_isYamy)
 
     if (i_isYamy) {
         access |= FILE_MAP_WRITE;
-        g.m_hHookData = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,    0, sizeof(HookData), addSessionId(HOOK_DATA_NAME).c_str());
-        g.m_hHookDataArch = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,    0, sizeof(HookDataArch), addSessionId(HOOK_DATA_NAME_ARCH).c_str());
+        g.m_hHookData = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE,    0, sizeof(HookData), addSessionId(HOOK_DATA_NAME).c_str());
+        g.m_hHookDataArch = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE,    0, sizeof(HookDataArch), addSessionId(HOOK_DATA_NAME_ARCH).c_str());
     } else {
         g.m_hHookData = OpenFileMapping(access, FALSE, addSessionId(HOOK_DATA_NAME).c_str());
         g.m_hHookDataArch = OpenFileMapping(access, FALSE, addSessionId(HOOK_DATA_NAME_ARCH).c_str());
     }
 
-    if (g.m_hHookData == NULL || g.m_hHookDataArch == NULL) {
+    if (g.m_hHookData == nullptr || g.m_hHookDataArch == nullptr) {
         unmapHookData();
         return false;
     }
 
     g_hookData = (HookData *)MapViewOfFile(g.m_hHookData, access, 0, 0, sizeof(HookData));
     s_hookDataArch = (HookDataArch *)MapViewOfFile(g.m_hHookDataArch, access, 0, 0, sizeof(HookDataArch));
-    if (g_hookData == NULL || s_hookDataArch == NULL) {
+    if (g_hookData == nullptr || s_hookDataArch == nullptr) {
         unmapHookData();
         return false;
     }
@@ -245,16 +245,16 @@ static void unmapHookData()
 {
     if (g_hookData)
         UnmapViewOfFile(g_hookData);
-    g_hookData = NULL;
+    g_hookData = nullptr;
     if (g.m_hHookData)
         CloseHandle(g.m_hHookData);
-    g.m_hHookData = NULL;
+    g.m_hHookData = nullptr;
     if (s_hookDataArch)
         UnmapViewOfFile(s_hookDataArch);
-    s_hookDataArch = NULL;
+    s_hookDataArch = nullptr;
     if (g.m_hHookDataArch)
         CloseHandle(g.m_hHookDataArch);
-    g.m_hHookDataArch = NULL;
+    g.m_hHookDataArch = nullptr;
 }
 
 
@@ -271,7 +271,7 @@ bool notify(void *i_data, size_t i_dataSize)
     DWORD len;
     if (g.m_hMailslot != INVALID_HANDLE_VALUE) {
         BOOL ret;
-        ret = WriteFile(g.m_hMailslot, i_data, (DWORD)i_dataSize, &len, NULL);
+        ret = WriteFile(g.m_hMailslot, i_data, (DWORD)i_dataSize, &len, nullptr);
 #ifndef NDEBUG
         if (ret == 0) {
             HOOK_RPT2("MAYU: %S WriteFile to mailslot failed(0x%08x)\r\n", g.m_moduleName, GetLastError());
@@ -318,7 +318,7 @@ static void getClassNameTitleName(HWND i_hwnd, bool i_isInMenu,
         if (i_hwnd)
             GetClassName(i_hwnd, buf, NUMBER_OF(buf));
         else
-            GetModuleFileName(GetModuleHandle(NULL), buf, NUMBER_OF(buf));
+            GetModuleFileName(GetModuleHandle(nullptr), buf, NUMBER_OF(buf));
         buf[NUMBER_OF(buf) - 1] = _T('\0');
         if (isTheFirstTime)
             className = buf;
@@ -537,9 +537,9 @@ static void funcSetImeString(HWND i_hwnd, int i_size)
     DWORD denom = 1;
     HANDLE hPipe
     = CreateFile(addSessionId(HOOK_PIPE_NAME).c_str(), GENERIC_READ,
-                 FILE_SHARE_READ, (SECURITY_ATTRIBUTES *)NULL,
-                 OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
-    error = ReadFile(hPipe, buf, i_size, &len, NULL);
+                 FILE_SHARE_READ, (SECURITY_ATTRIBUTES *)nullptr,
+                 OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, (HANDLE)nullptr);
+    error = ReadFile(hPipe, buf, i_size, &len, nullptr);
     CloseHandle(hPipe);
 
     ImeDescLen = ImmGetDescription(GetKeyboardLayout(0),
@@ -552,7 +552,7 @@ static void funcSetImeString(HWND i_hwnd, int i_size)
         return;
 
     int status = ImmGetOpenStatus(hIMC);
-    ImmSetCompositionString(hIMC, SCS_SETSTR, buf, len / denom, NULL, 0);
+    ImmSetCompositionString(hIMC, SCS_SETSTR, buf, len / denom, nullptr, 0);
     delete buf;
     ImmNotifyIME(hIMC, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
     if (!status)
@@ -845,10 +845,10 @@ DllExport int uninstallMessageHook()
 {
     if (s_hookDataArch->m_hHookGetMessage)
         UnhookWindowsHookEx(s_hookDataArch->m_hHookGetMessage);
-    s_hookDataArch->m_hHookGetMessage = NULL;
+    s_hookDataArch->m_hHookGetMessage = nullptr;
     if (s_hookDataArch->m_hHookCallWndProc)
         UnhookWindowsHookEx(s_hookDataArch->m_hHookCallWndProc);
-    s_hookDataArch->m_hHookCallWndProc = NULL;
+    s_hookDataArch->m_hHookCallWndProc = nullptr;
     g.m_hwndTaskTray = 0;
     return 0;
 }
@@ -869,7 +869,7 @@ DllExport int installKeyboardHook(INPUT_DETOUR i_keyboardDetour, void *i_context
     } else {
         if (g.m_hHookKeyboardProc)
             UnhookWindowsHookEx(g.m_hHookKeyboardProc);
-        g.m_hHookKeyboardProc = NULL;
+        g.m_hHookKeyboardProc = nullptr;
     }
     return 0;
 }
@@ -891,7 +891,7 @@ DllExport int installMouseHook(INPUT_DETOUR i_mouseDetour, void *i_context, bool
     } else {
         if (g.m_hHookMouseProc)
             UnhookWindowsHookEx(g.m_hHookMouseProc);
-        g.m_hHookMouseProc = NULL;
+        g.m_hHookMouseProc = nullptr;
     }
     return 0;
 }

@@ -12,7 +12,7 @@
 InputHookWin32::InputHookWin32()
     : m_keyboardHandler(installKeyboardHook, InputHookWin32::keyboardDetour),
       m_mouseHandler(installMouseHook, InputHookWin32::mouseDetour),
-      m_engine(NULL),
+      m_engine(nullptr),
       m_isEnabled(true),
       m_buttonPressed(false),
       m_dragging(false)
@@ -42,7 +42,7 @@ bool InputHookWin32::stop()
 {
     m_mouseHandler.stop();
     m_keyboardHandler.stop();
-    m_engine = NULL;
+    m_engine = nullptr;
     return true;
 }
 
@@ -189,14 +189,14 @@ unsigned int WINAPI InputHookWin32::mouseDetour(void *i_context, WPARAM i_wParam
                     HWND parent = GetParent(target);
                     POINT p = {curRect.left, curRect.top};
 
-                    if (parent == NULL || !ScreenToClient(parent, &p))
+                    if (parent == nullptr || !ScreenToClient(parent, &p))
                         return 0;
 
                     curRect.left = p.x;
                     curRect.top = p.y;
                 }
 
-                SetWindowPos(target, NULL,
+                SetWindowPos(target, nullptr,
                              curRect.left + dx,
                              curRect.top + dy,
                              0, 0,
@@ -266,10 +266,10 @@ unsigned int WINAPI InputHookWin32::InputHandler::run(void *i_this)
 }
 
 InputHookWin32::InputHandler::InputHandler(INSTALL_HOOK i_installHook, INPUT_DETOUR i_inputDetour)
-    : m_installHook(i_installHook), m_inputDetour(i_inputDetour), m_context(NULL)
+    : m_installHook(i_installHook), m_inputDetour(i_inputDetour), m_context(nullptr)
 {
-    CHECK_TRUE(m_hEvent = CreateEvent(NULL, FALSE, FALSE, NULL));
-    CHECK_TRUE(m_hThread = (HANDLE)_beginthreadex(NULL, 0, run, this, CREATE_SUSPENDED, &m_threadId));
+    CHECK_TRUE(m_hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    CHECK_TRUE(m_hThread = (HANDLE)_beginthreadex(nullptr, 0, run, this, CREATE_SUSPENDED, &m_threadId));
 }
 
 InputHookWin32::InputHandler::~InputHandler()
@@ -282,10 +282,10 @@ void InputHookWin32::InputHandler::run()
     MSG msg;
 
     CHECK_FALSE(m_installHook(m_inputDetour, m_context, true));
-    PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
+    PeekMessage(&msg, nullptr, WM_USER, WM_USER, PM_NOREMOVE);
     SetEvent(m_hEvent);
 
-    while (GetMessage(&msg, NULL, 0, 0)) {
+    while (GetMessage(&msg, nullptr, 0, 0)) {
         // nothing to do...
     }
 

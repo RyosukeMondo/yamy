@@ -22,8 +22,8 @@ public:
 
 public:
     ///
-    Registry() : m_root(NULL) {
-        setRoot(NULL, _T(""));
+    Registry() : m_root(nullptr) {
+        setRoot(nullptr, _T(""));
     }
     ///
     Registry(HKEY i_root, const tstring &i_path)
@@ -40,8 +40,8 @@ public:
             _TCHAR exePath[GANA_MAX_PATH];
             _TCHAR exeDrive[GANA_MAX_PATH];
             _TCHAR exeDir[GANA_MAX_PATH];
-            GetModuleFileName(NULL, exePath, GANA_MAX_PATH);
-            _tsplitpath_s(exePath, exeDrive, GANA_MAX_PATH, exeDir, GANA_MAX_PATH, NULL, 0, NULL, 0);
+            GetModuleFileName(nullptr, exePath, GANA_MAX_PATH);
+            _tsplitpath_s(exePath, exeDrive, GANA_MAX_PATH, exeDir, GANA_MAX_PATH, nullptr, 0, nullptr, 0);
             m_path = exeDrive;
             m_path += exeDir;
             m_path += _T("yamy.ini");
@@ -92,7 +92,7 @@ public:
 
     /// read binary data
     bool read(const tstring &i_name, BYTE *o_value, DWORD *i_valueSize,
-              const BYTE *i_defaultValue = NULL, DWORD i_defaultValueSize = 0)
+              const BYTE *i_defaultValue = nullptr, DWORD i_defaultValueSize = 0)
     const override {
         return read(m_root, m_path, i_name, o_value, i_valueSize, i_defaultValue,
                     i_defaultValueSize);
@@ -137,7 +137,7 @@ public:
     /// read binary data
     static bool read(HKEY i_root, const tstring &i_path, const tstring &i_name,
                      BYTE *o_value, DWORD *i_valueSize,
-                     const BYTE *i_defaultValue = NULL,
+                     const BYTE *i_defaultValue = nullptr,
                      DWORD i_defaultValueSize = 0);
     /// write binary data
     static bool write(HKEY i_root, const tstring &i_path, const tstring &i_name,

@@ -25,10 +25,10 @@ bool InputDriverWin32::open(void *readEvent)
     m_hDevice = CreateFile(MAYU_DEVICE_FILE_NAME,
                            GENERIC_READ | GENERIC_WRITE,
                            0,
-                           NULL,
+                           nullptr,
                            OPEN_EXISTING,
                            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
-                           NULL);
+                           nullptr);
 
     if (m_hDevice == INVALID_HANDLE_VALUE)
         return false;
@@ -66,17 +66,17 @@ void InputDriverWin32::manageExtension(const void *dllName, const void *dependDl
             pTs4mayuTerm = (bool (WINAPI*)())GetProcAddress(*pTs4mayu, "ts4mayuTerm");
             if (pTs4mayuTerm && pTs4mayuTerm() == true)
                 FreeLibrary(*pTs4mayu);
-            *pTs4mayu = NULL;
+            *pTs4mayu = nullptr;
         }
     } else {
         if (*pTs4mayu) {
             // already loaded
         } else {
-            if (SearchPath(NULL, dependDllNameT, NULL, 0, NULL, NULL) == 0) {
+            if (SearchPath(nullptr, dependDllNameT, nullptr, 0, nullptr, nullptr) == 0) {
                 // failed to find depend dll
             } else {
                 *pTs4mayu = LoadLibrary(ts4mayuDllName);
-                if (*pTs4mayu == NULL) {
+                if (*pTs4mayu == nullptr) {
                     // failed to load
                 } else {
                     bool (WINAPI *pTs4mayuInit)(UINT);
