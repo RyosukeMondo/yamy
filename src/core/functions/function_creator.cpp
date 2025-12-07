@@ -7,6 +7,9 @@
 #include "../commands/cmd_keymap_parent.h"
 #include "../commands/cmd_keymap_window.h"
 #include "../commands/cmd_other_window_class.h"
+#include "../commands/cmd_prefix.h"
+#include "../commands/cmd_keymap.h"
+#include "../commands/cmd_sync.h"
 
 class FunctionCreator
 {
@@ -26,9 +29,9 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("KeymapWindow"), Command_KeymapWindow::create },
   { _T("KeymapPrevPrefix"), Command_KeymapPrevPrefix::create },
   { _T("OtherWindowClass"), Command_OtherWindowClass::create },
-  { _T("Prefix"), FunctionData_Prefix::create },
-  { _T("Keymap"), FunctionData_Keymap::create },
-  { _T("Sync"), FunctionData_Sync::create },
+  { _T("Prefix"), Command_Prefix::create },
+  { _T("Keymap"), Command_Keymap::create },
+  { _T("Sync"), Command_Sync::create },
   { _T("Toggle"), FunctionData_Toggle::create },
   { _T("EditNextModifier"), FunctionData_EditNextModifier::create },
   { _T("Variable"), FunctionData_Variable::create },

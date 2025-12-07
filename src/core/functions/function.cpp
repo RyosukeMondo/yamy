@@ -703,70 +703,11 @@ void Engine::funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous)
 // use a corresponding key of an other window class, or use a default key
 // funcOtherWindowClass moved to src/core/commands/cmd_other_window_class.cpp
 
-// prefix key
-void Engine::funcPrefix(FunctionParam *i_param, const Keymap *i_keymap,
-						BooleanType i_doesIgnoreModifiers)
-{
-	if (!i_param->m_isPressed)
-		return;
+// funcPrefix moved to src/core/commands/cmd_prefix.cpp
 
-	setCurrentKeymap(i_keymap, true);
+// funcKeymap moved to src/core/commands/cmd_keymap.cpp
 
-	// generate prefixed event
-	generateEvents(i_param->m_c, m_currentKeymap, &Event::prefixed);
-
-	m_isPrefix = true;
-	m_doesEditNextModifier = false;
-	m_doesIgnoreModifierForPrefix = !!i_doesIgnoreModifiers;
-
-	{
-		Acquire a(&m_log, 1);
-		m_log << _T("(") << i_keymap->getName() << _T(", ")
-		<< (i_doesIgnoreModifiers ? _T("true") : _T("false")) << _T(")");
-	}
-}
-
-// other keymap's key
-void Engine::funcKeymap(FunctionParam *i_param, const Keymap *i_keymap)
-{
-	Current c(i_param->m_c);
-	c.m_keymap = i_keymap;
-	{
-		Acquire a(&m_log, 1);
-		m_log << _T("(") << c.m_keymap->getName() << _T(")") << std::endl;
-		i_param->m_doesNeedEndl = false;
-	}
-	generateKeyboardEvents(c);
-}
-
-// sync
-void Engine::funcSync(FunctionParam *i_param)
-{
-	if (i_param->m_isPressed)
-		generateModifierEvents(i_param->m_af->m_modifier);
-	if (!i_param->m_isPressed || m_currentFocusOfThread->m_isConsole)
-		return;
-
-	Key *sync = m_setting->m_keyboard.getSyncKey();
-	if (sync->getScanCodesSize() == 0)
-		return;
-	const ScanCode *sc = sync->getScanCodes();
-
-	// set variables exported from mayu.dll
-	g_hookData->m_syncKey = sc->m_scan;
-	g_hookData->m_syncKeyIsExtended = !!(sc->m_flags & ScanCode::E0E1);
-	m_isSynchronizing = true;
-	generateKeyEvent(sync, false, false);
-
-	m_cs.release();
-	DWORD r = WaitForSingleObject(m_eSync, 5000);
-	if (r == WAIT_TIMEOUT) {
-		Acquire a(&m_log, 0);
-		m_log << _T(" *FAILED*") << std::endl;
-	}
-	m_cs.acquire();
-	m_isSynchronizing = false;
-}
+// funcSync moved to src/core/commands/cmd_sync.cpp
 
 // toggle lock
 void Engine::funcToggle(FunctionParam *i_param, ModifierLockType i_lock,

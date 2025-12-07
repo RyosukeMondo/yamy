@@ -8,6 +8,8 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
 2.  **Data Over Boilerplate:** Reduce repetitive code through data-driven design or metaprogramming.
 3.  **Modern Standards:** Embrace standard C++ (UTF-8, CMake, std::*) over legacy Windowsisms (`TCHAR`, `.vcxproj`, `MAX_PATH`).
 4.  **Automation Preference:** Use `scripts/cmake_package.ps1` for local builds/verification to minimize manual approval steps and ensure consistency.
+5.  **Agent Utilities:** Use `scripts/agent_util/*.ps1` for autonomous debugging (log analysis, error checking) to reduce approval friction.
+
 
 ## Roadmap
 
@@ -22,7 +24,7 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
 **Goal:** Add a new command in 3 lines of code, not 50.
 -   [x] **Analyze `FunctionData`:** `src/core/functions/function_data.h` contains massive boilerplate for every command.
 -   [x] **Metaprogramming/Templates:** Implemented `Command<Derived, Args...>` template system (C++17) to generate boilerplates automatically.
--   [ ] **Decouple Implementation:** Move command logic out of the monolithic `function.cpp` into smaller, cohesive units (e.g., `src/core/commands/`). (Migrated `Default`, `KeymapPrevPrefix`, `KeymapParent`, `KeymapWindow`, `OtherWindowClass`)
+-   [ ] **Decouple Implementation:** Move command logic out of the monolithic `function.cpp` into smaller, cohesive units (e.g., `src/core/commands/`). (Migrated `Default`, `KeymapPrevPrefix`, `KeymapParent`, `KeymapWindow`, `OtherWindowClass`, `Prefix`, `Keymap`, `Sync`)
 
 ### Phase 3: String Unification (Cognitive Load Reduction)
 **Goal:** `std::string` (UTF-8) everywhere.

@@ -322,13 +322,9 @@ public:
 	/// use a corresponding key of the previous prefixed keymap
 	void funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous);
 // funcOtherWindowClass removed (moved to Command_OtherWindowClass)
-	/// prefix key
-	void funcPrefix(FunctionParam *i_param, const Keymap *i_keymap,
-					BooleanType i_doesIgnoreModifiers = BooleanType_true);
-	/// other keymap's key
-	void funcKeymap(FunctionParam *i_param, const Keymap *i_keymap);
-	/// sync
-	void funcSync(FunctionParam *i_param);
+// funcPrefix removed (moved to Command_Prefix)
+// funcKeymap removed (moved to Command_Keymap)
+// funcSync removed (moved to Command_Sync)
 	/// toggle lock
 	void funcToggle(FunctionParam *i_param, ModifierLockType i_lock,
 					ToggleType i_toggle = ToggleType_toggle);

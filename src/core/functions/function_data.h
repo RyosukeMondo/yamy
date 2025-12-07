@@ -24,143 +24,14 @@
 // FunctionData_OtherWindowClass is now Command_OtherWindowClass in commands/cmd_other_window_class.h
 // Replaced by generic Command template system.
 
-class FunctionData_Prefix : public FunctionData
-{
-public:
-  const Keymap * m_keymap;
-  BooleanType m_doesIgnoreModifiers;
+// FunctionData_Prefix is now Command_Prefix in commands/cmd_prefix.h
+// Replaced by generic Command template system.
 
-public:
-  static FunctionData *create()
-  {
-    FunctionData_Prefix *fd
-      = new FunctionData_Prefix;
-    fd->m_doesIgnoreModifiers = BooleanType_true;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    i_sl->getOpenParen(true, FunctionData_Prefix::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_keymap);
-    if (i_sl->getCloseParen(false, FunctionData_Prefix::getName()))
-      return;
-    i_sl->getComma(false, FunctionData_Prefix::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_doesIgnoreModifiers);
-    i_sl->getCloseParen(true, FunctionData_Prefix::getName()); // throw ...
-  }
+// FunctionData_Keymap is now Command_Keymap in commands/cmd_keymap.h
+// Replaced by generic Command template system.
 
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcPrefix(i_param, m_keymap, m_doesIgnoreModifiers);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("Prefix");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_keymap << _T(", ");
-    i_ost << m_doesIgnoreModifiers;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_Prefix(*this);
-  }
-};
-
-class FunctionData_Keymap : public FunctionData
-{
-public:
-  const Keymap * m_keymap;
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_Keymap *fd
-      = new FunctionData_Keymap;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    i_sl->getOpenParen(true, FunctionData_Keymap::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_keymap);
-    i_sl->getCloseParen(true, FunctionData_Keymap::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcKeymap(i_param, m_keymap);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("Keymap");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_keymap;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_Keymap(*this);
-  }
-};
-
-class FunctionData_Sync : public FunctionData
-{
-public:
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_Sync *fd
-      = new FunctionData_Sync;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    if (!i_sl->getOpenParen(false, FunctionData_Sync::getName()))
-      return;
-    i_sl->getCloseParen(true, FunctionData_Sync::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcSync(i_param);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("Sync");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_Sync(*this);
-  }
-};
+// FunctionData_Sync is now Command_Sync in commands/cmd_sync.h
+// Replaced by generic Command template system.
 
 class FunctionData_Toggle : public FunctionData
 {

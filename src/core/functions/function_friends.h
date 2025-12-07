@@ -9,9 +9,9 @@ friend class Command_KeymapParent;
 friend class Command_KeymapWindow;
 // friend class FunctionData_KeymapPrevPrefix; // Replaced
 friend class Command_OtherWindowClass;
-friend class FunctionData_Prefix;
-friend class FunctionData_Keymap;
-friend class FunctionData_Sync;
+friend class Command_Prefix;
+friend class Command_Keymap;
+friend class Command_Sync;
 friend class FunctionData_Toggle;
 friend class FunctionData_EditNextModifier;
 friend class FunctionData_Variable;

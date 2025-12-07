@@ -4,6 +4,7 @@
 #include "function_data.h"
 #include "../core/commands/cmd_default.h"
 #include "../core/commands/cmd_keymap_prev_prefix.h"
+#include "../core/commands/cmd_keymap.h"
 
 TEST(FunctionDataTest, DefaultFunction) {
     std::unique_ptr<FunctionData> fd(Command_Default::create());
@@ -62,9 +63,9 @@ TEST(FunctionDataTest, KeymapFunction) {
     // but let's pass a dummy keymap to be safe.
     Keymap km(Keymap::Type_keymap, _T("TestMap"), _T(""), _T(""), nullptr, nullptr);
     
-    std::unique_ptr<FunctionData> fd(FunctionData_Keymap::create());
-    FunctionData_Keymap* kfd = static_cast<FunctionData_Keymap*>(fd.get());
-    kfd->m_keymap = &km;
+    std::unique_ptr<FunctionData> fd(Command_Keymap::create());
+    Command_Keymap* kfd = static_cast<Command_Keymap*>(fd.get());
+    kfd->getArg<0>() = &km;
     
     tstringstream ss;
     fd->output(ss);
