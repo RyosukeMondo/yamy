@@ -35,13 +35,21 @@ The project structure has been reorganized for better clarity and maintainabilit
 
 ### Visual Studio (MSVC)
 
-To build the project using Visual Studio, run the build script from the `scripts` directory:
+To build the project using Visual Studio (or MSVC toolchain), run the packaging script from the `scripts` directory:
 
-```bat
-scripts\build_yamy.bat
+```powershell
+scripts/cmake_package.ps1
 ```
 
-This script will set up the environment, build the Release configurations (x64 and Win32), and handle artifact renaming.
+**Options:**
+- **Default**: Incremental build. Uses existing `build/` directory if present for faster compilation.
+- **Clean Build**: Use `-Clean` switch to force a full rebuild (e.g., `scripts/cmake_package.ps1 -Clean`).
+
+The script will:
+1.  Run quality checks (anti-patterns, missing sources, encoding).
+2.  Build both 64-bit and 32-bit binaries (if compilers are available).
+3.  Package everything into `dist/yamy-dist.zip`.
+4.  Save build logs to `logs/build_log_x64.txt` and `logs/build_log_x86.txt`.
 
 ### MinGW-w64 (MSYS2)
 

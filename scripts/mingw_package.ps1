@@ -1,8 +1,14 @@
+param([switch]$Clean)
 $ErrorActionPreference = "Stop"
 
 $root = "$PSScriptRoot\.."
 $distDir = "$root\dist"
 $releaseDir = "$root\dist\yamy-mingw"
+$logsDir = "$root\logs"
+
+# Ensure directories exist
+if (-not (Test-Path $distDir)) { New-Item -Path $distDir -ItemType Directory -Force | Out-Null }
+if (-not (Test-Path $logsDir)) { New-Item -Path $logsDir -ItemType Directory -Force | Out-Null }
 
 # -----------------------------------------------------------------------------
 # Toolchain Detection
@@ -59,20 +65,22 @@ $env:PATH = "$msysDir\mingw64\bin;C:\Program Files\CMake\bin;C:\Windows\System32
 
 Write-Output "PATH for 64-bit build: $env:PATH"
 
-Write-Output "Configuring CMake (64-bit)..."
-$logsDir = "$root\logs"
-if (-not (Test-Path $logsDir)) { New-Item -Path $logsDir -ItemType Directory -Force | Out-Null }
-if (Test-Path "$root\build\mingw64") { Remove-Item -Recurse -Force "$root\build\mingw64" }
+if ($Clean -and (Test-Path "$root\build\mingw64")) { 
+    Write-Host "Cleaning 64-bit build directory..." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force "$root\build\mingw64" 
+}
 
+
+Write-Output "Configuring CMake (64-bit)..."
 # Log file moved to logs directory
-cmake -S $root -B "$root\build\mingw64" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON > "$logsDir\configure_64.log" 2>&1
+cmd /c "cmake -S $root -B `"$root\build\mingw64`" -G `"MinGW Makefiles`" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON > `"$logsDir\configure_64.log`" 2>&1"
 if ($LASTEXITCODE -ne 0) { 
     Get-Content "$logsDir\configure_64.log" | Write-Host -ForegroundColor Red
     throw "CMake Configure (64-bit) failed" 
 }
 
 Write-Output "Building Targets (64-bit)..."
-cmake --build "$root\build\mingw64" --config Release
+cmd /c "cmake --build `"$root\build\mingw64`" --config Release > `"$logsDir\build_log_mingw64.txt`" 2>&1"
 if ($LASTEXITCODE -ne 0) { throw "CMake Build (64-bit) failed" }
 
 # -----------------------------------------------------------------------------
@@ -92,20 +100,20 @@ finally {
 Write-Output "Waiting for file locks to release..."
 Start-Sleep -Seconds 2
 $binDir64 = "$root\build\mingw64\bin"
-Copy-Item "$binDir64\yamy.exe" "$releaseDir\" -Force
-Copy-Item "$binDir64\yamy64.exe" "$releaseDir\" -Force
-Copy-Item "$binDir64\yamy64.dll" "$releaseDir\" -Force
+Copy-Item "$binDir64\yamy.exe" "$releaseDir" -Force
+Copy-Item "$binDir64\yamy64.exe" "$releaseDir" -Force
+Copy-Item "$binDir64\yamy64.dll" "$releaseDir" -Force
 Copy-Item -Recurse "$root\keymaps" "$releaseDir\keymaps"
-Copy-Item "$root\scripts\launch_yamy.bat" "$releaseDir\"
-Copy-Item "$root\scripts\launch_yamy_admin.bat" "$releaseDir\"
+Copy-Item "$root\scripts\launch_yamy.bat" "$releaseDir"
+Copy-Item "$root\scripts\launch_yamy_admin.bat" "$releaseDir"
 
 # Copy missing assets requested by user
-Copy-Item "$root\src\yamy.ini" "$releaseDir\"
+Copy-Item "$root\src\yamy.ini" "$releaseDir"
 if (Test-Path "$root\resources\workaround.reg") {
-    Copy-Item "$root\resources\workaround.reg" "$releaseDir\"
+    Copy-Item "$root\resources\workaround.reg" "$releaseDir"
 }
 if (Test-Path "$root\docs\readme.txt") {
-    Copy-Item "$root\docs\readme.txt" "$releaseDir\"
+    Copy-Item "$root\docs\readme.txt" "$releaseDir"
 }
 
 
@@ -121,25 +129,25 @@ if ($has32Bit) {
     $env:PATH = "$mingw32Dir\bin;C:\Program Files\CMake\bin;C:\Windows\System32\WindowsPowerShell\v1.0;$cleanPath"
     
     # Clean up previous build to ensure fresh config
-    if (Test-Path "$root\build\mingw32") { Remove-Item -Recurse -Force "$root\build\mingw32" }
+    if ($Clean -and (Test-Path "$root\build\mingw32")) { Remove-Item -Recurse -Force "$root\build\mingw32" }
 
     Write-Output "Configuring CMake (32-bit)..."
     # Use standard generator
     $c32 = "$mingw32Dir\bin\gcc.exe"
     $cxx32 = "$mingw32Dir\bin\g++.exe"
     
-    cmake -S $root -B "$root\build\mingw32" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$c32" -DCMAKE_CXX_COMPILER="$cxx32"
+    cmd /c "cmake -S $root -B `"$root\build\mingw32`" -G `"MinGW Makefiles`" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=`"$c32`" -DCMAKE_CXX_COMPILER=`"$cxx32`" > `"$logsDir\configure_32.log`" 2>&1"
     if ($LASTEXITCODE -ne 0) { throw "CMake Configure (32-bit) failed" }
 
     Write-Output "Building Targets (32-bit)..."
-    cmake --build "$root\build\mingw32" --config Release
+    cmd /c "cmake --build `"$root\build\mingw32`" --config Release > `"$logsDir\build_log_mingw32.txt`" 2>&1"
     if ($LASTEXITCODE -ne 0) { throw "CMake Build (32-bit) failed" }
 
     # Copy 32-bit artifacts
     $binDir32 = "$root\build\mingw32\bin"
-    Copy-Item "$binDir32\yamy32.exe" "$releaseDir\"
-    Copy-Item "$binDir32\yamy32.dll" "$releaseDir\"
-    Copy-Item "$binDir32\yamyd32.exe" "$releaseDir\"
+    Copy-Item "$binDir32\yamy32.exe" "$releaseDir"
+    Copy-Item "$binDir32\yamy32.dll" "$releaseDir"
+    Copy-Item "$binDir32\yamyd32.exe" "$releaseDir"
     # Copy exports/lib if needed
     if (Test-Path "$binDir32\yamy32.dll.a") { Copy-Item "$binDir32\yamy32.dll.a" "$releaseDir\yamy32.lib" }
 }
@@ -151,9 +159,9 @@ else {
 # Bundle MinGW runtime DLLs for standalone execution
 # -----------------------------------------------------------------------------
 $mingwBin = "$msysDir\mingw64\bin"
-Copy-Item "$mingwBin\libstdc++-6.dll" "$releaseDir\"
-Copy-Item "$mingwBin\libgcc_s_seh-1.dll" "$releaseDir\"
-Copy-Item "$mingwBin\libwinpthread-1.dll" "$releaseDir\"
+Copy-Item "$mingwBin\libstdc++-6.dll" "$releaseDir"
+Copy-Item "$mingwBin\libgcc_s_seh-1.dll" "$releaseDir"
+Copy-Item "$mingwBin\libwinpthread-1.dll" "$releaseDir"
 
 # -----------------------------------------------------------------------------
 # Automated Dependency Verification

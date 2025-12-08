@@ -1,13 +1,20 @@
+param([switch]$Clean)
+
 $ErrorActionPreference = "Stop"
 
 $root = "$PSScriptRoot\.."
 $distDir = "$root\dist"
 $releaseDir = "$root\dist\yamy-release"
+$logsDir = "$root\logs"
 
 # Clean
-if (Test-Path $root\build) { Remove-Item -Recurse -Force $root\build }
+if ($Clean -and (Test-Path $root\build)) { 
+    Write-Host "Cleaning build directory..." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force $root\build 
+}
 if (Test-Path $distDir) { Remove-Item -Recurse -Force $distDir }
 New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
+New-Item -ItemType Directory -Force -Path $logsDir | Out-Null
 
 # -----------------------------------------------------------------------------
 # Quality Checks
@@ -32,13 +39,13 @@ Write-Host "Building 64-bit..." -ForegroundColor Cyan
 cmake -S $root -B "$root\build\x64" -A x64
 if ($LASTEXITCODE -ne 0) { throw "CMake Configure 64-bit failed" }
 
-cmake --build "$root\build\x64" --config Release > "$root\build_log_x64.txt" 2>&1
+cmake --build "$root\build\x64" --config Release > "$logsDir\build_log_x64.txt" 2>&1
 if ($LASTEXITCODE -ne 0) { throw "CMake Build 64-bit failed" }
 
 # Copy 64-bit artifacts
 Copy-Item "$root\build\x64\bin\Release\yamy.exe" "$releaseDir\"
-Copy-Item "$root\build\x64\bin\Release\yamy-64-hook.exe" "$releaseDir\"
-Copy-Item "$root\build\x64\bin\Release\yamy-64-hook.dll" "$releaseDir\"
+Copy-Item "$root\build\x64\bin\Release\yamy64.exe" "$releaseDir\"
+Copy-Item "$root\build\x64\bin\Release\yamy64.dll" "$releaseDir\"
 
 # -----------------------------------------------------------------------------
 # Build 32-bit
@@ -47,12 +54,12 @@ Write-Host "Building 32-bit..." -ForegroundColor Cyan
 cmake -S $root -B "$root\build\x86" -A Win32
 if ($LASTEXITCODE -ne 0) { throw "CMake Configure 32-bit failed" }
 
-cmake --build "$root\build\x86" --config Release > "$root\build_log_x86.txt" 2>&1
+cmake --build "$root\build\x86" --config Release > "$logsDir\build_log_x86.txt" 2>&1
 if ($LASTEXITCODE -ne 0) { throw "CMake Build 32-bit failed" }
 
 # Copy 32-bit artifacts
-Copy-Item "$root\build\x86\bin\Release\yamy-32-hook.exe" "$releaseDir\"
-Copy-Item "$root\build\x86\bin\Release\yamy-32-hook.dll" "$releaseDir\"
+Copy-Item "$root\build\x86\bin\Release\yamy32.exe" "$releaseDir\"
+Copy-Item "$root\build\x86\bin\Release\yamy32.dll" "$releaseDir\"
 Copy-Item "$root\build\x86\bin\Release\yamyd32.exe" "$releaseDir\"
 
 # -----------------------------------------------------------------------------

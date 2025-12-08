@@ -40,7 +40,7 @@ TEST_F(SettingLoaderTest, LoadSimpleKeyDef) {
     
     Key* k = m_setting.m_keyboard.searchKey(_T("A"));
     ASSERT_NE(k, nullptr);
-    EXPECT_EQ(k->getScanCodesSize(), 1);
+    EXPECT_EQ(k->getScanCodesSize(), 1ULL);
 }
 
 TEST_F(SettingLoaderTest, LoadKeymapDefinition) {
