@@ -99,7 +99,7 @@ static Globals g;
 
 static void notifyThreadDetach();
 static void notifyShow(NotifyShow::Show i_show, bool i_isMDI);
-static void notifyLog(_TCHAR *i_msg);
+
 static bool mapHookData(bool i_isYamy);
 static void unmapHookData();
 static bool initialize(bool i_isYamy);
@@ -275,15 +275,13 @@ bool notify(void *i_data, size_t i_dataSize)
 
     DWORD len;
     if (g.m_hMailslot != INVALID_HANDLE_VALUE) {
-        BOOL ret;
-        ret = WriteFile(g.m_hMailslot, i_data, (DWORD)i_dataSize, &len, nullptr);
-#ifndef NDEBUG
-        if (ret == 0) {
+
+        if (WriteFile(g.m_hMailslot, i_data, (DWORD)i_dataSize, &len, nullptr) == 0) {
             HOOK_RPT2("MAYU: %S WriteFile to mailslot failed(0x%08x)\r\n", g.m_moduleName, GetLastError());
         } else {
             HOOK_RPT1("MAYU: %S WriteFile to mailslot successed\r\n", g.m_moduleName);
         }
-#endif // !NDEBUG
+
     } else {
         cd.dwData = reinterpret_cast<Notify *>(i_data)->m_type;
         cd.cbData = (DWORD)i_dataSize;
@@ -467,14 +465,7 @@ static void notifyShow(NotifyShow::Show i_show, bool i_isMDI)
 }
 
 
-/// notify log
-static void notifyLog(_TCHAR *i_msg)
-{
-    NotifyLog nl;
-    nl.m_type = Notify::Type_log;
-    tcslcpy(nl.m_msg, i_msg, NUMBER_OF(nl.m_msg));
-    notify(&nl, sizeof(nl));
-}
+
 
 
 /// &Recenter
@@ -538,13 +529,13 @@ static void funcSetImeString(HWND i_hwnd, int i_size)
     DWORD len = 0;
     _TCHAR ImeDesc[GANA_MAX_ATOM_LENGTH];
     UINT ImeDescLen;
-    DWORD error;
+
     DWORD denom = 1;
     HANDLE hPipe
     = CreateFile(addSessionId(HOOK_PIPE_NAME).c_str(), GENERIC_READ,
                  FILE_SHARE_READ, (SECURITY_ATTRIBUTES *)nullptr,
                  OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, (HANDLE)nullptr);
-    error = ReadFile(hPipe, buf, i_size, &len, nullptr);
+    ReadFile(hPipe, buf, i_size, &len, nullptr);
     CloseHandle(hPipe);
 
     ImeDescLen = ImmGetDescription(GetKeyboardLayout(0),
@@ -805,7 +796,7 @@ through:
 
 static LRESULT CALLBACK lowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    KBDLLHOOKSTRUCT *pKbll = (KBDLLHOOKSTRUCT*)lParam;
+    // KBDLLHOOKSTRUCT *pKbll = (KBDLLHOOKSTRUCT*)lParam;
 
     if (!g.m_isInitialized)
         initialize(false);

@@ -405,7 +405,7 @@ continue_loop:
             { _T("L9-"), Modifier::Type_Lock9 },
         };
 
-        for (int i = 0; i < NUMBER_OF(map); ++ i)
+        for (int i = 0; i < (int)NUMBER_OF(map); ++ i)
             if (*t == map[i].m_s) {
                 getToken();
                 Modifier::Type mt = map[i].m_mt;

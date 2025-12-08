@@ -34,6 +34,8 @@ public:
             m_hfont(nullptr) {
     }
 
+    virtual ~DlgLog() {}
+
     /// WM_INITDIALOG
     BOOL wmInitDialog(HWND /* i_focus */, LPARAM i_lParam) {
         DlgLogData *dld = reinterpret_cast<DlgLogData *>(i_lParam);

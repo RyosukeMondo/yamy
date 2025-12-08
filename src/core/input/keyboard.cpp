@@ -219,7 +219,7 @@ tostream &operator<<(tostream &i_ost, Modifier::Type i_type)
     };
 
     int i = static_cast<int>(i_type);
-    if (0 <= i && i < NUMBER_OF(modNames))
+    if (0 <= i && i < (int)NUMBER_OF(modNames))
         i_ost << modNames[i];
 
     return i_ost;

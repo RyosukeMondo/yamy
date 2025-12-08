@@ -223,10 +223,10 @@ Keymap::Keymap(Type i_type,
                Keymap *i_parentKeymap)
         : m_type(i_type),
         m_name(i_name),
-        m_defaultKeySeq(i_defaultKeySeq),
-        m_parentKeymap(i_parentKeymap),
         m_windowClass(_T(".*")),
-        m_windowTitle(_T(".*"))
+        m_windowTitle(_T(".*")),
+        m_defaultKeySeq(i_defaultKeySeq),
+        m_parentKeymap(i_parentKeymap)
 {
     if (i_type == Type_windowAnd || i_type == Type_windowOr)
         try {

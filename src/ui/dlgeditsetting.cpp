@@ -29,6 +29,8 @@ public:
             m_data(nullptr) {
     }
 
+    virtual ~DlgEditSetting() {}
+
     /// WM_INITDIALOG
     BOOL wmInitDialog(HWND /* focus */, LPARAM i_lParam) {
         m_data = reinterpret_cast<DlgEditSettingData *>(i_lParam);

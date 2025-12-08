@@ -60,9 +60,9 @@ typedef unsigned long long u_int64;            /// unsigned 64bit
 
 #  ifdef NDEBUG
 #    define ASSERT(i_exp)
-#    define CHECK(i_cond, i_exp)    i_exp
-#    define CHECK_TRUE(i_exp)        i_exp
-#    define CHECK_FALSE(i_exp)        i_exp
+#    define CHECK(i_cond, i_exp)    ((void)(i_exp))
+#    define CHECK_TRUE(i_exp)        ((void)(i_exp))
+#    define CHECK_FALSE(i_exp)        ((void)(i_exp))
 #  else // NDEBUG
 /// assertion. i_exp is evaluated only in debug build
 #    define ASSERT(i_exp)        assert(i_exp)

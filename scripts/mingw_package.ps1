@@ -8,7 +8,7 @@ $msysDir = "C:\tools\msys64"
 # -----------------------------------------------------------------------------
 # Clean
 # -----------------------------------------------------------------------------
-Write-Host "Cleaning build and dist directories..." -ForegroundColor Cyan
+Write-Output "Cleaning build and dist directories..."
 if (Test-Path "$root\build\mingw64") { Remove-Item -Recurse -Force "$root\build\mingw64" }
 if (Test-Path "$root\build\mingw32") { Remove-Item -Recurse -Force "$root\build\mingw32" }
 if (Test-Path $distDir) { Remove-Item -Recurse -Force $distDir }
@@ -17,7 +17,7 @@ New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
 # -----------------------------------------------------------------------------
 # Quality Checks
 # -----------------------------------------------------------------------------
-Write-Host "Running QA Checks..." -ForegroundColor Cyan
+Write-Output "Running QA Checks..."
 & "$PSScriptRoot\check_antipatterns.ps1"
 if ($LASTEXITCODE -ne 0) { throw "Anti-pattern check failed" }
 & "$PSScriptRoot\check_missing_sources.ps1"
@@ -29,14 +29,14 @@ if ($LASTEXITCODE -ne 0) { throw "Encoding check failed" }
 # -----------------------------------------------------------------------------
 # Build 64-bit
 # -----------------------------------------------------------------------------
-Write-Host "Building 64-bit Target..." -ForegroundColor Green
+Write-Output "Building 64-bit Target..."
 $env:PATH = "$msysDir\mingw64\bin;$env:PATH"
 
-Write-Host "Configuring CMake (64-bit)..." -ForegroundColor Cyan
+Write-Output "Configuring CMake (64-bit)..."
 cmake -S $root -B "$root\build\mingw64" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 if ($LASTEXITCODE -ne 0) { throw "CMake Configure (64-bit) failed" }
 
-Write-Host "Building Targets (64-bit)..." -ForegroundColor Cyan
+Write-Output "Building Targets (64-bit)..."
 cmake --build "$root\build\mingw64" --config Release
 if ($LASTEXITCODE -ne 0) { throw "CMake Build (64-bit) failed" }
 
@@ -52,15 +52,15 @@ if (Test-Path "$binDir64\libyamy-64-hook.dll.a") { Copy-Item "$binDir64\libyamy-
 # -----------------------------------------------------------------------------
 # Build 32-bit
 # -----------------------------------------------------------------------------
-Write-Host "Building 32-bit Target..." -ForegroundColor Green
+Write-Output "Building 32-bit Target..."
 # Reset PATH to prioritize 32-bit, removing 64-bit MSYS entry to be safe
 $env:PATH = "$msysDir\mingw32\bin;" + ($env:PATH.Replace("$msysDir\mingw64\bin;", ""))
 
-Write-Host "Configuring CMake (32-bit)..." -ForegroundColor Cyan
+Write-Output "Configuring CMake (32-bit)..."
 cmake -S $root -B "$root\build\mingw32" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 if ($LASTEXITCODE -ne 0) { throw "CMake Configure (32-bit) failed" }
 
-Write-Host "Building Targets (32-bit)..." -ForegroundColor Cyan
+Write-Output "Building Targets (32-bit)..."
 cmake --build "$root\build\mingw32" --config Release
 if ($LASTEXITCODE -ne 0) { throw "CMake Build (32-bit) failed" }
 
@@ -76,7 +76,7 @@ if (Test-Path "$binDir32\libyamy-32-hook.dll.a") { Copy-Item "$binDir32\libyamy-
 # -----------------------------------------------------------------------------
 # Copy Assets
 # -----------------------------------------------------------------------------
-Write-Host "Copying Assets..." -ForegroundColor Cyan
+Write-Output "Copying Assets..."
 Copy-Item -Recurse "$root\keymaps" "$releaseDir\keymaps"
 Copy-Item "$root\scripts\launch_yamy.bat" "$releaseDir\"
 Copy-Item "$root\scripts\launch_yamy_admin.bat" "$releaseDir\"
@@ -87,11 +87,11 @@ Copy-Item "$root\docs\readme.txt" "$releaseDir\readme.txt"
 # -----------------------------------------------------------------------------
 # Create Zip
 # -----------------------------------------------------------------------------
-Write-Host "Creating Archive..." -ForegroundColor Cyan
+Write-Output "Creating Archive..."
 $zipPath = "$distDir\yamy-dist-mingw.zip"
 Compress-Archive -Path "$releaseDir\*" -DestinationPath $zipPath -Force
 
 # Cleanup release dir safely (keeping zip)
 Remove-Item -Recurse -Force $releaseDir
 
-Write-Host "Success! Created $zipPath" -ForegroundColor Green
+Write-Output "Success! Created $zipPath"

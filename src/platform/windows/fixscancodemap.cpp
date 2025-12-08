@@ -5,7 +5,7 @@
 #include <tlhelp32.h>
 #include <process.h>
 
-#pragma runtime_checks( "", off )
+// #pragma runtime_checks( "", off )
 static DWORD WINAPI invokeFunc(InjectInfo *info)
 {
     BOOL ret;
@@ -72,7 +72,7 @@ static int afterFunc(int arg)
     arg *= 710810; // non-sense operation
     return arg;
 }
-#pragma runtime_checks( "", restore )
+// #pragma runtime_checks( "", restore )
 
 const DWORD FixScancodeMap::s_fixEntryNum = 4;
 const DWORD FixScancodeMap::s_fixEntry[] = {
@@ -155,7 +155,7 @@ DWORD FixScancodeMap::getWinLogonPid()
 
 bool FixScancodeMap::clean(WlInfo wl)
 {
-    int ret = 0;
+
 
     if (wl.m_hThread != nullptr) {
         DWORD result;
@@ -187,7 +187,7 @@ bool FixScancodeMap::clean(WlInfo wl)
 int FixScancodeMap::injectThread(DWORD dwPID)
 {
     int ret = 0;
-    DWORD err = 0;
+
     DWORD result = -1; // Moved here
     BOOL wFlag;
     WlInfo wi;
@@ -209,7 +209,7 @@ int FixScancodeMap::injectThread(DWORD dwPID)
     wi.m_remoteMem = VirtualAllocEx(wi.m_hProcess, nullptr, memSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
     if (wi.m_remoteMem == nullptr) {
         ret = YAMY_ERROR_ON_VIRTUALALLOCEX;
-        err = GetLastError();
+        // err = GetLastError();
         goto exit;
     }
 
@@ -222,7 +222,7 @@ int FixScancodeMap::injectThread(DWORD dwPID)
     wi.m_remoteInfo = VirtualAllocEx(wi.m_hProcess, nullptr, sizeof(m_info), MEM_COMMIT, PAGE_READWRITE);
     if (wi.m_remoteInfo == nullptr) {
         ret = YAMY_ERROR_ON_VIRTUALALLOCEX;
-        err = GetLastError();
+        // err = GetLastError();
         goto exit;
     }
 

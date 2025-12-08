@@ -1250,14 +1250,14 @@ void Engine::funcWindowMonitorTo(
             ep.m_primaryMonitorIdx < 0 || ep.m_currentMonitorIdx < 0)
         return;
 
-    int targetIdx;
+    int targetIdx = 0;
     switch (i_fromType) {
     case WindowMonitorFromType_primary:
-        targetIdx = (ep.m_primaryMonitorIdx + i_monitor) % ep.m_monitors.size();
+        targetIdx = (ep.m_primaryMonitorIdx + i_monitor) % (int)ep.m_monitors.size();
         break;
 
     case WindowMonitorFromType_current:
-        targetIdx = (ep.m_currentMonitorIdx + i_monitor) % ep.m_monitors.size();
+        targetIdx = (ep.m_currentMonitorIdx + i_monitor) % (int)ep.m_monitors.size();
         break;
     }
     if (ep.m_currentMonitorIdx == targetIdx)

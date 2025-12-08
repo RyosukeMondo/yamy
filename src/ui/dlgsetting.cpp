@@ -99,6 +99,8 @@ public:
             m_reg(MAYU_REGISTRY_ROOT) {
     }
 
+    virtual ~DlgSetting() {}
+
     /// WM_INITDIALOG
     BOOL wmInitDialog(HWND /* i_focus */, LPARAM /* i_lParam */) {
         setSmallIcon(m_hwnd, IDI_ICON_mayu);
