@@ -97,12 +97,14 @@ Modifier::Modifier()
 void Modifier::add(const Modifier &i_m)
 {
     for (int i = 0; i < Type_end; ++ i) {
-        if (isDontcare(static_cast<Modifier::Type>(i)))
-            if (!i_m.isDontcare(static_cast<Modifier::Type>(i)))
+        if (isDontcare(static_cast<Modifier::Type>(i))) {
+            if (!i_m.isDontcare(static_cast<Modifier::Type>(i))) {
                 if (i_m.isPressed(static_cast<Modifier::Type>(i)))
                     press(static_cast<Modifier::Type>(i));
                 else
                     release(static_cast<Modifier::Type>(i));
+            }
+        }
     }
 }
 

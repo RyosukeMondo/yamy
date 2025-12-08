@@ -36,6 +36,9 @@ elseif(MINGW)
     )
     add_compile_options(-Wall)
     add_link_options(-municode)
+    # Statically link standard libraries to avoid runtime dependencies (libgcc, libstdc++, etc.)
+    add_link_options(-static)
+    set(CMAKE_SHARED_LIBRARY_PREFIX "") # No 'lib' prefix for DLLs on MinGW
 endif()
 
 # Determine Architecture for Output Names
@@ -56,7 +59,7 @@ add_library(yamy_hook SHARED
     src/utils/stringtool.h
 )
 
-# Determine architecture suffix for naming yamy-64-hook / yamy-32-hook
+# Determine architecture suffix for naming yamy64 / yamy32
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(YAMY_ARCH_SUFFIX "64")
 else()
@@ -64,7 +67,7 @@ else()
 endif()
 
 target_compile_definitions(yamy_hook PRIVATE YAMY32DLL_EXPORTS)
-set_target_properties(yamy_hook PROPERTIES OUTPUT_NAME "yamy-${YAMY_ARCH_SUFFIX}-hook")
+set_target_properties(yamy_hook PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
 
 target_include_directories(yamy_hook PRIVATE
     src/utils
@@ -148,7 +151,7 @@ set(ENGINE_SOURCES
 )
 
 add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
-set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy-${YAMY_ARCH_SUFFIX}-hook")
+set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
 target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi)
 
 target_include_directories(yamy_engine_new PRIVATE

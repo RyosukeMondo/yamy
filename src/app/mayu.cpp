@@ -658,6 +658,8 @@ private:
                     case MayuDialogType_log:
                         hwnd = This->m_hwndLog;
                         break;
+                    default:
+                        break;
                     }
                     if (hwnd) {
                         ShowWindow(hwnd, sw);
@@ -888,7 +890,7 @@ private:
         PACL pOrigDacl;
         ACL_SIZE_INFORMATION aclInfo;
 
-        PACL pNewDacl;
+        PACL pNewDacl = nullptr;
         DWORD newDaclSize;
 
         DWORD aceIndex;
@@ -1025,7 +1027,6 @@ public:
     ///
     Mayu(HANDLE i_mutex)
             : m_hwndTaskTray(nullptr),
-            m_mutex(i_mutex),
             m_hwndLog(nullptr),
             m_WM_TaskbarRestart(RegisterWindowMessage(_T("TaskbarCreated"))),
             m_WM_MayuIPC(RegisterWindowMessage(WM_MayuIPC_NAME)),
@@ -1036,6 +1037,7 @@ public:
             m_logFile(_T("logs\\mayu.log")),
 #endif // LOG_TO_FILE
             m_hMenuTaskTray(nullptr),
+            m_mutex(i_mutex),
             m_hNotifyMailslot(INVALID_HANDLE_VALUE),
             m_hNotifyEvent(nullptr),
             m_sessionState(0),

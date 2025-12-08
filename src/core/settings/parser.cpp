@@ -325,11 +325,12 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
             // not quoted
             {
                 while (isSymbolChar(*t)) {
-                    if (*t == _T('\\'))
+                    if (*t == _T('\\')) {
                         if (*(t + 1))
                             t ++;
                         else
                             break;
+                    }
                     if (_istlead(*t) && *(t + 1))
                         t ++;
                     t ++;

@@ -1205,8 +1205,7 @@ struct EnumDisplayMonitorsForWindowMonitorToParam {
 
 public:
     EnumDisplayMonitorsForWindowMonitorToParam(HMONITOR i_hmon)
-            : m_hmon(i_hmon),
-            m_primaryMonitorIdx(-1), m_currentMonitorIdx(-1) {
+            : m_primaryMonitorIdx(-1), m_currentMonitorIdx(-1), m_hmon(i_hmon) {
     }
 };
 
@@ -1524,10 +1523,9 @@ void Engine::funcSetImeString(FunctionParam *i_param, const StrExprArg &i_data)
         m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcSetImeString, i_data.eval().size() * sizeof(_TCHAR));
 
         unsigned int len = 0;
-        unsigned int error;
         m_windowSystem->disconnectNamedPipe(m_hookPipe);
         m_windowSystem->connectNamedPipe(m_hookPipe, nullptr);
-        error = m_windowSystem->writeFile(m_hookPipe, i_data.eval().c_str(),
+        m_windowSystem->writeFile(m_hookPipe, i_data.eval().c_str(),
                           (unsigned int)(i_data.eval().size() * sizeof(_TCHAR)),
                           &len, nullptr);
 
@@ -1818,7 +1816,7 @@ void Engine::funcPlugIn(FunctionParam *i_param,
         return;
     }
     if (i_doesCreateThread) {
-        if (_beginthread(shu::plugInThread, 0, plugin) == -1) {
+        if (_beginthread(shu::plugInThread, 0, plugin) == static_cast<uintptr_t>(-1)) {
             delete plugin;
             Acquire a(&m_log);
             m_log << std::endl;

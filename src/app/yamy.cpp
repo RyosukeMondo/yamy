@@ -36,12 +36,12 @@ int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
     if (pIsWow64Process) {
         result = pIsWow64Process(::GetCurrentProcess(), &isWow64);
         if (result != FALSE && isWow64 == TRUE) {
-            yamyPath += _T("yamy-64-hook.exe");
+            yamyPath += _T("yamy64.exe");
         } else {
-            yamyPath += _T("yamy-32-hook.exe");
+            yamyPath += _T("yamy32.exe");
         }
     } else {
-        yamyPath += _T("yamy-32-hook.exe");
+        yamyPath += _T("yamy32.exe");
     }
 
     result = CreateProcess(yamyPath.c_str(), nullptr, nullptr, nullptr, FALSE,

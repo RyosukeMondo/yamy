@@ -12,3 +12,5 @@ x64/
 proj/*/Debug/
 proj/*/Release/
 proj/*/x64/
+
+logs/

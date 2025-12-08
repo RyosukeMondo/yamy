@@ -304,7 +304,7 @@ exit:
 
 int FixScancodeMap::fix()
 {
-    ScancodeMap *origMap, *fixMap;
+    ScancodeMap *origMap = nullptr, *fixMap = nullptr;
     DWORD origSize, fixSize;
     bool ret;
     int result = 0;
@@ -465,10 +465,13 @@ FixScancodeMap::FixScancodeMap() :
 
     m_info.pid_ = GetCurrentProcessId();
 
-    memcpy(&m_info.advapi32_, _T("advapi32.dll"), sizeof(m_info.advapi32_));
-    memcpy(&m_info.impersonateLoggedOnUser_, "ImpersonateLoggedOnUser", sizeof(m_info.impersonateLoggedOnUser_));
-    memcpy(&m_info.revertToSelf_, "RevertToSelf", sizeof(m_info.revertToSelf_));
-    memcpy(&m_info.openProcessToken_, "OpenProcessToken", sizeof(m_info.openProcessToken_));
+    tcslcpy(m_info.advapi32_, _T("advapi32.dll"), NUMBER_OF(m_info.advapi32_));
+    strncpy(m_info.impersonateLoggedOnUser_, "ImpersonateLoggedOnUser", NUMBER_OF(m_info.impersonateLoggedOnUser_));
+    m_info.impersonateLoggedOnUser_[NUMBER_OF(m_info.impersonateLoggedOnUser_) - 1] = 0;
+    strncpy(m_info.revertToSelf_, "RevertToSelf", NUMBER_OF(m_info.revertToSelf_));
+    m_info.revertToSelf_[NUMBER_OF(m_info.revertToSelf_) - 1] = 0;
+    strncpy(m_info.openProcessToken_, "OpenProcessToken", NUMBER_OF(m_info.openProcessToken_));
+    m_info.openProcessToken_[NUMBER_OF(m_info.openProcessToken_) - 1] = 0;
 
     m_hFixEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
     ASSERT(m_hFixEvent);
