@@ -104,25 +104,32 @@ public:
 
 private:
     // --- Load Helpers ---
+    template <size_t I>
+    void loadArgsRecursive(SettingLoader *i_sl)
+    {
+        if constexpr (I < sizeof...(Args)) {
+            // For the first argument (I == 0), we just load it.
+            // For subsequent arguments (I > 0), we must check for a comma first.
+            bool canProceed = true;
+            if constexpr (I > 0) {
+                 if (!i_sl->getComma(false, getName())) {
+                     canProceed = false;
+                 }
+            }
+            
+            if (canProceed) {
+                i_sl->load_ARGUMENT(&std::get<I>(m_args));
+                // Recurse for the next argument
+                loadArgsRecursive<I + 1>(i_sl);
+            }
+        }
+    }
+
     template <size_t... Is>
     void loadArgs(SettingLoader *i_sl, std::index_sequence<Is...>)
     {
-        // We need to call load_ARGUMENT for each, with getComma in between.
-        // Fold expression approach:
-        // ( (loadOneArg<Is>(i_sl), (Is < sizeof...(Args)-1 ? i_sl->getComma(false, getName()) : void())), ... );
-        // Better: generic loop
-        
-        int dummy[] = { 0, (loadOneArg<Is>(i_sl, Is < sizeof...(Args) - 1), 0)... };
-        (void)dummy;
-    }
-
-    template <size_t I>
-    void loadOneArg(SettingLoader *i_sl, bool hasMore)
-    {
-        i_sl->load_ARGUMENT(&std::get<I>(m_args));
-        if (hasMore) {
-            i_sl->getComma(false, getName());
-        }
+        // Start the recursive loader
+        loadArgsRecursive<0>(i_sl);
     }
 
     // --- Output Helpers ---

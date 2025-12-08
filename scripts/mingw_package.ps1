@@ -60,16 +60,33 @@ $env:PATH = "$msysDir\mingw64\bin;C:\Program Files\CMake\bin;C:\Windows\System32
 Write-Output "PATH for 64-bit build: $env:PATH"
 
 Write-Output "Configuring CMake (64-bit)..."
+$logsDir = "$root\logs"
+if (-not (Test-Path $logsDir)) { New-Item -Path $logsDir -ItemType Directory -Force | Out-Null }
 if (Test-Path "$root\build\mingw64") { Remove-Item -Recurse -Force "$root\build\mingw64" }
-cmake -S $root -B "$root\build\mingw64" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release > "$root\configure_64.log" 2>&1
+
+# Log file moved to logs directory
+cmake -S $root -B "$root\build\mingw64" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON > "$logsDir\configure_64.log" 2>&1
 if ($LASTEXITCODE -ne 0) { 
-    Get-Content "$root\configure_64.log" | Write-Host -ForegroundColor Red
+    Get-Content "$logsDir\configure_64.log" | Write-Host -ForegroundColor Red
     throw "CMake Configure (64-bit) failed" 
 }
 
 Write-Output "Building Targets (64-bit)..."
 cmake --build "$root\build\mingw64" --config Release
 if ($LASTEXITCODE -ne 0) { throw "CMake Build (64-bit) failed" }
+
+# -----------------------------------------------------------------------------
+# Run Tests
+# -----------------------------------------------------------------------------
+Write-Output "Running Tests..."
+Push-Location "$root\build\mingw64"
+try {
+    ctest --output-on-failure
+    if ($LASTEXITCODE -ne 0) { throw "Tests failed! Packaging aborted." }
+}
+finally {
+    Pop-Location
+}
 
 # Copy 64-bit artifacts
 Write-Output "Waiting for file locks to release..."
