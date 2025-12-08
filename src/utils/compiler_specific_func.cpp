@@ -40,6 +40,24 @@ tstring getCompilerVersionString()
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// MinGW / GCC
+
+#elif defined(__MINGW32__) || defined(__GNUC__)
+
+// get compiler version string
+tstring getCompilerVersionString()
+{
+    TCHAR buf[256];
+#ifdef UNICODE
+    _sntprintf(buf, NUMBER_OF(buf), _T("GCC %hs"), __VERSION__);
+#else
+    _sntprintf(buf, NUMBER_OF(buf), _T("GCC %s"), __VERSION__);
+#endif
+    return tstring(buf);
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // unknown
 
 #else

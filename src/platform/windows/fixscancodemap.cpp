@@ -188,6 +188,7 @@ int FixScancodeMap::injectThread(DWORD dwPID)
 {
     int ret = 0;
     DWORD err = 0;
+    DWORD result = -1; // Moved here
     BOOL wFlag;
     WlInfo wi;
 
@@ -243,7 +244,7 @@ int FixScancodeMap::injectThread(DWORD dwPID)
         m_wlTrash.push_back(wi);
         goto dirty_exit;
     }
-    DWORD result = -1;
+    result = -1; // Re-assign if needed, though initialization at top covers it.
     GetExitCodeThread(wi.m_hThread, &result);
     ret = result;
     CloseHandle(wi.m_hThread);

@@ -27,7 +27,7 @@ static LRESULT CALLBACK WndProc(
     case WM_SETFOCUS: {
         RECT rc;
         GetClientRect(i_hwnd, &rc);
-        CreateCaret(i_hwnd, reinterpret_cast<HBITMAP>(nullptr), 2,
+        CreateCaret(i_hwnd, (HBITMAP)nullptr, 2,
                     rcHeight(&rc) / 2);
         ShowCaret(i_hwnd);
         SetCaretPos(rcWidth(&rc) / 2, rcHeight(&rc) / 4);

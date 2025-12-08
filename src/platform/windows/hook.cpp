@@ -12,6 +12,9 @@
 #include <locale.h>
 #include <imm.h>
 #include <richedit.h>
+#if defined(__MINGW32__)
+#include <crtdbg.h>
+#endif
 
 
 ///

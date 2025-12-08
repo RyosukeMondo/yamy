@@ -11,7 +11,7 @@ $SrcDir = Join-Path $RepoRoot "src"
 Write-Host "Checking for UTF-8 BOM in source files..." -ForegroundColor Cyan
 
 # Find all relevant source files
-$files = Get-ChildItem -Path $SrcDir -Recurse -Include "*.h","*.hpp","*.cpp","*.c" | Select-Object -ExpandProperty FullName
+$files = Get-ChildItem -Path $SrcDir -Recurse -Include "*.h", "*.hpp", "*.cpp", "*.c" | Select-Object -ExpandProperty FullName
 
 $badEncoding = @()
 
@@ -21,12 +21,19 @@ foreach ($file in $files) {
     
     # Exclude 3rd party/tests if needed
     if ($relativePath -match "^src/tests/" -or $relativePath -match "^src/ts4mayu/") {
-         continue
+        continue
     }
 
     # Helper function to check BOM
     # UTF-8 BOM is 0xEF, 0xBB, 0xBF
-    $bytes = Get-Content -Path $file -Encoding Byte -TotalCount 3
+    # UTF-8 BOM is 0xEF, 0xBB, 0xBF
+    $bytes = $null
+    if ($PSVersionTable.PSVersion.Major -ge 6) {
+        $bytes = Get-Content -Path $file -AsByteStream -TotalCount 3
+    }
+    else {
+        $bytes = Get-Content -Path $file -Encoding Byte -TotalCount 3
+    }
     if ($null -eq $bytes -or $bytes.Count -lt 3) {
         # Empty or small files might be fine, or might be empty.
         # Let's ignore files < 3 bytes for BOM check
@@ -50,7 +57,8 @@ if ($badEncoding.Count -gt 0) {
     Write-Host "`nMSVC may misinterpret non-ASCII characters in these files." -ForegroundColor Yellow
     Write-Host "Consider converting them to UTF-8 with BOM." -ForegroundColor Yellow
     exit 1
-} else {
+}
+else {
     Write-Host "All source files have UTF-8 BOM." -ForegroundColor Green
     exit 0
 }

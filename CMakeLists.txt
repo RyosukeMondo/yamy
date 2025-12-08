@@ -25,6 +25,17 @@ if(MSVC)
         USE_INI
     )
     add_compile_options(/W3 /MP) # Warning level 3, Multi-processor compilation
+elseif(MINGW)
+    add_compile_definitions(
+        WIN32 _WINDOWS UNICODE _UNICODE
+        "VERSION=\"0.04\""
+        "LOGNAME=\"unknown\""
+        "COMPUTERNAME=\"unknown\""
+        MAYU64
+        USE_INI
+    )
+    add_compile_options(-Wall)
+    add_link_options(-municode)
 endif()
 
 # Determine Architecture for Output Names

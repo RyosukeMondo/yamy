@@ -9,6 +9,7 @@
 #include "utils/stringtool.h"
 #include "keyboard.h"
 #include <list>
+#include "hook.h" // for MouseHookType
 
 class SettingLoader;
 class Engine;
@@ -87,7 +88,6 @@ extern bool getTypeValue(GravityType *o_type, const tstring &i_name);
 
 
 /// enum MouseHookType is defined in hook.h
-enum MouseHookType;
 
 /// stream output
 extern tostream &operator<<(tostream &i_ost, MouseHookType i_data);

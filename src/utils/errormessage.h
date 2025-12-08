@@ -41,24 +41,24 @@ public:
         return *this;
     }
 
-#ifdef UNICODE
-    /// add message
-    template<> ErrorMessage &operator<<(const std::string &i_value) {
-        m_ost << to_wstring(i_value);
-        return *this;
-    }
-
-    /// add message
-    typedef const char *const_char_ptr;
-    template<> ErrorMessage &operator<<(const const_char_ptr &i_value) {
-        m_ost << to_wstring(i_value);
-        return *this;
-    }
-#endif
 
     /// stream output
     friend tostream &operator<<(tostream &i_ost, const ErrorMessage &i_em);
 };
+
+#ifdef UNICODE
+/// add message
+template<> inline ErrorMessage &ErrorMessage::operator<<(const std::string &i_value) {
+    m_ost << to_wstring(i_value);
+    return *this;
+}
+
+/// add message
+template<> inline ErrorMessage &ErrorMessage::operator<<(const char * const &i_value) {
+    m_ost << to_wstring(i_value);
+    return *this;
+}
+#endif
 
 
 /// stream output

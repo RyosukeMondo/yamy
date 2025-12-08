@@ -11,8 +11,9 @@
 #include "layoutmanager.h"
 #include "dlglog.h"
 #include <windowsx.h>
+#include <cstring> // Added for memset
 
-
+//
 ///
 class DlgLog : public LayoutManager
 {

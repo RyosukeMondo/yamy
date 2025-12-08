@@ -1080,16 +1080,16 @@ void SettingLoader::load_IF()
     if (!getToken()->isOpenParen())
         throw ErrorMessage() << _T("there must be `(' after `if'.");
     Token *t = getToken(); // <SYMBOL> or !
-    bool not = false;
+    bool isNot = false;
     if (*t == _T("!")) {
-        not = true;
+        isNot = true;
         t = getToken(); // <SYMBOL>
     }
 
     bool doesSymbolExist = (m_setting->m_symbols.find(t->getString())
                             != m_setting->m_symbols.end());
-    bool doesRead = ((doesSymbolExist && !not) ||
-                     (!doesSymbolExist && not));
+    bool doesRead = ((doesSymbolExist && !isNot) ||
+                     (!doesSymbolExist && isNot));
     if (0 < m_canReadStack.size())
         doesRead = doesRead && m_canReadStack.back();
 

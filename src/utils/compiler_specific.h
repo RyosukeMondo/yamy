@@ -69,6 +69,14 @@ extern "C"
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// MinGW / GCC
+
+#  elif defined(__MINGW32__) || defined(__GNUC__)
+#    include <windows.h>
+#    include <tchar.h>
+#    define stati64_t _stati64
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Cygwin 1.1 (gcc 2.95.2)
 
 #  elif defined(__CYGWIN__)

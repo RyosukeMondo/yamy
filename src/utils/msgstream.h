@@ -64,7 +64,7 @@ public:
             m_debugLevel(0),
             m_msgDebugLevel(0) {
         ASSERT(m_buf);
-        setp(m_buf, m_buf + SIZE);
+        this->setp(m_buf, m_buf + SIZE);
     }
 
     ///
@@ -129,8 +129,8 @@ public:
             return TR::eof();
 
         if (i_c != TR::eof()) {
-            *pptr() = TR::to_char_type(i_c);
-            pbump(1);
+            *this->pptr() = TR::to_char_type(i_c);
+            this->pbump(1);
             sync();
         }
         return TR::not_eof(i_c); // return something other than EOF if successful
@@ -138,8 +138,8 @@ public:
 
     // for stream
     int sync() {
-        T *begin = pbase();
-        T *end = pptr();
+        T *begin = this->pbase();
+        T *end = this->pptr();
         T *i;
         for (i = begin; i < end; ++ i)
             if (_istlead(*i))
@@ -147,13 +147,13 @@ public:
         if (i == end) {
             if (m_msgDebugLevel <= m_debugLevel)
                 m_str += String(begin, end - begin);
-            setp(m_buf, m_buf + SIZE);
+            this->setp(m_buf, m_buf + SIZE);
         } else { // end < i
             if (m_msgDebugLevel <= m_debugLevel)
                 m_str += String(begin, end - begin - 1);
             m_buf[0] = end[-1];
-            setp(m_buf, m_buf + SIZE);
-            pbump(1);
+            this->setp(m_buf, m_buf + SIZE);
+            this->pbump(1);
         }
         return TR::not_eof(0);
     }

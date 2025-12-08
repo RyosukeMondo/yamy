@@ -36,6 +36,7 @@
 #include <commctrl.h>
 #include <wtsapi32.h>
 #include <aclapi.h>
+#include <cstring>
 
 
 ///
