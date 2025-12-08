@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // mayu.cpp
 
 
@@ -1356,7 +1356,7 @@ void convertRegistry()
 /// main
 
 /// main
-int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
+extern "C" int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
                      LPTSTR /* i_lpszCmdLine */, int /* i_nCmdShow */)
 {
     g_hInst = i_hInstance;
