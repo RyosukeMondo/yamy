@@ -15,7 +15,49 @@ This repository is a fork of the original Yamy project, reorganized for better m
 
 ## Directory Structure
 
-The project structure has been reorganized. Please refer to [README_STRUCTURE.md](README_STRUCTURE.md) for details.
+The project structure has been reorganized for better clarity and maintainability.
+
+- **`src/`**: Core source code.
+  - **`core/`**: Main engine logic (key mapping, parser, settings).
+  - **`ui/`**: User interface (dialogs, resources).
+  - **`system/`**: Low-level system hooks, registry, and driver interaction.
+  - **`utils/`**: General purpose utilities and helper classes.
+  - **`app/`**: Application entry points (`yamy.cpp`, `mayu.cpp`).
+- **`proj/`**: Visual Studio project and solution files (`.sln`, `.vcxproj`).
+- **`driver/`**: Device driver source code and related files (formerly `d/`).
+- **`keymaps/`**: Default and contributed keymap files (`.mayu`).
+- **`resources/`**: Icons, cursors, and other resource files (formerly `r/`).
+- **`scripts/`**: Build and utility scripts.
+- **`setup/`**: Installer and setup related files (formerly `s/`).
+- **`docs/`**: Documentation files (`.html`, `.txt`).
+
+## Building
+
+### Visual Studio (MSVC)
+
+To build the project using Visual Studio, run the build script from the `scripts` directory:
+
+```bat
+scripts\build_yamy.bat
+```
+
+This script will set up the environment, build the Release configurations (x64 and Win32), and handle artifact renaming.
+
+### MinGW-w64 (MSYS2)
+
+Yamy supports building with MinGW-w64, producing standalone artifacts without Visual Studio dependencies.
+
+To build, run the packaging script:
+```powershell
+scripts/mingw_package.ps1
+```
+
+**Requirements:**
+- **64-bit Build**: `mingw-w64-x86_64-toolchain`
+- **32-bit Build**: `mingw-w64-i686-toolchain` (Optional, but required for `yamy32.exe`)
+- **CMake**: Must be installed and in PATH (or `C:\Program Files\CMake\bin`).
+
+The script automatically detects if the 32-bit toolchain is installed (e.g., at `C:\tools\msys64\mingw32`). If found, it will build the 32-bit binaries (`yamy32.exe`, `yamy32.dll`, `yamyd32.exe`) and include them in the final zip package. If not found, only 64-bit binaries will be built.
 
 ## License and Copyright
 

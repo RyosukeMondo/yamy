@@ -36,9 +36,12 @@ elseif(MINGW)
     )
     add_compile_options(-Wall)
     add_link_options(-municode)
-    # Statically link standard libraries to avoid runtime dependencies (libgcc, libstdc++, etc.)
-    add_link_options(-static)
-    set(CMAKE_SHARED_LIBRARY_PREFIX "") # No 'lib' prefix for DLLs on MinGW
+    # Global static removed to allow dynamic linking for main engine (64-bit primarily)
+    # However, for 32-bit, we must link statically to avoid DLL filename conflicts (libstdc++-6.dll)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        add_link_options(-static)
+    endif()
+    set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif()
 
 # Determine Architecture for Output Names
@@ -75,6 +78,7 @@ target_include_directories(yamy_hook PRIVATE
 )
 
 target_link_libraries(yamy_hook PRIVATE imm32 user32)
+# target_link_options(yamy_hook PRIVATE -static) - Removed to avoid CRT conflict
 
 # -----------------------------------------------------------------------------
 # Target: yamyd (Helper EXE)
@@ -86,6 +90,9 @@ if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     set_target_properties(yamyd PROPERTIES OUTPUT_NAME "yamyd32")
     target_link_libraries(yamyd PRIVATE yamy_hook)
     target_include_directories(yamyd PRIVATE src/platform/windows src/app src/utils)
+    if(MINGW)
+        target_link_options(yamyd PRIVATE -static)
+    endif()
 endif()
 
 # -----------------------------------------------------------------------------

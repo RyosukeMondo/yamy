@@ -25,7 +25,9 @@
 #include "setting_loader.h"
 #include "target.h"
 #include "windowstool.h"
+#include <shlwapi.h> // For Path functions
 #include "fixscancodemap.h"
+
 #include "vk2tchar.h"
 #include "window_system_win32.h"
 #include "input_injector_win32.h"
@@ -772,9 +774,11 @@ private:
             m_log << _T("error: failed to load.") << std::endl;
             return;
         }
+
         m_log << _T("successfully loaded.") << std::endl;
         while (!m_engine.setSetting(newSetting))
             Sleep(1000);
+
         delete m_setting;
         m_setting = newSetting;
     }
@@ -1348,55 +1352,40 @@ void convertRegistry()
 }
 
 
+
+/// main
+
 /// main
 int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
                      LPTSTR /* i_lpszCmdLine */, int /* i_nCmdShow */)
 {
     g_hInst = i_hInstance;
 
-    // set locale
-    CHECK_TRUE( _tsetlocale(LC_ALL, _T("")) );
+    if (_tsetlocale(LC_ALL, _T("")) == nullptr) {
+    }
 
-    // common controls
-#if defined(_WIN95)
     InitCommonControls();
-#else
-    INITCOMMONCONTROLSEX icc;
-    icc.dwSize = sizeof(icc);
-    icc.dwICC = ICC_LISTVIEW_CLASSES;
-    CHECK_TRUE( InitCommonControlsEx(&icc) );
-#endif
+    if (FAILED(OleInitialize(nullptr))) {
+        return 0;
+    }
 
-    // convert old registry to new registry
-#ifndef USE_INI
-    convertRegistry();
-#endif // !USE_INI
-
-    // is another mayu running ?
-    HANDLE mutex = CreateMutex((SECURITY_ATTRIBUTES *)nullptr, TRUE,
-                               MUTEX_MAYU_EXCLUSIVE_RUNNING);
+    // Mutex
+    HANDLE hMutex = CreateMutex(nullptr, TRUE, _T("Ctl_Mayu_Mutex"));
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        // another mayu already running
-        tstring text = loadString(IDS_mayuAlreadyExists);
-        tstring title = loadString(IDS_mayu);
-        if (g_hookData) {
-            UINT WM_TaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
-            PostMessage((HWND)(ULONG_PTR)g_hookData->m_hwndTaskTray,
-                        WM_TaskbarRestart, 0, 0);
-        }
-        MessageBox((HWND)nullptr, text.c_str(), title.c_str(), MB_OK | MB_ICONSTOP);
-        return 1;
+        // Should activate existing window
+        return 0;
     }
 
+    int result = 0;
     try {
-        CreateDirectory(_T("logs"), nullptr);
-        Mayu(mutex).messageLoop();
-    } catch (ErrorMessage &i_e) {
-        tstring title = loadString(IDS_mayu);
-        MessageBox((HWND)nullptr, i_e.getMessage().c_str(), title.c_str(),
-                   MB_OK | MB_ICONSTOP);
+        Mayu mayu(hMutex); // Pass mutex ownership to Mayu
+        
+        result = (int)mayu.messageLoop();
+    }
+    catch (...) {
+        MessageBox(nullptr, _T("Exception caught!"), _T("Mayu Error"), MB_OK | MB_ICONSTOP);
     }
 
-    CHECK_TRUE( CloseHandle(mutex) );
-    return 0;
+    OleUninitialize();
+    return result;
 }

@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sys/stat.h>
+#include <sys/stat.h>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // SettingLoader
@@ -1471,6 +1472,7 @@ bool SettingLoader::isReadable(const tstringi &i_filename,
 
 
 // get filename
+// get filename
 bool SettingLoader::getFilename(const tstringi &i_name, tstringi *o_path,
                                 int i_debugLevel) const
 {
@@ -1559,7 +1561,8 @@ bool SettingLoader::initialize(Setting *i_setting)
     m_isThereAnyError = false;
 
     // create global keymap's default keySeq
-    ActionFunction af(createFunctionData(_T("OtherWindowClass")));
+    FunctionData *fd = createFunctionData(_T("OtherWindowClass"));
+    ActionFunction af(fd);
     KeySeq *globalDefault = m_setting->m_keySeqs.add(KeySeq(_T("")).add(af));
 
     // add default keymap
