@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // yamy.cpp
 
 #include <windows.h>
@@ -8,7 +8,7 @@
 #include "mayurc.h"
 
 /// main
-int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
+extern "C" int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
                      LPTSTR /* i_lpszCmdLine */, int /* i_nCmdShow */)
 {
     STARTUPINFO si;
