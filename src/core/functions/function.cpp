@@ -529,7 +529,7 @@ bool Engine::getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
 }
 
 //
-bool Engine::getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
+bool Engine::getSuitableMdiWindow(yamy::platform::IWindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
                           TargetWindowType *io_twt,
                           RECT *o_rcWindow /*= nullptr*/, RECT *o_rcParent /*= nullptr*/)
 {
@@ -543,8 +543,8 @@ bool Engine::getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND
     switch (*io_twt) {
     case TargetWindowType_overlapped:
         if (o_rcWindow) {
-            WindowRect wr;
-            if (ws->getWindowRect((WindowSystem::WindowHandle)*o_hwnd, &wr)) {
+            yamy::platform::Rect wr;
+            if (ws->getWindowRect((yamy::platform::WindowHandle)*o_hwnd, &wr)) {
                 o_rcWindow->left = wr.left;
                 o_rcWindow->top = wr.top;
                 o_rcWindow->right = wr.right;
@@ -562,8 +562,8 @@ bool Engine::getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND
         break;
     case TargetWindowType_mdi:
         if (o_rcWindow) {
-            WindowRect wr;
-            if (ws->getChildWindowRect((WindowSystem::WindowHandle)*o_hwnd, &wr)) {
+            yamy::platform::Rect wr;
+            if (ws->getChildWindowRect((yamy::platform::WindowHandle)*o_hwnd, &wr)) {
                 o_rcWindow->left = wr.left;
                 o_rcWindow->top = wr.top;
                 o_rcWindow->right = wr.right;
@@ -571,8 +571,8 @@ bool Engine::getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND
             }
         }
         if (o_rcParent) {
-            WindowRect wr;
-            if (ws->getClientRect(ws->getParent((WindowSystem::WindowHandle)*o_hwnd), &wr)) {
+            yamy::platform::Rect wr;
+            if (ws->getClientRect(ws->getParent((yamy::platform::WindowHandle)*o_hwnd), &wr)) {
                 o_rcParent->left = wr.left;
                 o_rcParent->top = wr.top;
                 o_rcParent->right = wr.right;

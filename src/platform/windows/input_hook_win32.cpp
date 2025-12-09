@@ -1,4 +1,4 @@
-﻿#include "input_hook_win32.h"
+#include "input_hook_win32.h"
 #include "../../core/engine/engine.h"
 #include "../../core/input/input_event.h"
 #include "hook.h"
@@ -15,7 +15,9 @@ InputHookWin32::InputHookWin32()
       m_engine(nullptr),
       m_isEnabled(true),
       m_buttonPressed(false),
-      m_dragging(false)
+      m_dragging(false),
+      m_keyCallback(nullptr),
+      m_isHookInstalled(false)
 {
     m_msllHookCurrent.pt.x = 0;
     m_msllHookCurrent.pt.y = 0;
@@ -67,13 +69,32 @@ bool InputHookWin32::resume()
 unsigned int WINAPI InputHookWin32::keyboardDetour(void *i_context, WPARAM i_wParam, LPARAM i_lParam)
 {
     InputHookWin32 *This = reinterpret_cast<InputHookWin32*>(i_context);
-    if (!This || !This->m_engine) return 0;
+    if (!This) return 0;
 
     KBDLLHOOKSTRUCT *kid = reinterpret_cast<KBDLLHOOKSTRUCT*>(i_lParam);
     
+    // Check if injected or disabled
     if ((kid->flags & LLKHF_INJECTED) || !This->m_isEnabled) {
         return 0;
-    } else {
+    }
+
+    // New IInputHook path
+    if (This->m_keyCallback) {
+        yamy::platform::KeyEvent event;
+        event.key = static_cast<yamy::platform::KeyCode>(kid->vkCode);
+        event.scanCode = kid->scanCode;
+        event.isKeyDown = !(kid->flags & LLKHF_UP);
+        event.isExtended = (kid->flags & LLKHF_EXTENDED) != 0;
+        event.timestamp = kid->time;
+
+        if (This->m_keyCallback(event)) {
+            return 1; // Suppress
+        }
+        // If callback returns false, we continue (e.g. to legacy engine if present, or pass through)
+    }
+
+    // Legacy path
+    if (This->m_engine) {
         KEYBOARD_INPUT_DATA data;
         data.UnitId = 0;
         data.MakeCode = (USHORT)kid->scanCode;
@@ -90,6 +111,8 @@ unsigned int WINAPI InputHookWin32::keyboardDetour(void *i_context, WPARAM i_wPa
         This->m_engine->pushInputEvent(data);
         return 1;
     }
+
+    return 0;
 }
 
 unsigned int WINAPI InputHookWin32::mouseDetour(void *i_context, WPARAM i_wParam, LPARAM i_lParam)
@@ -307,4 +330,31 @@ int InputHookWin32::InputHandler::stop()
     PostThreadMessage(m_threadId, WM_QUIT, 0, 0);
     WaitForSingleObject(m_hThread, INFINITE);
     return 0;
+}
+
+// Implementation of IInputHook interface
+
+bool InputHookWin32::install(yamy::platform::KeyCallback callback) {
+    m_keyCallback = callback;
+    m_isHookInstalled = true;
+    m_keyboardHandler.start(this);
+    // Mouse handler is not part of IInputHook yet, but we might want to start it if we want to preserve behavior?
+    // For now, IInputHook only covers keyboard.
+    return true;
+}
+
+void InputHookWin32::uninstall() {
+    m_keyboardHandler.stop();
+    m_isHookInstalled = false;
+    m_keyCallback = nullptr;
+}
+
+bool InputHookWin32::isInstalled() const {
+    return m_isHookInstalled;
+}
+
+namespace yamy::platform {
+    IInputHook* createInputHook() {
+        return new InputHookWin32();
+    }
 }
