@@ -20,7 +20,7 @@ void Command_EmacsEditKillLinePred::exec(Engine *i_engine, FunctionParam *i_para
     if (!i_param->m_isPressed)
         return;
 
-    int r = i_engine->m_emacsEditKillLine.pred();
+    int r = i_engine->m_emacsEditKillLine.pred(i_engine->getWindowSystem());
     const KeySeq *keySeq;
     if (r == 1)
         keySeq = m_keySeq1;
