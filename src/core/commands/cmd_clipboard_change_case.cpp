@@ -17,7 +17,7 @@ void Command_ClipboardChangeCase::exec(Engine *i_engine, FunctionParam *i_param)
     if (!i_param->m_isPressed)
         return;
 
-    tstring text = i_engine->getWindowSystem()->getClipboardText();
+    tstring text = to_tstring(i_engine->getWindowSystem()->getClipboardText());
     if (text.empty())
         return;
 
@@ -32,7 +32,7 @@ void Command_ClipboardChangeCase::exec(Engine *i_engine, FunctionParam *i_param)
         text[i] = m_doesConvertToUpperCase ? _totupper(c) : _totlower(c);
     }
 
-    i_engine->getWindowSystem()->setClipboardText(text);
+    i_engine->getWindowSystem()->setClipboardText(to_UTF_8(text));
 }
 
 tostream &Command_ClipboardChangeCase::outputArgs(tostream &i_ost) const
