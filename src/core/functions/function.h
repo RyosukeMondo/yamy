@@ -38,7 +38,10 @@ extern tostream &operator<<(tostream &i_ost, const FunctionData *i_data);
 
 
 // create function
+extern FunctionData *createFunctionData(const std::string &i_name);
+#ifdef _UNICODE
 extern FunctionData *createFunctionData(const tstring &i_name);
+#endif
 
 ///
 enum VKey {
@@ -223,6 +226,10 @@ extern bool getTypeValue(WindowMonitorFromType *o_type, const tstring &i_name);
 /// stream output
 extern tostream &operator<<(tostream &i_ost,
                                 const std::list<tstringq> &i_data);
+
+/// stream output
+extern tostream &operator<<(tostream &i_ost,
+                                const std::list<std::string> &i_data);
 
 #include "strexpr.h"
 
