@@ -193,6 +193,7 @@ set(ENGINE_SOURCES
     src/core/settings/parser.cpp
     src/platform/windows/input_driver_win32.cpp
     src/platform/windows/registry.cpp
+    src/platform/windows/utf_conversion.cpp
     src/platform/windows/window_system_win32.cpp
     src/platform/windows/windowstool.cpp
 
@@ -203,6 +204,12 @@ set(ENGINE_SOURCES
     src/ui/mayu.rc
     src/app/mayu.cpp
 )
+
+if(WIN32)
+    list(APPEND ENGINE_SOURCES src/platform/windows/thread_win32.cpp)
+elseif(UNIX)
+    list(APPEND ENGINE_SOURCES src/platform/linux/thread_linux.cpp)
+endif()
 
 add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
 set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")

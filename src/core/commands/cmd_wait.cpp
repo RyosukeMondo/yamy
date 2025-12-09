@@ -1,7 +1,7 @@
 ﻿#include "cmd_wait.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
-#include <windows.h> // For Sleep
+#include "core/platform/thread.h"
 
 void Command_Wait::exec(Engine *i_engine, FunctionParam *i_param) const
 {
@@ -15,7 +15,7 @@ void Command_Wait::exec(Engine *i_engine, FunctionParam *i_param) const
     // Friend access to Engine private members
     i_engine->m_isSynchronizing = true;
     i_engine->m_cs.release();
-    Sleep(milliSecond);
+    yamy::platform::sleep_ms(milliSecond);
     i_engine->m_cs.acquire();
     i_engine->m_isSynchronizing = false;
 }
