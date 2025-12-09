@@ -204,6 +204,12 @@ set(ENGINE_SOURCES
     src/app/mayu.cpp
 )
 
+if(WIN32)
+    list(APPEND ENGINE_SOURCES src/platform/windows/thread_win32.cpp)
+elseif(UNIX)
+    list(APPEND ENGINE_SOURCES src/platform/linux/thread_linux.cpp)
+endif()
+
 add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
 set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
 target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32)
