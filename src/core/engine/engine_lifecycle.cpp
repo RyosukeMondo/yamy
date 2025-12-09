@@ -137,9 +137,9 @@ void Engine::stop() {
 
 bool Engine::prepairQuit() {
     // terminate and unload DLL for ThumbSense support if loaded
-    m_inputDriver->manageExtension(to_tstring("sts4mayu.dll").c_str(), to_tstring("SynCOM.dll").c_str(),
+    m_inputDriver->manageExtension("sts4mayu.dll", "SynCOM.dll",
                   false, (void**)&m_sts4mayu);
-    m_inputDriver->manageExtension(to_tstring("cts4mayu.dll").c_str(), to_tstring("TouchPad.dll").c_str(),
+    m_inputDriver->manageExtension("cts4mayu.dll", "TouchPad.dll",
                   false, (void**)&m_cts4mayu);
     return true;
 }

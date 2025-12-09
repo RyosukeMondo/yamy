@@ -94,6 +94,9 @@ public:
 /// match_results for generic international text
 typedef std::match_results<tstring::const_iterator> tsmatch;
 
+// Forward declaration for string conversion
+std::wstring to_wstring(const std::string &i_str);
+
 // Regex wrapper for std::string (UTF-8)
 class Regex : public std::regex
 {
@@ -128,7 +131,11 @@ public:
 };
 
 inline tostream &operator<<(tostream &i_ost, const Regex &i_data) {
-    return i_ost << to_tstring(i_data.str());
+#ifdef _UNICODE
+    return i_ost << to_wstring(i_data.str());
+#else
+    return i_ost << i_data.str();
+#endif
 }
 
 

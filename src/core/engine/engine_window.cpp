@@ -128,7 +128,7 @@ bool Engine::setShow(bool i_isMaximized, bool i_isMinimized,
 // StrExprSystem implementation
 std::string Engine::getClipboardText() const
 {
-    return yamy::platform::wstring_to_utf8(m_windowSystem->getClipboardText());
+    return m_windowSystem->getClipboardString();
 }
 
 std::string Engine::getStrExprWindowClassName() const

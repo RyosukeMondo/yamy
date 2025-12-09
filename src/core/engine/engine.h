@@ -14,6 +14,10 @@
 #  include "../input/input_injector.h"
 #  include "../input/input_hook.h"
 #  include "../input/input_driver.h"
+#  include "../platform/window_system_interface.h"
+#  include "../platform/input_injector_interface.h"
+#  include "../platform/input_hook_interface.h"
+#  include "../platform/input_driver_interface.h"
 #  include <set>
 #  include <queue>
 #  include <string>
@@ -162,11 +166,11 @@ private:
     HWND m_hwndAssocWindow;            /** associated window (we post
                                                     message to it) */
     Setting * volatile m_setting;            /// setting
-    WindowSystem *m_windowSystem;            /// window system abstraction
+    yamy::platform::IWindowSystem *m_windowSystem;            /// window system abstraction
     ConfigStore *m_configStore;            /// config store abstraction
-    InputInjector *m_inputInjector;            /// input injector abstraction
-    InputHook *m_inputHook;                /// input hook abstraction
-    InputDriver *m_inputDriver;            /// input driver abstraction
+    yamy::platform::IInputInjector *m_inputInjector;            /// input injector abstraction
+    yamy::platform::IInputHook *m_inputHook;                /// input hook abstraction
+    yamy::platform::IInputDriver *m_inputDriver;            /// input driver abstraction
 
     // engine thread state
     HANDLE m_threadHandle;
@@ -439,12 +443,12 @@ public:
 public:
     // Helper functions for commands
     static bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd);
-    static bool getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
+    static bool getSuitableMdiWindow(yamy::platform::IWindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
                                      TargetWindowType *io_twt,
                                      RECT *o_rcWindow = nullptr, RECT *o_rcParent = nullptr);
 
     ///
-    Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_configStore, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver);
+    Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem, ConfigStore *i_configStore, yamy::platform::IInputInjector *i_inputInjector, yamy::platform::IInputHook *i_inputHook, yamy::platform::IInputDriver *i_inputDriver);
     ///
     ~Engine();
 

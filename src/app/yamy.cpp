@@ -7,7 +7,7 @@
 #include "stringtool.h"
 #include "mayurc.h"
 #include <string>
-#include "utf_conversion.h" // For utf8_to_wstring
+#include "../platform/windows/utf_conversion.h" // For utf8_to_wstring
 
 // Forward declaration
 int appMain(const std::string& cmdLine);
