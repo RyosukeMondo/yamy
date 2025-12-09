@@ -1361,9 +1361,12 @@ void convertRegistry()
 
 /// main
 
+// Forward declaration
+int appMain(const std::string& cmdLine);
+
 /// main
-extern "C" int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
-                     LPTSTR /* i_lpszCmdLine */, int /* i_nCmdShow */)
+extern "C" int WINAPI wWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstance */,
+                     LPWSTR i_lpszCmdLine, int /* i_nCmdShow */)
 {
     g_hInst = i_hInstance;
 
@@ -1375,8 +1378,19 @@ extern "C" int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInsta
         return 0;
     }
 
+    // Convert command line to UTF-8
+    std::string cmdLine = yamy::platform::wstring_to_utf8(i_lpszCmdLine);
+
+    // Rest of application uses UTF-8 internally
+    int result = appMain(cmdLine);
+
+    OleUninitialize();
+    return result;
+}
+
+int appMain(const std::string& /*cmdLine*/) {
     // Mutex
-    HANDLE hMutex = CreateMutex(nullptr, TRUE, _T("Ctl_Mayu_Mutex"));
+    HANDLE hMutex = CreateMutexW(nullptr, TRUE, L"Ctl_Mayu_Mutex");
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
         // Should activate existing window
         return 0;
@@ -1389,9 +1403,8 @@ extern "C" int WINAPI _tWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInsta
         result = (int)mayu.messageLoop();
     }
     catch (...) {
-        MessageBox(nullptr, _T("Exception caught!"), _T("Mayu Error"), MB_OK | MB_ICONSTOP);
+        MessageBoxW(nullptr, L"Exception caught!", L"Mayu Error", MB_OK | MB_ICONSTOP);
     }
 
-    OleUninitialize();
     return result;
 }
