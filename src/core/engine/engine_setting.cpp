@@ -46,9 +46,9 @@ bool Engine::setSetting(Setting *i_setting) {
 
     m_setting = i_setting;
 
-    m_inputDriver->manageExtension(to_tstring("sts4mayu.dll").c_str(), to_tstring("SynCOM.dll").c_str(),
+    m_inputDriver->manageExtension("sts4mayu.dll", "SynCOM.dll",
                   m_setting->m_sts4mayu, (void**)&m_sts4mayu);
-    m_inputDriver->manageExtension(to_tstring("cts4mayu.dll").c_str(), to_tstring("TouchPad.dll").c_str(),
+    m_inputDriver->manageExtension("cts4mayu.dll", "TouchPad.dll",
                   m_setting->m_cts4mayu, (void**)&m_cts4mayu);
 
     g_hookData->m_correctKanaLockHandling = m_setting->m_correctKanaLockHandling;
