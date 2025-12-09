@@ -196,6 +196,7 @@ set(ENGINE_SOURCES
     src/platform/windows/utf_conversion.cpp
     src/platform/windows/window_system_win32.cpp
     src/platform/windows/windowstool.cpp
+    src/platform/windows/utf_conversion.cpp
 
     src/core/settings/setting.cpp
     src/core/settings/setting_loader.cpp

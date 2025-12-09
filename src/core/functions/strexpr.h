@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // strexpr.h
 
@@ -8,6 +8,7 @@
 
 #  include "stringtool.h"
 #  include <memory>
+#  include <string>
 
 
 /// Abstract interface for system-dependent operations
@@ -17,13 +18,13 @@ public:
     virtual ~StrExprSystem() {}
     
     /// Get text from clipboard
-    virtual tstring getClipboardText() const = 0;
+    virtual std::string getClipboardText() const = 0;
     
     /// Get current window class name
-    virtual tstringq getStrExprWindowClassName() const = 0;
+    virtual std::string getStrExprWindowClassName() const = 0;
     
     /// Get current window title name
-    virtual tstringq getStrExprWindowTitleName() const = 0;
+    virtual std::string getStrExprWindowTitleName() const = 0;
 };
 
 
