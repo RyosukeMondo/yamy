@@ -20,6 +20,9 @@
 #include "../commands/cmd_wait.h"
 #include "../commands/cmd_vk.h"
 #include "../commands/cmd_load_setting.h"
+#include "../commands/cmd_shell_execute.h"
+#include "../commands/cmd_set_foreground_window.h"
+#include "../commands/cmd_investigate_command.h"
 
 class FunctionCreator
 {
@@ -48,13 +51,13 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("Repeat"), Command_Repeat::create },
   { _T("Undefined"), Command_Undefined::create },
   { _T("Ignore"), Command_Ignore::create },
-  { _T("ShellExecute"), FunctionData_ShellExecute::create },
-  { _T("SetForegroundWindow"), FunctionData_SetForegroundWindow::create },
+  { _T("ShellExecute"), Command_ShellExecute::create },
+  { _T("SetForegroundWindow"), Command_SetForegroundWindow::create },
   { _T("LoadSetting"), Command_LoadSetting::create },
   { _T("VK"), Command_VK::create },
   { _T("Wait"), Command_Wait::create },
   { _T("PostMessage"), Command_PostMessage::create },
-  { _T("InvestigateCommand"), FunctionData_InvestigateCommand::create },
+  { _T("InvestigateCommand"), Command_InvestigateCommand::create },
   { _T("MayuDialog"), FunctionData_MayuDialog::create },
   { _T("DescribeBindings"), FunctionData_DescribeBindings::create },
   { _T("HelpMessage"), FunctionData_HelpMessage::create },

@@ -46,12 +46,12 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
     - [x] `PostMessage` (Removed from Engine)
     - [x] `VK` (Removed from Engine)
     - [x] `Wait` (Removed from Engine)
-    - [/] `Default` (Logic still in Engine)
-    - [/] `KeymapPrevPrefix` (Logic still in Engine)
-    - [ ] `LoadSetting`
-    - [ ] `ShellExecute`
-    - [ ] `SetForegroundWindow`
-    - [ ] `InvestigateCommand`
+    - [x] `Default` (Removed from Engine)
+    - [x] `KeymapPrevPrefix` (Removed from Engine)
+    - [x] `LoadSetting`
+    - [x] `ShellExecute` (Removed from Engine)
+    - [x] `SetForegroundWindow` (Removed from Engine)
+    - [x] `InvestigateCommand` (Removed from Engine)
     - [ ] `MayuDialog`
     - [ ] `DescribeBindings`
     - [ ] `HelpMessage`

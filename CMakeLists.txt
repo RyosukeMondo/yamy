@@ -136,6 +136,9 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_default.cpp
     src/core/commands/cmd_keymap_prev_prefix.cpp
     src/core/commands/cmd_load_setting.cpp
+    src/core/commands/cmd_shell_execute.cpp
+    src/core/commands/cmd_set_foreground_window.cpp
+    src/core/commands/cmd_investigate_command.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/input/vkeytable.cpp

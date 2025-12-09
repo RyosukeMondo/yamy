@@ -55,125 +55,11 @@
 // FunctionData_PostMessage is now Command_PostMessage in commands/cmd_post_message.h
 // Replaced by generic Command template system.
 
-class FunctionData_ShellExecute : public FunctionData
-{
-public:
-  StrExprArg m_operation;
-  StrExprArg m_file;
-  StrExprArg m_parameters;
-  StrExprArg m_directory;
-  ShowCommandType m_showCommand;
+// FunctionData_ShellExecute is now Command_ShellExecute in commands/cmd_shell_execute.h
+// Replaced by generic Command template system.
 
-public:
-  static FunctionData *create()
-  {
-    FunctionData_ShellExecute *fd
-      = new FunctionData_ShellExecute;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    i_sl->getOpenParen(true, FunctionData_ShellExecute::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_operation);
-    i_sl->getComma(false, FunctionData_ShellExecute::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_file);
-    i_sl->getComma(false, FunctionData_ShellExecute::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_parameters);
-    i_sl->getComma(false, FunctionData_ShellExecute::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_directory);
-    i_sl->getComma(false, FunctionData_ShellExecute::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_showCommand);
-    i_sl->getCloseParen(true, FunctionData_ShellExecute::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcShellExecute(i_param, m_operation, m_file, m_parameters, m_directory, m_showCommand);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("ShellExecute");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_operation << _T(", ");
-    i_ost << m_file << _T(", ");
-    i_ost << m_parameters << _T(", ");
-    i_ost << m_directory << _T(", ");
-    i_ost << m_showCommand;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_ShellExecute(*this);
-  }
-};
-
-class FunctionData_SetForegroundWindow : public FunctionData
-{
-public:
-  tregex m_windowClassName;
-  LogicalOperatorType m_logicalOp;
-  tregex m_windowTitleName;
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_SetForegroundWindow *fd
-      = new FunctionData_SetForegroundWindow;
-    fd->m_logicalOp = LogicalOperatorType_and;
-    fd->m_windowTitleName = tregex(_T(".*"));
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    i_sl->getOpenParen(true, FunctionData_SetForegroundWindow::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_windowClassName);
-    if (i_sl->getCloseParen(false, FunctionData_SetForegroundWindow::getName()))
-      return;
-    i_sl->getComma(false, FunctionData_SetForegroundWindow::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_logicalOp);
-    if (i_sl->getCloseParen(false, FunctionData_SetForegroundWindow::getName()))
-      return;
-    i_sl->getComma(false, FunctionData_SetForegroundWindow::getName()); // throw ...
-    i_sl->load_ARGUMENT(&m_windowTitleName);
-    i_sl->getCloseParen(true, FunctionData_SetForegroundWindow::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcSetForegroundWindow(i_param, m_windowClassName, m_logicalOp, m_windowTitleName);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("SetForegroundWindow");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_windowClassName << _T(", ");
-    i_ost << m_logicalOp << _T(", ");
-    i_ost << m_windowTitleName;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_SetForegroundWindow(*this);
-  }
-};
+// FunctionData_SetForegroundWindow is now Command_SetForegroundWindow in commands/cmd_set_foreground_window.h
+// Replaced by generic Command template system.
 
 // FunctionData_LoadSetting is now Command_LoadSetting in commands/cmd_load_setting.h
 // Replaced by generic Command template system.
@@ -184,46 +70,8 @@ public:
 // FunctionData_Wait is now Command_Wait in commands/cmd_wait.h
 // Replaced by generic Command template system.
 
-class FunctionData_InvestigateCommand : public FunctionData
-{
-public:
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_InvestigateCommand *fd
-      = new FunctionData_InvestigateCommand;
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    if (!i_sl->getOpenParen(false, FunctionData_InvestigateCommand::getName()))
-      return;
-    i_sl->getCloseParen(true, FunctionData_InvestigateCommand::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcInvestigateCommand(i_param);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("InvestigateCommand");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_InvestigateCommand(*this);
-  }
-};
+// FunctionData_InvestigateCommand is now Command_InvestigateCommand in commands/cmd_investigate_command.h
+// Replaced by generic Command template system.
 
 class FunctionData_MayuDialog : public FunctionData
 {

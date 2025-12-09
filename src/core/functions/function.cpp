@@ -693,28 +693,16 @@ int Engine::EmacsEditKillLine::pred()
 
 
 // ShellExecute
-void Engine::funcShellExecute(FunctionParam *i_param,
-                              const StrExprArg &/*i_operation*/,
-                              const StrExprArg &/*i_file*/,
-                              const StrExprArg &/*i_parameters*/,
-                              const StrExprArg &/*i_directory*/,
-                              ShowCommandType /*i_showCommand*/)
-{
-    if (!i_param->m_isPressed)
-        return;
-    m_afShellExecute = i_param->m_af;
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndAssocWindow,
-                WM_APP_engineNotify, EngineNotify_shellExecute, 0);
-}
+// funcShellExecute moved to src/core/commands/cmd_shell_execute.cpp
 
-
+#include "../commands/cmd_shell_execute.h"
 // shell execute
 void Engine::shellExecute()
 {
     Acquire a(&m_cs);
 
-    FunctionData_ShellExecute *fd =
-        reinterpret_cast<FunctionData_ShellExecute *>(
+    Command_ShellExecute *fd =
+        reinterpret_cast<Command_ShellExecute *>(
             m_afShellExecute->m_functionData);
 
     int r = m_windowSystem->shellExecute(
@@ -761,46 +749,8 @@ void Engine::shellExecute()
     m_log << _T("error: ") << fd << _T(": ") << errorMessage << std::endl;
 }
 
-
-
-
-/// SetForegroundWindow
-void Engine::funcSetForegroundWindow(FunctionParam *i_param, const tregex &,
-                                     LogicalOperatorType , const tregex &)
-{
-    if (!i_param->m_isPressed)
-        return;
-    const FunctionData_SetForegroundWindow *fd =
-        static_cast<const FunctionData_SetForegroundWindow *>(
-            i_param->m_af->m_functionData);
-
-    HWND targetHwnd = nullptr;
-
-    m_windowSystem->enumerateWindows([&](WindowSystem::WindowHandle window) -> bool {
-        tstring className = m_windowSystem->getClassName(window);
-        tsmatch what;
-        if (!std::regex_search(className, what, fd->m_windowClassName)) {
-            if (fd->m_logicalOp == LogicalOperatorType_and)
-                return true; // continue
-        }
-
-        if (fd->m_logicalOp == LogicalOperatorType_and) {
-            tstring titleName = m_windowSystem->getTitleName(window);
-            if (!std::regex_search(titleName, what, fd->m_windowTitleName))
-                return true; // continue
-        }
-
-        targetHwnd = (HWND)window;
-        return false; // stop
-    });
-
-    if (targetHwnd)
-        m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndAssocWindow,
-                    WM_APP_engineNotify, EngineNotify_setForegroundWindow,
-                    reinterpret_cast<LPARAM>(targetHwnd));
-
-}
-
+// SetForegroundWindow
+// funcSetForegroundWindow moved to src/core/commands/cmd_set_foreground_window.cpp
 
 // load setting
 // funcLoadSetting moved to src/core/commands/cmd_load_setting.cpp
@@ -812,17 +762,7 @@ void Engine::funcSetForegroundWindow(FunctionParam *i_param, const tregex &,
 
 
 // investigate WM_COMMAND, WM_SYSCOMMAND
-void Engine::funcInvestigateCommand(FunctionParam *i_param)
-{
-    if (!i_param->m_isPressed)
-        return;
-    Acquire a(&m_log, 0);
-    g_hookData->m_doesNotifyCommand = !g_hookData->m_doesNotifyCommand;
-    if (g_hookData->m_doesNotifyCommand)
-        m_log << _T(" begin") << std::endl;
-    else
-        m_log << _T(" end") << std::endl;
-}
+// funcInvestigateCommand moved to src/core/commands/cmd_investigate_command.cpp
 
 // show mayu dialog box
 void Engine::funcMayuDialog(FunctionParam *i_param, MayuDialogType i_dialog,

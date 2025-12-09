@@ -338,23 +338,15 @@ public:
     /// post message
 // funcPostMessage removed (moved to Command_PostMessage)
     /// ShellExecute
-    void funcShellExecute(FunctionParam *i_param, const StrExprArg &i_operation,
-                          const StrExprArg &i_file, const StrExprArg &i_parameters,
-                          const StrExprArg &i_directory,
-                          ShowCommandType i_showCommand);
+// funcShellExecute removed (moved to Command_ShellExecute)
     /// SetForegroundWindow
-    void funcSetForegroundWindow(FunctionParam *i_param,
-                                 const tregex &i_windowClassName,
-                                 LogicalOperatorType i_logicalOp
-                                 = LogicalOperatorType_and,
-                                 const tregex &i_windowTitleName
-                                 = tregex(_T(".*")));
+// funcSetForegroundWindow removed (moved to Command_SetForegroundWindow)
     /// load setting
 // funcLoadSetting removed (moved to Command_LoadSetting)
 // funcVK removed (moved to Command_VK)
 // funcWait removed (moved to Command_Wait)
     /// investigate WM_COMMAND, WM_SYSCOMMAND
-    void funcInvestigateCommand(FunctionParam *i_param);
+// funcInvestigateCommand removed (moved to Command_InvestigateCommand)
     /// show mayu dialog box
     void funcMayuDialog(FunctionParam *i_param, MayuDialogType i_dialog,
                         ShowCommandType i_showCommand);
