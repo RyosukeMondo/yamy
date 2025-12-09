@@ -7,7 +7,24 @@
 #  define _STRINGTOOL_H
 
 #  include "misc.h"
-#  include <tchar.h>
+#  ifdef _WIN32
+#    include <tchar.h>
+#  else
+#    ifndef _TCHAR
+#      ifdef UNICODE
+#        define _TCHAR wchar_t
+#      else
+#        define _TCHAR char
+#      endif
+#    endif
+#    include <cwchar>
+#    ifdef UNICODE
+#      define _tcsicmp wcscasecmp
+#    else
+#      include <strings.h>
+#      define _tcsicmp strcasecmp
+#    endif
+#  endif
 #  include <cctype>
 #  include <string>
 #  include <iosfwd>
