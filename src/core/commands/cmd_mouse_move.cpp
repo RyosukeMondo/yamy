@@ -18,9 +18,12 @@ void Command_MouseMove::exec(Engine *i_engine, FunctionParam *i_param) const
 {
     if (!i_param->m_isPressed)
         return;
-    WindowPoint pt;
+    yamy::platform::Point pt;
     i_engine->getWindowSystem()->getCursorPos(&pt);
-    i_engine->getWindowSystem()->setCursorPos(pt.x + m_dx, pt.y + m_dy);
+    yamy::platform::Point newPt;
+    newPt.x = pt.x + m_dx;
+    newPt.y = pt.y + m_dy;
+    i_engine->getWindowSystem()->setCursorPos(newPt);
 }
 
 tostream &Command_MouseMove::outputArgs(tostream &i_ost) const
