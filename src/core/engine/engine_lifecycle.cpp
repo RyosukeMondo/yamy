@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // engine_lifecycle.cpp
 
 
@@ -12,9 +12,10 @@
 
 #include <iomanip>
 #include <process.h>
+#include <string>
 
 
-Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_configStore, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver)
+Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem, ConfigStore *i_configStore, yamy::platform::IInputInjector *i_inputInjector, yamy::platform::IInputHook *i_inputHook, yamy::platform::IInputDriver *i_inputDriver)
         : m_hwndAssocWindow(nullptr),
         m_setting(nullptr),
         m_windowSystem(i_windowSystem),
@@ -44,7 +45,7 @@ Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_
         m_variable(0),
         m_log(i_log) {
     BOOL (WINAPI *pChangeWindowMessageFilter)(UINT, DWORD) =
-        reinterpret_cast<BOOL (WINAPI*)(UINT, DWORD)>(GetProcAddress(GetModuleHandle(_T("user32.dll")), "ChangeWindowMessageFilter"));
+        reinterpret_cast<BOOL (WINAPI*)(UINT, DWORD)>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "ChangeWindowMessageFilter"));
 
     if(pChangeWindowMessageFilter != nullptr) {
         pChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
@@ -83,7 +84,18 @@ Engine::~Engine() {
 
 // start keyboard handler thread
 void Engine::start() {
-    m_inputHook->start(this);
+    m_inputHook->install([this](const yamy::platform::KeyEvent& e) {
+        KEYBOARD_INPUT_DATA kid;
+        kid.UnitId = 0;
+        kid.MakeCode = (USHORT)e.scanCode;
+        kid.Flags = 0;
+        if (!e.isKeyDown) kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
+        if (e.isExtended) kid.Flags |= KEYBOARD_INPUT_DATA::E0;
+        kid.Reserved = 0;
+        kid.ExtraInformation = 0;
+        this->pushInputEvent(kid);
+        return true;
+    });
 
     CHECK_TRUE( m_inputQueue = new std::deque<KEYBOARD_INPUT_DATA> );
     CHECK_TRUE( m_queueMutex = CreateMutex(nullptr, FALSE, nullptr) );
@@ -92,7 +104,7 @@ void Engine::start() {
     m_ol.OffsetHigh = 0;
     m_ol.hEvent = m_readEvent;
 
-    m_inputDriver->open(m_readEvent);
+    m_inputDriver->initialize();
 
     CHECK_TRUE( m_threadHandle = (HANDLE)_beginthreadex(nullptr, 0, keyboardHandler, this, 0, &m_threadId) );
 }
@@ -100,8 +112,8 @@ void Engine::start() {
 
 // stop keyboard handler thread
 void Engine::stop() {
-    m_inputHook->stop();
-    m_inputDriver->close();
+    m_inputHook->uninstall();
+    m_inputDriver->shutdown();
 
     WaitForSingleObject(m_queueMutex, INFINITE);
     delete m_inputQueue;
@@ -125,9 +137,9 @@ void Engine::stop() {
 
 bool Engine::prepairQuit() {
     // terminate and unload DLL for ThumbSense support if loaded
-    m_inputDriver->manageExtension(_T("sts4mayu.dll"), _T("SynCOM.dll"),
+    m_inputDriver->manageExtension(to_tstring("sts4mayu.dll").c_str(), to_tstring("SynCOM.dll").c_str(),
                   false, (void**)&m_sts4mayu);
-    m_inputDriver->manageExtension(_T("cts4mayu.dll"), _T("TouchPad.dll"),
+    m_inputDriver->manageExtension(to_tstring("cts4mayu.dll").c_str(), to_tstring("TouchPad.dll").c_str(),
                   false, (void**)&m_cts4mayu);
     return true;
 }
@@ -173,4 +185,3 @@ void Engine::pushInputEvent(const KEYBOARD_INPUT_DATA &kid)
     }
     ReleaseMutex(m_queueMutex);
 }
-

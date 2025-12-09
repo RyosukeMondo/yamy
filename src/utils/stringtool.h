@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // stringtool.h
 
@@ -7,7 +7,24 @@
 #  define _STRINGTOOL_H
 
 #  include "misc.h"
-#  include <tchar.h>
+#  ifdef _WIN32
+#    include <tchar.h>
+#  else
+#    ifndef _TCHAR
+#      ifdef UNICODE
+#        define _TCHAR wchar_t
+#      else
+#        define _TCHAR char
+#      endif
+#    endif
+#    include <cwchar>
+#    ifdef UNICODE
+#      define _tcsicmp wcscasecmp
+#    else
+#      include <strings.h>
+#      define _tcsicmp strcasecmp
+#    endif
+#  endif
 #  include <cctype>
 #  include <string>
 #  include <iosfwd>
@@ -77,6 +94,43 @@ public:
 /// match_results for generic international text
 typedef std::match_results<tstring::const_iterator> tsmatch;
 
+// Regex wrapper for std::string (UTF-8)
+class Regex : public std::regex
+{
+public:
+    typedef std::regex base_type;
+    typedef base_type::flag_type flag_type;
+
+    static const flag_type normal = std::regex_constants::ECMAScript;
+    static const flag_type icase = std::regex_constants::icase;
+    static const flag_type nosubs = std::regex_constants::nosubs;
+    static const flag_type optimize = std::regex_constants::optimize;
+    static const flag_type collate = std::regex_constants::collate;
+
+private:
+    std::string m_pattern;
+
+public:
+    Regex() : base_type() {}
+    Regex(const char* p, flag_type f = normal) : base_type(p, f), m_pattern(p) {}
+    Regex(const std::string& s, flag_type f = normal) : base_type(s, f), m_pattern(s) {}
+    Regex(const Regex& other) : base_type(other), m_pattern(other.m_pattern) {}
+    Regex& operator=(const Regex& other) {
+        base_type::operator=(other);
+        m_pattern = other.m_pattern;
+        return *this;
+    }
+    void assign(const std::string& s, flag_type f = normal) {
+        base_type::assign(s, f);
+        m_pattern = s;
+    }
+    const std::string& str() const { return m_pattern; }
+};
+
+inline tostream &operator<<(tostream &i_ost, const Regex &i_data) {
+    return i_ost << to_tstring(i_data.str());
+}
+
 
 /// string with custom stream output
 class tstringq : public tstring
@@ -109,8 +163,15 @@ tstring interpretMetaCharacters(const _TCHAR *i_str, size_t i_len,
                                 const _TCHAR *i_quote = nullptr,
                                 bool i_doesUseRegexpBackReference = false);
 
+// std::string version
+std::string interpretMetaCharacters(const char *i_str, size_t i_len,
+                                    const char *i_quote = nullptr,
+                                    bool i_doesUseRegexpBackReference = false);
+
+
 /// add session id to i_str
 tstring addSessionId(const _TCHAR *i_str);
+std::string addSessionId(const char *i_str);
 
 /// copy
 size_t strlcpy(char *o_dest, const char *i_src, size_t i_destSize);
@@ -142,8 +203,22 @@ std::string guardRegexpFromMbcs(const char *i_str);
 std::wstring to_wstring(const std::string &i_str);
 /// converter
 std::string to_string(const std::wstring &i_str);
+/// converter helper for tstring
+#ifndef _UNICODE
+inline std::string to_string(const tstring &i_str) {
+    return i_str;
+}
+#endif
+
 // convert wstring to UTF-8
 std::string to_UTF_8(const std::wstring &i_str);
+
+#ifndef _UNICODE
+// convert string (MBCS) to UTF-8
+inline std::string to_UTF_8(const std::string &i_str) {
+    return to_UTF_8(to_wstring(i_str));
+}
+#endif
 
 /// internal string type (UTF-8)
 typedef std::string ustring;
@@ -288,6 +363,7 @@ extern tostream &operator<<(tostream &i_ost, const tregex &i_data);
 
 /// get lower string
 extern tstring toLower(const tstring &i_str);
-
+// std::string version
+std::string toLower(const std::string &i_str);
 
 #endif // !_STRINGTOOL_H

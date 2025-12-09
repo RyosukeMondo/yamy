@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // engine_setting.cpp
 
 
@@ -12,6 +12,7 @@
 
 #include <iomanip>
 #include <process.h>
+#include <string>
 
 
 // manageTs4mayu removed (moved to InputDriver)
@@ -45,9 +46,9 @@ bool Engine::setSetting(Setting *i_setting) {
 
     m_setting = i_setting;
 
-    m_inputDriver->manageExtension(_T("sts4mayu.dll"), _T("SynCOM.dll"),
+    m_inputDriver->manageExtension(to_tstring("sts4mayu.dll").c_str(), to_tstring("SynCOM.dll").c_str(),
                   m_setting->m_sts4mayu, (void**)&m_sts4mayu);
-    m_inputDriver->manageExtension(_T("cts4mayu.dll"), _T("TouchPad.dll"),
+    m_inputDriver->manageExtension(to_tstring("cts4mayu.dll").c_str(), to_tstring("TouchPad.dll").c_str(),
                   m_setting->m_cts4mayu, (void**)&m_cts4mayu);
 
     g_hookData->m_correctKanaLockHandling = m_setting->m_correctKanaLockHandling;
@@ -56,13 +57,13 @@ bool Engine::setSetting(Setting *i_setting) {
                 i != m_focusOfThreads.end(); i ++) {
             FocusOfThread *fot = &(*i).second;
             m_setting->m_keymaps.searchWindow(&fot->m_keymaps,
-                                              fot->m_className, fot->m_titleName);
+                                              to_tstring(fot->m_className), to_tstring(fot->m_titleName));
         }
     }
-    m_setting->m_keymaps.searchWindow(&m_globalFocus.m_keymaps, _T(""), _T(""));
+    m_setting->m_keymaps.searchWindow(&m_globalFocus.m_keymaps, to_tstring(""), to_tstring(""));
     if (m_globalFocus.m_keymaps.empty()) {
         Acquire a(&m_log, 0);
-        m_log << _T("internal error: m_globalFocus.m_keymap is empty")
+        m_log << "internal error: m_globalFocus.m_keymap is empty"
         << std::endl;
     }
     m_currentFocusOfThread = &m_globalFocus;

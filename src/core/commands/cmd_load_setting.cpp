@@ -29,7 +29,7 @@ void Command_LoadSetting::exec(Engine *i_engine, FunctionParam *i_param) const
 
             tsmatch what;
             if (std::regex_match(dot_mayu, what, split) &&
-                    what.str(1) == i_name.eval()) {
+                    what.str(1) == to_tstring(i_name.eval())) {
                 i_engine->m_configStore->write(_T(".mayuIndex"), (DWORD)i);
                 goto success;
             }

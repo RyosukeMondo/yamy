@@ -29,7 +29,7 @@ void Command_ShellExecute::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!i_param->m_isPressed)
         return;
     i_engine->m_afShellExecute = i_param->m_af;
-    i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)i_engine->m_hwndAssocWindow,
+    i_engine->m_windowSystem->postMessage((yamy::platform::WindowHandle)i_engine->m_hwndAssocWindow,
                 WM_APP_engineNotify, EngineNotify_shellExecute, 0);
 }
 
@@ -55,10 +55,10 @@ void Command_ShellExecute::executeOnMainThread(Engine *i_engine)
             i_engine->m_afShellExecute->m_functionData);
 
     int r = i_engine->m_windowSystem->shellExecute(
-                fd->m_operation.eval().empty() ? _T("open") : fd->m_operation.eval(),
-                fd->m_file.eval(),
-                fd->m_parameters.eval(),
-                fd->m_directory.eval(),
+                fd->m_operation.eval().empty() ? tstring(_T("open")) : to_tstring(fd->m_operation.eval()),
+                to_tstring(fd->m_file.eval()),
+                to_tstring(fd->m_parameters.eval()),
+                to_tstring(fd->m_directory.eval()),
                 static_cast<int>(fd->m_showCommand));
     if (32 < r)
         return; // success

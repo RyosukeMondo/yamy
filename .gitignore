@@ -14,3 +14,4 @@ proj/*/Release/
 proj/*/x64/
 
 logs/
+build_mingw/

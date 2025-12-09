@@ -1,12 +1,14 @@
-﻿#pragma once
+#pragma once
 #ifndef _WINDOW_SYSTEM_WIN32_H
 #define _WINDOW_SYSTEM_WIN32_H
 
-#include "window_system.h"
+#include "../../core/window/window_system.h"
+#include "../../core/platform/window_system_interface.h"
 #include <windows.h>
 
-class WindowSystemWin32 : public WindowSystem {
+class WindowSystemWin32 : public WindowSystem, public yamy::platform::IWindowSystem {
 public:
+    // WindowSystem implementation
     WindowHandle getParent(WindowHandle window) override;
     bool isMDIChild(WindowHandle window) override;
     bool isChild(WindowHandle window) override;
@@ -57,6 +59,45 @@ public:
     void* loadLibrary(const tstring& path) override;
     void* getProcAddress(void* module, const std::string& procName) override;
     bool freeLibrary(void* module) override;
+
+    // IWindowSystem implementation
+    yamy::platform::WindowHandle getForegroundWindow() override;
+    yamy::platform::WindowHandle windowFromPoint(const yamy::platform::Point& pt) override;
+    // getParent is implicitly covered by WindowSystem::getParent
+    yamy::platform::WindowHandle getParent(yamy::platform::WindowHandle hwnd) override;
+
+    bool getWindowRect(yamy::platform::WindowHandle hwnd, yamy::platform::Rect* rect) override;
+    bool getClientRect(yamy::platform::WindowHandle hwnd, yamy::platform::Rect* rect) override;
+    bool getChildWindowRect(yamy::platform::WindowHandle hwnd, yamy::platform::Rect* rect) override;
+
+    std::string getWindowText(yamy::platform::WindowHandle hwnd) override;
+    std::string getWindowClassName(yamy::platform::WindowHandle hwnd) override;
+
+    bool bringToForeground(yamy::platform::WindowHandle hwnd) override;
+    bool moveWindow(yamy::platform::WindowHandle hwnd, const yamy::platform::Rect& rect) override;
+    bool showWindow(yamy::platform::WindowHandle hwnd, int cmdShow) override;
+    bool closeWindow(yamy::platform::WindowHandle hwnd) override;
+
+    void getCursorPos(yamy::platform::Point* pt) override;
+    void setCursorPos(const yamy::platform::Point& pt) override;
+
+    int getMonitorCount() override;
+    bool getMonitorRect(int monitorIndex, yamy::platform::Rect* rect) override;
+
+    // IWindowSystem extensions
+    std::string getClipboardString() override;
+    bool setClipboardText(const std::string& text) override;
+    int shellExecute(const std::string& operation, const std::string& file, const std::string& parameters, const std::string& directory, int showCmd) override;
+    bool postMessage(yamy::platform::WindowHandle window, uint32_t message, uintptr_t wParam, intptr_t lParam) override;
+
+private:
+    static HWND toHWND(yamy::platform::WindowHandle handle) {
+        return static_cast<HWND>(handle);
+    }
+
+    static yamy::platform::WindowHandle fromHWND(HWND hwnd) {
+        return static_cast<yamy::platform::WindowHandle>(hwnd);
+    }
 };
 
 #endif // !_WINDOW_SYSTEM_WIN32_H

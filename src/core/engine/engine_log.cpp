@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // engine_log.cpp
 
 
@@ -12,6 +12,7 @@
 
 #include <iomanip>
 #include <process.h>
+#include <string>
 
 
 // output to m_log
@@ -23,13 +24,13 @@ void Engine::outputToLog(const Key *i_key, const ModifiedKey &i_mkey,
 
     // output scan codes
     for (i = 0; i < i_key->getScanCodesSize(); ++ i) {
-        if (i_key->getScanCodes()[i].m_flags & ScanCode::E0) m_log << _T("E0-");
-        if (i_key->getScanCodes()[i].m_flags & ScanCode::E1) m_log << _T("E1-");
+        if (i_key->getScanCodes()[i].m_flags & ScanCode::E0) m_log << "E0-";
+        if (i_key->getScanCodes()[i].m_flags & ScanCode::E1) m_log << "E1-";
         if (!(i_key->getScanCodes()[i].m_flags & ScanCode::E0E1))
-            m_log << _T("   ");
-        m_log << _T("0x") << std::hex << std::setw(2) << std::setfill(_T('0'))
+            m_log << "   ";
+        m_log << "0x" << std::hex << std::setw(2) << std::setfill((_TCHAR)'0')
         << static_cast<int>(i_key->getScanCodes()[i].m_scan)
-        << std::dec << _T(" ");
+        << std::dec << " ";
     }
 
     if (!i_mkey.m_key) { // key corresponds to no phisical key
@@ -37,7 +38,7 @@ void Engine::outputToLog(const Key *i_key, const ModifiedKey &i_mkey,
         return;
     }
 
-    m_log << _T("  ") << i_mkey << std::endl;
+    m_log << "  " << i_mkey << std::endl;
 }
 
 
@@ -55,7 +56,7 @@ void Engine::describeBindings()
 
 
 // get help message
-void Engine::getHelpMessages(tstring *o_helpMessage, tstring *o_helpTitle) {
+void Engine::getHelpMessages(std::string *o_helpMessage, std::string *o_helpTitle) {
     Acquire a(&m_cs);
     *o_helpMessage = m_helpMessage;
     *o_helpTitle = m_helpTitle;

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // windowstool.h
 
@@ -9,7 +9,53 @@
 
 #  include "stringtool.h"
 #  include <windows.h>
+#  include <string>
+#  include "utf_conversion.h"
 
+namespace yamy::windows {
+
+// Wrap SetWindowText to work with UTF-8
+inline void setWindowText(HWND hwnd, const std::string& text) {
+    SetWindowTextW(hwnd, yamy::platform::utf8_to_wstring(text).c_str());
+}
+
+// Wrap GetWindowText to return UTF-8
+inline std::string getWindowText(HWND hwnd) {
+    int len = GetWindowTextLengthW(hwnd);
+    if (len == 0) return std::string();
+
+    std::wstring wide(len + 1, L'\0');
+    GetWindowTextW(hwnd, &wide[0], len + 1);
+    wide.resize(len); // Remove the null terminator
+    return yamy::platform::wstring_to_utf8(wide);
+}
+
+// Wrap SetDlgItemText
+inline void setDlgItemText(HWND hwnd, int itemId, const std::string& text) {
+    SetDlgItemTextW(hwnd, itemId, yamy::platform::utf8_to_wstring(text).c_str());
+}
+
+// Wrap GetDlgItemText
+inline std::string getDlgItemText(HWND hwnd, int itemId) {
+    int len = GetWindowTextLengthW(GetDlgItem(hwnd, itemId));
+    if (len == 0) return std::string();
+
+    std::wstring wide(len + 1, L'\0');
+    GetDlgItemTextW(hwnd, itemId, &wide[0], len + 1);
+    wide.resize(len); // Remove the null terminator
+    return yamy::platform::wstring_to_utf8(wide);
+}
+
+// Wrap MessageBox
+inline int messageBox(HWND hwnd, const std::string& text,
+                      const std::string& caption, UINT type) {
+    return MessageBoxW(hwnd,
+                      yamy::platform::utf8_to_wstring(text).c_str(),
+                      yamy::platform::utf8_to_wstring(caption).c_str(),
+                      type);
+}
+
+} // namespace yamy::windows
 
 /// instance handle of this application
 extern HINSTANCE g_hInst;
@@ -19,7 +65,21 @@ extern HINSTANCE g_hInst;
 // resource
 
 /// load resource string
-extern tstring loadString(UINT i_id);
+extern std::string loadString(UINT i_id);
+
+// Legacy support: overload for tstring return type isn't possible directly by name.
+// We can't overload on return type.
+// But we can check where loadString is used. If it's assigned to tstring, we might need manual conversion
+// or we assume tstring = std::string if I remove typedef (but I'm not removing it yet).
+// For now, I will rename the new one or replace it?
+// The instruction said: "Old: tstring loadString(UINT id); New: std::string loadString(UINT id);"
+// If I change it, call sites expecting tstring will fail if implicit conversion from std::string to tstring (wstring) doesn't exist.
+// std::string to std::wstring is NOT implicit.
+// So I will create a `loadStringT` or keep `loadString` returning `tstring` as a wrapper?
+// Or I break the build? The instructions say "Update windowstool.cpp functions".
+// "Old: tstring loadString(UINT id); New: std::string loadString(UINT id);"
+// I will implement `std::string loadString` and if I need to support legacy, I might need another name or force callers to convert.
+// Let's check usages of loadString.
 
 /// load small icon resource (it must be deleted by DestroyIcon())
 extern HICON loadSmallIcon(UINT i_id);
@@ -65,7 +125,11 @@ extern void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y, int i_w, int i_h);
 extern void asyncResize(HWND i_hwnd, int i_w, int i_h);
 
 /// get dll version
-extern DWORD getDllVersion(const _TCHAR *i_dllname);
+extern DWORD getDllVersion(const std::string &i_dllname);
+// Legacy
+inline DWORD getDllVersion(const tstring &i_dllname) {
+    return getDllVersion(to_string(i_dllname));
+}
 #define PACKVERSION(major, minor) MAKELONG(minor, major)
 
 // workaround of SetForegroundWindow
@@ -131,9 +195,12 @@ extern size_t editGetTextBytes(HWND i_hwnd);
 extern void editDeleteLine(HWND i_hwnd, size_t i_n);
 
 /// insert text at last
-extern void editInsertTextAtLast(HWND i_hwnd, const tstring &i_text,
+extern void editInsertTextAtLast(HWND i_hwnd, const std::string &i_text,
                                      size_t i_threshold);
-
+// Legacy
+inline void editInsertTextAtLast(HWND i_hwnd, const tstring &i_text, size_t i_threshold) {
+    editInsertTextAtLast(i_hwnd, to_string(i_text), i_threshold);
+}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Windows2000/XP specific API
@@ -174,7 +241,11 @@ extern WTSGetActiveConsoleSessionId_t wtsGetActiveConsoleSessionId;
 // Utility
 
 // PathRemoveFileSpec()
-tstring pathRemoveFileSpec(const tstring &i_path);
+std::string pathRemoveFileSpec(const std::string &i_path);
+// Legacy
+inline tstring pathRemoveFileSpec(const tstring &i_path) {
+    return to_tstring(pathRemoveFileSpec(to_string(i_path)));
+}
 
 // check Windows version i_major.i_minor or later
 BOOL checkWindowsVersion(DWORD i_major, DWORD i_minor);

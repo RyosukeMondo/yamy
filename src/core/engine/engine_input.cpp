@@ -16,12 +16,35 @@
 
 unsigned int Engine::injectInput(const KEYBOARD_INPUT_DATA *i_kid, const KBDLLHOOKSTRUCT *i_kidRaw)
 {
-    InjectionContext ctx;
-    ctx.isDragging = false; // TODO: Query from InputHook if necessary
-    ctx.dragStartPos.x = 0;
-    ctx.dragStartPos.y = 0;
-    
-    m_inputInjector->inject(i_kid, ctx, i_kidRaw);
+    if (i_kid->ExtraInformation == 0x59414D59) {
+        // Mouse event
+        bool down = !(i_kid->Flags & KEYBOARD_INPUT_DATA::BREAK);
+        using namespace yamy::platform;
+
+        switch (i_kid->MakeCode) {
+            case 1: m_inputInjector->mouseButton(MouseButton::Left, down); break;
+            case 2: m_inputInjector->mouseButton(MouseButton::Right, down); break;
+            case 3: m_inputInjector->mouseButton(MouseButton::Middle, down); break;
+            case 4: if (!down) m_inputInjector->mouseWheel(120); break; // WHEEL_DELTA
+            case 5: if (!down) m_inputInjector->mouseWheel(-120); break;
+            case 6: m_inputInjector->mouseButton(MouseButton::X1, down); break;
+            case 7: m_inputInjector->mouseButton(MouseButton::X2, down); break;
+            case 8: if (!down) m_inputInjector->mouseWheel(120); break; // HWheel not supported in interface yet, treating as V
+            case 9: if (!down) m_inputInjector->mouseWheel(-120); break;
+            case 10: if (!down) m_inputInjector->mouseWheel(static_cast<int32_t>(i_kid->ExtraInformation)); break; // Invalid cast? ExtraInfo is magic
+            default: break;
+        }
+    } else {
+        // Keyboard event
+        yamy::platform::KeyEvent e;
+        e.key = yamy::platform::KeyCode::Unknown;
+        e.scanCode = i_kid->MakeCode;
+        e.isKeyDown = !(i_kid->Flags & KEYBOARD_INPUT_DATA::BREAK);
+        e.isExtended = (i_kid->Flags & KEYBOARD_INPUT_DATA::E0) != 0;
+        e.timestamp = 0;
+
+        m_inputInjector->injectKey(e);
+    }
     return 1;
 }
 

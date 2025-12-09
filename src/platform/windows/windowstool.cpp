@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // windowstool.cpp
 
 
@@ -6,11 +6,15 @@
 
 #include "windowstool.h"
 #include "array.h"
+#include "utf_conversion.h"
 
+#include <algorithm>
 #include <windowsx.h>
 #include <malloc.h>
 #include <shlwapi.h>
+#include <vector>
 
+using namespace yamy::platform;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Global variables
@@ -25,13 +29,13 @@ HINSTANCE g_hInst = nullptr;
 
 
 // load resource string
-tstring loadString(UINT i_id)
+std::string loadString(UINT i_id)
 {
-    _TCHAR buf[1024];
-    if (LoadString(g_hInst, i_id, buf, NUMBER_OF(buf)))
-        return tstring(buf);
+    wchar_t buf[1024];
+    if (LoadStringW(g_hInst, i_id, buf, NUMBER_OF(buf)))
+        return wstring_to_utf8(buf);
     else
-        return _T("");
+        return "";
 }
 
 
@@ -180,11 +184,12 @@ void asyncResize(HWND i_hwnd, int i_w, int i_h)
 
 
 // get dll version
-DWORD getDllVersion(const _TCHAR *i_dllname)
+DWORD getDllVersion(const std::string &i_dllname)
 {
     DWORD dwVersion = 0;
+    std::wstring wDllName = utf8_to_wstring(i_dllname);
 
-    if (HINSTANCE hinstDll = LoadLibrary(i_dllname)) {
+    if (HINSTANCE hinstDll = LoadLibraryW(wDllName.c_str())) {
         DLLGETVERSIONPROC pDllGetVersion
         = (DLLGETVERSIONPROC)GetProcAddress(hinstDll, "DllGetVersion");
         /* Because some DLLs may not implement this function, you
@@ -253,12 +258,12 @@ void editDeleteLine(HWND i_hwnd, size_t i_n)
     len += 2;
     int index = Edit_LineIndex(i_hwnd, i_n);
     Edit_SetSel(i_hwnd, index, index + len);
-    Edit_ReplaceSel(i_hwnd, _T(""));
+    SendMessageW(i_hwnd, EM_REPLACESEL, 0, (LPARAM)L"");
 }
 
 
 // insert text at last
-void editInsertTextAtLast(HWND i_hwnd, const tstring &i_text,
+void editInsertTextAtLast(HWND i_hwnd, const std::string &i_text,
                           size_t i_threshold)
 {
     if (i_text.empty())
@@ -268,7 +273,7 @@ void editInsertTextAtLast(HWND i_hwnd, const tstring &i_text,
 
     if (i_threshold < len) {
         Edit_SetSel(i_hwnd, 0, len / 3 * 2);
-        Edit_ReplaceSel(i_hwnd, _T(""));
+        SendMessageW(i_hwnd, EM_REPLACESEL, 0, (LPARAM)L"");
         editDeleteLine(i_hwnd, 0);
         len = editGetTextBytes(i_hwnd);
     }
@@ -276,17 +281,19 @@ void editInsertTextAtLast(HWND i_hwnd, const tstring &i_text,
     Edit_SetSel(i_hwnd, len, len);
 
     // \n -> \r\n
-    Array<_TCHAR> buf(i_text.size() * 2 + 1);
-    _TCHAR *d = buf.get();
-    const _TCHAR *str = i_text.c_str();
-    for (const _TCHAR *s = str; s < str + i_text.size(); ++ s) {
-        if (*s == _T('\n'))
-            *d++ = _T('\r');
-        *d++ = *s;
-    }
-    *d = _T('\0');
+    // Convert to UTF-16 first
+    std::wstring wText = utf8_to_wstring(i_text);
+    std::vector<wchar_t> buf(wText.size() * 2 + 1);
 
-    Edit_ReplaceSel(i_hwnd, buf.get());
+    wchar_t *d = buf.data();
+    for (wchar_t c : wText) {
+        if (c == L'\n')
+            *d++ = L'\r';
+        *d++ = c;
+    }
+    *d = L'\0';
+
+    SendMessageW(i_hwnd, EM_REPLACESEL, 0, (LPARAM)buf.data());
 }
 
 
@@ -298,7 +305,7 @@ void editInsertTextAtLast(HWND i_hwnd, const tstring &i_text,
 static BOOL WINAPI initalizeLayerdWindow(
     HWND i_hwnd, COLORREF i_crKey, BYTE i_bAlpha, DWORD i_dwFlags)
 {
-    HMODULE hModule = GetModuleHandle(_T("user32.dll"));
+    HMODULE hModule = GetModuleHandleW(L"user32.dll");
     if (!hModule) {
         return FALSE;
     }
@@ -328,7 +335,7 @@ static HMONITOR WINAPI emulateMonitorFromWindow(HWND hwnd, DWORD dwFlags)
 // initialize MonitorFromWindow API
 static HMONITOR WINAPI initializeMonitorFromWindow(HWND hwnd, DWORD dwFlags)
 {
-    HMODULE hModule = GetModuleHandle(_T("user32.dll"));
+    HMODULE hModule = GetModuleHandleW(L"user32.dll");
     if (!hModule)
         return FALSE;
 
@@ -368,7 +375,7 @@ static BOOL WINAPI emulateGetMonitorInfo(HMONITOR hMonitor, LPMONITORINFO lpmi)
 static
 BOOL WINAPI initializeGetMonitorInfo(HMONITOR hMonitor, LPMONITORINFO lpmi)
 {
-    HMODULE hModule = GetModuleHandle(_T("user32.dll"));
+    HMODULE hModule = GetModuleHandleW(L"user32.dll");
     if (!hModule)
         return FALSE;
 
@@ -399,7 +406,7 @@ static BOOL WINAPI emulateEnumDisplayMonitors(
 static BOOL WINAPI initializeEnumDisplayMonitors(
     HDC hdc, LPRECT lprcClip, MONITORENUMPROC lpfnEnum, LPARAM dwData)
 {
-    HMODULE hModule = GetModuleHandle(_T("user32.dll"));
+    HMODULE hModule = GetModuleHandleW(L"user32.dll");
     if (!hModule)
         return FALSE;
 
@@ -427,8 +434,8 @@ BOOL (WINAPI *enumDisplayMonitors)
 static BOOL WINAPI
 initializeWTSRegisterSessionNotification(HWND hWnd, DWORD dwFlags)
 {
-    LoadLibrary(_T("wtsapi32.dll"));
-    HMODULE hModule = GetModuleHandle(_T("wtsapi32.dll"));
+    LoadLibraryW(L"wtsapi32.dll");
+    HMODULE hModule = GetModuleHandleW(L"wtsapi32.dll");
     if (!hModule) {
         return FALSE;
     }
@@ -450,7 +457,7 @@ WTSRegisterSessionNotification_t wtsRegisterSessionNotification
 
 static BOOL WINAPI initializeWTSUnRegisterSessionNotification(HWND hWnd)
 {
-    HMODULE hModule = GetModuleHandle(_T("wtsapi32.dll"));
+    HMODULE hModule = GetModuleHandleW(L"wtsapi32.dll");
     if (!hModule) {
         return FALSE;
     }
@@ -472,7 +479,7 @@ WTSUnRegisterSessionNotification_t wtsUnRegisterSessionNotification
 
 static DWORD WINAPI initializeWTSGetActiveConsoleSessionId(void)
 {
-    HMODULE hModule = GetModuleHandle(_T("kernel32.dll"));
+    HMODULE hModule = GetModuleHandleW(L"kernel32.dll");
     if (!hModule) {
         return FALSE;
     }
@@ -496,29 +503,36 @@ WTSGetActiveConsoleSessionId_t wtsGetActiveConsoleSessionId
 // Utility
 
 // PathRemoveFileSpec()
-tstring pathRemoveFileSpec(const tstring &i_path)
+std::string pathRemoveFileSpec(const std::string &i_path)
 {
-    const _TCHAR *str = i_path.c_str();
-    const _TCHAR *b = _tcsrchr(str, _T('\\'));
-    const _TCHAR *s = _tcsrchr(str, _T('/'));
-    if (b && s)
-        return tstring(str, MIN(b, s));
-    if (b)
-        return tstring(str, b);
-    if (s)
-        return tstring(str, s);
-    if (const _TCHAR *c = _tcsrchr(str, _T(':')))
-        return tstring(str, c + 1);
+    // Implementation for UTF-8 string
+    // Assuming Windows paths
+    const char *str = i_path.c_str();
+    const char *b = strrchr(str, '\\');
+    const char *s = strrchr(str, '/');
+    if (b && s) {
+        size_t len = std::min(b - str, s - str);
+        return i_path.substr(0, len);
+    }
+    if (b) {
+        return i_path.substr(0, b - str);
+    }
+    if (s) {
+        return i_path.substr(0, s - str);
+    }
+    if (const char *c = strrchr(str, ':')) {
+        return i_path.substr(c - str + 1);
+    }
     return i_path;
 }
 
 BOOL checkWindowsVersion(DWORD i_major, DWORD i_minor)
 {
     DWORDLONG conditionMask = 0;
-    OSVERSIONINFOEX osvi;
-    memset(&osvi, 0, sizeof(OSVERSIONINFOEX));
+    OSVERSIONINFOEXW osvi;
+    memset(&osvi, 0, sizeof(OSVERSIONINFOEXW));
 
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW);
     osvi.dwMajorVersion = i_major;
     osvi.dwMinorVersion = i_minor;
 
@@ -526,7 +540,7 @@ BOOL checkWindowsVersion(DWORD i_major, DWORD i_minor)
     VER_SET_CONDITION(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
 
     // Perform the test.
-    return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION, conditionMask);
+    return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION, conditionMask);
 }
 
 

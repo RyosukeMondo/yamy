@@ -1,5 +1,5 @@
-﻿#include "window_system_win32.h"
-#include "../utils/stringtool.h"
+#include "window_system_win32.h"
+#include "../../utils/stringtool.h"
 #include "windowstool.h"
 #include <vector>
 #include <tchar.h>
@@ -366,4 +366,181 @@ void* WindowSystemWin32::getProcAddress(void* module, const std::string& procNam
 
 bool WindowSystemWin32::freeLibrary(void* module) {
     return FreeLibrary((HMODULE)module) != 0;
+}
+
+// Implementation of IWindowSystem interface
+
+yamy::platform::WindowHandle WindowSystemWin32::getForegroundWindow() {
+    return fromHWND(GetForegroundWindow());
+}
+
+yamy::platform::WindowHandle WindowSystemWin32::windowFromPoint(const yamy::platform::Point& pt) {
+    POINT p = { pt.x, pt.y };
+    return fromHWND(WindowFromPoint(p));
+}
+
+bool WindowSystemWin32::getWindowRect(yamy::platform::WindowHandle hwnd, yamy::platform::Rect* rect) {
+    RECT rc;
+    if (GetWindowRect(toHWND(hwnd), &rc)) {
+        if (rect) {
+            rect->left = rc.left;
+            rect->top = rc.top;
+            rect->right = rc.right;
+            rect->bottom = rc.bottom;
+        }
+        return true;
+    }
+    return false;
+}
+
+std::string WindowSystemWin32::getWindowText(yamy::platform::WindowHandle hwnd) {
+    int len = GetWindowTextLength(toHWND(hwnd));
+    if (len > 0) {
+        std::vector<TCHAR> buf(len + 1);
+        GetWindowText(toHWND(hwnd), &buf[0], len + 1);
+        #ifdef UNICODE
+        return to_string(std::wstring(&buf[0]));
+        #else
+        return std::string(&buf[0]);
+        #endif
+    }
+    return "";
+}
+
+std::string WindowSystemWin32::getWindowClassName(yamy::platform::WindowHandle hwnd) {
+    TCHAR className[256];
+    if (GetClassName(toHWND(hwnd), className, 256)) {
+        #ifdef UNICODE
+        return to_string(std::wstring(className));
+        #else
+        return std::string(className);
+        #endif
+    }
+    return "";
+}
+
+bool WindowSystemWin32::bringToForeground(yamy::platform::WindowHandle hwnd) {
+    return SetForegroundWindow(toHWND(hwnd)) != 0;
+}
+
+bool WindowSystemWin32::moveWindow(yamy::platform::WindowHandle hwnd, const yamy::platform::Rect& rect) {
+    return MoveWindow(toHWND(hwnd), rect.left, rect.top, rect.width(), rect.height(), TRUE) != 0;
+}
+
+bool WindowSystemWin32::showWindow(yamy::platform::WindowHandle hwnd, int cmdShow) {
+    return ShowWindow(toHWND(hwnd), cmdShow) != 0;
+}
+
+bool WindowSystemWin32::closeWindow(yamy::platform::WindowHandle hwnd) {
+    return PostMessage(toHWND(hwnd), WM_CLOSE, 0, 0) != 0;
+}
+
+void WindowSystemWin32::getCursorPos(yamy::platform::Point* pt) {
+    POINT p;
+    if (GetCursorPos(&p) && pt) {
+        pt->x = p.x;
+        pt->y = p.y;
+    }
+}
+
+void WindowSystemWin32::setCursorPos(const yamy::platform::Point& pt) {
+    SetCursorPos(pt.x, pt.y);
+}
+
+int WindowSystemWin32::getMonitorCount() {
+    return GetSystemMetrics(SM_CMONITORS);
+}
+
+static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+    std::vector<RECT>* monitors = reinterpret_cast<std::vector<RECT>*>(dwData);
+    monitors->push_back(*lprcMonitor);
+    return TRUE;
+}
+
+bool WindowSystemWin32::getMonitorRect(int monitorIndex, yamy::platform::Rect* rect) {
+    std::vector<RECT> monitors;
+    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumProc, (LPARAM)&monitors);
+
+    if (monitorIndex >= 0 && monitorIndex < (int)monitors.size()) {
+        if (rect) {
+            rect->left = monitors[monitorIndex].left;
+            rect->top = monitors[monitorIndex].top;
+            rect->right = monitors[monitorIndex].right;
+            rect->bottom = monitors[monitorIndex].bottom;
+        }
+        return true;
+    }
+    return false;
+}
+
+std::string WindowSystemWin32::getClipboardString() {
+    tstring ts = getClipboardText();
+    #ifdef UNICODE
+    return to_string(ts);
+    #else
+    return ts;
+    #endif
+}
+
+bool WindowSystemWin32::setClipboardText(const std::string& text) {
+    #ifdef UNICODE
+    return setClipboardText(to_wstring(text));
+    #else
+    return setClipboardText(text);
+    #endif
+}
+
+int WindowSystemWin32::shellExecute(const std::string& operation, const std::string& file, const std::string& parameters, const std::string& directory, int showCmd) {
+    #ifdef UNICODE
+    return shellExecute(to_wstring(operation), to_wstring(file), to_wstring(parameters), to_wstring(directory), showCmd);
+    #else
+    return shellExecute(operation, file, parameters, directory, showCmd);
+    #endif
+}
+
+bool WindowSystemWin32::postMessage(yamy::platform::WindowHandle window, uint32_t message, uintptr_t wParam, intptr_t lParam) {
+    return PostMessage(toHWND(window), message, (WPARAM)wParam, (LPARAM)lParam) != 0;
+}
+
+bool WindowSystemWin32::getClientRect(yamy::platform::WindowHandle hwnd, yamy::platform::Rect* rect) {
+    RECT rc;
+    if (GetClientRect(toHWND(hwnd), &rc)) {
+        if (rect) {
+            rect->left = rc.left;
+            rect->top = rc.top;
+            rect->right = rc.right;
+            rect->bottom = rc.bottom;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool WindowSystemWin32::getChildWindowRect(yamy::platform::WindowHandle hwnd, yamy::platform::Rect* rect) {
+    RECT rc;
+    if (!GetWindowRect(toHWND(hwnd), &rc))
+        return false;
+    POINT p = { rc.left, rc.top };
+    HWND phwnd = GetParent(toHWND(hwnd));
+    if (!phwnd)
+        return false;
+    if (!ScreenToClient(phwnd, &p))
+        return false;
+
+    if (rect) {
+        rect->left = p.x;
+        rect->top = p.y;
+        p.x = rc.right;
+        p.y = rc.bottom;
+        ScreenToClient(phwnd, &p);
+        rect->right = p.x;
+        rect->bottom = p.y;
+    }
+    return true;
+}
+
+namespace yamy::platform {
+    IWindowSystem* createWindowSystem() {
+        return new WindowSystemWin32();
+    }
 }

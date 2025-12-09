@@ -172,7 +172,11 @@ private:
     template <size_t I>
     void outputOneArg(tostream &i_ost, bool hasMore) const
     {
-        i_ost << std::get<I>(m_args);
+        if constexpr (std::is_same_v<typename std::decay<decltype(std::get<I>(m_args))>::type, std::string>) {
+            i_ost << to_tstring(std::get<I>(m_args));
+        } else {
+            i_ost << std::get<I>(m_args);
+        }
         if (hasMore) {
             i_ost << _T(", ");
         }
