@@ -25,7 +25,7 @@ void Command_MouseWheel::exec(Engine *i_engine, FunctionParam *i_param) const
         kid.Reserved = 0;
         kid.ExtraInformation = static_cast<unsigned long>(m_delta);
 
-        InjectionContext ctx;
+        yamy::platform::InjectionContext ctx;
         ctx.isDragging = false;
 
         i_engine->m_inputInjector->inject(&kid, ctx);
