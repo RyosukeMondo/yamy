@@ -32,17 +32,17 @@ void Command_WindowHVMaximize::exec(Engine *i_engine, FunctionParam *i_param) co
 
     int x = rc.left;
     int y = rc.top;
-    int w = rcWidth(&rc);
-    int h = rcHeight(&rc);
+    int w = rcWidth(reinterpret_cast<const RECT*>(&rc));
+    int h = rcHeight(reinterpret_cast<const RECT*>(&rc));
 
     if (m_isHorizontal) {
         x = rcd.left;
-        w = rcWidth(&rcd);
+        w = rcWidth(reinterpret_cast<const RECT*>(&rcd));
     } else {
         y = rcd.top;
-        h = rcHeight(&rcd);
+        h = rcHeight(reinterpret_cast<const RECT*>(&rcd));
     }
-    asyncMoveWindow(hwnd, x, y, w, h);
+    asyncMoveWindow(static_cast<HWND>(hwnd), x, y, w, h);
 }
 
 tostream &Command_WindowHVMaximize::outputArgs(tostream &i_ost) const

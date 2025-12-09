@@ -34,12 +34,12 @@ void Command_WindowMoveVisibly::exec(Engine *i_engine, FunctionParam *i_param) c
     if (rc.left < rcd.left)
         x = rcd.left;
     else if (rcd.right < rc.right)
-        x = rcd.right - rcWidth(&rc);
+        x = rcd.right - rcWidth(reinterpret_cast<const RECT*>(&rc));
     if (rc.top < rcd.top)
         y = rcd.top;
     else if (rcd.bottom < rc.bottom)
-        y = rcd.bottom - rcHeight(&rc);
-    asyncMoveWindow(hwnd, x, y);
+        y = rcd.bottom - rcHeight(reinterpret_cast<const RECT*>(&rc));
+    asyncMoveWindow(static_cast<HWND>(hwnd), x, y);
 }
 
 tostream &Command_WindowMoveVisibly::outputArgs(tostream &i_ost) const

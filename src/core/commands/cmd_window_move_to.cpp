@@ -40,12 +40,12 @@ void Command_WindowMoveTo::exec(Engine *i_engine, FunctionParam *i_param) const
     if (m_gravityType & GravityType_N)
         y = m_dy + rcd.top;
     if (m_gravityType & GravityType_E)
-        x = m_dx + rcd.right - rcWidth(&rc);
+        x = m_dx + rcd.right - rcWidth(reinterpret_cast<const RECT*>(&rc));
     if (m_gravityType & GravityType_W)
         x = m_dx + rcd.left;
     if (m_gravityType & GravityType_S)
-        y = m_dy + rcd.bottom - rcHeight(&rc);
-    asyncMoveWindow(hwnd, x, y);
+        y = m_dy + rcd.bottom - rcHeight(reinterpret_cast<const RECT*>(&rc));
+    asyncMoveWindow(static_cast<HWND>(hwnd), x, y);
 }
 
 tostream &Command_WindowMoveTo::outputArgs(tostream &i_ost) const
