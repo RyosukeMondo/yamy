@@ -9,11 +9,11 @@ void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) cons
     if (!i_param->m_isPressed)
         return;
 
-    tstring className = i_engine->getWindowSystem()->getClassName(i_param->m_hwnd);
+    tstring className = to_tstring(i_engine->getWindowSystem()->getClassName(i_param->m_hwnd));
     bool ok = false;
     if (!className.empty()) {
         if (_tcsicmp(className.c_str(), _T("ConsoleWindowClass")) == 0) {
-            tstring titleName = i_engine->getWindowSystem()->getTitleName(i_param->m_hwnd);
+            tstring titleName = to_tstring(i_engine->getWindowSystem()->getTitleName(i_param->m_hwnd));
             {
                 Acquire a(&i_engine->m_log, 1);
                 i_engine->m_log << _T("yamy::platform::WindowHandle:\t") << std::hex
@@ -24,8 +24,8 @@ void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) cons
             i_engine->m_log << _T("CLASS:\t") << className << std::endl;
             i_engine->m_log << _T("TITLE:\t") << titleName << std::endl;
 
-            yamy::platform::WindowHandle hwnd = getToplevelWindow(i_param->m_hwnd, nullptr);
-            WindowRect rc;
+            yamy::platform::WindowHandle hwnd = getToplevelWindow(static_cast<HWND>(i_param->m_hwnd), nullptr);
+            yamy::platform::Rect rc;
             i_engine->getWindowSystem()->getWindowRect(hwnd, &rc);
             i_engine->m_log << _T("Toplevel Window Position/Size: (")
             << rc.left << _T(", ") << rc.top << _T(") / (")
@@ -43,8 +43,9 @@ void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) cons
         }
     }
     if (!ok) {
+        tstring msgName = addSessionId(WM_MAYU_MESSAGE_NAME);
         UINT WM_MAYU_MESSAGE = i_engine->getWindowSystem()->registerWindowMessage(
-                                   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
+                                   to_UTF_8(msgName));
         CHECK_TRUE( i_engine->getWindowSystem()->postMessage(i_param->m_hwnd, WM_MAYU_MESSAGE,
                                 MayuMessage_notifyName, 0) );
     }
