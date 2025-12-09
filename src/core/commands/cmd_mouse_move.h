@@ -7,7 +7,7 @@
 class Command_MouseMove : public Command<Command_MouseMove>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("MouseMove");
+    static constexpr const char *Name = "MouseMove";
 
     int m_dx;
     int m_dy;

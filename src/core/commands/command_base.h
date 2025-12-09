@@ -45,9 +45,13 @@ public:
     }
 
     // 3. GetName is delegated to Derived::Name
-    inline virtual const _TCHAR *getName() const override
+    inline virtual std::string getName() const override
     {
-        return Derived::Name;
+        if constexpr (std::is_same_v<typename std::decay<decltype(*Derived::Name)>::type, char>) {
+            return Derived::Name;
+        } else {
+            return to_UTF_8(Derived::Name);
+        }
     }
 
     // 4. Load
@@ -67,11 +71,14 @@ public:
         // Most commands with args imply required parens.
         // Commands without args usually check optional parens.
         
+        tstring tsName = to_tstring(getName());
+        const _TCHAR* tName = tsName.c_str();
+
         if constexpr (sizeof...(Args) == 0) {
             // No args: parens are optional but if present must be empty
-            if (!i_sl->getOpenParen(false, getName()))
+            if (!i_sl->getOpenParen(false, tName))
                 return;
-            i_sl->getCloseParen(true, getName());
+            i_sl->getCloseParen(true, tName);
         } else {
             // Args present: parens required (heuristic based on majority of commands)
             // If strict adherence to legacy "optional paren" logic is needed for commands with args, we might need a flag.
@@ -82,18 +89,18 @@ public:
             
             // Let's support the generic flow:
             // Check OpenParen (Strict = true because if we have args, we likely need to parse them)
-            i_sl->getOpenParen(true, getName());
+            i_sl->getOpenParen(true, tName);
             
             loadArgs(i_sl, std::make_index_sequence<sizeof...(Args)>{});
             
-            i_sl->getCloseParen(true, getName());
+            i_sl->getCloseParen(true, tName);
         }
     }
 
     // 5. Output
     virtual tostream &output(tostream &i_ost) const override
     {
-        i_ost << _T("&") << getName();
+        i_ost << _T("&") << to_tstring(getName());
         if constexpr (sizeof...(Args) > 0) {
             i_ost << _T("(");
             outputArgs(i_ost, std::make_index_sequence<sizeof...(Args)>{});
@@ -112,7 +119,7 @@ private:
             // For subsequent arguments (I > 0), we must check for a comma first.
             bool canProceed = true;
             if constexpr (I > 0) {
-                 if (!i_sl->getComma(false, getName())) {
+                 if (!i_sl->getComma(false, to_tstring(getName()).c_str())) {
                      canProceed = false;
                  }
             }

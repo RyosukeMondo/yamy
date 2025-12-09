@@ -8,7 +8,7 @@
 class Command_EditNextModifier : public Command<Command_EditNextModifier, Modifier>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("EditNextModifier");
+    static constexpr const char *Name = "EditNextModifier";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

@@ -7,7 +7,7 @@
 class Command_WindowRaise : public Command<Command_WindowRaise>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowRaise");
+    static constexpr const char *Name = "WindowRaise";
 
     TargetWindowType m_twt;
 

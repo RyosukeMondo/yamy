@@ -7,7 +7,7 @@
 class Command_WindowSetAlpha : public Command<Command_WindowSetAlpha>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowSetAlpha");
+    static constexpr const char *Name = "WindowSetAlpha";
 
     int m_alpha;
 

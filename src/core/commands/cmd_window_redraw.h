@@ -7,7 +7,7 @@
 class Command_WindowRedraw : public Command<Command_WindowRedraw>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowRedraw");
+    static constexpr const char *Name = "WindowRedraw";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

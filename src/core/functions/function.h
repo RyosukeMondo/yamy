@@ -26,7 +26,7 @@ public:
     ///
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const = 0;
     ///
-    virtual const _TCHAR *getName() const = 0;
+    virtual std::string getName() const = 0;
     ///
     virtual tostream &output(tostream &i_ost) const = 0;
     ///

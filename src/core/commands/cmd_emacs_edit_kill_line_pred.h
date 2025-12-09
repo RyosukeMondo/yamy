@@ -7,7 +7,7 @@
 class Command_EmacsEditKillLinePred : public Command<Command_EmacsEditKillLinePred>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("EmacsEditKillLinePred");
+    static constexpr const char *Name = "EmacsEditKillLinePred";
 
     const KeySeq * m_keySeq1;
     const KeySeq * m_keySeq2;

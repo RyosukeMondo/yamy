@@ -7,7 +7,7 @@
 class Command_OtherWindowClass : public Command<Command_OtherWindowClass>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("OtherWindowClass");
+    static constexpr const char *Name = "OtherWindowClass";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

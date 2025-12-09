@@ -9,7 +9,7 @@
 class Command_Repeat : public Command<Command_Repeat, const KeySeq*, int>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Repeat");
+    static constexpr const char *Name = "Repeat";
 
     Command_Repeat() {
         std::get<1>(m_args) = 10; // Default max = 10

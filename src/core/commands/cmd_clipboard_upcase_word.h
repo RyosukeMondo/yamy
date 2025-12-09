@@ -7,7 +7,7 @@
 class Command_ClipboardUpcaseWord : public Command<Command_ClipboardUpcaseWord>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("ClipboardUpcaseWord");
+    static constexpr const char *Name = "ClipboardUpcaseWord";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

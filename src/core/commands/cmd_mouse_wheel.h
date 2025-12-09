@@ -7,7 +7,7 @@
 class Command_MouseWheel : public Command<Command_MouseWheel>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("MouseWheel");
+    static constexpr const char *Name = "MouseWheel";
 
     int m_delta;
 

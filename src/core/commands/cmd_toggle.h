@@ -8,7 +8,7 @@
 class Command_Toggle : public Command<Command_Toggle, ModifierLockType, ToggleType>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Toggle");
+    static constexpr const char *Name = "Toggle";
 
     // Constructor to set default arguments
     Command_Toggle()

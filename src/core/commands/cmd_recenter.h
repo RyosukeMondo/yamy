@@ -7,7 +7,7 @@
 class Command_Recenter : public Command<Command_Recenter>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Recenter");
+    static constexpr const char *Name = "Recenter";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

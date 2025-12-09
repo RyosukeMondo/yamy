@@ -145,6 +145,18 @@ std::string to_string(const std::wstring &i_str);
 // convert wstring to UTF-8
 std::string to_UTF_8(const std::wstring &i_str);
 
+/// internal string type (UTF-8)
+typedef std::string ustring;
+
+/// helper to convert ustring to tstring (UTF-8 to wstring on Windows)
+inline tstring to_tstring(const ustring &i_str) {
+#ifdef _UNICODE
+    return to_wstring(i_str);
+#else
+    return i_str;
+#endif
+}
+
 
 /// case insensitive string
 class tstringi : public tstring

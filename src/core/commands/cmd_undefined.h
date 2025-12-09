@@ -7,7 +7,7 @@
 class Command_Undefined : public Command<Command_Undefined>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Undefined");
+    static constexpr const char *Name = "Undefined";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

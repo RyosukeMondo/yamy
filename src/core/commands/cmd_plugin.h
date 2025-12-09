@@ -7,7 +7,7 @@
 class Command_PlugIn : public Command<Command_PlugIn>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("PlugIn");
+    static constexpr const char *Name = "PlugIn";
 
     StrExprArg m_dllName;
     StrExprArg m_funcName;

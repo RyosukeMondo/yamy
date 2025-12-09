@@ -7,7 +7,7 @@
 class Command_ClipboardChangeCase : public Command<Command_ClipboardChangeCase>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("ClipboardChangeCase");
+    static constexpr const char *Name = "ClipboardChangeCase";
 
     BooleanType m_doesConvertToUpperCase;
 

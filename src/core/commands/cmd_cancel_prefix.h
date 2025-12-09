@@ -7,7 +7,7 @@
 class Command_CancelPrefix : public Command<Command_CancelPrefix>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("CancelPrefix");
+    static constexpr const char *Name = "CancelPrefix";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

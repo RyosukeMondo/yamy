@@ -7,7 +7,7 @@
 class Command_HelpMessage : public Command<Command_HelpMessage>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("HelpMessage");
+    static constexpr const char *Name = "HelpMessage";
 
     StrExprArg m_title;
     StrExprArg m_message;

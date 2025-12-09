@@ -7,7 +7,7 @@
 class Command_WindowMove : public Command<Command_WindowMove>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowMove");
+    static constexpr const char *Name = "WindowMove";
 
     int m_dx;
     int m_dy;

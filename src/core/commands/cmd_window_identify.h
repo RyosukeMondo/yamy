@@ -7,7 +7,7 @@
 class Command_WindowIdentify : public Command<Command_WindowIdentify>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowIdentify");
+    static constexpr const char *Name = "WindowIdentify";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

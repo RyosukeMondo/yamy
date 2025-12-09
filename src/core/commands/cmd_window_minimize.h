@@ -7,7 +7,7 @@
 class Command_WindowMinimize : public Command<Command_WindowMinimize>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowMinimize");
+    static constexpr const char *Name = "WindowMinimize";
 
     TargetWindowType m_twt;
 

@@ -7,7 +7,7 @@
 class Command_WindowToggleTopMost : public Command<Command_WindowToggleTopMost>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowToggleTopMost");
+    static constexpr const char *Name = "WindowToggleTopMost";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

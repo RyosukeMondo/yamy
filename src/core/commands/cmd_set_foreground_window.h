@@ -7,7 +7,7 @@
 class Command_SetForegroundWindow : public Command<Command_SetForegroundWindow>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("SetForegroundWindow");
+    static constexpr const char *Name = "SetForegroundWindow";
 
     tregex m_windowClassName;
     LogicalOperatorType m_logicalOp;

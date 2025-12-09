@@ -7,7 +7,7 @@
 class Command_WindowMonitor : public Command<Command_WindowMonitor>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowMonitor");
+    static constexpr const char *Name = "WindowMonitor";
 
     int m_monitor;
     BooleanType m_adjustPos;

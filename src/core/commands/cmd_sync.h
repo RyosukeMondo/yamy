@@ -7,7 +7,7 @@
 class Command_Sync : public Command<Command_Sync>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Sync");
+    static constexpr const char *Name = "Sync";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

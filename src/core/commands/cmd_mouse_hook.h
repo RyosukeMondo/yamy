@@ -7,7 +7,7 @@
 class Command_MouseHook : public Command<Command_MouseHook>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("MouseHook");
+    static constexpr const char *Name = "MouseHook";
 
     MouseHookType m_hookType;
     int m_hookParam;

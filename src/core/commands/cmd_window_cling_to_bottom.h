@@ -7,7 +7,7 @@
 class Command_WindowClingToBottom : public Command<Command_WindowClingToBottom>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowClingToBottom");
+    static constexpr const char *Name = "WindowClingToBottom";
 
     TargetWindowType m_twt;
 

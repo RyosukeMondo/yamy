@@ -7,7 +7,7 @@
 class Command_WindowClingToLeft : public Command<Command_WindowClingToLeft>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowClingToLeft");
+    static constexpr const char *Name = "WindowClingToLeft";
 
     TargetWindowType m_twt;
 

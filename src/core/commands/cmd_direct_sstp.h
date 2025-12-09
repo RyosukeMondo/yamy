@@ -8,7 +8,7 @@
 class Command_DirectSSTP : public Command<Command_DirectSSTP>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("DirectSSTP");
+    static constexpr const char *Name = "DirectSSTP";
 
     tregex m_name;
     StrExprArg m_protocol;

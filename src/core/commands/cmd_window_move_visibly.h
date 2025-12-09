@@ -7,7 +7,7 @@
 class Command_WindowMoveVisibly : public Command<Command_WindowMoveVisibly>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowMoveVisibly");
+    static constexpr const char *Name = "WindowMoveVisibly";
 
     TargetWindowType m_twt;
 

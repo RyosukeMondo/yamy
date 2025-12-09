@@ -7,7 +7,7 @@
 class Command_LogClear : public Command<Command_LogClear>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("LogClear");
+    static constexpr const char *Name = "LogClear";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };
