@@ -118,7 +118,7 @@ public:
 
 private:
     Actions m_actions;                ///
-    tstringi m_name;                ///
+    std::string m_name;                ///
     Modifier::Type m_mode;            /** Either Modifier::Type_KEYSEQ
                                                     or Modifier::Type_ASSIGN */
 
@@ -130,6 +130,8 @@ private:
 
 public:
     ///
+    KeySeq(const std::string &i_name);
+    // TODO: Remove after migration (Branch 4)
     KeySeq(const tstringi &i_name);
     ///
     KeySeq(const KeySeq &i_ks);
@@ -151,7 +153,7 @@ public:
     ModifiedKey getFirstModifiedKey() const;
 
     ///
-    const tstringi &getName() const {
+    const std::string &getName() const {
         return m_name;
     }
 
@@ -266,9 +268,11 @@ private:
     ModAssignments m_modAssignments[Modifier::Type_ASSIGN];
 
     Type m_type;                    /// type
-    tstringi m_name;                /// keymap name
-    tregex m_windowClass;                /// window class name regexp
-    tregex m_windowTitle;                /// window title name regexp
+    std::string m_name;                /// keymap name
+    std::regex m_windowClass;                /// window class name regexp
+    std::string m_windowClassStr;            /// window class name string (for description)
+    std::regex m_windowTitle;                /// window title name regexp
+    std::string m_windowTitleStr;            /// window title name string (for description)
 
     KeySeq *m_defaultKeySeq;            /// default keySeq
     Keymap *m_parentKeymap;            /// parent keymap
@@ -281,6 +285,14 @@ private:
 
 public:
     ///
+    Keymap(Type i_type,
+           const std::string &i_name,
+           const std::string &i_windowClass,
+           const std::string &i_windowTitle,
+           KeySeq *i_defaultKeySeq,
+           Keymap *i_parentKeymap);
+
+    // TODO: Remove after migration (Branch 4)
     Keymap(Type i_type,
            const tstringi &i_name,
            const tstringi &i_windowClass,
@@ -307,12 +319,15 @@ public:
         return m_parentKeymap;
     }
     ///
-    const tstringi &getName() const {
+    const std::string &getName() const {
         return m_name;
     }
 
     /// does same window
-    bool doesSameWindow(const tstringi i_className,
+    bool doesSameWindow(const std::string &i_className,
+                        const std::string &i_titleName);
+    // TODO: Remove after migration (Branch 4)
+    bool doesSameWindow(const tstringi &i_className,
                         const tstringi &i_titleName);
 
     /// adjust modifier
@@ -353,9 +368,15 @@ public:
     Keymaps();
 
     /// search by name
+    Keymap *searchByName(const std::string &i_name);
+    // TODO: Remove after migration (Branch 4)
     Keymap *searchByName(const tstringi &i_name);
 
     /// search window
+    void searchWindow(KeymapPtrList *o_keymapPtrList,
+                      const std::string &i_className,
+                      const std::string &i_titleName);
+    // TODO: Remove after migration (Branch 4)
     void searchWindow(KeymapPtrList *o_keymapPtrList,
                       const tstringi &i_className,
                       const tstringi &i_titleName);
@@ -382,6 +403,8 @@ public:
     KeySeq *add(const KeySeq &i_keySeq);
 
     /// search by name
+    KeySeq *searchByName(const std::string &i_name);
+    // TODO: Remove after migration (Branch 4)
     KeySeq *searchByName(const tstringi &i_name);
 };
 

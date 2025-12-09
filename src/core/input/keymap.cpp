@@ -64,7 +64,7 @@ Action *ActionKeySeq::clone() const
 // stream output
 tostream &ActionKeySeq::output(tostream &i_ost) const
 {
-    return i_ost << _T("$") << m_keySeq->getName();
+    return i_ost << _T("$") << to_tstring(m_keySeq->getName());
 }
 
 //
@@ -117,7 +117,7 @@ void KeySeq::clear()
 }
 
 
-KeySeq::KeySeq(const tstringi &i_name)
+KeySeq::KeySeq(const std::string &i_name)
         : m_name(i_name),
         m_mode(Modifier::Type_KEYSEQ)
 {
@@ -216,22 +216,22 @@ Keymap::getKeyAssignments(const ModifiedKey &i_mk) const
 
 
 Keymap::Keymap(Type i_type,
-               const tstringi &i_name,
-               const tstringi &i_windowClass,
-               const tstringi &i_windowTitle,
+               const std::string &i_name,
+               const std::string &i_windowClass,
+               const std::string &i_windowTitle,
                KeySeq *i_defaultKeySeq,
                Keymap *i_parentKeymap)
         : m_type(i_type),
         m_name(i_name),
-        m_windowClass(_T(".*")),
-        m_windowTitle(_T(".*")),
+        m_windowClass(".*"),
+        m_windowTitle(".*"),
         m_defaultKeySeq(i_defaultKeySeq),
         m_parentKeymap(i_parentKeymap)
 {
     if (i_type == Type_windowAnd || i_type == Type_windowOr)
         try {
-            tregex::flag_type f = (tregex::normal |
-                                   tregex::icase);
+            std::regex::flag_type f = (std::regex::ECMAScript |
+                                       std::regex::icase);
             if (!i_windowClass.empty())
                 m_windowClass.assign(i_windowClass, f);
             if (!i_windowTitle.empty())
@@ -292,13 +292,13 @@ Keymap::searchAssignment(const ModifiedKey &i_mk) const
 
 
 // does same window
-bool Keymap::doesSameWindow(const tstringi i_className,
-                            const tstringi &i_titleName)
+bool Keymap::doesSameWindow(const std::string &i_className,
+                            const std::string &i_titleName)
 {
     if (m_type == Type_keymap)
         return false;
 
-    tsmatch what;
+    std::smatch what;
     if (std::regex_search(i_className, what, m_windowClass)) {
         if (m_type == Type_windowAnd)
             return std::regex_search(i_titleName, what, m_windowTitle);
@@ -401,24 +401,24 @@ void Keymap::describe(tostream &i_ost, DescribeParam *i_dp) const
 
     switch (m_type) {
     case Type_keymap:
-        i_ost << _T("keymap ") << m_name;
+        i_ost << _T("keymap ") << to_tstring(m_name);
         break;
     case Type_windowAnd:
-        i_ost << _T("window ") << m_name << _T(" ");
-        if (m_windowTitle.str() == _T(".*"))
-            i_ost << _T("/") << m_windowClass.str() << _T("/");
+        i_ost << _T("window ") << to_tstring(m_name) << _T(" ");
+        if (m_windowTitleStr == ".*")
+            i_ost << _T("/") << to_tstring(m_windowClassStr) << _T("/");
         else
-            i_ost << _T("( /") << m_windowClass.str() << _T("/ && /")
-            << m_windowTitle.str() << _T("/ )");
+            i_ost << _T("( /") << to_tstring(m_windowClassStr) << _T("/ && /")
+            << to_tstring(m_windowTitleStr) << _T("/ )");
         break;
     case Type_windowOr:
-        i_ost << _T("window ") << m_name << _T(" ( /")
-        << m_windowClass.str() << _T("/ || /") << m_windowTitle.str()
+        i_ost << _T("window ") << to_tstring(m_name) << _T(" ( /")
+        << to_tstring(m_windowClassStr) << _T("/ || /") << to_tstring(m_windowTitleStr)
         << _T("/ )");
         break;
     }
     if (m_parentKeymap)
-        i_ost << _T(" : ") << m_parentKeymap->m_name;
+        i_ost << _T(" : ") << to_tstring(m_parentKeymap->m_name);
     i_ost << _T(" = ") << *m_defaultKeySeq << std::endl;
 
     // describe modifiers
@@ -498,7 +498,7 @@ bool Keymap::setIfNotYet(KeySeq *i_keySeq, Keymap *i_parentKeymap)
 // stream output
 extern tostream &operator<<(tostream &i_ost, const Keymap *i_keymap)
 {
-    return i_ost << i_keymap->getName();
+    return i_ost << to_tstring(i_keymap->getName());
 }
 
 
@@ -512,11 +512,12 @@ Keymaps::Keymaps()
 
 
 // search by name
-Keymap *Keymaps::searchByName(const tstringi &i_name)
+Keymap *Keymaps::searchByName(const std::string &i_name)
 {
     for (KeymapList::iterator
             i = m_keymapList.begin(); i != m_keymapList.end(); ++ i)
-        if ((*i).getName() == i_name)
+        // Perform case-insensitive comparison
+        if (tstringi(to_tstring(i_name)) == to_tstring((*i).getName()))
             return &*i;
     return nullptr;
 }
@@ -524,8 +525,8 @@ Keymap *Keymaps::searchByName(const tstringi &i_name)
 
 // search window
 void Keymaps::searchWindow(KeymapPtrList *o_keymapPtrList,
-                           const tstringi &i_className,
-                           const tstringi &i_titleName)
+                           const std::string &i_className,
+                           const std::string &i_titleName)
 {
     o_keymapPtrList->clear();
     for (KeymapList::iterator
@@ -572,11 +573,12 @@ KeySeq *KeySeqs::add(const KeySeq &i_keySeq)
 
 
 // search by name
-KeySeq *KeySeqs::searchByName(const tstringi &i_name)
+KeySeq *KeySeqs::searchByName(const std::string &i_name)
 {
     for (KeySeqList::iterator
             i = m_keySeqList.begin(); i != m_keySeqList.end(); ++ i)
-        if ((*i).getName() == i_name)
-            return &(*i);
+        // Perform case-insensitive comparison
+        if (tstringi(to_tstring(i_name)) == to_tstring((*i).getName()))
+            return &*i;
     return nullptr;
 }
