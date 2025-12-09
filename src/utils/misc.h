@@ -7,7 +7,12 @@
 #  define _MISC_H
 
 #  include "compiler_specific.h"
-#  include <windows.h>
+#  ifdef _WIN32
+#    include <windows.h>
+#  else
+#    include <cstddef>
+#    include <cstring>
+#  endif
 #  include <cassert>
 
 #define YAMY_SUCCESS                        0

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // strexpr.h
 
@@ -8,6 +8,7 @@
 
 #  include "stringtool.h"
 #  include <memory>
+#  include <string>
 
 
 /// Abstract interface for system-dependent operations
@@ -17,13 +18,13 @@ public:
     virtual ~StrExprSystem() {}
     
     /// Get text from clipboard
-    virtual tstring getClipboardText() const = 0;
+    virtual std::string getClipboardText() const = 0;
     
     /// Get current window class name
-    virtual tstringq getStrExprWindowClassName() const = 0;
+    virtual std::string getStrExprWindowClassName() const = 0;
     
     /// Get current window title name
-    virtual tstringq getStrExprWindowTitleName() const = 0;
+    virtual std::string getStrExprWindowTitleName() const = 0;
 };
 
 
@@ -31,11 +32,11 @@ public:
 class StrExpr
 {
 private:
-    tstringq m_symbol;
+    std::string m_symbol;
 protected:
     static const StrExprSystem *s_system;
 public:
-    StrExpr(const tstringq &i_symbol) : m_symbol(i_symbol) {};
+    StrExpr(const std::string &i_symbol) : m_symbol(i_symbol) {};
 
     virtual ~StrExpr() {};
 
@@ -43,7 +44,7 @@ public:
         return std::make_unique<StrExpr>(*this);
     }
 
-    virtual tstringq eval() const {
+    virtual std::string eval() const {
         return m_symbol;
     }
 
@@ -65,10 +66,10 @@ public:
     };
     StrExprArg();
     StrExprArg(const StrExprArg &i_data);
-    StrExprArg(const tstringq &i_symbol, Type i_type);
+    StrExprArg(const std::string &i_symbol, Type i_type);
     ~StrExprArg();
     StrExprArg &operator=(const StrExprArg &i_data);
-    tstringq eval() const;
+    std::string eval() const;
     static void setSystem(const StrExprSystem *i_system);
 };
 

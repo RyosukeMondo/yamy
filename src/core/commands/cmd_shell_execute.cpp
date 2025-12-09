@@ -55,10 +55,10 @@ void Command_ShellExecute::executeOnMainThread(Engine *i_engine)
             i_engine->m_afShellExecute->m_functionData);
 
     int r = i_engine->m_windowSystem->shellExecute(
-                to_UTF_8(to_wstring(fd->m_operation.eval().empty() ? _T("open") : fd->m_operation.eval())),
-                to_UTF_8(to_wstring(fd->m_file.eval())),
-                to_UTF_8(to_wstring(fd->m_parameters.eval())),
-                to_UTF_8(to_wstring(fd->m_directory.eval())),
+                fd->m_operation.eval().empty() ? tstring(_T("open")) : to_tstring(fd->m_operation.eval()),
+                to_tstring(fd->m_file.eval()),
+                to_tstring(fd->m_parameters.eval()),
+                to_tstring(fd->m_directory.eval()),
                 static_cast<int>(fd->m_showCommand));
     if (32 < r)
         return; // success

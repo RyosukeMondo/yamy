@@ -7,7 +7,7 @@
 #  define _DLGEDITSETTING_H
 
 #  include "stringtool.h"
-
+#  include <string>
 
 /// dialog procedure of "Edit Setting" dialog box
 #ifdef MAYU64
@@ -20,9 +20,9 @@ BOOL CALLBACK dlgEditSetting_dlgProc(
 /// parameters for "Edit Setting" dialog box
 class DlgEditSettingData {
 public:
-    tstringi m_name;                /// setting name
-    tstringi m_filename;                /// filename of setting
-    tstringi m_symbols;        /// symbol list (-Dsymbol1;-Dsymbol2;-D...)
+    std::string m_name;                /// setting name
+    std::string m_filename;                /// filename of setting
+    std::string m_symbols;        /// symbol list (-Dsymbol1;-Dsymbol2;-D...)
 };
 
 

@@ -3,6 +3,7 @@
 
 
 #include "compiler_specific_func.h"
+#include <cstdio>
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,9 +50,17 @@ tstring getCompilerVersionString()
 {
     TCHAR buf[256];
 #ifdef UNICODE
-    _sntprintf(buf, NUMBER_OF(buf), _T("GCC %hs"), __VERSION__);
+    #ifdef _WIN32
+        _sntprintf(buf, NUMBER_OF(buf), _T("GCC %hs"), __VERSION__);
+    #else
+        swprintf(buf, NUMBER_OF(buf), _T("GCC %ls"), _T(__VERSION__));
+    #endif
 #else
-    _sntprintf(buf, NUMBER_OF(buf), _T("GCC %s"), __VERSION__);
+    #ifdef _WIN32
+        _sntprintf(buf, NUMBER_OF(buf), _T("GCC %s"), __VERSION__);
+    #else
+        snprintf(buf, NUMBER_OF(buf), _T("GCC %s"), __VERSION__);
+    #endif
 #endif
     return tstring(buf);
 }
