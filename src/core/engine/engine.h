@@ -320,11 +320,11 @@ private:
 public:
     // BEGINING OF FUNCTION DEFINITION
     /// send a default key to Windows
-    void funcDefault(FunctionParam *i_param);
+// funcDefault removed (moved to Command_Default)
 // funcKeymapParent removed (moved to Command_KeymapParent)
 // funcKeymapWindow removed (moved to Command_KeymapWindow)
     /// use a corresponding key of the previous prefixed keymap
-    void funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous);
+// funcKeymapPrevPrefix removed (moved to Command_KeymapPrevPrefix)
 // funcOtherWindowClass removed (moved to Command_OtherWindowClass)
 // funcPrefix removed (moved to Command_Prefix)
 // funcKeymap removed (moved to Command_Keymap)
@@ -350,8 +350,7 @@ public:
                                  const tregex &i_windowTitleName
                                  = tregex(_T(".*")));
     /// load setting
-    void funcLoadSetting(FunctionParam *i_param,
-                         const StrExprArg &i_name = StrExprArg());
+// funcLoadSetting removed (moved to Command_LoadSetting)
 // funcVK removed (moved to Command_VK)
 // funcWait removed (moved to Command_Wait)
     /// investigate WM_COMMAND, WM_SYSCOMMAND

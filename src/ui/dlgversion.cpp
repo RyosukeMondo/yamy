@@ -13,6 +13,16 @@
 #include <cstdio>
 #include <windowsx.h>
 
+#ifndef VERSION
+#define VERSION "0.04"
+#endif
+#ifndef LOGNAME
+#define LOGNAME "unknown"
+#endif
+#ifndef COMPUTERNAME
+#define COMPUTERNAME "unknown"
+#endif
+
 
 ///
 class DlgVersion : public LayoutManager

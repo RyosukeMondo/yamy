@@ -134,6 +134,8 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_wait.cpp
     src/core/commands/cmd_vk.cpp
     src/core/commands/cmd_default.cpp
+    src/core/commands/cmd_keymap_prev_prefix.cpp
+    src/core/commands/cmd_load_setting.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/input/vkeytable.cpp
@@ -159,7 +161,7 @@ set(ENGINE_SOURCES
 
 add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
 set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
-target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi)
+target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32)
 
 target_include_directories(yamy_engine_new PRIVATE
     src

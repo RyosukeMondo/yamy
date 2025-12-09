@@ -10,6 +10,10 @@
 #  include <tchar.h>
 #  include <windef.h>
 
+#ifndef VERSION
+#define VERSION "0.04"
+#endif
+
 ///
 #  define HOOK_PIPE_NAME \
  _T("\\\\.\\pipe\\GANAware\\mayu\\{4B22D464-7A4E-494b-982A-C2B2BBAAF9F3}") _T(VERSION)

@@ -1534,7 +1534,7 @@ add_symbols:
             return false;                // called by 'include'
 
         if (!DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_setting),
-                       nullptr, dlgSetting_dlgProc))
+                       nullptr, (DLGPROC)dlgSetting_dlgProc))
             return false;
     }
 }

@@ -246,7 +246,7 @@ public:
             if (0 <= index)
                 getItem(index, &data);
             if (DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_editSetting),
-                               m_hwnd, dlgEditSetting_dlgProc, (LPARAM)&data))
+                               m_hwnd, (DLGPROC)dlgEditSetting_dlgProc, (LPARAM)&data))
                 if (!data.m_name.empty()) {
                     insertItem(0, data);
                     setSelectedItem(0);
@@ -276,7 +276,7 @@ public:
                 return TRUE;
             getItem(index, &data);
             if (DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_editSetting),
-                               m_hwnd, dlgEditSetting_dlgProc, (LPARAM)&data)) {
+                               m_hwnd, (DLGPROC)dlgEditSetting_dlgProc, (LPARAM)&data)) {
                 setItem(index, data);
                 setSelectedItem(index);
             }

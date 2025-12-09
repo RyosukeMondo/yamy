@@ -23,7 +23,7 @@ friend class Command_Ignore;
 friend class Command_PostMessage;
 friend class Command_Wait;
 friend class Command_VK;
-friend class FunctionData_LoadSetting;
+friend class Command_LoadSetting;
 friend class FunctionData_ShellExecute;
 friend class FunctionData_SetForegroundWindow;
 
