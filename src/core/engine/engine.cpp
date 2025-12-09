@@ -11,7 +11,9 @@
 #include "windowstool.h"
 
 #include <iomanip>
+#ifdef _WIN32
 #include <process.h>
+#endif
 
 
 // keyboard handler thread

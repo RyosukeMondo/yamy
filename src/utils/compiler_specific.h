@@ -72,9 +72,26 @@ extern "C"
 // MinGW / GCC
 
 #  elif defined(__MINGW32__) || defined(__GNUC__)
-#    include <windows.h>
-#    include <tchar.h>
-#    define stati64_t _stati64
+#    ifdef _WIN32
+#      include <windows.h>
+#      include <tchar.h>
+#      define stati64_t _stati64
+#    else
+       // Linux/Unix build
+#      include <unistd.h>
+#      include <sys/types.h>
+#      include <sys/stat.h>
+       // Minimal TCHAR emulation for transition
+#      ifdef UNICODE
+#        define _T(x) L ## x
+#        define TCHAR wchar_t
+#      else
+#        define _T(x) x
+#        define TCHAR char
+#      endif
+       // Stat struct for 64-bit file size
+#      define stati64_t stat
+#    endif
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Cygwin 1.1 (gcc 2.95.2)

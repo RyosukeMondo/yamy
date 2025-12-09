@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project Definition
-project(yamy LANGUAGES CXX RC)
+project(yamy LANGUAGES CXX)
+if(WIN32)
+    enable_language(RC)
+endif()
 
 # Standard Settings
 set(CMAKE_CXX_STANDARD 17)
@@ -51,17 +54,6 @@ else()
     set(YAMY_SUFFIX "32")
 endif()
 
-# -----------------------------------------------------------------------------
-# Target: yamy_hook (DLL)
-# -----------------------------------------------------------------------------
-add_library(yamy_hook SHARED
-    src/platform/windows/hook.cpp
-    src/utils/stringtool.cpp
-    src/platform/windows/hook.h
-    src/utils/misc.h
-    src/utils/stringtool.h
-)
-
 # Determine architecture suffix for naming yamy64 / yamy32
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(YAMY_ARCH_SUFFIX "64")
@@ -69,29 +61,42 @@ else()
     set(YAMY_ARCH_SUFFIX "32")
 endif()
 
-target_compile_definitions(yamy_hook PRIVATE YAMY32DLL_EXPORTS)
-set_target_properties(yamy_hook PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
+if(WIN32)
+    # -----------------------------------------------------------------------------
+    # Target: yamy_hook (DLL)
+    # -----------------------------------------------------------------------------
+    add_library(yamy_hook SHARED
+        src/platform/windows/hook.cpp
+        src/utils/stringtool.cpp
+        src/platform/windows/hook.h
+        src/utils/misc.h
+        src/utils/stringtool.h
+    )
 
-target_include_directories(yamy_hook PRIVATE
-    src/utils
-    src/platform/windows
-)
+    target_compile_definitions(yamy_hook PRIVATE YAMY32DLL_EXPORTS)
+    set_target_properties(yamy_hook PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
 
-target_link_libraries(yamy_hook PRIVATE imm32 user32)
-# target_link_options(yamy_hook PRIVATE -static) - Removed to avoid CRT conflict
+    target_include_directories(yamy_hook PRIVATE
+        src/utils
+        src/platform/windows
+    )
 
-# -----------------------------------------------------------------------------
-# Target: yamyd (Helper EXE)
-# -----------------------------------------------------------------------------
-# yamyd32 is specifically for hooking 32-bit apps from 64-bit env.
-# We build it as 'yamyd32' on 32-bit builds.
-if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    add_executable(yamyd WIN32 src/app/yamyd.cpp)
-    set_target_properties(yamyd PROPERTIES OUTPUT_NAME "yamyd32")
-    target_link_libraries(yamyd PRIVATE yamy_hook)
-    target_include_directories(yamyd PRIVATE src/platform/windows src/app src/utils)
-    if(MINGW)
-        target_link_options(yamyd PRIVATE -static)
+    target_link_libraries(yamy_hook PRIVATE imm32 user32)
+    # target_link_options(yamy_hook PRIVATE -static) - Removed to avoid CRT conflict
+
+    # -----------------------------------------------------------------------------
+    # Target: yamyd (Helper EXE)
+    # -----------------------------------------------------------------------------
+    # yamyd32 is specifically for hooking 32-bit apps from 64-bit env.
+    # We build it as 'yamyd32' on 32-bit builds.
+    if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+        add_executable(yamyd WIN32 src/app/yamyd.cpp)
+        set_target_properties(yamyd PROPERTIES OUTPUT_NAME "yamyd32")
+        target_link_libraries(yamyd PRIVATE yamy_hook)
+        target_include_directories(yamyd PRIVATE src/platform/windows src/app src/utils)
+        if(MINGW)
+            target_link_options(yamyd PRIVATE -static)
+        endif()
     endif()
 endif()
 
@@ -100,11 +105,6 @@ endif()
 # -----------------------------------------------------------------------------
 set(ENGINE_SOURCES
     src/utils/compiler_specific_func.cpp
-    src/ui/dlgeditsetting.cpp
-    src/ui/dlginvestigate.cpp
-    src/ui/dlglog.cpp
-    src/ui/dlgsetting.cpp
-    src/ui/dlgversion.cpp
     src/core/engine/engine.cpp
     src/core/engine/engine_lifecycle.cpp
     src/core/engine/engine_input.cpp
@@ -114,7 +114,6 @@ set(ENGINE_SOURCES
     src/core/engine/engine_window.cpp
     src/core/engine/engine_setting.cpp
     src/core/engine/engine_log.cpp
-    src/platform/windows/fixscancodemap.cpp
     src/core/window/focus.cpp
     src/core/functions/function.cpp
     src/core/functions/function_creator.cpp
@@ -184,85 +183,113 @@ set(ENGINE_SOURCES
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/input/vkeytable.cpp
-
     src/core/window/layoutmanager.cpp
     src/core/window/target.cpp
-
-    src/platform/windows/input_injector_win32.cpp
-    src/platform/windows/input_hook_win32.cpp
     src/core/settings/parser.cpp
     src/platform/windows/input_driver_win32.cpp
     src/platform/windows/registry.cpp
     src/platform/windows/utf_conversion.cpp
     src/platform/windows/window_system_win32.cpp
     src/platform/windows/windowstool.cpp
-    src/platform/windows/utf_conversion.cpp
-
     src/core/settings/setting.cpp
     src/core/settings/setting_loader.cpp
     src/core/functions/strexpr.cpp
     src/utils/stringtool.cpp
-    src/ui/mayu.rc
     src/app/mayu.cpp
 )
 
 if(WIN32)
-    list(APPEND ENGINE_SOURCES src/platform/windows/thread_win32.cpp)
-elseif(UNIX)
-    list(APPEND ENGINE_SOURCES src/platform/linux/thread_linux.cpp)
+    list(APPEND ENGINE_SOURCES
+        src/ui/dlgeditsetting.cpp
+        src/ui/dlginvestigate.cpp
+        src/ui/dlglog.cpp
+        src/ui/dlgsetting.cpp
+        src/ui/dlgversion.cpp
+        src/ui/mayu.rc
+        src/platform/windows/fixscancodemap.cpp
+        src/platform/windows/input_injector_win32.cpp
+        src/platform/windows/input_hook_win32.cpp
+        src/platform/windows/thread_win32.cpp
+    )
+
+    add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
+    set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
+    target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32)
+
+    target_include_directories(yamy_engine_new PRIVATE
+        src
+        src/ui
+        src/core/engine
+        src/core/functions
+        src/core/input
+        src/core/window
+        src/core/settings
+        src/platform/windows
+        src/utils
+        src/app
+    )
+elseif(UNIX AND NOT APPLE)
+    # Linux stub backend - minimal implementation for testing architecture
+    set(STUB_SOURCES
+        src/app/main_linux.cpp
+        src/platform/linux/window_system_linux.cpp
+        src/platform/linux/input_injector_linux.cpp
+        src/platform/linux/input_hook_linux.cpp
+        src/platform/linux/input_driver_linux.cpp
+        src/platform/linux/thread_linux.cpp
+    )
+    add_executable(yamy_stub ${STUB_SOURCES})
+    target_link_libraries(yamy_stub PRIVATE pthread)
+
+    target_include_directories(yamy_stub PRIVATE
+        src
+        src/core/platform
+        src/platform/linux
+        src/utils
+    )
+
+    # Note: Full engine build (yamy_engine_new) is disabled on Linux until Core Refactoring
+    # (Branch 2 & 10) is complete and merged.
 endif()
-
-add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
-set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
-target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32)
-
-target_include_directories(yamy_engine_new PRIVATE
-    src
-    src/ui
-    src/core/engine
-    src/core/functions
-    src/core/input
-    src/core/window
-    src/core/settings
-    src/platform/windows
-    src/utils
-    src/app
-)
 
 # -----------------------------------------------------------------------------
 # Verification: Check for missing sources
 # -----------------------------------------------------------------------------
-if(CMAKE_HOST_WIN32)
-    add_custom_command(TARGET yamy_engine_new PRE_BUILD
-        COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_missing_sources.ps1
-        COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_header_guards.ps1
-        COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_encoding.ps1
-        COMMENT "Running QA Checks: Sources, Header Guards, Encoding..."
-        VERBATIM
-    )
-elseif(CMAKE_HOST_UNIX)
-    add_custom_command(TARGET yamy_engine_new PRE_BUILD
-        COMMAND bash ${CMAKE_SOURCE_DIR}/scripts/check_missing_sources.sh || true
-        COMMENT "Running QA Checks: Sources..."
-        VERBATIM
-    )
+if(WIN32)
+    if(CMAKE_HOST_WIN32)
+        add_custom_command(TARGET yamy_engine_new PRE_BUILD
+            COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_missing_sources.ps1
+            COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_header_guards.ps1
+            COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_encoding.ps1
+            COMMENT "Running QA Checks: Sources, Header Guards, Encoding..."
+            VERBATIM
+        )
+    elseif(CMAKE_HOST_UNIX)
+        add_custom_command(TARGET yamy_engine_new PRE_BUILD
+            COMMAND bash ${CMAKE_SOURCE_DIR}/scripts/check_missing_sources.sh || true
+            COMMENT "Running QA Checks: Sources..."
+            VERBATIM
+        )
+    endif()
 endif()
 
-# -----------------------------------------------------------------------------
-# Target: yamy_launcher (EXE)
-# -----------------------------------------------------------------------------
-add_executable(yamy_launcher WIN32
-    src/app/yamy.cpp
-    src/utils/stringtool.cpp
-    src/ui/mayu.rc
-)
+if(WIN32)
+    # -----------------------------------------------------------------------------
+    # Target: yamy_launcher (EXE)
+    # -----------------------------------------------------------------------------
+    add_executable(yamy_launcher WIN32
+        src/app/yamy.cpp
+        src/utils/stringtool.cpp
+        src/ui/mayu.rc
+    )
 
-set_target_properties(yamy_launcher PROPERTIES OUTPUT_NAME "yamy")
+    set_target_properties(yamy_launcher PROPERTIES OUTPUT_NAME "yamy")
 
-target_include_directories(yamy_launcher PRIVATE
-    src/utils
-    src/ui
-)
+    target_include_directories(yamy_launcher PRIVATE
+        src/utils
+        src/ui
+    )
+endif()
 
 # -----------------------------------------------------------------------------
 # Target: yamy_test (EXE)
@@ -271,25 +298,25 @@ option(BUILD_TESTING "Build the testing tree." OFF)
 
 if(BUILD_TESTING)
     enable_testing()
-    
+
     # Using the existing gtest source in the repo as per vcxproj
     set(GTEST_DIR src/tests/googletest)
-    
+
     # We might need to compile gtest as a library first if not already managed
     # For simplicity, including gtest-all.cc directly as the vcxproj did
-    
+
     # Add platform specific sources
     if(WIN32)
         list(APPEND ENGINE_SOURCES src/platform/windows/utf_conversion.cpp)
     endif()
 
     set(TEST_SOURCES
-        ${ENGINE_SOURCES} # Tests often need the whole engine code mostly. 
-                          # Note: Linking engine object or sources directly. 
+        ${ENGINE_SOURCES} # Tests often need the whole engine code mostly.
+                          # Note: Linking engine object or sources directly.
                           # Excluding main app entry point mayu.cpp to avoid double main
     )
     list(REMOVE_ITEM TEST_SOURCES src/app/mayu.cpp)
-    
+
     add_executable(yamy_test
         ${TEST_SOURCES}
         src/tests/googletest/src/gtest-all.cc
@@ -299,7 +326,7 @@ if(BUILD_TESTING)
     if(WIN32)
         target_sources(yamy_test PRIVATE src/tests/test_utf_conversion.cpp)
     endif()
-    
+
     target_include_directories(yamy_test PRIVATE
         ${GTEST_DIR}/include
         ${GTEST_DIR}
@@ -314,8 +341,8 @@ if(BUILD_TESTING)
         src/utils
         src/app
     )
-    
+
     target_link_libraries(yamy_test PRIVATE yamy_hook)  # Engine depends on hook
-    
+
     add_test(NAME yamy_test COMMAND yamy_test)
 endif()
