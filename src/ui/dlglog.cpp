@@ -117,7 +117,7 @@ public:
 
         case IDC_BUTTON_clearLog: {
             Edit_SetSel(m_hwndEdit, 0, Edit_GetTextLength(m_hwndEdit));
-            Edit_ReplaceSel(m_hwndEdit, _T(""));
+            yamy::windows::setWindowText(m_hwndEdit, "");
             SendMessage(m_hwndTaskTray, WM_APP_dlglogNotify,
                         DlgLogNotify_logCleared, 0);
             return TRUE;

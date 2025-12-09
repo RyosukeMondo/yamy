@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // strexpr.cpp
 
 
@@ -13,7 +13,7 @@ const StrExprSystem *StrExpr::s_system = nullptr;
 class StrExprClipboard : public StrExpr
 {
 public:
-    StrExprClipboard(const tstringq &i_symbol) : StrExpr(i_symbol) {};
+    StrExprClipboard(const std::string &i_symbol) : StrExpr(i_symbol) {};
 
     ~StrExprClipboard() {};
 
@@ -21,11 +21,11 @@ public:
         return std::make_unique<StrExprClipboard>(*this);
     }
 
-    tstringq eval() const override {
+    std::string eval() const override {
         if (s_system) {
-            return s_system->getClipboardText();
+            return to_UTF_8(s_system->getClipboardText());
         }
-        return _T("");
+        return "";
     }
 };
 
@@ -35,7 +35,7 @@ public:
 class StrExprWindowClassName : public StrExpr
 {
 public:
-    StrExprWindowClassName(const tstringq &i_symbol) : StrExpr(i_symbol) {};
+    StrExprWindowClassName(const std::string &i_symbol) : StrExpr(i_symbol) {};
 
     ~StrExprWindowClassName() {};
 
@@ -43,11 +43,11 @@ public:
         return std::make_unique<StrExprWindowClassName>(*this);
     }
 
-    tstringq eval() const override {
+    std::string eval() const override {
         if (s_system) {
-            return s_system->getStrExprWindowClassName();
+            return to_UTF_8(s_system->getStrExprWindowClassName());
         }
-        return _T("");
+        return "";
     }
 };
 
@@ -57,7 +57,7 @@ public:
 class StrExprWindowTitleName : public StrExpr
 {
 public:
-    StrExprWindowTitleName(const tstringq &i_symbol) : StrExpr(i_symbol) {};
+    StrExprWindowTitleName(const std::string &i_symbol) : StrExpr(i_symbol) {};
 
     ~StrExprWindowTitleName() {};
 
@@ -65,11 +65,11 @@ public:
         return std::make_unique<StrExprWindowTitleName>(*this);
     }
 
-    tstringq eval() const override {
+    std::string eval() const override {
         if (s_system) {
-            return s_system->getStrExprWindowTitleName();
+            return to_UTF_8(s_system->getStrExprWindowTitleName());
         }
-        return _T("");
+        return "";
     }
 };
 
@@ -81,7 +81,7 @@ public:
 // default constructor
 StrExprArg::StrExprArg()
 {
-    m_expr = std::make_unique<StrExpr>(_T(""));
+    m_expr = std::make_unique<StrExpr>("");
 }
 
 
@@ -91,7 +91,7 @@ StrExprArg::StrExprArg(const StrExprArg &i_data)
     if (i_data.m_expr) {
         m_expr = i_data.m_expr->clone();
     } else {
-        m_expr = std::make_unique<StrExpr>(_T(""));
+        m_expr = std::make_unique<StrExpr>("");
     }
 }
 
@@ -104,7 +104,7 @@ StrExprArg &StrExprArg::operator=(const StrExprArg &i_data)
     if (i_data.m_expr) {
         m_expr = i_data.m_expr->clone();
     } else {
-        m_expr = std::make_unique<StrExpr>(_T(""));
+        m_expr = std::make_unique<StrExpr>("");
     }
 
     return *this;
@@ -112,18 +112,18 @@ StrExprArg &StrExprArg::operator=(const StrExprArg &i_data)
 
 
 // initializer
-StrExprArg::StrExprArg(const tstringq &i_symbol, Type i_type)
+StrExprArg::StrExprArg(const std::string &i_symbol, Type i_type)
 {
     switch (i_type) {
     case Literal:
         m_expr = std::make_unique<StrExpr>(i_symbol);
         break;
     case Builtin:
-        if (i_symbol == _T("Clipboard"))
+        if (i_symbol == "Clipboard")
             m_expr = std::make_unique<StrExprClipboard>(i_symbol);
-        else if (i_symbol == _T("WindowClassName"))
+        else if (i_symbol == "WindowClassName")
             m_expr = std::make_unique<StrExprWindowClassName>(i_symbol);
-        else if (i_symbol == _T("WindowTitleName"))
+        else if (i_symbol == "WindowTitleName")
             m_expr = std::make_unique<StrExprWindowTitleName>(i_symbol);
         else
             m_expr = std::make_unique<StrExpr>(i_symbol); // Fallback
@@ -141,7 +141,7 @@ StrExprArg::~StrExprArg()
 }
 
 
-tstringq StrExprArg::eval() const
+std::string StrExprArg::eval() const
 {
     return m_expr->eval();
 }
@@ -154,6 +154,6 @@ void StrExprArg::setSystem(const StrExprSystem *i_system)
 // stream output
 tostream &operator<<(tostream &i_ost, const StrExprArg &i_data)
 {
-    i_ost << i_data.eval();
+    i_ost << to_tstring(i_data.eval());
     return i_ost;
 }

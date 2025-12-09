@@ -40,7 +40,7 @@ bool Engine::fixModifierKey(ModifiedKey *io_mkey, Keymap::AssignMode *o_am)
             if (io_mkey->m_key == (*j).m_key) { // is io_mkey a modifier ?
                 {
                     Acquire a(&m_log, 1);
-                    m_log << _T("* Modifier Key") << std::endl;
+                    m_log << "* Modifier Key" << std::endl;
                 }
                 // set dontcare for this modifier
                 io_mkey->m_modifier.dontcare(static_cast<Modifier::Type>(i));

@@ -43,9 +43,9 @@ public:
         CHECK_TRUE( m_hwndMayuPath = GetDlgItem(m_hwnd, IDC_EDIT_mayuPath) );
         CHECK_TRUE( m_hwndSymbols = GetDlgItem(m_hwnd, IDC_EDIT_symbols) );
 
-        SetWindowText(m_hwndMayuPathName, m_data->m_name.c_str());
-        SetWindowText(m_hwndMayuPath, m_data->m_filename.c_str());
-        SetWindowText(m_hwndSymbols, m_data->m_symbols.c_str());
+        yamy::windows::setWindowText(m_hwndMayuPathName, m_data->m_name);
+        yamy::windows::setWindowText(m_hwndMayuPath, m_data->m_filename);
+        yamy::windows::setWindowText(m_hwndSymbols, m_data->m_symbols);
 
         restrictSmallestSize();
 
@@ -97,7 +97,6 @@ public:
 
     /// WM_COMMAND
     BOOL wmCommand(int /* i_notify_code */, int i_id, HWND /* i_hwnd_control */) {
-        _TCHAR buf[GANA_MAX_PATH];
         switch (i_id) {
         case IDC_BUTTON_browse: {
             tstring title = to_tstring(loadString(IDS_openMayu));
@@ -106,6 +105,7 @@ public:
                 if (filter[i] == _T('|'))
                     filter[i] = _T('\0');
 
+            _TCHAR buf[GANA_MAX_PATH];
             _tcscpy(buf, _T(".mayu"));
             OPENFILENAME of;
             memset(&of, 0, sizeof(of));
@@ -119,17 +119,14 @@ public:
             of.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST |
                        OFN_HIDEREADONLY | OFN_PATHMUSTEXIST;
             if (GetOpenFileName(&of))
-                SetWindowText(m_hwndMayuPath, buf);
+                yamy::windows::setWindowText(m_hwndMayuPath, yamy::platform::wstring_to_utf8(buf));
             return TRUE;
         }
 
         case IDOK: {
-            GetWindowText(m_hwndMayuPathName, buf, NUMBER_OF(buf));
-            m_data->m_name = buf;
-            GetWindowText(m_hwndMayuPath, buf, NUMBER_OF(buf));
-            m_data->m_filename = buf;
-            GetWindowText(m_hwndSymbols, buf, NUMBER_OF(buf));
-            m_data->m_symbols = buf;
+            m_data->m_name = yamy::windows::getWindowText(m_hwndMayuPathName);
+            m_data->m_filename = yamy::windows::getWindowText(m_hwndMayuPath);
+            m_data->m_symbols = yamy::windows::getWindowText(m_hwndSymbols);
             CHECK_TRUE( EndDialog(m_hwnd, 1) );
             return TRUE;
         }

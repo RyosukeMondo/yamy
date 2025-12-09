@@ -10,7 +10,52 @@
 #  include "stringtool.h"
 #  include <windows.h>
 #  include <string>
+#  include "utf_conversion.h"
 
+namespace yamy::windows {
+
+// Wrap SetWindowText to work with UTF-8
+inline void setWindowText(HWND hwnd, const std::string& text) {
+    SetWindowTextW(hwnd, yamy::platform::utf8_to_wstring(text).c_str());
+}
+
+// Wrap GetWindowText to return UTF-8
+inline std::string getWindowText(HWND hwnd) {
+    int len = GetWindowTextLengthW(hwnd);
+    if (len == 0) return std::string();
+
+    std::wstring wide(len + 1, L'\0');
+    GetWindowTextW(hwnd, &wide[0], len + 1);
+    wide.resize(len); // Remove the null terminator
+    return yamy::platform::wstring_to_utf8(wide);
+}
+
+// Wrap SetDlgItemText
+inline void setDlgItemText(HWND hwnd, int itemId, const std::string& text) {
+    SetDlgItemTextW(hwnd, itemId, yamy::platform::utf8_to_wstring(text).c_str());
+}
+
+// Wrap GetDlgItemText
+inline std::string getDlgItemText(HWND hwnd, int itemId) {
+    int len = GetWindowTextLengthW(GetDlgItem(hwnd, itemId));
+    if (len == 0) return std::string();
+
+    std::wstring wide(len + 1, L'\0');
+    GetDlgItemTextW(hwnd, itemId, &wide[0], len + 1);
+    wide.resize(len); // Remove the null terminator
+    return yamy::platform::wstring_to_utf8(wide);
+}
+
+// Wrap MessageBox
+inline int messageBox(HWND hwnd, const std::string& text,
+                      const std::string& caption, UINT type) {
+    return MessageBoxW(hwnd,
+                      yamy::platform::utf8_to_wstring(text).c_str(),
+                      yamy::platform::utf8_to_wstring(caption).c_str(),
+                      type);
+}
+
+} // namespace yamy::windows
 
 /// instance handle of this application
 extern HINSTANCE g_hInst;

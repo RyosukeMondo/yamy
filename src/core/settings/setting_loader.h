@@ -98,8 +98,11 @@ private:
     void load_ARGUMENT(unsigned __int64 *o_arg);    /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(__int64 *o_arg);        /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(tstringq *o_arg);        /// &lt;ARGUMENT&gt;
+    void load_ARGUMENT(std::string *o_arg);    /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(std::list<tstringq> *o_arg); /// &lt;ARGUMENT&gt;
+    void load_ARGUMENT(std::list<std::string> *o_arg); /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(tregex *o_arg);        /// &lt;ARGUMENT&gt;
+    void load_ARGUMENT(Regex *o_arg);        /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(VKey *o_arg);        /// &lt;ARGUMENT_VK&gt;
     void load_ARGUMENT(ToWindowType *o_arg);    /// &lt;ARGUMENT_WINDOW&gt;
     void load_ARGUMENT(GravityType *o_arg);    /// &lt;ARGUMENT&gt;

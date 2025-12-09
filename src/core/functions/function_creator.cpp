@@ -76,7 +76,7 @@ public:
     Creator m_creator;
 };
 
-FunctionData *createFunctionData(const tstring &i_name)
+FunctionData *createFunctionData(const std::string &i_name)
 {
     static FunctionCreator functionCreators[] = {
   { "Default", Command_Default::create },
@@ -144,9 +144,15 @@ FunctionData *createFunctionData(const tstring &i_name)
   { "CancelPrefix", Command_CancelPrefix::create },
     };
 
-    std::string name = to_UTF_8(i_name);
     for (size_t i = 0; i != NUMBER_OF(functionCreators); ++ i)
-        if (name == functionCreators[i].m_name)
+        if (i_name == functionCreators[i].m_name)
             return functionCreators[i].m_creator();
     return nullptr;
 }
+
+#ifdef _UNICODE
+FunctionData *createFunctionData(const tstring &i_name)
+{
+    return createFunctionData(to_UTF_8(i_name));
+}
+#endif

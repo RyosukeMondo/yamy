@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // engine.h
 
@@ -16,6 +16,7 @@
 #  include "../input/input_driver.h"
 #  include <set>
 #  include <queue>
+#  include <string>
 #  include "../functions/function.h"
 
 
@@ -54,8 +55,8 @@ private:
         DWORD m_threadId;                /// thread id
         HWND m_hwndFocus;                /** window that has focus on
                                                     the thread */
-        tstringi m_className;            /// class name of hwndFocus
-        tstringi m_titleName;            /// title name of hwndFocus
+        std::string m_className;            /// class name of hwndFocus
+        std::string m_titleName;            /// title name of hwndFocus
         bool m_isConsole;                /// is hwndFocus console ?
         KeymapPtrList m_keymaps;            /// keymaps
 
@@ -97,14 +98,14 @@ private:
     ///
     class EmacsEditKillLine
     {
-        tstring m_buf;    /// previous kill-line contents
+        std::string m_buf;    /// previous kill-line contents
 
     public:
         bool m_doForceReset;    ///
 
     private:
         ///
-        HGLOBAL makeNewKillLineBuf(const _TCHAR *i_data, int *i_retval);
+        HGLOBAL makeNewKillLineBuf(const char *i_data, int *i_retval);
 
     public:
         ///
@@ -235,8 +236,8 @@ private:
     WindowPositions m_windowPositions;        ///
     WindowsWithAlpha m_windowsWithAlpha;        ///
 
-    tstring m_helpMessage;            /// for &amp;HelpMessage
-    tstring m_helpTitle;                /// for &amp;HelpMessage
+    std::string m_helpMessage;            /// for &amp;HelpMessage
+    std::string m_helpTitle;                /// for &amp;HelpMessage
     int m_variable;                /// for &amp;Variable,
     ///  &amp;Repeat
 
@@ -499,8 +500,8 @@ public:
 
     /// focus
     bool setFocus(HWND i_hwndFocus, DWORD i_threadId,
-                  const tstringi &i_className,
-                  const tstringi &i_titleName, bool i_isConsole);
+                  const std::string &i_className,
+                  const std::string &i_titleName, bool i_isConsole);
 
     /// lock state
     bool setLockState(bool i_isNumLockToggled, bool i_isCapsLockToggled,
@@ -524,7 +525,7 @@ public:
     void shellExecute();
 
     /// get help message
-    void getHelpMessages(tstring *o_helpMessage, tstring *o_helpTitle);
+    void getHelpMessages(std::string *o_helpMessage, std::string *o_helpTitle);
 
     /// command notify
     template <typename WPARAM_T, typename LPARAM_T>
@@ -540,13 +541,13 @@ public:
                 GetWindowThreadProcessId(m_hwndAssocWindow, nullptr))
             return;    // inhibit the investigation of MADO TSUKAI NO YUUTSU
 
-        const _TCHAR *target = nullptr;
+        const char *target = nullptr;
         int number_target = 0;
 
         if (i_hwnd == hf)
-            target = _T("ToItself");
+            target = "ToItself";
         else if (i_hwnd == GetParent(hf))
-            target = _T("ToParentWindow");
+            target = "ToParentWindow";
         else {
             // Function::toMainWindow
             HWND h = hf;
@@ -557,7 +558,7 @@ public:
                 h = p;
             }
             if (i_hwnd == h)
-                target = _T("ToMainWindow");
+                target = "ToMainWindow";
             else {
                 // Function::toOverlappedWindow
                 HWND h = hf;
@@ -572,7 +573,7 @@ public:
                     h = GetParent(h);
                 }
                 if (i_hwnd == h)
-                    target = _T("ToOverlappedWindow");
+                    target = "ToOverlappedWindow";
                 else {
                     // number
                     HWND h = hf;
@@ -584,41 +585,41 @@ public:
             }
         }
 
-        m_log << _T("&PostMessage(");
+        m_log << "&PostMessage(";
         if (target)
             m_log << target;
         else
             m_log << number_target;
-        m_log << _T(", ") << i_message
-        << _T(", 0x") << std::hex << i_wParam
-        << _T(", 0x") << i_lParam << _T(") # hwnd = ")
-        << reinterpret_cast<ULONG_PTR>(i_hwnd) << _T(", ")
-        << _T("message = ") << std::dec;
+        m_log << ", " << i_message
+        << ", 0x" << std::hex << i_wParam
+        << ", 0x" << i_lParam << ") # hwnd = "
+        << reinterpret_cast<ULONG_PTR>(i_hwnd) << ", "
+        << "message = " << std::dec;
         if (i_message == WM_COMMAND)
-            m_log << _T("WM_COMMAND, ");
+            m_log << "WM_COMMAND, ";
         else if (i_message == WM_SYSCOMMAND)
-            m_log << _T("WM_SYSCOMMAND, ");
+            m_log << "WM_SYSCOMMAND, ";
         else
-            m_log << i_message << _T(", ");
-        m_log << _T("wNotifyCode = ") << HIWORD(i_wParam) << _T(", ")
-        << _T("wID = ") << LOWORD(i_wParam) << _T(", ")
-        << _T("hwndCtrl = 0x") << std::hex << i_lParam << std::dec << std::endl;
+            m_log << i_message << ", ";
+        m_log << "wNotifyCode = " << HIWORD(i_wParam) << ", "
+        << "wID = " << LOWORD(i_wParam) << ", "
+        << "hwndCtrl = 0x" << std::hex << i_lParam << std::dec << std::endl;
     }
 
     /// get current window class name
-    const tstringi &getCurrentWindowClassName() const {
+    const std::string &getCurrentWindowClassName() const {
         return m_currentFocusOfThread->m_className;
     }
 
     /// get current window title name
-    const tstringi &getCurrentWindowTitleName() const {
+    const std::string &getCurrentWindowTitleName() const {
         return m_currentFocusOfThread->m_titleName;
     }
 
     // StrExprSystem overrides
-    tstring getClipboardText() const override;
-    tstringq getStrExprWindowClassName() const override;
-    tstringq getStrExprWindowTitleName() const override;
+    std::string getClipboardText() const override;
+    std::string getStrExprWindowClassName() const override;
+    std::string getStrExprWindowTitleName() const override;
 };
 
 ///

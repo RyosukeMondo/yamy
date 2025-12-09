@@ -10,14 +10,14 @@
 
 TEST(FunctionDataTest, DefaultFunction) {
     std::unique_ptr<FunctionData> fd(Command_Default::create());
-    EXPECT_STREQ(to_tstring(fd->getName()).c_str(), _T("Default"));
-    
+    EXPECT_EQ(fd->getName(), "Default");
+
     tstringstream ss;
     fd->output(ss);
     EXPECT_EQ(ss.str(), _T("&Default"));
-    
+
     std::unique_ptr<FunctionData> clone(fd->clone());
-    EXPECT_STREQ(to_tstring(clone->getName()).c_str(), _T("Default"));
+    EXPECT_EQ(clone->getName(), "Default");
 }
 
 TEST(FunctionDataTest, KeymapPrevPrefixFunction) {
@@ -26,8 +26,8 @@ TEST(FunctionDataTest, KeymapPrevPrefixFunction) {
     Command_KeymapPrevPrefix* cmd = static_cast<Command_KeymapPrevPrefix*>(fd.get());
     cmd->getArg<0>() = 5;
 
-    EXPECT_STREQ(to_tstring(fd->getName()).c_str(), _T("KeymapPrevPrefix"));
-    
+    EXPECT_EQ(fd->getName(), "KeymapPrevPrefix");
+
     tstringstream ss;
     fd->output(ss);
     EXPECT_EQ(ss.str(), _T("&KeymapPrevPrefix(5) "));
