@@ -27,7 +27,7 @@ void Command_WindowMinimize::exec(Engine *i_engine, FunctionParam *i_param) cons
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt))
         return;
 
-    bool isIconic = (i_engine->getWindowSystem()->getShowCommand(hwnd) == WindowShowCmd::Minimized);
+    bool isIconic = (i_engine->getWindowSystem()->getShowCommand(hwnd) == yamy::platform::WindowShowCmd::Minimized);
     i_engine->getWindowSystem()->postMessage(hwnd, WM_SYSCOMMAND,
                 isIconic ? SC_RESTORE : SC_MINIMIZE, 0);
 }

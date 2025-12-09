@@ -26,7 +26,7 @@ void Command_WindowRaise::exec(Engine *i_engine, FunctionParam *i_param) const
     TargetWindowType twt = m_twt;
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt))
         return;
-    i_engine->getWindowSystem()->setWindowZOrder(hwnd, ZOrder::Top);
+    i_engine->getWindowSystem()->setWindowZOrder(hwnd, yamy::platform::ZOrder::Top);
 }
 
 tostream &Command_WindowRaise::outputArgs(tostream &i_ost) const

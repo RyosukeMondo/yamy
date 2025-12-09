@@ -27,7 +27,7 @@ void Command_WindowMaximize::exec(Engine *i_engine, FunctionParam *i_param) cons
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt))
         return;
 
-    bool isZoomed = (i_engine->getWindowSystem()->getShowCommand(hwnd) == WindowShowCmd::Maximized);
+    bool isZoomed = (i_engine->getWindowSystem()->getShowCommand(hwnd) == yamy::platform::WindowShowCmd::Maximized);
     i_engine->getWindowSystem()->postMessage(hwnd, WM_SYSCOMMAND,
                 isZoomed ? SC_RESTORE : SC_MAXIMIZE, 0);
 }

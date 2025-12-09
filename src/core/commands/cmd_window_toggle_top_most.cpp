@@ -8,9 +8,9 @@ void Command_WindowToggleTopMost::exec(Engine *i_engine, FunctionParam *i_param)
     if (!Engine::getSuitableWindow(i_engine->getWindowSystem(), i_param, &hwnd))
         return;
 
-    ZOrder order = i_engine->getWindowSystem()->isWindowTopMost(hwnd)
-        ? ZOrder::NoTopMost
-        : ZOrder::TopMost;
+    yamy::platform::ZOrder order = i_engine->getWindowSystem()->isWindowTopMost(hwnd)
+        ? yamy::platform::ZOrder::NoTopMost
+        : yamy::platform::ZOrder::TopMost;
 
     i_engine->getWindowSystem()->setWindowZOrder(hwnd, order);
 }

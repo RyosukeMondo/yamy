@@ -94,7 +94,7 @@ void Command_WindowMonitorTo::exec(Engine *i_engine, FunctionParam *i_param) con
     }
 
     if (m_adjustPos && m_adjustSize) {
-        if (ws->getShowCommand(hwnd) == WindowShowCmd::Maximized)
+        if (ws->getShowCommand(hwnd) == yamy::platform::WindowShowCmd::Maximized)
             ws->showWindow(hwnd, 9); // SW_RESTORE
 
         ws->moveWindow(hwnd, Rect(x, y, x+w, y+h));
