@@ -270,6 +270,11 @@ if(BUILD_TESTING)
     # We might need to compile gtest as a library first if not already managed
     # For simplicity, including gtest-all.cc directly as the vcxproj did
     
+    # Add platform specific sources
+    if(WIN32)
+        list(APPEND ENGINE_SOURCES src/platform/windows/utf_conversion.cpp)
+    endif()
+
     set(TEST_SOURCES
         ${ENGINE_SOURCES} # Tests often need the whole engine code mostly. 
                           # Note: Linking engine object or sources directly. 
@@ -282,6 +287,10 @@ if(BUILD_TESTING)
         src/tests/googletest/src/gtest-all.cc
         src/tests/test_main.cpp
     )
+
+    if(WIN32)
+        target_sources(yamy_test PRIVATE src/tests/test_utf_conversion.cpp)
+    endif()
     
     target_include_directories(yamy_test PRIVATE
         ${GTEST_DIR}/include
