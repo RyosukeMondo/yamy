@@ -376,45 +376,29 @@ public:
     /// move window visibly
 // funcWindowMoveVisibly removed (moved to Command_WindowMoveVisibly)
     /// move window to other monitor
-    void funcWindowMonitorTo(FunctionParam *i_param,
-                             WindowMonitorFromType i_fromType, int i_monitor,
-                             BooleanType i_adjustPos = BooleanType_true,
-                             BooleanType i_adjustSize = BooleanType_false);
+// funcWindowMonitorTo removed (moved to Command_WindowMonitorTo)
     /// move window to other monitor
-    void funcWindowMonitor(FunctionParam *i_param, int i_monitor,
-                           BooleanType i_adjustPos = BooleanType_true,
-                           BooleanType i_adjustSize = BooleanType_false);
+// funcWindowMonitor removed (moved to Command_WindowMonitor)
     ///
-    void funcWindowClingToLeft(FunctionParam *i_param,
-                               TargetWindowType i_twt
-                               = TargetWindowType_overlapped);
+// funcWindowClingToLeft removed (moved to Command_WindowClingToLeft)
     ///
-    void funcWindowClingToRight(FunctionParam *i_param,
-                                TargetWindowType i_twt
-                                = TargetWindowType_overlapped);
+// funcWindowClingToRight removed (moved to Command_WindowClingToRight)
     ///
-    void funcWindowClingToTop(FunctionParam *i_param,
-                              TargetWindowType i_twt
-                              = TargetWindowType_overlapped);
+// funcWindowClingToTop removed (moved to Command_WindowClingToTop)
     ///
-    void funcWindowClingToBottom(FunctionParam *i_param,
-                                 TargetWindowType i_twt
-                                 = TargetWindowType_overlapped);
+// funcWindowClingToBottom removed (moved to Command_WindowClingToBottom)
     /// close window
-    void funcWindowClose(FunctionParam *i_param,
-                         TargetWindowType i_twt = TargetWindowType_overlapped);
+// funcWindowClose removed (moved to Command_WindowClose)
     /// toggle top-most flag of the window
-    void funcWindowToggleTopMost(FunctionParam *i_param);
+// funcWindowToggleTopMost removed (moved to Command_WindowToggleTopMost)
     /// identify the window
-    void funcWindowIdentify(FunctionParam *i_param);
+// funcWindowIdentify removed (moved to Command_WindowIdentify)
     /// set alpha blending parameter to the window
-    void funcWindowSetAlpha(FunctionParam *i_param, int i_alpha);
+// funcWindowSetAlpha removed (moved to Command_WindowSetAlpha)
     /// redraw the window
-    void funcWindowRedraw(FunctionParam *i_param);
+// funcWindowRedraw removed (moved to Command_WindowRedraw)
     /// resize window to
-    void funcWindowResizeTo(FunctionParam *i_param, int i_width, int i_height,
-                            TargetWindowType i_twt
-                            = TargetWindowType_overlapped);
+// funcWindowResizeTo removed (moved to Command_WindowResizeTo)
     /// move the mouse cursor
     void funcMouseMove(FunctionParam *i_param, int i_dx, int i_dy);
     /// send a mouse-wheel-message to Windows

@@ -66,18 +66,18 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
     - [x] `WindowMove` (Removed from Engine)
     - [x] `WindowMoveTo` (Removed from Engine)
     - [x] `WindowMoveVisibly` (Removed from Engine)
-    - [ ] `WindowMonitorTo`
-    - [ ] `WindowMonitor`
-    - [ ] `WindowClingToLeft`
-    - [ ] `WindowClingToRight`
-    - [ ] `WindowClingToTop`
-    - [ ] `WindowClingToBottom`
-    - [ ] `WindowClose`
-    - [ ] `WindowToggleTopMost`
-    - [ ] `WindowIdentify`
-    - [ ] `WindowSetAlpha`
-    - [ ] `WindowRedraw`
-    - [ ] `WindowResizeTo`
+    - [x] `WindowMonitorTo` (Removed from Engine)
+    - [x] `WindowMonitor` (Removed from Engine)
+    - [x] `WindowClingToLeft` (Removed from Engine)
+    - [x] `WindowClingToRight` (Removed from Engine)
+    - [x] `WindowClingToTop` (Removed from Engine)
+    - [x] `WindowClingToBottom` (Removed from Engine)
+    - [x] `WindowClose` (Removed from Engine)
+    - [x] `WindowToggleTopMost` (Removed from Engine)
+    - [x] `WindowIdentify` (Removed from Engine)
+    - [x] `WindowSetAlpha` (Removed from Engine)
+    - [x] `WindowRedraw` (Removed from Engine)
+    - [x] `WindowResizeTo` (Removed from Engine)
     - [ ] `MouseMove`
     - [ ] `MouseWheel`
     - [ ] `ClipboardChangeCase`

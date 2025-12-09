@@ -37,6 +37,18 @@
 #include "../commands/cmd_window_move.h"
 #include "../commands/cmd_window_move_to.h"
 #include "../commands/cmd_window_move_visibly.h"
+#include "../commands/cmd_window_monitor_to.h"
+#include "../commands/cmd_window_monitor.h"
+#include "../commands/cmd_window_cling_to_left.h"
+#include "../commands/cmd_window_cling_to_right.h"
+#include "../commands/cmd_window_cling_to_top.h"
+#include "../commands/cmd_window_cling_to_bottom.h"
+#include "../commands/cmd_window_close.h"
+#include "../commands/cmd_window_toggle_top_most.h"
+#include "../commands/cmd_window_identify.h"
+#include "../commands/cmd_window_set_alpha.h"
+#include "../commands/cmd_window_redraw.h"
+#include "../commands/cmd_window_resize_to.h"
 
 class FunctionCreator
 {
@@ -86,18 +98,18 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("WindowMove"), Command_WindowMove::create },
   { _T("WindowMoveTo"), Command_WindowMoveTo::create },
   { _T("WindowMoveVisibly"), Command_WindowMoveVisibly::create },
-  { _T("WindowMonitorTo"), FunctionData_WindowMonitorTo::create },
-  { _T("WindowMonitor"), FunctionData_WindowMonitor::create },
-  { _T("WindowClingToLeft"), FunctionData_WindowClingToLeft::create },
-  { _T("WindowClingToRight"), FunctionData_WindowClingToRight::create },
-  { _T("WindowClingToTop"), FunctionData_WindowClingToTop::create },
-  { _T("WindowClingToBottom"), FunctionData_WindowClingToBottom::create },
-  { _T("WindowClose"), FunctionData_WindowClose::create },
-  { _T("WindowToggleTopMost"), FunctionData_WindowToggleTopMost::create },
-  { _T("WindowIdentify"), FunctionData_WindowIdentify::create },
-  { _T("WindowSetAlpha"), FunctionData_WindowSetAlpha::create },
-  { _T("WindowRedraw"), FunctionData_WindowRedraw::create },
-  { _T("WindowResizeTo"), FunctionData_WindowResizeTo::create },
+  { _T("WindowMonitorTo"), Command_WindowMonitorTo::create },
+  { _T("WindowMonitor"), Command_WindowMonitor::create },
+  { _T("WindowClingToLeft"), Command_WindowClingToLeft::create },
+  { _T("WindowClingToRight"), Command_WindowClingToRight::create },
+  { _T("WindowClingToTop"), Command_WindowClingToTop::create },
+  { _T("WindowClingToBottom"), Command_WindowClingToBottom::create },
+  { _T("WindowClose"), Command_WindowClose::create },
+  { _T("WindowToggleTopMost"), Command_WindowToggleTopMost::create },
+  { _T("WindowIdentify"), Command_WindowIdentify::create },
+  { _T("WindowSetAlpha"), Command_WindowSetAlpha::create },
+  { _T("WindowRedraw"), Command_WindowRedraw::create },
+  { _T("WindowResizeTo"), Command_WindowResizeTo::create },
   { _T("MouseMove"), FunctionData_MouseMove::create },
   { _T("MouseWheel"), FunctionData_MouseWheel::create },
   { _T("ClipboardChangeCase"), FunctionData_ClipboardChangeCase::create },

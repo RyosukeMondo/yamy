@@ -153,6 +153,18 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_window_move.cpp
     src/core/commands/cmd_window_move_to.cpp
     src/core/commands/cmd_window_move_visibly.cpp
+    src/core/commands/cmd_window_monitor_to.cpp
+    src/core/commands/cmd_window_monitor.cpp
+    src/core/commands/cmd_window_cling_to_left.cpp
+    src/core/commands/cmd_window_cling_to_right.cpp
+    src/core/commands/cmd_window_cling_to_top.cpp
+    src/core/commands/cmd_window_cling_to_bottom.cpp
+    src/core/commands/cmd_window_close.cpp
+    src/core/commands/cmd_window_toggle_top_most.cpp
+    src/core/commands/cmd_window_identify.cpp
+    src/core/commands/cmd_window_set_alpha.cpp
+    src/core/commands/cmd_window_redraw.cpp
+    src/core/commands/cmd_window_resize_to.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/input/vkeytable.cpp

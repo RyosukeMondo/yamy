@@ -792,126 +792,20 @@ void Engine::shellExecute()
 // funcWindowHVMaximize moved to src/core/commands/cmd_window_hv_maximize.cpp
 
 // close window
-void Engine::funcWindowClose(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
-}
+// funcWindowClose moved to src/core/commands/cmd_window_close.cpp
 
 // toggle top-most flag of the window
-void Engine::funcWindowToggleTopMost(FunctionParam *i_param)
-{
-    HWND hwnd;
-    if (!getSuitableWindow(i_param, &hwnd))
-        return;
-
-    ZOrder order = m_windowSystem->isWindowTopMost((WindowSystem::WindowHandle)hwnd) 
-        ? ZOrder::NoTopMost 
-        : ZOrder::TopMost;
-    
-    m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, order);
-}
+// funcWindowToggleTopMost moved to src/core/commands/cmd_window_toggle_top_most.cpp
 
 // identify the window
-void Engine::funcWindowIdentify(FunctionParam *i_param)
-{
-    if (!i_param->m_isPressed)
-        return;
-
-    tstring className = m_windowSystem->getClassName((WindowSystem::WindowHandle)i_param->m_hwnd);
-    bool ok = false;
-    if (!className.empty()) {
-        if (_tcsicmp(className.c_str(), _T("ConsoleWindowClass")) == 0) {
-            tstring titleName = m_windowSystem->getTitleName((WindowSystem::WindowHandle)i_param->m_hwnd);
-            {
-                Acquire a(&m_log, 1);
-                m_log << _T("HWND:\t") << std::hex
-                << reinterpret_cast<ULONG_PTR>(i_param->m_hwnd)
-                << std::dec << std::endl;
-            }
-            Acquire a(&m_log, 0);
-            m_log << _T("CLASS:\t") << className << std::endl;
-            m_log << _T("TITLE:\t") << titleName << std::endl;
-
-            HWND hwnd = getToplevelWindow(i_param->m_hwnd, nullptr);
-            WindowRect rc;
-            m_windowSystem->getWindowRect((WindowSystem::WindowHandle)hwnd, &rc);
-            m_log << _T("Toplevel Window Position/Size: (")
-            << rc.left << _T(", ") << rc.top << _T(") / (")
-            << (rc.right - rc.left) << _T("x") << (rc.bottom - rc.top)
-            << _T(")") << std::endl;
-
-            m_windowSystem->getWorkArea(&rc);
-            m_log << _T("Desktop Window Position/Size: (")
-            << rc.left << _T(", ") << rc.top << _T(") / (")
-            << (rc.right - rc.left) << _T("x") << (rc.bottom - rc.top)
-            << _T(")") << std::endl;
-
-            m_log << std::endl;
-            ok = true;
-        }
-    }
-    if (!ok) {
-        UINT WM_MAYU_MESSAGE = m_windowSystem->registerWindowMessage(
-                                   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
-        CHECK_TRUE( m_windowSystem->postMessage((WindowSystem::WindowHandle)i_param->m_hwnd, WM_MAYU_MESSAGE,
-                                MayuMessage_notifyName, 0) );
-    }
-}
+// funcWindowIdentify moved to src/core/commands/cmd_window_identify.cpp
 
 // set alpha blending parameter to the window
-void Engine::funcWindowSetAlpha(FunctionParam *i_param, int i_alpha)
-{
-    HWND hwnd;
-    if (!getSuitableWindow(i_param, &hwnd))
-        return;
-
-    if (i_alpha < 0) {    // remove all alpha
-        for (WindowsWithAlpha::iterator i = m_windowsWithAlpha.begin();
-                i != m_windowsWithAlpha.end(); ++ i) {
-            m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)*i, false);
-            m_windowSystem->redrawWindow((WindowSystem::WindowHandle)*i);
-        }
-        m_windowsWithAlpha.clear();
-    } else {
-        if (m_windowSystem->isWindowLayered((WindowSystem::WindowHandle)hwnd)) {    // remove alpha
-            WindowsWithAlpha::iterator
-            i = std::find(m_windowsWithAlpha.begin(), m_windowsWithAlpha.end(),
-                          hwnd);
-            if (i == m_windowsWithAlpha.end())
-                return;    // already layered by the application
-
-            m_windowsWithAlpha.erase(i);
-
-            m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)hwnd, false);
-        } else {    // add alpha
-            m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)hwnd, true);
-            i_alpha %= 101;
-            if (!m_windowSystem->setLayeredWindowAttributes((WindowSystem::WindowHandle)hwnd, 0,
-                                            (unsigned char)(255 * i_alpha / 100), LWA_ALPHA)) {
-                Acquire a(&m_log, 0);
-                m_log << _T("error: &WindowSetAlpha(") << i_alpha
-                << _T(") failed for HWND: ") << std::hex
-                << reinterpret_cast<ULONG_PTR>(hwnd) << std::dec << std::endl;
-                return;
-            }
-            m_windowsWithAlpha.push_front(hwnd);
-        }
-        m_windowSystem->redrawWindow((WindowSystem::WindowHandle)hwnd);
-    }
-}
+// funcWindowSetAlpha moved to src/core/commands/cmd_window_set_alpha.cpp
 
 
 // redraw the window
-void Engine::funcWindowRedraw(FunctionParam *i_param)
-{
-    HWND hwnd;
-    if (!getSuitableWindow(i_param, &hwnd))
-        return;
-    m_windowSystem->redrawWindow((WindowSystem::WindowHandle)hwnd);
-}
+// funcWindowRedraw moved to src/core/commands/cmd_window_redraw.cpp
 
 // move window to ...
 // funcWindowMoveTo moved to src/core/commands/cmd_window_move_to.cpp
@@ -966,135 +860,26 @@ static BOOL CALLBACK enumDisplayMonitorsForWindowMonitorTo(
 }
 
 /// move window to other monitor
-void Engine::funcWindowMonitorTo(
-    FunctionParam *i_param, WindowMonitorFromType i_fromType, int i_monitor,
-    BooleanType i_adjustPos, BooleanType i_adjustSize)
-{
-    HWND hwnd;
-    if (! getSuitableWindow(i_param, &hwnd))
-        return;
-
-    HMONITOR hmonCur;
-    hmonCur = monitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-
-    EnumDisplayMonitorsForWindowMonitorToParam ep(hmonCur);
-    enumDisplayMonitors(nullptr, nullptr, enumDisplayMonitorsForWindowMonitorTo,
-                        reinterpret_cast<LPARAM>(&ep));
-    if (ep.m_monitors.size() < 1 ||
-            ep.m_primaryMonitorIdx < 0 || ep.m_currentMonitorIdx < 0)
-        return;
-
-    int targetIdx = 0;
-    switch (i_fromType) {
-    case WindowMonitorFromType_primary:
-        targetIdx = (ep.m_primaryMonitorIdx + i_monitor) % (int)ep.m_monitors.size();
-        break;
-
-    case WindowMonitorFromType_current:
-        targetIdx = (ep.m_currentMonitorIdx + i_monitor) % (int)ep.m_monitors.size();
-        break;
-    }
-    if (ep.m_currentMonitorIdx == targetIdx)
-        return;
-
-    RECT rcCur, rcTarget, rcWin;
-    rcCur = ep.m_monitorinfos[ep.m_currentMonitorIdx].rcWork;
-    rcTarget = ep.m_monitorinfos[targetIdx].rcWork;
-    GetWindowRect(hwnd, &rcWin);
-
-    int x = rcTarget.left + (rcWin.left - rcCur.left);
-    int y = rcTarget.top + (rcWin.top - rcCur.top);
-    int w = rcWidth(&rcWin);
-    int h = rcHeight(&rcWin);
-
-    if (i_adjustPos) {
-        if (x + w > rcTarget.right)
-            x = rcTarget.right - w;
-        if (x < rcTarget.left)
-            x = rcTarget.left;
-        if (w > rcWidth(&rcTarget)) {
-            x = rcTarget.left;
-            w = rcWidth(&rcTarget);
-        }
-
-        if (y + h > rcTarget.bottom)
-            y = rcTarget.bottom - h;
-        if (y < rcTarget.top)
-            y = rcTarget.top;
-        if (h > rcHeight(&rcTarget)) {
-            y = rcTarget.top;
-            h = rcHeight(&rcTarget);
-        }
-    }
-
-    if (i_adjustPos && i_adjustSize) {
-        if (m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Maximized)
-            m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-        asyncMoveWindow(hwnd, x, y, w, h);
-    } else {
-        asyncMoveWindow(hwnd, x, y);
-    }
-}
+// funcWindowMonitorTo moved to src/core/commands/cmd_window_monitor_to.cpp
 
 /// move window to other monitor
-void Engine::funcWindowMonitor(
-    FunctionParam *i_param, int i_monitor,
-    BooleanType i_adjustPos, BooleanType i_adjustSize)
-{
-    funcWindowMonitorTo(i_param, WindowMonitorFromType_primary, i_monitor,
-                        i_adjustPos, i_adjustSize);
-}
+// funcWindowMonitor moved to src/core/commands/cmd_window_monitor.cpp
 
 
 //
-void Engine::funcWindowClingToLeft(FunctionParam *i_param,
-                                   TargetWindowType i_twt)
-{
-    funcWindowMoveTo(i_param, GravityType_W, 0, 0, i_twt);
-}
+// funcWindowClingToLeft moved to src/core/commands/cmd_window_cling_to_left.cpp
 
 //
-void Engine::funcWindowClingToRight(FunctionParam *i_param,
-                                    TargetWindowType i_twt)
-{
-    funcWindowMoveTo(i_param, GravityType_E, 0, 0, i_twt);
-}
+// funcWindowClingToRight moved to src/core/commands/cmd_window_cling_to_right.cpp
 
 //
-void Engine::funcWindowClingToTop(FunctionParam *i_param,
-                                  TargetWindowType i_twt)
-{
-    funcWindowMoveTo(i_param, GravityType_N, 0, 0, i_twt);
-}
+// funcWindowClingToTop moved to src/core/commands/cmd_window_cling_to_top.cpp
 
 //
-void Engine::funcWindowClingToBottom(FunctionParam *i_param,
-                                     TargetWindowType i_twt)
-{
-    funcWindowMoveTo(i_param, GravityType_S, 0, 0, i_twt);
-}
+// funcWindowClingToBottom moved to src/core/commands/cmd_window_cling_to_bottom.cpp
 
 // resize window to
-void Engine::funcWindowResizeTo(FunctionParam *i_param, int i_width,
-                                int i_height, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-
-    if (i_width == 0)
-        i_width = rcWidth(&rc);
-    else if (i_width < 0)
-        i_width += rcWidth(&rcd);
-
-    if (i_height == 0)
-        i_height = rcHeight(&rc);
-    else if (i_height < 0)
-        i_height += rcHeight(&rcd);
-
-    asyncResize(hwnd, i_width, i_height);
-}
+// funcWindowResizeTo moved to src/core/commands/cmd_window_resize_to.cpp
 
 // move the mouse cursor
 void Engine::funcMouseMove(FunctionParam *i_param, int i_dx, int i_dy)
