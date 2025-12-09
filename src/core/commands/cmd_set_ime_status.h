@@ -7,7 +7,7 @@
 class Command_SetImeStatus : public Command<Command_SetImeStatus>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("SetImeStatus");
+    static constexpr const char *Name = "SetImeStatus";
 
     ToggleType m_toggle;
 

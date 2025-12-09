@@ -8,7 +8,7 @@
 class Command_PostMessage : public Command<Command_PostMessage, ToWindowType, UINT, WPARAM, LPARAM>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("PostMessage");
+    static constexpr const char *Name = "PostMessage";
 
     Command_PostMessage() = default;
 

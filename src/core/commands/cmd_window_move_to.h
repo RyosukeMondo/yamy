@@ -7,7 +7,7 @@
 class Command_WindowMoveTo : public Command<Command_WindowMoveTo>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowMoveTo");
+    static constexpr const char *Name = "WindowMoveTo";
 
     GravityType m_gravityType;
     int m_dx;

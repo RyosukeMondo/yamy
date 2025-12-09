@@ -7,7 +7,7 @@
 class Command_Ignore : public Command<Command_Ignore>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Ignore");
+    static constexpr const char *Name = "Ignore";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

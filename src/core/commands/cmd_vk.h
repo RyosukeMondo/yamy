@@ -8,7 +8,7 @@
 class Command_VK : public Command<Command_VK, VKey>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("VK");
+    static constexpr const char *Name = "VK";
 
     Command_VK() = default;
 

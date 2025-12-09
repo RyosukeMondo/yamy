@@ -7,7 +7,7 @@
 class Command_WindowMonitorTo : public Command<Command_WindowMonitorTo>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowMonitorTo");
+    static constexpr const char *Name = "WindowMonitorTo";
 
     WindowMonitorFromType m_fromType;
     int m_monitor;

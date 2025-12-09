@@ -7,7 +7,7 @@
 class Command_MayuDialog : public Command<Command_MayuDialog>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("MayuDialog");
+    static constexpr const char *Name = "MayuDialog";
 
     MayuDialogType m_dialog;
     ShowCommandType m_showCommand;

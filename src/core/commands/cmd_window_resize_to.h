@@ -7,7 +7,7 @@
 class Command_WindowResizeTo : public Command<Command_WindowResizeTo>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowResizeTo");
+    static constexpr const char *Name = "WindowResizeTo";
 
     int m_width;
     int m_height;

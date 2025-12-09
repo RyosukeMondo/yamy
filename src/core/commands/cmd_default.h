@@ -7,7 +7,7 @@
 class Command_Default : public Command<Command_Default>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Default");
+    static constexpr const char *Name = "Default";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

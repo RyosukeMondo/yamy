@@ -7,7 +7,7 @@
 class Command_WindowClingToTop : public Command<Command_WindowClingToTop>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowClingToTop");
+    static constexpr const char *Name = "WindowClingToTop";
 
     TargetWindowType m_twt;
 

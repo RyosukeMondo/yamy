@@ -7,7 +7,7 @@
 class Command_ShellExecute : public Command<Command_ShellExecute>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("ShellExecute");
+    static constexpr const char *Name = "ShellExecute";
 
     StrExprArg m_operation;
     StrExprArg m_file;

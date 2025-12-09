@@ -7,7 +7,7 @@
 class Command_ClipboardCopy : public Command<Command_ClipboardCopy>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("ClipboardCopy");
+    static constexpr const char *Name = "ClipboardCopy";
 
     StrExprArg m_text;
 

@@ -7,7 +7,7 @@
 class Command_InvestigateCommand : public Command<Command_InvestigateCommand>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("InvestigateCommand");
+    static constexpr const char *Name = "InvestigateCommand";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

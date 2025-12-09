@@ -8,7 +8,7 @@
 class Command_Prefix : public Command<Command_Prefix, const Keymap*, BooleanType>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Prefix");
+    static constexpr const char *Name = "Prefix";
 
     // Constructor to set default arguments
     Command_Prefix()

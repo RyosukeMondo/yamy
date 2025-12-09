@@ -7,7 +7,7 @@
 class Command_WindowLower : public Command<Command_WindowLower>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowLower");
+    static constexpr const char *Name = "WindowLower";
 
     TargetWindowType m_twt;
 

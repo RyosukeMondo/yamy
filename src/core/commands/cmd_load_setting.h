@@ -7,7 +7,7 @@
 class Command_LoadSetting : public Command<Command_LoadSetting, StrExprArg>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("LoadSetting");
+    static constexpr const char *Name = "LoadSetting";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

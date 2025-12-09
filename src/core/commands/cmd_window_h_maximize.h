@@ -7,7 +7,7 @@
 class Command_WindowHMaximize : public Command<Command_WindowHMaximize>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowHMaximize");
+    static constexpr const char *Name = "WindowHMaximize";
 
     TargetWindowType m_twt;
 

@@ -7,7 +7,7 @@
 class Command_SetImeString : public Command<Command_SetImeString>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("SetImeString");
+    static constexpr const char *Name = "SetImeString";
 
     StrExprArg m_data;
 

@@ -7,7 +7,7 @@
 class Command_EmacsEditKillLineFunc : public Command<Command_EmacsEditKillLineFunc>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("EmacsEditKillLineFunc");
+    static constexpr const char *Name = "EmacsEditKillLineFunc";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

@@ -7,7 +7,7 @@
 class Command_DescribeBindings : public Command<Command_DescribeBindings>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("DescribeBindings");
+    static constexpr const char *Name = "DescribeBindings";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

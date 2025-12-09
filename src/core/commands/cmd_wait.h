@@ -7,7 +7,7 @@
 class Command_Wait : public Command<Command_Wait, int>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Wait");
+    static constexpr const char *Name = "Wait";
 
     Command_Wait() = default;
 

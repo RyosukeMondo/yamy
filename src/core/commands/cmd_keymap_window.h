@@ -7,7 +7,7 @@
 class Command_KeymapWindow : public Command<Command_KeymapWindow>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("KeymapWindow");
+    static constexpr const char *Name = "KeymapWindow";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

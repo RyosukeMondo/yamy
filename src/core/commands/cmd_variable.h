@@ -7,7 +7,7 @@
 class Command_Variable : public Command<Command_Variable, int, int>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("Variable");
+    static constexpr const char *Name = "Variable";
 
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
 };

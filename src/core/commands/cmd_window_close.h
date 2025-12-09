@@ -7,7 +7,7 @@
 class Command_WindowClose : public Command<Command_WindowClose>
 {
 public:
-    static constexpr const _TCHAR *Name = _T("WindowClose");
+    static constexpr const char *Name = "WindowClose";
 
     TargetWindowType m_twt;
 
