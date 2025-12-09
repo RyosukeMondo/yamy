@@ -52,10 +52,10 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
     - [x] `ShellExecute` (Removed from Engine)
     - [x] `SetForegroundWindow` (Removed from Engine)
     - [x] `InvestigateCommand` (Removed from Engine)
-    - [ ] `MayuDialog`
-    - [ ] `DescribeBindings`
-    - [ ] `HelpMessage`
-    - [ ] `HelpVariable`
+    - [x] `MayuDialog` (Removed from Engine)
+    - [x] `DescribeBindings` (Removed from Engine)
+    - [x] `HelpMessage` (Removed from Engine)
+    - [x] `HelpVariable` (Removed from Engine)
     - [ ] `WindowRaise`
     - [ ] `WindowLower`
     - [ ] `WindowMinimize`

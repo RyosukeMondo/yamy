@@ -23,6 +23,10 @@
 #include "../commands/cmd_shell_execute.h"
 #include "../commands/cmd_set_foreground_window.h"
 #include "../commands/cmd_investigate_command.h"
+#include "../commands/cmd_mayu_dialog.h"
+#include "../commands/cmd_describe_bindings.h"
+#include "../commands/cmd_help_message.h"
+#include "../commands/cmd_help_variable.h"
 
 class FunctionCreator
 {
@@ -58,10 +62,10 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("Wait"), Command_Wait::create },
   { _T("PostMessage"), Command_PostMessage::create },
   { _T("InvestigateCommand"), Command_InvestigateCommand::create },
-  { _T("MayuDialog"), FunctionData_MayuDialog::create },
-  { _T("DescribeBindings"), FunctionData_DescribeBindings::create },
-  { _T("HelpMessage"), FunctionData_HelpMessage::create },
-  { _T("HelpVariable"), FunctionData_HelpVariable::create },
+  { _T("MayuDialog"), Command_MayuDialog::create },
+  { _T("DescribeBindings"), Command_DescribeBindings::create },
+  { _T("HelpMessage"), Command_HelpMessage::create },
+  { _T("HelpVariable"), Command_HelpVariable::create },
   { _T("WindowRaise"), FunctionData_WindowRaise::create },
   { _T("WindowLower"), FunctionData_WindowLower::create },
   { _T("WindowMinimize"), FunctionData_WindowMinimize::create },

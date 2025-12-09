@@ -765,56 +765,16 @@ void Engine::shellExecute()
 // funcInvestigateCommand moved to src/core/commands/cmd_investigate_command.cpp
 
 // show mayu dialog box
-void Engine::funcMayuDialog(FunctionParam *i_param, MayuDialogType i_dialog,
-                            ShowCommandType i_showCommand)
-{
-    if (!i_param->m_isPressed)
-        return;
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)getAssociatedWndow(), WM_APP_engineNotify, EngineNotify_showDlg,
-                static_cast<LPARAM>(i_dialog) |
-                static_cast<LPARAM>(i_showCommand));
-}
+// funcMayuDialog moved to src/core/commands/cmd_mayu_dialog.cpp
 
 // describe bindings
-void Engine::funcDescribeBindings(FunctionParam *i_param)
-{
-    if (!i_param->m_isPressed)
-        return;
-    {
-        Acquire a(&m_log, 1);
-        m_log << std::endl;
-    }
-    describeBindings();
-}
+// funcDescribeBindings moved to src/core/commands/cmd_describe_bindings.cpp
 
 // show help message
-void Engine::funcHelpMessage(FunctionParam *i_param, const StrExprArg &i_title,
-                             const StrExprArg &i_message)
-{
-    if (!i_param->m_isPressed)
-        return;
-
-    m_helpTitle = i_title.eval();
-    m_helpMessage = i_message.eval();
-    bool doesShow = !(i_title.eval().size() == 0 && i_message.eval().size() == 0);
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)getAssociatedWndow(), WM_APP_engineNotify,
-                EngineNotify_helpMessage, doesShow);
-}
+// funcHelpMessage moved to src/core/commands/cmd_help_message.cpp
 
 // show variable
-void Engine::funcHelpVariable(FunctionParam *i_param, const StrExprArg &i_title)
-{
-    if (!i_param->m_isPressed)
-        return;
-
-    _TCHAR buf[20];
-    _sntprintf(buf, NUMBER_OF(buf), _T("%d"), m_variable);
-
-    m_helpTitle = i_title.eval();
-    m_helpMessage = buf;
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)getAssociatedWndow(), WM_APP_engineNotify,
-                EngineNotify_helpMessage, true);
-}
+// funcHelpVariable moved to src/core/commands/cmd_help_variable.cpp
 
 // raise window
 void Engine::funcWindowRaise(FunctionParam *i_param,

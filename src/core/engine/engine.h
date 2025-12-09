@@ -348,16 +348,13 @@ public:
     /// investigate WM_COMMAND, WM_SYSCOMMAND
 // funcInvestigateCommand removed (moved to Command_InvestigateCommand)
     /// show mayu dialog box
-    void funcMayuDialog(FunctionParam *i_param, MayuDialogType i_dialog,
-                        ShowCommandType i_showCommand);
+// funcMayuDialog removed (moved to Command_MayuDialog)
     /// describe bindings
-    void funcDescribeBindings(FunctionParam *i_param);
+// funcDescribeBindings removed (moved to Command_DescribeBindings)
     /// show help message
-    void funcHelpMessage(FunctionParam *i_param,
-                         const StrExprArg &i_title = StrExprArg(),
-                         const StrExprArg &i_message = StrExprArg());
+// funcHelpMessage removed (moved to Command_HelpMessage)
     /// show variable
-    void funcHelpVariable(FunctionParam *i_param, const StrExprArg &i_title);
+// funcHelpVariable removed (moved to Command_HelpVariable)
     /// raise window
     void funcWindowRaise(FunctionParam *i_param,
                          TargetWindowType i_twt = TargetWindowType_overlapped);

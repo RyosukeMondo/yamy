@@ -139,6 +139,10 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_shell_execute.cpp
     src/core/commands/cmd_set_foreground_window.cpp
     src/core/commands/cmd_investigate_command.cpp
+    src/core/commands/cmd_mayu_dialog.cpp
+    src/core/commands/cmd_describe_bindings.cpp
+    src/core/commands/cmd_help_message.cpp
+    src/core/commands/cmd_help_variable.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/input/vkeytable.cpp
