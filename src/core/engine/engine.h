@@ -356,39 +356,25 @@ public:
     /// show variable
 // funcHelpVariable removed (moved to Command_HelpVariable)
     /// raise window
-    void funcWindowRaise(FunctionParam *i_param,
-                         TargetWindowType i_twt = TargetWindowType_overlapped);
+// funcWindowRaise removed (moved to Command_WindowRaise)
     /// lower window
-    void funcWindowLower(FunctionParam *i_param,
-                         TargetWindowType i_twt = TargetWindowType_overlapped);
+// funcWindowLower removed (moved to Command_WindowLower)
     /// minimize window
-    void funcWindowMinimize(FunctionParam *i_param, TargetWindowType i_twt
-                            = TargetWindowType_overlapped);
+// funcWindowMinimize removed (moved to Command_WindowMinimize)
     /// maximize window
-    void funcWindowMaximize(FunctionParam *i_param, TargetWindowType i_twt
-                            = TargetWindowType_overlapped);
+// funcWindowMaximize removed (moved to Command_WindowMaximize)
     /// maximize window horizontally
-    void funcWindowHMaximize(FunctionParam *i_param, TargetWindowType i_twt
-                             = TargetWindowType_overlapped);
+// funcWindowHMaximize removed (moved to Command_WindowHMaximize)
     /// maximize window virtically
-    void funcWindowVMaximize(FunctionParam *i_param, TargetWindowType i_twt
-                             = TargetWindowType_overlapped);
+// funcWindowVMaximize removed (moved to Command_WindowVMaximize)
     /// maximize window virtically or horizontally
-    void funcWindowHVMaximize(FunctionParam *i_param, BooleanType i_isHorizontal,
-                              TargetWindowType i_twt
-                              = TargetWindowType_overlapped);
+// funcWindowHVMaximize removed (moved to Command_WindowHVMaximize)
     /// move window
-    void funcWindowMove(FunctionParam *i_param, int i_dx, int i_dy,
-                        TargetWindowType i_twt
-                        = TargetWindowType_overlapped);
+// funcWindowMove removed (moved to Command_WindowMove)
     /// move window to ...
-    void funcWindowMoveTo(FunctionParam *i_param, GravityType i_gravityType,
-                          int i_dx, int i_dy, TargetWindowType i_twt
-                          = TargetWindowType_overlapped);
+// funcWindowMoveTo removed (moved to Command_WindowMoveTo)
     /// move window visibly
-    void funcWindowMoveVisibly(FunctionParam *i_param,
-                               TargetWindowType i_twt
-                               = TargetWindowType_overlapped);
+// funcWindowMoveVisibly removed (moved to Command_WindowMoveVisibly)
     /// move window to other monitor
     void funcWindowMonitorTo(FunctionParam *i_param,
                              WindowMonitorFromType i_fromType, int i_monitor,
@@ -476,6 +462,12 @@ public:
 #include "function_friends.h"
 
 public:
+    // Helper functions for commands
+    static bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd);
+    static bool getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
+                                     TargetWindowType *io_twt,
+                                     RECT *o_rcWindow = nullptr, RECT *o_rcParent = nullptr);
+
     ///
     Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_configStore, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver);
     ///

@@ -56,16 +56,16 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
     - [x] `DescribeBindings` (Removed from Engine)
     - [x] `HelpMessage` (Removed from Engine)
     - [x] `HelpVariable` (Removed from Engine)
-    - [ ] `WindowRaise`
-    - [ ] `WindowLower`
-    - [ ] `WindowMinimize`
-    - [ ] `WindowMaximize`
-    - [ ] `WindowHMaximize`
-    - [ ] `WindowVMaximize`
-    - [ ] `WindowHVMaximize`
-    - [ ] `WindowMove`
-    - [ ] `WindowMoveTo`
-    - [ ] `WindowMoveVisibly`
+    - [x] `WindowRaise` (Removed from Engine)
+    - [x] `WindowLower` (Removed from Engine)
+    - [x] `WindowMinimize` (Removed from Engine)
+    - [x] `WindowMaximize` (Removed from Engine)
+    - [x] `WindowHMaximize` (Removed from Engine)
+    - [x] `WindowVMaximize` (Removed from Engine)
+    - [x] `WindowHVMaximize` (Removed from Engine)
+    - [x] `WindowMove` (Removed from Engine)
+    - [x] `WindowMoveTo` (Removed from Engine)
+    - [x] `WindowMoveVisibly` (Removed from Engine)
     - [ ] `WindowMonitorTo`
     - [ ] `WindowMonitor`
     - [ ] `WindowClingToLeft`

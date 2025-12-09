@@ -518,7 +518,7 @@ tostream &operator<<(tostream &i_ost, const FunctionData *i_data)
 
 
 //
-bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
+bool Engine::getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
 {
     if (!i_param->m_isPressed)
         return false;
@@ -529,9 +529,9 @@ bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
 }
 
 //
-bool getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
+bool Engine::getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
                           TargetWindowType *io_twt,
-                          RECT *o_rcWindow = nullptr, RECT *o_rcParent = nullptr)
+                          RECT *o_rcWindow /*= nullptr*/, RECT *o_rcParent /*= nullptr*/)
 {
     if (!i_param->m_isPressed)
         return false;
@@ -777,72 +777,19 @@ void Engine::shellExecute()
 // funcHelpVariable moved to src/core/commands/cmd_help_variable.cpp
 
 // raise window
-void Engine::funcWindowRaise(FunctionParam *i_param,
-                             TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, ZOrder::Top);
-}
+// funcWindowRaise moved to src/core/commands/cmd_window_raise.cpp
 
 // lower window
-void Engine::funcWindowLower(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, ZOrder::Bottom);
-}
+// funcWindowLower moved to src/core/commands/cmd_window_lower.cpp
 
 // minimize window
-void Engine::funcWindowMinimize(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    
-    bool isIconic = (m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Minimized);
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND,
-                isIconic ? SC_RESTORE : SC_MINIMIZE, 0);
-}
+// funcWindowMinimize moved to src/core/commands/cmd_window_minimize.cpp
 
 // maximize window
-void Engine::funcWindowMaximize(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    
-    bool isZoomed = (m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Maximized);
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND,
-                isZoomed ? SC_RESTORE : SC_MAXIMIZE, 0);
-}
+// funcWindowMaximize moved to src/core/commands/cmd_window_maximize.cpp
 
 // maximize horizontally or virtically
-void Engine::funcWindowHVMaximize(FunctionParam *i_param,
-                                  BooleanType i_isHorizontal,
-                                  TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-
-    int x = rc.left;
-    int y = rc.top;
-    int w = rcWidth(&rc);
-    int h = rcHeight(&rc);
-
-    if (i_isHorizontal) {
-        x = rcd.left;
-        w = rcWidth(&rcd);
-    } else {
-        y = rcd.top;
-        h = rcHeight(&rcd);
-    }
-    asyncMoveWindow(hwnd, x, y, w, h);
-}
+// funcWindowHVMaximize moved to src/core/commands/cmd_window_hv_maximize.cpp
 
 // close window
 void Engine::funcWindowClose(FunctionParam *i_param, TargetWindowType i_twt)
@@ -967,73 +914,20 @@ void Engine::funcWindowRedraw(FunctionParam *i_param)
 }
 
 // move window to ...
-void Engine::funcWindowMoveTo(FunctionParam *i_param, GravityType i_gravityType,
-                              int i_dx, int i_dy, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-
-    int x = rc.left + i_dx;
-    int y = rc.top + i_dy;
-
-    if (i_gravityType & GravityType_N)
-        y = i_dy + rcd.top;
-    if (i_gravityType & GravityType_E)
-        x = i_dx + rcd.right - rcWidth(&rc);
-    if (i_gravityType & GravityType_W)
-        x = i_dx + rcd.left;
-    if (i_gravityType & GravityType_S)
-        y = i_dy + rcd.bottom - rcHeight(&rc);
-    asyncMoveWindow(hwnd, x, y);
-}
+// funcWindowMoveTo moved to src/core/commands/cmd_window_move_to.cpp
 
 // move window
-void Engine::funcWindowMove(FunctionParam *i_param, int i_dx, int i_dy,
-                            TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-    asyncMoveWindow(hwnd, rc.left + i_dx, rc.top + i_dy);
-}
+// funcWindowMove moved to src/core/commands/cmd_window_move.cpp
 
 // maximize window horizontally
-void Engine::funcWindowHMaximize(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    funcWindowHVMaximize(i_param, BooleanType_true, i_twt);
-}
+// funcWindowHMaximize moved to src/core/commands/cmd_window_h_maximize.cpp
 
 // maximize window vertically
-void Engine::funcWindowVMaximize(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    funcWindowHVMaximize(i_param, BooleanType_false, i_twt);
-}
+// funcWindowVMaximize moved to src/core/commands/cmd_window_v_maximize.cpp
 
 
 // move window visibly
-void Engine::funcWindowMoveVisibly(FunctionParam *i_param,
-                                   TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-
-    int x = rc.left;
-    int y = rc.top;
-    if (rc.left < rcd.left)
-        x = rcd.left;
-    else if (rcd.right < rc.right)
-        x = rcd.right - rcWidth(&rc);
-    if (rc.top < rcd.top)
-        y = rcd.top;
-    else if (rcd.bottom < rc.bottom)
-        y = rcd.bottom - rcHeight(&rc);
-    asyncMoveWindow(hwnd, x, y);
-}
+// funcWindowMoveVisibly moved to src/core/commands/cmd_window_move_visibly.cpp
 
 
 struct EnumDisplayMonitorsForWindowMonitorToParam {

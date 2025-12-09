@@ -27,6 +27,16 @@
 #include "../commands/cmd_describe_bindings.h"
 #include "../commands/cmd_help_message.h"
 #include "../commands/cmd_help_variable.h"
+#include "../commands/cmd_window_raise.h"
+#include "../commands/cmd_window_lower.h"
+#include "../commands/cmd_window_minimize.h"
+#include "../commands/cmd_window_maximize.h"
+#include "../commands/cmd_window_h_maximize.h"
+#include "../commands/cmd_window_v_maximize.h"
+#include "../commands/cmd_window_hv_maximize.h"
+#include "../commands/cmd_window_move.h"
+#include "../commands/cmd_window_move_to.h"
+#include "../commands/cmd_window_move_visibly.h"
 
 class FunctionCreator
 {
@@ -66,16 +76,16 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("DescribeBindings"), Command_DescribeBindings::create },
   { _T("HelpMessage"), Command_HelpMessage::create },
   { _T("HelpVariable"), Command_HelpVariable::create },
-  { _T("WindowRaise"), FunctionData_WindowRaise::create },
-  { _T("WindowLower"), FunctionData_WindowLower::create },
-  { _T("WindowMinimize"), FunctionData_WindowMinimize::create },
-  { _T("WindowMaximize"), FunctionData_WindowMaximize::create },
-  { _T("WindowHMaximize"), FunctionData_WindowHMaximize::create },
-  { _T("WindowVMaximize"), FunctionData_WindowVMaximize::create },
-  { _T("WindowHVMaximize"), FunctionData_WindowHVMaximize::create },
-  { _T("WindowMove"), FunctionData_WindowMove::create },
-  { _T("WindowMoveTo"), FunctionData_WindowMoveTo::create },
-  { _T("WindowMoveVisibly"), FunctionData_WindowMoveVisibly::create },
+  { _T("WindowRaise"), Command_WindowRaise::create },
+  { _T("WindowLower"), Command_WindowLower::create },
+  { _T("WindowMinimize"), Command_WindowMinimize::create },
+  { _T("WindowMaximize"), Command_WindowMaximize::create },
+  { _T("WindowHMaximize"), Command_WindowHMaximize::create },
+  { _T("WindowVMaximize"), Command_WindowVMaximize::create },
+  { _T("WindowHVMaximize"), Command_WindowHVMaximize::create },
+  { _T("WindowMove"), Command_WindowMove::create },
+  { _T("WindowMoveTo"), Command_WindowMoveTo::create },
+  { _T("WindowMoveVisibly"), Command_WindowMoveVisibly::create },
   { _T("WindowMonitorTo"), FunctionData_WindowMonitorTo::create },
   { _T("WindowMonitor"), FunctionData_WindowMonitor::create },
   { _T("WindowClingToLeft"), FunctionData_WindowClingToLeft::create },

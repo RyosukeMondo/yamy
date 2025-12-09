@@ -143,6 +143,16 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_describe_bindings.cpp
     src/core/commands/cmd_help_message.cpp
     src/core/commands/cmd_help_variable.cpp
+    src/core/commands/cmd_window_raise.cpp
+    src/core/commands/cmd_window_lower.cpp
+    src/core/commands/cmd_window_minimize.cpp
+    src/core/commands/cmd_window_maximize.cpp
+    src/core/commands/cmd_window_h_maximize.cpp
+    src/core/commands/cmd_window_v_maximize.cpp
+    src/core/commands/cmd_window_hv_maximize.cpp
+    src/core/commands/cmd_window_move.cpp
+    src/core/commands/cmd_window_move_to.cpp
+    src/core/commands/cmd_window_move_visibly.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/input/vkeytable.cpp
