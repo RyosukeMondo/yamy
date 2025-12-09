@@ -20,6 +20,51 @@
 #include "../commands/cmd_wait.h"
 #include "../commands/cmd_vk.h"
 #include "../commands/cmd_load_setting.h"
+#include "../commands/cmd_shell_execute.h"
+#include "../commands/cmd_set_foreground_window.h"
+#include "../commands/cmd_investigate_command.h"
+#include "../commands/cmd_mayu_dialog.h"
+#include "../commands/cmd_describe_bindings.h"
+#include "../commands/cmd_help_message.h"
+#include "../commands/cmd_help_variable.h"
+#include "../commands/cmd_window_raise.h"
+#include "../commands/cmd_window_lower.h"
+#include "../commands/cmd_window_minimize.h"
+#include "../commands/cmd_window_maximize.h"
+#include "../commands/cmd_window_h_maximize.h"
+#include "../commands/cmd_window_v_maximize.h"
+#include "../commands/cmd_window_hv_maximize.h"
+#include "../commands/cmd_window_move.h"
+#include "../commands/cmd_window_move_to.h"
+#include "../commands/cmd_window_move_visibly.h"
+#include "../commands/cmd_window_monitor_to.h"
+#include "../commands/cmd_window_monitor.h"
+#include "../commands/cmd_window_cling_to_left.h"
+#include "../commands/cmd_window_cling_to_right.h"
+#include "../commands/cmd_window_cling_to_top.h"
+#include "../commands/cmd_window_cling_to_bottom.h"
+#include "../commands/cmd_window_close.h"
+#include "../commands/cmd_window_toggle_top_most.h"
+#include "../commands/cmd_window_identify.h"
+#include "../commands/cmd_window_set_alpha.h"
+#include "../commands/cmd_window_redraw.h"
+#include "../commands/cmd_window_resize_to.h"
+#include "../commands/cmd_mouse_move.h"
+#include "../commands/cmd_mouse_wheel.h"
+#include "../commands/cmd_clipboard_change_case.h"
+#include "../commands/cmd_clipboard_upcase_word.h"
+#include "../commands/cmd_clipboard_downcase_word.h"
+#include "../commands/cmd_clipboard_copy.h"
+#include "../commands/cmd_emacs_edit_kill_line_pred.h"
+#include "../commands/cmd_emacs_edit_kill_line_func.h"
+#include "../commands/cmd_log_clear.h"
+#include "../commands/cmd_recenter.h"
+#include "../commands/cmd_direct_sstp.h"
+#include "../commands/cmd_plugin.h"
+#include "../commands/cmd_set_ime_status.h"
+#include "../commands/cmd_set_ime_string.h"
+#include "../commands/cmd_mouse_hook.h"
+#include "../commands/cmd_cancel_prefix.h"
 
 class FunctionCreator
 {
@@ -48,55 +93,55 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("Repeat"), Command_Repeat::create },
   { _T("Undefined"), Command_Undefined::create },
   { _T("Ignore"), Command_Ignore::create },
-  { _T("ShellExecute"), FunctionData_ShellExecute::create },
-  { _T("SetForegroundWindow"), FunctionData_SetForegroundWindow::create },
+  { _T("ShellExecute"), Command_ShellExecute::create },
+  { _T("SetForegroundWindow"), Command_SetForegroundWindow::create },
   { _T("LoadSetting"), Command_LoadSetting::create },
   { _T("VK"), Command_VK::create },
   { _T("Wait"), Command_Wait::create },
   { _T("PostMessage"), Command_PostMessage::create },
-  { _T("InvestigateCommand"), FunctionData_InvestigateCommand::create },
-  { _T("MayuDialog"), FunctionData_MayuDialog::create },
-  { _T("DescribeBindings"), FunctionData_DescribeBindings::create },
-  { _T("HelpMessage"), FunctionData_HelpMessage::create },
-  { _T("HelpVariable"), FunctionData_HelpVariable::create },
-  { _T("WindowRaise"), FunctionData_WindowRaise::create },
-  { _T("WindowLower"), FunctionData_WindowLower::create },
-  { _T("WindowMinimize"), FunctionData_WindowMinimize::create },
-  { _T("WindowMaximize"), FunctionData_WindowMaximize::create },
-  { _T("WindowHMaximize"), FunctionData_WindowHMaximize::create },
-  { _T("WindowVMaximize"), FunctionData_WindowVMaximize::create },
-  { _T("WindowHVMaximize"), FunctionData_WindowHVMaximize::create },
-  { _T("WindowMove"), FunctionData_WindowMove::create },
-  { _T("WindowMoveTo"), FunctionData_WindowMoveTo::create },
-  { _T("WindowMoveVisibly"), FunctionData_WindowMoveVisibly::create },
-  { _T("WindowMonitorTo"), FunctionData_WindowMonitorTo::create },
-  { _T("WindowMonitor"), FunctionData_WindowMonitor::create },
-  { _T("WindowClingToLeft"), FunctionData_WindowClingToLeft::create },
-  { _T("WindowClingToRight"), FunctionData_WindowClingToRight::create },
-  { _T("WindowClingToTop"), FunctionData_WindowClingToTop::create },
-  { _T("WindowClingToBottom"), FunctionData_WindowClingToBottom::create },
-  { _T("WindowClose"), FunctionData_WindowClose::create },
-  { _T("WindowToggleTopMost"), FunctionData_WindowToggleTopMost::create },
-  { _T("WindowIdentify"), FunctionData_WindowIdentify::create },
-  { _T("WindowSetAlpha"), FunctionData_WindowSetAlpha::create },
-  { _T("WindowRedraw"), FunctionData_WindowRedraw::create },
-  { _T("WindowResizeTo"), FunctionData_WindowResizeTo::create },
-  { _T("MouseMove"), FunctionData_MouseMove::create },
-  { _T("MouseWheel"), FunctionData_MouseWheel::create },
-  { _T("ClipboardChangeCase"), FunctionData_ClipboardChangeCase::create },
-  { _T("ClipboardUpcaseWord"), FunctionData_ClipboardUpcaseWord::create },
-  { _T("ClipboardDowncaseWord"), FunctionData_ClipboardDowncaseWord::create },
-  { _T("ClipboardCopy"), FunctionData_ClipboardCopy::create },
-  { _T("EmacsEditKillLinePred"), FunctionData_EmacsEditKillLinePred::create },
-  { _T("EmacsEditKillLineFunc"), FunctionData_EmacsEditKillLineFunc::create },
-  { _T("LogClear"), FunctionData_LogClear::create },
-  { _T("Recenter"), FunctionData_Recenter::create },
-  { _T("DirectSSTP"), FunctionData_DirectSSTP::create },
-  { _T("PlugIn"), FunctionData_PlugIn::create },
-  { _T("SetImeStatus"), FunctionData_SetImeStatus::create },
-  { _T("SetImeString"), FunctionData_SetImeString::create },
-  { _T("MouseHook"), FunctionData_MouseHook::create },
-  { _T("CancelPrefix"), FunctionData_CancelPrefix::create },
+  { _T("InvestigateCommand"), Command_InvestigateCommand::create },
+  { _T("MayuDialog"), Command_MayuDialog::create },
+  { _T("DescribeBindings"), Command_DescribeBindings::create },
+  { _T("HelpMessage"), Command_HelpMessage::create },
+  { _T("HelpVariable"), Command_HelpVariable::create },
+  { _T("WindowRaise"), Command_WindowRaise::create },
+  { _T("WindowLower"), Command_WindowLower::create },
+  { _T("WindowMinimize"), Command_WindowMinimize::create },
+  { _T("WindowMaximize"), Command_WindowMaximize::create },
+  { _T("WindowHMaximize"), Command_WindowHMaximize::create },
+  { _T("WindowVMaximize"), Command_WindowVMaximize::create },
+  { _T("WindowHVMaximize"), Command_WindowHVMaximize::create },
+  { _T("WindowMove"), Command_WindowMove::create },
+  { _T("WindowMoveTo"), Command_WindowMoveTo::create },
+  { _T("WindowMoveVisibly"), Command_WindowMoveVisibly::create },
+  { _T("WindowMonitorTo"), Command_WindowMonitorTo::create },
+  { _T("WindowMonitor"), Command_WindowMonitor::create },
+  { _T("WindowClingToLeft"), Command_WindowClingToLeft::create },
+  { _T("WindowClingToRight"), Command_WindowClingToRight::create },
+  { _T("WindowClingToTop"), Command_WindowClingToTop::create },
+  { _T("WindowClingToBottom"), Command_WindowClingToBottom::create },
+  { _T("WindowClose"), Command_WindowClose::create },
+  { _T("WindowToggleTopMost"), Command_WindowToggleTopMost::create },
+  { _T("WindowIdentify"), Command_WindowIdentify::create },
+  { _T("WindowSetAlpha"), Command_WindowSetAlpha::create },
+  { _T("WindowRedraw"), Command_WindowRedraw::create },
+  { _T("WindowResizeTo"), Command_WindowResizeTo::create },
+  { _T("MouseMove"), Command_MouseMove::create },
+  { _T("MouseWheel"), Command_MouseWheel::create },
+  { _T("ClipboardChangeCase"), Command_ClipboardChangeCase::create },
+  { _T("ClipboardUpcaseWord"), Command_ClipboardUpcaseWord::create },
+  { _T("ClipboardDowncaseWord"), Command_ClipboardDowncaseWord::create },
+  { _T("ClipboardCopy"), Command_ClipboardCopy::create },
+  { _T("EmacsEditKillLinePred"), Command_EmacsEditKillLinePred::create },
+  { _T("EmacsEditKillLineFunc"), Command_EmacsEditKillLineFunc::create },
+  { _T("LogClear"), Command_LogClear::create },
+  { _T("Recenter"), Command_Recenter::create },
+  { _T("DirectSSTP"), Command_DirectSSTP::create },
+  { _T("PlugIn"), Command_PlugIn::create },
+  { _T("SetImeStatus"), Command_SetImeStatus::create },
+  { _T("SetImeString"), Command_SetImeString::create },
+  { _T("MouseHook"), Command_MouseHook::create },
+  { _T("CancelPrefix"), Command_CancelPrefix::create },
     };
 
     for (size_t i = 0; i != NUMBER_OF(functionCreators); ++ i)

@@ -46,54 +46,54 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
     - [x] `PostMessage` (Removed from Engine)
     - [x] `VK` (Removed from Engine)
     - [x] `Wait` (Removed from Engine)
-    - [/] `Default` (Logic still in Engine)
-    - [/] `KeymapPrevPrefix` (Logic still in Engine)
-    - [ ] `LoadSetting`
-    - [ ] `ShellExecute`
-    - [ ] `SetForegroundWindow`
-    - [ ] `InvestigateCommand`
-    - [ ] `MayuDialog`
-    - [ ] `DescribeBindings`
-    - [ ] `HelpMessage`
-    - [ ] `HelpVariable`
-    - [ ] `WindowRaise`
-    - [ ] `WindowLower`
-    - [ ] `WindowMinimize`
-    - [ ] `WindowMaximize`
-    - [ ] `WindowHMaximize`
-    - [ ] `WindowVMaximize`
-    - [ ] `WindowHVMaximize`
-    - [ ] `WindowMove`
-    - [ ] `WindowMoveTo`
-    - [ ] `WindowMoveVisibly`
-    - [ ] `WindowMonitorTo`
-    - [ ] `WindowMonitor`
-    - [ ] `WindowClingToLeft`
-    - [ ] `WindowClingToRight`
-    - [ ] `WindowClingToTop`
-    - [ ] `WindowClingToBottom`
-    - [ ] `WindowClose`
-    - [ ] `WindowToggleTopMost`
-    - [ ] `WindowIdentify`
-    - [ ] `WindowSetAlpha`
-    - [ ] `WindowRedraw`
-    - [ ] `WindowResizeTo`
-    - [ ] `MouseMove`
-    - [ ] `MouseWheel`
-    - [ ] `ClipboardChangeCase`
-    - [ ] `ClipboardUpcaseWord`
-    - [ ] `ClipboardDowncaseWord`
-    - [ ] `ClipboardCopy`
-    - [ ] `EmacsEditKillLinePred`
-    - [ ] `EmacsEditKillLineFunc`
-    - [ ] `LogClear`
-    - [ ] `Recenter`
-    - [ ] `DirectSSTP`
-    - [ ] `PlugIn`
-    - [ ] `SetImeStatus`
-    - [ ] `SetImeString`
-    - [ ] `MouseHook`
-    - [ ] `CancelPrefix`
+    - [x] `Default` (Removed from Engine)
+    - [x] `KeymapPrevPrefix` (Removed from Engine)
+    - [x] `LoadSetting`
+    - [x] `ShellExecute` (Removed from Engine)
+    - [x] `SetForegroundWindow` (Removed from Engine)
+    - [x] `InvestigateCommand` (Removed from Engine)
+    - [x] `MayuDialog` (Removed from Engine)
+    - [x] `DescribeBindings` (Removed from Engine)
+    - [x] `HelpMessage` (Removed from Engine)
+    - [x] `HelpVariable` (Removed from Engine)
+    - [x] `WindowRaise` (Removed from Engine)
+    - [x] `WindowLower` (Removed from Engine)
+    - [x] `WindowMinimize` (Removed from Engine)
+    - [x] `WindowMaximize` (Removed from Engine)
+    - [x] `WindowHMaximize` (Removed from Engine)
+    - [x] `WindowVMaximize` (Removed from Engine)
+    - [x] `WindowHVMaximize` (Removed from Engine)
+    - [x] `WindowMove` (Removed from Engine)
+    - [x] `WindowMoveTo` (Removed from Engine)
+    - [x] `WindowMoveVisibly` (Removed from Engine)
+    - [x] `WindowMonitorTo` (Removed from Engine)
+    - [x] `WindowMonitor` (Removed from Engine)
+    - [x] `WindowClingToLeft` (Removed from Engine)
+    - [x] `WindowClingToRight` (Removed from Engine)
+    - [x] `WindowClingToTop` (Removed from Engine)
+    - [x] `WindowClingToBottom` (Removed from Engine)
+    - [x] `WindowClose` (Removed from Engine)
+    - [x] `WindowToggleTopMost` (Removed from Engine)
+    - [x] `WindowIdentify` (Removed from Engine)
+    - [x] `WindowSetAlpha` (Removed from Engine)
+    - [x] `WindowRedraw` (Removed from Engine)
+    - [x] `WindowResizeTo` (Removed from Engine)
+    - [x] `MouseMove` (Removed from Engine)
+    - [x] `MouseWheel` (Removed from Engine)
+    - [x] `ClipboardChangeCase` (Removed from Engine)
+    - [x] `ClipboardUpcaseWord` (Removed from Engine)
+    - [x] `ClipboardDowncaseWord` (Removed from Engine)
+    - [x] `ClipboardCopy` (Removed from Engine)
+    - [x] `EmacsEditKillLinePred` (Removed from Engine)
+    - [x] `EmacsEditKillLineFunc` (Removed from Engine)
+    - [x] `LogClear` (Removed from Engine)
+    - [x] `Recenter` (Removed from Engine)
+    - [x] `DirectSSTP` (Removed from Engine)
+    - [x] `PlugIn` (Removed from Engine)
+    - [x] `SetImeStatus` (Removed from Engine)
+    - [x] `SetImeString` (Removed from Engine)
+    - [x] `MouseHook` (Removed from Engine)
+    - [x] `CancelPrefix` (Removed from Engine)
     </details>
 
 ### Phase 3: String Unification (Cognitive Load Reduction)

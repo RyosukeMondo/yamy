@@ -136,6 +136,51 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_default.cpp
     src/core/commands/cmd_keymap_prev_prefix.cpp
     src/core/commands/cmd_load_setting.cpp
+    src/core/commands/cmd_shell_execute.cpp
+    src/core/commands/cmd_set_foreground_window.cpp
+    src/core/commands/cmd_investigate_command.cpp
+    src/core/commands/cmd_mayu_dialog.cpp
+    src/core/commands/cmd_describe_bindings.cpp
+    src/core/commands/cmd_help_message.cpp
+    src/core/commands/cmd_help_variable.cpp
+    src/core/commands/cmd_window_raise.cpp
+    src/core/commands/cmd_window_lower.cpp
+    src/core/commands/cmd_window_minimize.cpp
+    src/core/commands/cmd_window_maximize.cpp
+    src/core/commands/cmd_window_h_maximize.cpp
+    src/core/commands/cmd_window_v_maximize.cpp
+    src/core/commands/cmd_window_hv_maximize.cpp
+    src/core/commands/cmd_window_move.cpp
+    src/core/commands/cmd_window_move_to.cpp
+    src/core/commands/cmd_window_move_visibly.cpp
+    src/core/commands/cmd_window_monitor_to.cpp
+    src/core/commands/cmd_window_monitor.cpp
+    src/core/commands/cmd_window_cling_to_left.cpp
+    src/core/commands/cmd_window_cling_to_right.cpp
+    src/core/commands/cmd_window_cling_to_top.cpp
+    src/core/commands/cmd_window_cling_to_bottom.cpp
+    src/core/commands/cmd_window_close.cpp
+    src/core/commands/cmd_window_toggle_top_most.cpp
+    src/core/commands/cmd_window_identify.cpp
+    src/core/commands/cmd_window_set_alpha.cpp
+    src/core/commands/cmd_window_redraw.cpp
+    src/core/commands/cmd_window_resize_to.cpp
+    src/core/commands/cmd_mouse_move.cpp
+    src/core/commands/cmd_mouse_wheel.cpp
+    src/core/commands/cmd_clipboard_change_case.cpp
+    src/core/commands/cmd_clipboard_upcase_word.cpp
+    src/core/commands/cmd_clipboard_downcase_word.cpp
+    src/core/commands/cmd_clipboard_copy.cpp
+    src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
+    src/core/commands/cmd_emacs_edit_kill_line_func.cpp
+    src/core/commands/cmd_log_clear.cpp
+    src/core/commands/cmd_recenter.cpp
+    src/core/commands/cmd_direct_sstp.cpp
+    src/core/commands/cmd_plugin.cpp
+    src/core/commands/cmd_set_ime_status.cpp
+    src/core/commands/cmd_set_ime_string.cpp
+    src/core/commands/cmd_mouse_hook.cpp
+    src/core/commands/cmd_cancel_prefix.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/input/vkeytable.cpp

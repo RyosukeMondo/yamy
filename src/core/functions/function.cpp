@@ -518,7 +518,7 @@ tostream &operator<<(tostream &i_ost, const FunctionData *i_data)
 
 
 //
-bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
+bool Engine::getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
 {
     if (!i_param->m_isPressed)
         return false;
@@ -529,9 +529,9 @@ bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd)
 }
 
 //
-bool getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
+bool Engine::getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
                           TargetWindowType *io_twt,
-                          RECT *o_rcWindow = nullptr, RECT *o_rcParent = nullptr)
+                          RECT *o_rcWindow /*= nullptr*/, RECT *o_rcParent /*= nullptr*/)
 {
     if (!i_param->m_isPressed)
         return false;
@@ -693,28 +693,16 @@ int Engine::EmacsEditKillLine::pred()
 
 
 // ShellExecute
-void Engine::funcShellExecute(FunctionParam *i_param,
-                              const StrExprArg &/*i_operation*/,
-                              const StrExprArg &/*i_file*/,
-                              const StrExprArg &/*i_parameters*/,
-                              const StrExprArg &/*i_directory*/,
-                              ShowCommandType /*i_showCommand*/)
-{
-    if (!i_param->m_isPressed)
-        return;
-    m_afShellExecute = i_param->m_af;
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndAssocWindow,
-                WM_APP_engineNotify, EngineNotify_shellExecute, 0);
-}
+// funcShellExecute moved to src/core/commands/cmd_shell_execute.cpp
 
-
+#include "../commands/cmd_shell_execute.h"
 // shell execute
 void Engine::shellExecute()
 {
     Acquire a(&m_cs);
 
-    FunctionData_ShellExecute *fd =
-        reinterpret_cast<FunctionData_ShellExecute *>(
+    Command_ShellExecute *fd =
+        reinterpret_cast<Command_ShellExecute *>(
             m_afShellExecute->m_functionData);
 
     int r = m_windowSystem->shellExecute(
@@ -761,46 +749,8 @@ void Engine::shellExecute()
     m_log << _T("error: ") << fd << _T(": ") << errorMessage << std::endl;
 }
 
-
-
-
-/// SetForegroundWindow
-void Engine::funcSetForegroundWindow(FunctionParam *i_param, const tregex &,
-                                     LogicalOperatorType , const tregex &)
-{
-    if (!i_param->m_isPressed)
-        return;
-    const FunctionData_SetForegroundWindow *fd =
-        static_cast<const FunctionData_SetForegroundWindow *>(
-            i_param->m_af->m_functionData);
-
-    HWND targetHwnd = nullptr;
-
-    m_windowSystem->enumerateWindows([&](WindowSystem::WindowHandle window) -> bool {
-        tstring className = m_windowSystem->getClassName(window);
-        tsmatch what;
-        if (!std::regex_search(className, what, fd->m_windowClassName)) {
-            if (fd->m_logicalOp == LogicalOperatorType_and)
-                return true; // continue
-        }
-
-        if (fd->m_logicalOp == LogicalOperatorType_and) {
-            tstring titleName = m_windowSystem->getTitleName(window);
-            if (!std::regex_search(titleName, what, fd->m_windowTitleName))
-                return true; // continue
-        }
-
-        targetHwnd = (HWND)window;
-        return false; // stop
-    });
-
-    if (targetHwnd)
-        m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndAssocWindow,
-                    WM_APP_engineNotify, EngineNotify_setForegroundWindow,
-                    reinterpret_cast<LPARAM>(targetHwnd));
-
-}
-
+// SetForegroundWindow
+// funcSetForegroundWindow moved to src/core/commands/cmd_set_foreground_window.cpp
 
 // load setting
 // funcLoadSetting moved to src/core/commands/cmd_load_setting.cpp
@@ -812,328 +762,66 @@ void Engine::funcSetForegroundWindow(FunctionParam *i_param, const tregex &,
 
 
 // investigate WM_COMMAND, WM_SYSCOMMAND
-void Engine::funcInvestigateCommand(FunctionParam *i_param)
-{
-    if (!i_param->m_isPressed)
-        return;
-    Acquire a(&m_log, 0);
-    g_hookData->m_doesNotifyCommand = !g_hookData->m_doesNotifyCommand;
-    if (g_hookData->m_doesNotifyCommand)
-        m_log << _T(" begin") << std::endl;
-    else
-        m_log << _T(" end") << std::endl;
-}
+// funcInvestigateCommand moved to src/core/commands/cmd_investigate_command.cpp
 
 // show mayu dialog box
-void Engine::funcMayuDialog(FunctionParam *i_param, MayuDialogType i_dialog,
-                            ShowCommandType i_showCommand)
-{
-    if (!i_param->m_isPressed)
-        return;
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)getAssociatedWndow(), WM_APP_engineNotify, EngineNotify_showDlg,
-                static_cast<LPARAM>(i_dialog) |
-                static_cast<LPARAM>(i_showCommand));
-}
+// funcMayuDialog moved to src/core/commands/cmd_mayu_dialog.cpp
 
 // describe bindings
-void Engine::funcDescribeBindings(FunctionParam *i_param)
-{
-    if (!i_param->m_isPressed)
-        return;
-    {
-        Acquire a(&m_log, 1);
-        m_log << std::endl;
-    }
-    describeBindings();
-}
+// funcDescribeBindings moved to src/core/commands/cmd_describe_bindings.cpp
 
 // show help message
-void Engine::funcHelpMessage(FunctionParam *i_param, const StrExprArg &i_title,
-                             const StrExprArg &i_message)
-{
-    if (!i_param->m_isPressed)
-        return;
-
-    m_helpTitle = i_title.eval();
-    m_helpMessage = i_message.eval();
-    bool doesShow = !(i_title.eval().size() == 0 && i_message.eval().size() == 0);
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)getAssociatedWndow(), WM_APP_engineNotify,
-                EngineNotify_helpMessage, doesShow);
-}
+// funcHelpMessage moved to src/core/commands/cmd_help_message.cpp
 
 // show variable
-void Engine::funcHelpVariable(FunctionParam *i_param, const StrExprArg &i_title)
-{
-    if (!i_param->m_isPressed)
-        return;
-
-    _TCHAR buf[20];
-    _sntprintf(buf, NUMBER_OF(buf), _T("%d"), m_variable);
-
-    m_helpTitle = i_title.eval();
-    m_helpMessage = buf;
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)getAssociatedWndow(), WM_APP_engineNotify,
-                EngineNotify_helpMessage, true);
-}
+// funcHelpVariable moved to src/core/commands/cmd_help_variable.cpp
 
 // raise window
-void Engine::funcWindowRaise(FunctionParam *i_param,
-                             TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, ZOrder::Top);
-}
+// funcWindowRaise moved to src/core/commands/cmd_window_raise.cpp
 
 // lower window
-void Engine::funcWindowLower(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, ZOrder::Bottom);
-}
+// funcWindowLower moved to src/core/commands/cmd_window_lower.cpp
 
 // minimize window
-void Engine::funcWindowMinimize(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    
-    bool isIconic = (m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Minimized);
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND,
-                isIconic ? SC_RESTORE : SC_MINIMIZE, 0);
-}
+// funcWindowMinimize moved to src/core/commands/cmd_window_minimize.cpp
 
 // maximize window
-void Engine::funcWindowMaximize(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    
-    bool isZoomed = (m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Maximized);
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND,
-                isZoomed ? SC_RESTORE : SC_MAXIMIZE, 0);
-}
+// funcWindowMaximize moved to src/core/commands/cmd_window_maximize.cpp
 
 // maximize horizontally or virtically
-void Engine::funcWindowHVMaximize(FunctionParam *i_param,
-                                  BooleanType i_isHorizontal,
-                                  TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-
-    int x = rc.left;
-    int y = rc.top;
-    int w = rcWidth(&rc);
-    int h = rcHeight(&rc);
-
-    if (i_isHorizontal) {
-        x = rcd.left;
-        w = rcWidth(&rcd);
-    } else {
-        y = rcd.top;
-        h = rcHeight(&rcd);
-    }
-    asyncMoveWindow(hwnd, x, y, w, h);
-}
+// funcWindowHVMaximize moved to src/core/commands/cmd_window_hv_maximize.cpp
 
 // close window
-void Engine::funcWindowClose(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt))
-        return;
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
-}
+// funcWindowClose moved to src/core/commands/cmd_window_close.cpp
 
 // toggle top-most flag of the window
-void Engine::funcWindowToggleTopMost(FunctionParam *i_param)
-{
-    HWND hwnd;
-    if (!getSuitableWindow(i_param, &hwnd))
-        return;
-
-    ZOrder order = m_windowSystem->isWindowTopMost((WindowSystem::WindowHandle)hwnd) 
-        ? ZOrder::NoTopMost 
-        : ZOrder::TopMost;
-    
-    m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, order);
-}
+// funcWindowToggleTopMost moved to src/core/commands/cmd_window_toggle_top_most.cpp
 
 // identify the window
-void Engine::funcWindowIdentify(FunctionParam *i_param)
-{
-    if (!i_param->m_isPressed)
-        return;
-
-    tstring className = m_windowSystem->getClassName((WindowSystem::WindowHandle)i_param->m_hwnd);
-    bool ok = false;
-    if (!className.empty()) {
-        if (_tcsicmp(className.c_str(), _T("ConsoleWindowClass")) == 0) {
-            tstring titleName = m_windowSystem->getTitleName((WindowSystem::WindowHandle)i_param->m_hwnd);
-            {
-                Acquire a(&m_log, 1);
-                m_log << _T("HWND:\t") << std::hex
-                << reinterpret_cast<ULONG_PTR>(i_param->m_hwnd)
-                << std::dec << std::endl;
-            }
-            Acquire a(&m_log, 0);
-            m_log << _T("CLASS:\t") << className << std::endl;
-            m_log << _T("TITLE:\t") << titleName << std::endl;
-
-            HWND hwnd = getToplevelWindow(i_param->m_hwnd, nullptr);
-            WindowRect rc;
-            m_windowSystem->getWindowRect((WindowSystem::WindowHandle)hwnd, &rc);
-            m_log << _T("Toplevel Window Position/Size: (")
-            << rc.left << _T(", ") << rc.top << _T(") / (")
-            << (rc.right - rc.left) << _T("x") << (rc.bottom - rc.top)
-            << _T(")") << std::endl;
-
-            m_windowSystem->getWorkArea(&rc);
-            m_log << _T("Desktop Window Position/Size: (")
-            << rc.left << _T(", ") << rc.top << _T(") / (")
-            << (rc.right - rc.left) << _T("x") << (rc.bottom - rc.top)
-            << _T(")") << std::endl;
-
-            m_log << std::endl;
-            ok = true;
-        }
-    }
-    if (!ok) {
-        UINT WM_MAYU_MESSAGE = m_windowSystem->registerWindowMessage(
-                                   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
-        CHECK_TRUE( m_windowSystem->postMessage((WindowSystem::WindowHandle)i_param->m_hwnd, WM_MAYU_MESSAGE,
-                                MayuMessage_notifyName, 0) );
-    }
-}
+// funcWindowIdentify moved to src/core/commands/cmd_window_identify.cpp
 
 // set alpha blending parameter to the window
-void Engine::funcWindowSetAlpha(FunctionParam *i_param, int i_alpha)
-{
-    HWND hwnd;
-    if (!getSuitableWindow(i_param, &hwnd))
-        return;
-
-    if (i_alpha < 0) {    // remove all alpha
-        for (WindowsWithAlpha::iterator i = m_windowsWithAlpha.begin();
-                i != m_windowsWithAlpha.end(); ++ i) {
-            m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)*i, false);
-            m_windowSystem->redrawWindow((WindowSystem::WindowHandle)*i);
-        }
-        m_windowsWithAlpha.clear();
-    } else {
-        if (m_windowSystem->isWindowLayered((WindowSystem::WindowHandle)hwnd)) {    // remove alpha
-            WindowsWithAlpha::iterator
-            i = std::find(m_windowsWithAlpha.begin(), m_windowsWithAlpha.end(),
-                          hwnd);
-            if (i == m_windowsWithAlpha.end())
-                return;    // already layered by the application
-
-            m_windowsWithAlpha.erase(i);
-
-            m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)hwnd, false);
-        } else {    // add alpha
-            m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)hwnd, true);
-            i_alpha %= 101;
-            if (!m_windowSystem->setLayeredWindowAttributes((WindowSystem::WindowHandle)hwnd, 0,
-                                            (unsigned char)(255 * i_alpha / 100), LWA_ALPHA)) {
-                Acquire a(&m_log, 0);
-                m_log << _T("error: &WindowSetAlpha(") << i_alpha
-                << _T(") failed for HWND: ") << std::hex
-                << reinterpret_cast<ULONG_PTR>(hwnd) << std::dec << std::endl;
-                return;
-            }
-            m_windowsWithAlpha.push_front(hwnd);
-        }
-        m_windowSystem->redrawWindow((WindowSystem::WindowHandle)hwnd);
-    }
-}
+// funcWindowSetAlpha moved to src/core/commands/cmd_window_set_alpha.cpp
 
 
 // redraw the window
-void Engine::funcWindowRedraw(FunctionParam *i_param)
-{
-    HWND hwnd;
-    if (!getSuitableWindow(i_param, &hwnd))
-        return;
-    m_windowSystem->redrawWindow((WindowSystem::WindowHandle)hwnd);
-}
+// funcWindowRedraw moved to src/core/commands/cmd_window_redraw.cpp
 
 // move window to ...
-void Engine::funcWindowMoveTo(FunctionParam *i_param, GravityType i_gravityType,
-                              int i_dx, int i_dy, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-
-    int x = rc.left + i_dx;
-    int y = rc.top + i_dy;
-
-    if (i_gravityType & GravityType_N)
-        y = i_dy + rcd.top;
-    if (i_gravityType & GravityType_E)
-        x = i_dx + rcd.right - rcWidth(&rc);
-    if (i_gravityType & GravityType_W)
-        x = i_dx + rcd.left;
-    if (i_gravityType & GravityType_S)
-        y = i_dy + rcd.bottom - rcHeight(&rc);
-    asyncMoveWindow(hwnd, x, y);
-}
+// funcWindowMoveTo moved to src/core/commands/cmd_window_move_to.cpp
 
 // move window
-void Engine::funcWindowMove(FunctionParam *i_param, int i_dx, int i_dy,
-                            TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-    asyncMoveWindow(hwnd, rc.left + i_dx, rc.top + i_dy);
-}
+// funcWindowMove moved to src/core/commands/cmd_window_move.cpp
 
 // maximize window horizontally
-void Engine::funcWindowHMaximize(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    funcWindowHVMaximize(i_param, BooleanType_true, i_twt);
-}
+// funcWindowHMaximize moved to src/core/commands/cmd_window_h_maximize.cpp
 
 // maximize window vertically
-void Engine::funcWindowVMaximize(FunctionParam *i_param, TargetWindowType i_twt)
-{
-    funcWindowHVMaximize(i_param, BooleanType_false, i_twt);
-}
+// funcWindowVMaximize moved to src/core/commands/cmd_window_v_maximize.cpp
 
 
 // move window visibly
-void Engine::funcWindowMoveVisibly(FunctionParam *i_param,
-                                   TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-
-    int x = rc.left;
-    int y = rc.top;
-    if (rc.left < rcd.left)
-        x = rcd.left;
-    else if (rcd.right < rc.right)
-        x = rcd.right - rcWidth(&rc);
-    if (rc.top < rcd.top)
-        y = rcd.top;
-    else if (rcd.bottom < rc.bottom)
-        y = rcd.bottom - rcHeight(&rc);
-    asyncMoveWindow(hwnd, x, y);
-}
+// funcWindowMoveVisibly moved to src/core/commands/cmd_window_move_visibly.cpp
 
 
 struct EnumDisplayMonitorsForWindowMonitorToParam {
@@ -1172,650 +860,72 @@ static BOOL CALLBACK enumDisplayMonitorsForWindowMonitorTo(
 }
 
 /// move window to other monitor
-void Engine::funcWindowMonitorTo(
-    FunctionParam *i_param, WindowMonitorFromType i_fromType, int i_monitor,
-    BooleanType i_adjustPos, BooleanType i_adjustSize)
-{
-    HWND hwnd;
-    if (! getSuitableWindow(i_param, &hwnd))
-        return;
-
-    HMONITOR hmonCur;
-    hmonCur = monitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-
-    EnumDisplayMonitorsForWindowMonitorToParam ep(hmonCur);
-    enumDisplayMonitors(nullptr, nullptr, enumDisplayMonitorsForWindowMonitorTo,
-                        reinterpret_cast<LPARAM>(&ep));
-    if (ep.m_monitors.size() < 1 ||
-            ep.m_primaryMonitorIdx < 0 || ep.m_currentMonitorIdx < 0)
-        return;
-
-    int targetIdx = 0;
-    switch (i_fromType) {
-    case WindowMonitorFromType_primary:
-        targetIdx = (ep.m_primaryMonitorIdx + i_monitor) % (int)ep.m_monitors.size();
-        break;
-
-    case WindowMonitorFromType_current:
-        targetIdx = (ep.m_currentMonitorIdx + i_monitor) % (int)ep.m_monitors.size();
-        break;
-    }
-    if (ep.m_currentMonitorIdx == targetIdx)
-        return;
-
-    RECT rcCur, rcTarget, rcWin;
-    rcCur = ep.m_monitorinfos[ep.m_currentMonitorIdx].rcWork;
-    rcTarget = ep.m_monitorinfos[targetIdx].rcWork;
-    GetWindowRect(hwnd, &rcWin);
-
-    int x = rcTarget.left + (rcWin.left - rcCur.left);
-    int y = rcTarget.top + (rcWin.top - rcCur.top);
-    int w = rcWidth(&rcWin);
-    int h = rcHeight(&rcWin);
-
-    if (i_adjustPos) {
-        if (x + w > rcTarget.right)
-            x = rcTarget.right - w;
-        if (x < rcTarget.left)
-            x = rcTarget.left;
-        if (w > rcWidth(&rcTarget)) {
-            x = rcTarget.left;
-            w = rcWidth(&rcTarget);
-        }
-
-        if (y + h > rcTarget.bottom)
-            y = rcTarget.bottom - h;
-        if (y < rcTarget.top)
-            y = rcTarget.top;
-        if (h > rcHeight(&rcTarget)) {
-            y = rcTarget.top;
-            h = rcHeight(&rcTarget);
-        }
-    }
-
-    if (i_adjustPos && i_adjustSize) {
-        if (m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Maximized)
-            m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-        asyncMoveWindow(hwnd, x, y, w, h);
-    } else {
-        asyncMoveWindow(hwnd, x, y);
-    }
-}
+// funcWindowMonitorTo moved to src/core/commands/cmd_window_monitor_to.cpp
 
 /// move window to other monitor
-void Engine::funcWindowMonitor(
-    FunctionParam *i_param, int i_monitor,
-    BooleanType i_adjustPos, BooleanType i_adjustSize)
-{
-    funcWindowMonitorTo(i_param, WindowMonitorFromType_primary, i_monitor,
-                        i_adjustPos, i_adjustSize);
-}
+// funcWindowMonitor moved to src/core/commands/cmd_window_monitor.cpp
 
 
 //
-void Engine::funcWindowClingToLeft(FunctionParam *i_param,
-                                   TargetWindowType i_twt)
-{
-    funcWindowMoveTo(i_param, GravityType_W, 0, 0, i_twt);
-}
+// funcWindowClingToLeft moved to src/core/commands/cmd_window_cling_to_left.cpp
 
 //
-void Engine::funcWindowClingToRight(FunctionParam *i_param,
-                                    TargetWindowType i_twt)
-{
-    funcWindowMoveTo(i_param, GravityType_E, 0, 0, i_twt);
-}
+// funcWindowClingToRight moved to src/core/commands/cmd_window_cling_to_right.cpp
 
 //
-void Engine::funcWindowClingToTop(FunctionParam *i_param,
-                                  TargetWindowType i_twt)
-{
-    funcWindowMoveTo(i_param, GravityType_N, 0, 0, i_twt);
-}
+// funcWindowClingToTop moved to src/core/commands/cmd_window_cling_to_top.cpp
 
 //
-void Engine::funcWindowClingToBottom(FunctionParam *i_param,
-                                     TargetWindowType i_twt)
-{
-    funcWindowMoveTo(i_param, GravityType_S, 0, 0, i_twt);
-}
+// funcWindowClingToBottom moved to src/core/commands/cmd_window_cling_to_bottom.cpp
 
 // resize window to
-void Engine::funcWindowResizeTo(FunctionParam *i_param, int i_width,
-                                int i_height, TargetWindowType i_twt)
-{
-    HWND hwnd;
-    RECT rc, rcd;
-    if (!getSuitableMdiWindow(m_windowSystem, i_param, &hwnd, &i_twt, &rc, &rcd))
-        return;
-
-    if (i_width == 0)
-        i_width = rcWidth(&rc);
-    else if (i_width < 0)
-        i_width += rcWidth(&rcd);
-
-    if (i_height == 0)
-        i_height = rcHeight(&rc);
-    else if (i_height < 0)
-        i_height += rcHeight(&rcd);
-
-    asyncResize(hwnd, i_width, i_height);
-}
+// funcWindowResizeTo moved to src/core/commands/cmd_window_resize_to.cpp
 
 // move the mouse cursor
-void Engine::funcMouseMove(FunctionParam *i_param, int i_dx, int i_dy)
-{
-    if (!i_param->m_isPressed)
-        return;
-    WindowPoint pt;
-    m_windowSystem->getCursorPos(&pt);
-    m_windowSystem->setCursorPos(pt.x + i_dx, pt.y + i_dy);
-}
+// funcMouseMove moved to src/core/commands/cmd_mouse_move.cpp
 
 // send a mouse-wheel-message to Windows
-void Engine::funcMouseWheel(FunctionParam *i_param, int i_delta)
-{
-    if (!i_param->m_isPressed)
-        return;
+// funcMouseWheel moved to src/core/commands/cmd_mouse_wheel.cpp
 
-    if (m_inputInjector) {
-        KEYBOARD_INPUT_DATA kid;
-        kid.UnitId = 0;
-        kid.MakeCode = 10; // Generic Wheel
-        kid.Flags = KEYBOARD_INPUT_DATA::E1; // Mouse event
-        kid.Reserved = 0;
-        kid.ExtraInformation = static_cast<unsigned long>(i_delta);
-
-        InjectionContext ctx;
-        ctx.isDragging = false;
-
-        m_inputInjector->inject(&kid, ctx);
-    }
-}
-void Engine::funcClipboardChangeCase(FunctionParam *i_param,
-                                     BooleanType i_doesConvertToUpperCase)
-{
-    if (!i_param->m_isPressed)
-        return;
-
-    tstring text = m_windowSystem->getClipboardText();
-    if (text.empty())
-        return;
-
-    for (size_t i = 0; i < text.size(); ++i) {
-        _TCHAR c = text[i];
-        // Assuming _istlead check is handled if needed, but tstring might be wstring/string
-        // If tstring is std::string (MBCS), we need _istlead.
-        // If tstring is std::wstring (Unicode), we don't.
-        // WindowSystem::getClipboardText handles TCHAR.
-#ifndef _UNICODE
-        if (_istlead(c)) {
-            ++i; // Skip next char as it is trail byte
-            continue;
-        }
-#endif
-        text[i] = i_doesConvertToUpperCase ? _totupper(c) : _totlower(c);
-    }
-    
-    m_windowSystem->setClipboardText(text);
-}
+// funcClipboardChangeCase moved to src/core/commands/cmd_clipboard_change_case.cpp
 
 // convert the contents of the Clipboard to upper case
-void Engine::funcClipboardUpcaseWord(FunctionParam *i_param)
-{
-    funcClipboardChangeCase(i_param, BooleanType_true);
-}
+// funcClipboardUpcaseWord moved to src/core/commands/cmd_clipboard_upcase_word.cpp
 
 // convert the contents of the Clipboard to lower case
-void Engine::funcClipboardDowncaseWord(FunctionParam *i_param)
-{
-    funcClipboardChangeCase(i_param, BooleanType_false);
-}
+// funcClipboardDowncaseWord moved to src/core/commands/cmd_clipboard_downcase_word.cpp
 
 // set the contents of the Clipboard to the string
-void Engine::funcClipboardCopy(FunctionParam *i_param, const StrExprArg &i_text)
-{
-    if (!i_param->m_isPressed)
-        return;
-    
-    m_windowSystem->setClipboardText(i_text.eval());
-}
+// funcClipboardCopy moved to src/core/commands/cmd_clipboard_copy.cpp
 
 //
-void Engine::funcEmacsEditKillLinePred(
-    FunctionParam *i_param, const KeySeq *i_keySeq1, const KeySeq *i_keySeq2)
-{
-    m_emacsEditKillLine.m_doForceReset = false;
-    if (!i_param->m_isPressed)
-        return;
-
-    int r = m_emacsEditKillLine.pred();
-    const KeySeq *keySeq;
-    if (r == 1)
-        keySeq = i_keySeq1;
-    else if (r == 2)
-        keySeq = i_keySeq2;
-    else // r == 0
-        return;
-    ASSERT(keySeq);
-    generateKeySeqEvents(i_param->m_c, keySeq, Part_all);
-}
+// funcEmacsEditKillLinePred moved to src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
 
 //
-void Engine::funcEmacsEditKillLineFunc(FunctionParam *i_param)
-{
-    if (!i_param->m_isPressed)
-        return;
-    m_emacsEditKillLine.func();
-    m_emacsEditKillLine.m_doForceReset = false;
-}
+// funcEmacsEditKillLineFunc moved to src/core/commands/cmd_emacs_edit_kill_line_func.cpp
 
 // clear log
-void Engine::funcLogClear(FunctionParam *i_param)
-{
-    if (!i_param->m_isPressed)
-        return;
-    m_windowSystem->postMessage(getAssociatedWndow(), WM_APP_engineNotify,
-                EngineNotify_clearLog, 0);
-}
+// funcLogClear moved to src/core/commands/cmd_log_clear.cpp
 
 // recenter
-void Engine::funcRecenter(FunctionParam *i_param)
-{
-    if (m_hwndFocus) {
-        UINT WM_MAYU_MESSAGE = m_windowSystem->registerWindowMessage(
-                                   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
-        m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcRecenter, 0);
-    }
-}
+// funcRecenter moved to src/core/commands/cmd_recenter.cpp
 
 // set IME open status
-void Engine::funcSetImeStatus(FunctionParam *i_param, ToggleType i_toggle)
-{
-    if (!i_param->m_isPressed)
-        return;
-    if (m_hwndFocus) {
-        UINT WM_MAYU_MESSAGE = m_windowSystem->registerWindowMessage(
-                                   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
-        int status = -1;
-        switch (i_toggle) {
-        case ToggleType_toggle:
-            status = -1;
-            break;
-        case ToggleType_off:
-            status = 0;
-            break;
-        case ToggleType_on:
-            status = 1;
-            break;
-        }
-        m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcSetImeStatus, status);
-    }
-}
+// funcSetImeStatus moved to src/core/commands/cmd_set_ime_status.cpp
 
 // set IME open status
-void Engine::funcSetImeString(FunctionParam *i_param, const StrExprArg &i_data)
-{
-    if (!i_param->m_isPressed)
-        return;
-    if (m_hwndFocus) {
-        UINT WM_MAYU_MESSAGE = m_windowSystem->registerWindowMessage(
-                                   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
-        m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcSetImeString, i_data.eval().size() * sizeof(_TCHAR));
-
-        unsigned int len = 0;
-        m_windowSystem->disconnectNamedPipe(m_hookPipe);
-        m_windowSystem->connectNamedPipe(m_hookPipe, nullptr);
-        m_windowSystem->writeFile(m_hookPipe, i_data.eval().c_str(),
-                          (unsigned int)(i_data.eval().size() * sizeof(_TCHAR)),
-                          &len, nullptr);
-
-        //FlushFileBuffers(m_hookPipe);
-    }
-}
-
-// Direct SSTP Server
-class DirectSSTPServer
-{
-public:
-    tstring m_path;
-    HWND m_hwnd;
-    tstring m_name;
-    tstring m_keroname;
-
-public:
-    DirectSSTPServer()
-            : m_hwnd(nullptr) {
-    }
-};
-
-
-class ParseDirectSSTPData
-{
-    typedef std::match_results<const char*> MR;
-
-public:
-    typedef std::map<tstring, DirectSSTPServer> DirectSSTPServers;
-
-private:
-    DirectSSTPServers *m_directSSTPServers;
-
-public:
-    // constructor
-    ParseDirectSSTPData(DirectSSTPServers *i_directSSTPServers)
-            : m_directSSTPServers(i_directSSTPServers) {
-    }
-
-    bool operator()(const MR& i_what) {
-#ifdef _UNICODE
-        tstring id(to_wstring(std::string(i_what[1].first, i_what[1].second)));
-        tstring member(to_wstring(std::string(i_what[2].first, i_what[2].second)));
-        tstring value(to_wstring(std::string(i_what[3].first, i_what[3].second)));
-#else
-        tstring id(i_what[1].first, i_what[1].second);
-        tstring member(i_what[2].first, i_what[2].second);
-        tstring value(i_what[3].first, i_what[3].second);
-#endif
-
-        if (member == _T("path"))
-            (*m_directSSTPServers)[id].m_path = value;
-        else if (member == _T("hwnd"))
-            (*m_directSSTPServers)[id].m_hwnd =
-                reinterpret_cast<HWND>((LONG_PTR)_ttoi64(value.c_str()));
-        else if (member == _T("name"))
-            (*m_directSSTPServers)[id].m_name = value;
-        else if (member == _T("keroname"))
-            (*m_directSSTPServers)[id].m_keroname = value;
-        return true;
-    }
-};
+// funcSetImeString moved to src/core/commands/cmd_set_ime_string.cpp
 
 // Direct SSTP
-void Engine::funcDirectSSTP(FunctionParam *i_param,
-                            const tregex &i_name,
-                            const StrExprArg &i_protocol,
-                            const std::list<tstringq> &i_headers)
-{
-    if (!i_param->m_isPressed)
-        return;
+// funcDirectSSTP moved to src/core/commands/cmd_direct_sstp.cpp
 
-    // check Direct SSTP server exist ?
-    if (void* hm = m_windowSystem->openMutex(_T("sakura")))
-        m_windowSystem->closeHandle(hm);
-    else {
-        Acquire a(&m_log, 0);
-        m_log << _T(" Error(1): Direct SSTP server does not exist.");
-        return;
-    }
+// PlugIn
+// funcPlugIn moved to src/core/commands/cmd_plugin.cpp
 
-    void* hfm = m_windowSystem->openFileMapping(_T("Sakura"));
-    if (!hfm) {
-        Acquire a(&m_log, 0);
-        m_log << _T(" Error(2): Direct SSTP server does not provide data.");
-        return;
-    }
-
-    char *data =
-        reinterpret_cast<char *>(m_windowSystem->mapViewOfFile(hfm));
-    if (!data) {
-        m_windowSystem->closeHandle(hfm);
-        Acquire a(&m_log, 0);
-        m_log << _T(" Error(3): Direct SSTP server does not provide data.");
-        return;
-    }
-
-    long length = *(long *)data;
-    const char *begin = data + 4;
-    const char *end = data + length;
-    std::regex getSakura("([0-9a-fA-F]{32})\\.([^\x01]+)\x01(.*?)\r\n");
-
-    ParseDirectSSTPData::DirectSSTPServers servers;
-    std::regex_iterator<const char*>
-    it(begin, end, getSakura), last;
-    for (; it != last; ++it)
-        ((ParseDirectSSTPData)(&servers))(*it);
-
-    // make request
-    tstring request;
-    if (!i_protocol.eval().size())
-        request += _T("NOTIFY SSTP/1.1");
-    else
-        request += i_protocol.eval();
-    request += _T("\r\n");
-
-    bool hasSender = false;
-    for (std::list<tstringq>::const_iterator
-            i = i_headers.begin(); i != i_headers.end(); ++ i) {
-        if (_tcsnicmp(_T("Charset"), i->c_str(), 7) == 0 ||
-                _tcsnicmp(_T("Hwnd"),    i->c_str(), 4) == 0)
-            continue;
-        if (_tcsnicmp(_T("Sender"), i->c_str(), 6) == 0)
-            hasSender = true;
-        request += i->c_str();
-        request += _T("\r\n");
-    }
-
-    if (!hasSender) {
-        request += _T("Sender: ");
-        request += loadString(IDS_mayu);
-        request += _T("\r\n");
-    }
-
-    _TCHAR buf[100];
-    _sntprintf(buf, NUMBER_OF(buf), _T("HWnd: %Iu\r\n"),
-               reinterpret_cast<ULONG_PTR>(m_hwndAssocWindow));
-    request += buf;
-
-#ifdef _UNICODE
-    request += _T("Charset: UTF-8\r\n");
-#else
-    request += _T("Charset: Shift_JIS\r\n");
-#endif
-    request += _T("\r\n");
-
-#ifdef _UNICODE
-    std::string request_UTF_8 = to_UTF_8(request);
-#endif
-
-    // send request to Direct SSTP Server which matches i_name;
-    for (ParseDirectSSTPData::DirectSSTPServers::iterator
-            i = servers.begin(); i != servers.end(); ++ i) {
-        tsmatch what;
-        if (std::regex_match(i->second.m_name, what, i_name)) {
-            COPYDATASTRUCT cd;
-            cd.dwData = 9801;
-#ifdef _UNICODE
-            cd.cbData = (DWORD)request_UTF_8.size();
-            cd.lpData = (void *)request_UTF_8.c_str();
-#else
-            cd.cbData = (DWORD)request.size();
-            cd.lpData = (void *)request.c_str();
-#endif
-            uintptr_t result;
-            m_windowSystem->sendMessageTimeout((WindowSystem::WindowHandle)i->second.m_hwnd, WM_COPYDATA,
-                               reinterpret_cast<uintptr_t>(m_hwndAssocWindow),
-                               reinterpret_cast<intptr_t>(&cd),
-                               SMTO_ABORTIFHUNG | SMTO_BLOCK, 5000, &result);
-        }
-    }
-
-    m_windowSystem->unmapViewOfFile(data);
-    m_windowSystem->closeHandle(hfm);
-}
-
-
-namespace shu
-{
-class PlugIn
-{
-    enum Type {
-        Type_A,
-        Type_W
-    };
-
-private:
-    WindowSystem* m_ws;
-    void* m_dll;
-    void* m_func;
-    Type m_type;
-    tstringq m_funcParam;
-
-public:
-    PlugIn(WindowSystem* ws) : m_ws(ws), m_dll(nullptr), m_func(nullptr) {
-    }
-
-    ~PlugIn() {
-        if (m_dll)
-            m_ws->freeLibrary(m_dll);
-    }
-
-    bool load(const tstringq &i_dllName, const tstringq &i_funcName,
-              const tstringq &i_funcParam, tomsgstream &i_log) {
-        m_dll = m_ws->loadLibrary((_T("Plugins\\") + i_dllName).c_str());
-        if (!m_dll) {
-            m_dll = m_ws->loadLibrary((_T("Plugin\\") + i_dllName).c_str());
-            if (!m_dll) {
-                m_dll = m_ws->loadLibrary(i_dllName.c_str());
-                if (!m_dll) {
-                    Acquire a(&i_log);
-                    i_log << std::endl;
-                    i_log << _T("error: &PlugIn() failed to load ") << i_dllName << std::endl;
-                    return false;
-                }
-            }
-        }
-
-        // get function
-#ifdef UNICODE
-#  define to_wstring
-#else
-#  define to_string
-#endif
-        m_type = Type_W;
-        m_func = m_ws->getProcAddress(m_dll, to_string(_T("mayu") + i_funcName + _T("W")));
-        if (!m_func) {
-            m_type = Type_A;
-            m_func
-            = m_ws->getProcAddress(m_dll, to_string(_T("mayu") + i_funcName + _T("A")));
-            if (!m_func) {
-                m_func = m_ws->getProcAddress(m_dll, to_string(_T("mayu") + i_funcName));
-                if (!m_func) {
-                    m_func = m_ws->getProcAddress(m_dll, to_string(i_funcName));
-                    if (!m_func) {
-                        Acquire a(&i_log);
-                        i_log << std::endl;
-                        i_log << _T("error: &PlugIn() failed to find function: ")
-                        << i_funcName << std::endl;
-                        return false;
-                    }
-                }
-            }
-        }
-
-        m_funcParam = i_funcParam;
-        return true;
-    }
-
-    void exec() {
-        if (!m_dll || !m_func) return;
-
-        typedef void (WINAPI * PLUGIN_FUNCTION_A)(const char *i_arg);
-        typedef void (WINAPI * PLUGIN_FUNCTION_W)(const wchar_t *i_arg);
-        switch (m_type) {
-        case Type_A:
-            reinterpret_cast<PLUGIN_FUNCTION_A>(m_func)(to_string(m_funcParam).c_str());
-            break;
-        case Type_W:
-            reinterpret_cast<PLUGIN_FUNCTION_W>(m_func)(to_wstring(m_funcParam).c_str());
-            break;
-        }
-    }
-#undef to_string
-#undef to_wstring
-};
-
-static void plugInThread(void *i_plugin)
-{
-    PlugIn *plugin = static_cast<PlugIn *>(i_plugin);
-    plugin->exec();
-    delete plugin;
-}
-}
-
-void Engine::funcPlugIn(FunctionParam *i_param,
-                        const StrExprArg &i_dllName,
-                        const StrExprArg &i_funcName,
-                        const StrExprArg &i_funcParam,
-                        BooleanType i_doesCreateThread)
-{
-    if (!i_param->m_isPressed)
-        return;
-
-    shu::PlugIn *plugin = new shu::PlugIn(m_windowSystem);
-    if (!plugin->load(i_dllName.eval(), i_funcName.eval(), i_funcParam.eval(), m_log)) {
-        delete plugin;
-        return;
-    }
-    if (i_doesCreateThread) {
-        if (_beginthread(shu::plugInThread, 0, plugin) == static_cast<uintptr_t>(-1)) {
-            delete plugin;
-            Acquire a(&m_log);
-            m_log << std::endl;
-            m_log << _T("error: &PlugIn() failed to create thread.");
-        }
-        return;
-    } else
-        plugin->exec();
-}
-
-
-void Engine::funcMouseHook(FunctionParam *i_param,
-                           MouseHookType i_hookType, int i_hookParam)
-{
-    WindowPoint wp;
-    m_windowSystem->getCursorPos(&wp);
-    g_hookData->m_mousePos.x = wp.x;
-    g_hookData->m_mousePos.y = wp.y;
-
-    g_hookData->m_mouseHookType = i_hookType;
-    g_hookData->m_mouseHookParam = i_hookParam;
-
-    switch (i_hookType) {
-    case MouseHookType_WindowMove: {
-        // For this type, g_hookData->m_mouseHookParam means
-        // target window type to move.
-        HWND target;
-        bool isMDI;
-
-        // i_hooParam < 0 means target window to move is MDI.
-        if (i_hookParam < 0)
-            isMDI = true;
-        else
-            isMDI = false;
-
-        // abs(i_hookParam) == 2: target is window under mouse cursor
-        // otherwise: target is current focus window
-        if (i_hookParam == 2 || i_hookParam == -2)
-            target = (HWND)m_windowSystem->windowFromPoint(wp);
-        else
-            target = i_param->m_hwnd;
-
-        g_hookData->m_hwndMouseHookTarget =
-            (DWORD)((ULONG_PTR)getToplevelWindow(target, &isMDI));
-        break;
-    }
-    default:
-        g_hookData->m_hwndMouseHookTarget = 0;
-        break;
-    }
-}
-
+// funcMouseHook moved to src/core/commands/cmd_mouse_hook.cpp
 
 // cancel prefix
-void Engine::funcCancelPrefix(FunctionParam *i_param)
-{
-    m_isPrefix = false;
-}
+// funcCancelPrefix moved to src/core/commands/cmd_cancel_prefix.cpp
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

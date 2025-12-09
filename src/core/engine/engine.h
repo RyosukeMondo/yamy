@@ -338,155 +338,110 @@ public:
     /// post message
 // funcPostMessage removed (moved to Command_PostMessage)
     /// ShellExecute
-    void funcShellExecute(FunctionParam *i_param, const StrExprArg &i_operation,
-                          const StrExprArg &i_file, const StrExprArg &i_parameters,
-                          const StrExprArg &i_directory,
-                          ShowCommandType i_showCommand);
+// funcShellExecute removed (moved to Command_ShellExecute)
     /// SetForegroundWindow
-    void funcSetForegroundWindow(FunctionParam *i_param,
-                                 const tregex &i_windowClassName,
-                                 LogicalOperatorType i_logicalOp
-                                 = LogicalOperatorType_and,
-                                 const tregex &i_windowTitleName
-                                 = tregex(_T(".*")));
+// funcSetForegroundWindow removed (moved to Command_SetForegroundWindow)
     /// load setting
 // funcLoadSetting removed (moved to Command_LoadSetting)
 // funcVK removed (moved to Command_VK)
 // funcWait removed (moved to Command_Wait)
     /// investigate WM_COMMAND, WM_SYSCOMMAND
-    void funcInvestigateCommand(FunctionParam *i_param);
+// funcInvestigateCommand removed (moved to Command_InvestigateCommand)
     /// show mayu dialog box
-    void funcMayuDialog(FunctionParam *i_param, MayuDialogType i_dialog,
-                        ShowCommandType i_showCommand);
+// funcMayuDialog removed (moved to Command_MayuDialog)
     /// describe bindings
-    void funcDescribeBindings(FunctionParam *i_param);
+// funcDescribeBindings removed (moved to Command_DescribeBindings)
     /// show help message
-    void funcHelpMessage(FunctionParam *i_param,
-                         const StrExprArg &i_title = StrExprArg(),
-                         const StrExprArg &i_message = StrExprArg());
+// funcHelpMessage removed (moved to Command_HelpMessage)
     /// show variable
-    void funcHelpVariable(FunctionParam *i_param, const StrExprArg &i_title);
+// funcHelpVariable removed (moved to Command_HelpVariable)
     /// raise window
-    void funcWindowRaise(FunctionParam *i_param,
-                         TargetWindowType i_twt = TargetWindowType_overlapped);
+// funcWindowRaise removed (moved to Command_WindowRaise)
     /// lower window
-    void funcWindowLower(FunctionParam *i_param,
-                         TargetWindowType i_twt = TargetWindowType_overlapped);
+// funcWindowLower removed (moved to Command_WindowLower)
     /// minimize window
-    void funcWindowMinimize(FunctionParam *i_param, TargetWindowType i_twt
-                            = TargetWindowType_overlapped);
+// funcWindowMinimize removed (moved to Command_WindowMinimize)
     /// maximize window
-    void funcWindowMaximize(FunctionParam *i_param, TargetWindowType i_twt
-                            = TargetWindowType_overlapped);
+// funcWindowMaximize removed (moved to Command_WindowMaximize)
     /// maximize window horizontally
-    void funcWindowHMaximize(FunctionParam *i_param, TargetWindowType i_twt
-                             = TargetWindowType_overlapped);
+// funcWindowHMaximize removed (moved to Command_WindowHMaximize)
     /// maximize window virtically
-    void funcWindowVMaximize(FunctionParam *i_param, TargetWindowType i_twt
-                             = TargetWindowType_overlapped);
+// funcWindowVMaximize removed (moved to Command_WindowVMaximize)
     /// maximize window virtically or horizontally
-    void funcWindowHVMaximize(FunctionParam *i_param, BooleanType i_isHorizontal,
-                              TargetWindowType i_twt
-                              = TargetWindowType_overlapped);
+// funcWindowHVMaximize removed (moved to Command_WindowHVMaximize)
     /// move window
-    void funcWindowMove(FunctionParam *i_param, int i_dx, int i_dy,
-                        TargetWindowType i_twt
-                        = TargetWindowType_overlapped);
+// funcWindowMove removed (moved to Command_WindowMove)
     /// move window to ...
-    void funcWindowMoveTo(FunctionParam *i_param, GravityType i_gravityType,
-                          int i_dx, int i_dy, TargetWindowType i_twt
-                          = TargetWindowType_overlapped);
+// funcWindowMoveTo removed (moved to Command_WindowMoveTo)
     /// move window visibly
-    void funcWindowMoveVisibly(FunctionParam *i_param,
-                               TargetWindowType i_twt
-                               = TargetWindowType_overlapped);
+// funcWindowMoveVisibly removed (moved to Command_WindowMoveVisibly)
     /// move window to other monitor
-    void funcWindowMonitorTo(FunctionParam *i_param,
-                             WindowMonitorFromType i_fromType, int i_monitor,
-                             BooleanType i_adjustPos = BooleanType_true,
-                             BooleanType i_adjustSize = BooleanType_false);
+// funcWindowMonitorTo removed (moved to Command_WindowMonitorTo)
     /// move window to other monitor
-    void funcWindowMonitor(FunctionParam *i_param, int i_monitor,
-                           BooleanType i_adjustPos = BooleanType_true,
-                           BooleanType i_adjustSize = BooleanType_false);
+// funcWindowMonitor removed (moved to Command_WindowMonitor)
     ///
-    void funcWindowClingToLeft(FunctionParam *i_param,
-                               TargetWindowType i_twt
-                               = TargetWindowType_overlapped);
+// funcWindowClingToLeft removed (moved to Command_WindowClingToLeft)
     ///
-    void funcWindowClingToRight(FunctionParam *i_param,
-                                TargetWindowType i_twt
-                                = TargetWindowType_overlapped);
+// funcWindowClingToRight removed (moved to Command_WindowClingToRight)
     ///
-    void funcWindowClingToTop(FunctionParam *i_param,
-                              TargetWindowType i_twt
-                              = TargetWindowType_overlapped);
+// funcWindowClingToTop removed (moved to Command_WindowClingToTop)
     ///
-    void funcWindowClingToBottom(FunctionParam *i_param,
-                                 TargetWindowType i_twt
-                                 = TargetWindowType_overlapped);
+// funcWindowClingToBottom removed (moved to Command_WindowClingToBottom)
     /// close window
-    void funcWindowClose(FunctionParam *i_param,
-                         TargetWindowType i_twt = TargetWindowType_overlapped);
+// funcWindowClose removed (moved to Command_WindowClose)
     /// toggle top-most flag of the window
-    void funcWindowToggleTopMost(FunctionParam *i_param);
+// funcWindowToggleTopMost removed (moved to Command_WindowToggleTopMost)
     /// identify the window
-    void funcWindowIdentify(FunctionParam *i_param);
+// funcWindowIdentify removed (moved to Command_WindowIdentify)
     /// set alpha blending parameter to the window
-    void funcWindowSetAlpha(FunctionParam *i_param, int i_alpha);
+// funcWindowSetAlpha removed (moved to Command_WindowSetAlpha)
     /// redraw the window
-    void funcWindowRedraw(FunctionParam *i_param);
+// funcWindowRedraw removed (moved to Command_WindowRedraw)
     /// resize window to
-    void funcWindowResizeTo(FunctionParam *i_param, int i_width, int i_height,
-                            TargetWindowType i_twt
-                            = TargetWindowType_overlapped);
+// funcWindowResizeTo removed (moved to Command_WindowResizeTo)
     /// move the mouse cursor
-    void funcMouseMove(FunctionParam *i_param, int i_dx, int i_dy);
+// funcMouseMove removed (moved to Command_MouseMove)
     /// send a mouse-wheel-message to Windows
-    void funcMouseWheel(FunctionParam *i_param, int i_delta);
+// funcMouseWheel removed (moved to Command_MouseWheel)
     /// convert the contents of the Clipboard to upper case or lower case
-    void funcClipboardChangeCase(FunctionParam *i_param,
-                                 BooleanType i_doesConvertToUpperCase);
+// funcClipboardChangeCase removed (moved to Command_ClipboardChangeCase)
     /// convert the contents of the Clipboard to upper case
-    void funcClipboardUpcaseWord(FunctionParam *i_param);
+// funcClipboardUpcaseWord removed (moved to Command_ClipboardUpcaseWord)
     /// convert the contents of the Clipboard to lower case
-    void funcClipboardDowncaseWord(FunctionParam *i_param);
+// funcClipboardDowncaseWord removed (moved to Command_ClipboardDowncaseWord)
     /// set the contents of the Clipboard to the string
-    void funcClipboardCopy(FunctionParam *i_param, const StrExprArg &i_text);
+// funcClipboardCopy removed (moved to Command_ClipboardCopy)
     ///
-    void funcEmacsEditKillLinePred(FunctionParam *i_param,
-                                   const KeySeq *i_keySeq1,
-                                   const KeySeq *i_keySeq2);
+// funcEmacsEditKillLinePred removed (moved to Command_EmacsEditKillLinePred)
     ///
-    void funcEmacsEditKillLineFunc(FunctionParam *i_param);
+// funcEmacsEditKillLineFunc removed (moved to Command_EmacsEditKillLineFunc)
     /// clear log
-    void funcLogClear(FunctionParam *i_param);
+// funcLogClear removed (moved to Command_LogClear)
     /// recenter
-    void funcRecenter(FunctionParam *i_param);
+// funcRecenter removed (moved to Command_Recenter)
     /// Direct SSTP
-    void funcDirectSSTP(FunctionParam *i_param,
-                        const tregex &i_name,
-                        const StrExprArg &i_protocol,
-                        const std::list<tstringq> &i_headers);
+// funcDirectSSTP removed (moved to Command_DirectSSTP)
     /// PlugIn
-    void funcPlugIn(FunctionParam *i_param,
-                    const StrExprArg &i_dllName,
-                    const StrExprArg &i_funcName = StrExprArg(),
-                    const StrExprArg &i_funcParam = StrExprArg(),
-                    BooleanType i_doesCreateThread = BooleanType_false);
+// funcPlugIn removed (moved to Command_PlugIn)
     /// set IME open status
-    void funcSetImeStatus(FunctionParam *i_param, ToggleType i_toggle = ToggleType_toggle);
+// funcSetImeStatus removed (moved to Command_SetImeStatus)
     /// set string to IME
-    void funcSetImeString(FunctionParam *i_param, const StrExprArg &i_data);
+// funcSetImeString removed (moved to Command_SetImeString)
     /// enter to mouse event hook mode
-    void funcMouseHook(FunctionParam *i_param, MouseHookType i_hookType, int i_hookParam);
+// funcMouseHook removed (moved to Command_MouseHook)
     /// cancel prefix
-    void funcCancelPrefix(FunctionParam *i_param);
+// funcCancelPrefix removed (moved to Command_CancelPrefix)
 
     // END OF FUNCTION DEFINITION
 #include "function_friends.h"
 
 public:
+    // Helper functions for commands
+    static bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd);
+    static bool getSuitableMdiWindow(WindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
+                                     TargetWindowType *io_twt,
+                                     RECT *o_rcWindow = nullptr, RECT *o_rcParent = nullptr);
+
     ///
     Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_configStore, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver);
     ///
