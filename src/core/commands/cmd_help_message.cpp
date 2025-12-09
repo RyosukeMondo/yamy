@@ -30,8 +30,8 @@ void Command_HelpMessage::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!i_param->m_isPressed)
         return;
 
-    i_engine->m_helpTitle = m_title.eval();
-    i_engine->m_helpMessage = m_message.eval();
+    i_engine->m_helpTitle = to_tstring(m_title.eval());
+    i_engine->m_helpMessage = to_tstring(m_message.eval());
     bool doesShow = !(m_title.eval().size() == 0 && m_message.eval().size() == 0);
     i_engine->getWindowSystem()->postMessage(i_engine->getAssociatedWndow(), WM_APP_engineNotify,
                 EngineNotify_helpMessage, doesShow);
