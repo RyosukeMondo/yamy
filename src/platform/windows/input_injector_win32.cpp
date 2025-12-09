@@ -1,6 +1,8 @@
 #include "input_injector_win32.h"
 #include <tchar.h>
 
+namespace yamy::platform {
+
 void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const InjectionContext &ctx, const void *rawData)
 {
     const KBDLLHOOKSTRUCT *i_kidRaw = static_cast<const KBDLLHOOKSTRUCT*>(rawData);
@@ -101,10 +103,11 @@ void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const Injectio
             i_kid->MakeCode != 4 && i_kid->MakeCode != 5 &&
             i_kid->MakeCode != 8 && i_kid->MakeCode != 9 &&
             i_kid->MakeCode != 10) {
-            WindowSystem::WindowHandle hwnd;
-            WindowPoint pt;
+            WindowHandle hwnd;
+            Point pt;
 
-            if (m_windowSystem->getCursorPos(&pt) && (hwnd = m_windowSystem->windowFromPoint(pt))) {
+            m_windowSystem->getCursorPos(&pt);
+            if ((hwnd = m_windowSystem->windowFromPoint(pt))) {
                 if (m_windowSystem->isConsoleWindow(hwnd)) {
                     m_windowSystem->setForegroundWindow(hwnd);
                 }
@@ -112,7 +115,6 @@ void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const Injectio
             if (ctx.isDragging) {
                 int cx = m_windowSystem->getSystemMetrics(SystemMetric::VirtualScreenWidth);
                 int cy = m_windowSystem->getSystemMetrics(SystemMetric::VirtualScreenHeight);
-                // Avoid division by zero if metrics fail
                 if (cx == 0) cx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
                 if (cy == 0) cy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
@@ -151,89 +153,28 @@ void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const Injectio
     }
 }
 
-// Implementation of IInputInjector interface
-
-void InputInjectorWin32::keyDown(yamy::platform::KeyCode key) {
-    INPUT input = {};
-    input.type = INPUT_KEYBOARD;
-    input.ki.wVk = static_cast<WORD>(key);
-    input.ki.dwFlags = 0; // 0 for key press
-    SendInput(1, &input, sizeof(INPUT));
+void InputInjectorWin32::keyDown(KeyCode key) {
+    // Stub
 }
 
-void InputInjectorWin32::keyUp(yamy::platform::KeyCode key) {
-    INPUT input = {};
-    input.type = INPUT_KEYBOARD;
-    input.ki.wVk = static_cast<WORD>(key);
-    input.ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(1, &input, sizeof(INPUT));
+void InputInjectorWin32::keyUp(KeyCode key) {
+    // Stub
 }
 
 void InputInjectorWin32::mouseMove(int32_t dx, int32_t dy) {
-    INPUT input = {};
-    input.type = INPUT_MOUSE;
-    input.mi.dx = dx;
-    input.mi.dy = dy;
-    input.mi.dwFlags = MOUSEEVENTF_MOVE;
-    SendInput(1, &input, sizeof(INPUT));
+    // Stub
 }
 
-void InputInjectorWin32::mouseButton(yamy::platform::MouseButton button, bool down) {
-    INPUT input = {};
-    input.type = INPUT_MOUSE;
-    switch (button) {
-        case yamy::platform::MouseButton::Left:
-            input.mi.dwFlags = down ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
-            break;
-        case yamy::platform::MouseButton::Right:
-            input.mi.dwFlags = down ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
-            break;
-        case yamy::platform::MouseButton::Middle:
-            input.mi.dwFlags = down ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
-            break;
-        case yamy::platform::MouseButton::X1:
-            input.mi.mouseData = XBUTTON1;
-            input.mi.dwFlags = down ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
-            break;
-        case yamy::platform::MouseButton::X2:
-            input.mi.mouseData = XBUTTON2;
-            input.mi.dwFlags = down ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
-            break;
-    }
-    SendInput(1, &input, sizeof(INPUT));
+void InputInjectorWin32::mouseButton(MouseButton button, bool down) {
+    // Stub
 }
 
 void InputInjectorWin32::mouseWheel(int32_t delta) {
-    INPUT input = {};
-    input.type = INPUT_MOUSE;
-    input.mi.mouseData = static_cast<DWORD>(delta);
-    input.mi.dwFlags = MOUSEEVENTF_WHEEL;
-    SendInput(1, &input, sizeof(INPUT));
+    // Stub
 }
 
-void InputInjectorWin32::injectKey(const yamy::platform::KeyEvent& event) {
-    INPUT input = {};
-    input.type = INPUT_KEYBOARD;
-    input.ki.wVk = static_cast<WORD>(event.key);
-    input.ki.wScan = static_cast<WORD>(event.scanCode);
-
-    // Use scan code if provided
-    if (event.scanCode != 0) {
-        input.ki.dwFlags |= KEYEVENTF_SCANCODE;
-    }
-
-    if (!event.isKeyDown) {
-        input.ki.dwFlags |= KEYEVENTF_KEYUP;
-    }
-    if (event.isExtended) {
-        input.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
-    }
-
-    SendInput(1, &input, sizeof(INPUT));
+IInputInjector* createInputInjector(IWindowSystem* windowSystem) {
+    return new InputInjectorWin32(windowSystem);
 }
 
-namespace yamy::platform {
-    IInputInjector* createInputInjector() {
-        return new InputInjectorWin32(nullptr);
-    }
-}
+} // namespace yamy::platform

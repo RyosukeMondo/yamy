@@ -2,7 +2,6 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/misc.h" // for NUMBER_OF
-#include "../../platform/windows/utf_conversion.h"
 
 void Command_HelpVariable::load(SettingLoader *i_sl)
 {
@@ -23,8 +22,8 @@ void Command_HelpVariable::exec(Engine *i_engine, FunctionParam *i_param) const
     _sntprintf(buf, NUMBER_OF(buf), _T("%d"), i_engine->m_variable);
 
     i_engine->m_helpTitle = m_title.eval();
-    i_engine->m_helpMessage = yamy::platform::wstring_to_utf8(buf);
-    i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)i_engine->getAssociatedWndow(), WM_APP_engineNotify,
+    i_engine->m_helpMessage = buf;
+    i_engine->getWindowSystem()->postMessage(i_engine->getAssociatedWndow(), WM_APP_engineNotify,
                 EngineNotify_helpMessage, true);
 }
 

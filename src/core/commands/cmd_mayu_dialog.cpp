@@ -18,7 +18,7 @@ void Command_MayuDialog::exec(Engine *i_engine, FunctionParam *i_param) const
 {
     if (!i_param->m_isPressed)
         return;
-    i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)i_engine->getAssociatedWndow(), WM_APP_engineNotify, EngineNotify_showDlg,
+    i_engine->getWindowSystem()->postMessage(i_engine->getAssociatedWndow(), WM_APP_engineNotify, EngineNotify_showDlg,
                 static_cast<LPARAM>(m_dialog) |
                 static_cast<LPARAM>(m_showCommand));
 }

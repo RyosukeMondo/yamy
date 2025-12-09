@@ -22,11 +22,11 @@ void Command_WindowLower::load(SettingLoader *i_sl)
 
 void Command_WindowLower::exec(Engine *i_engine, FunctionParam *i_param) const
 {
-    HWND hwnd;
+    yamy::platform::WindowHandle hwnd;
     TargetWindowType twt = m_twt;
-    if (!Engine::getSuitableMdiWindow(i_engine->m_windowSystem, i_param, &hwnd, &twt))
+    if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt))
         return;
-    i_engine->m_windowSystem->setWindowZOrder((WindowSystem::WindowHandle)hwnd, ZOrder::Bottom);
+    i_engine->getWindowSystem()->setWindowZOrder(hwnd, ZOrder::Bottom);
 }
 
 tostream &Command_WindowLower::outputArgs(tostream &i_ost) const

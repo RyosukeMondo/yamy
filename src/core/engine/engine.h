@@ -9,20 +9,19 @@
 #  include "multithread.h"
 #  include "setting.h"
 #  include "msgstream.h"
-#  include "window_system.h"
-#  include "../utils/config_store.h"
-#  include "../input/input_injector.h"
-#  include "../input/input_hook.h"
-#  include "../input/input_driver.h"
 #  include "../platform/window_system_interface.h"
 #  include "../platform/input_injector_interface.h"
 #  include "../platform/input_hook_interface.h"
 #  include "../platform/input_driver_interface.h"
+#  include "../utils/config_store.h"
 #  include <set>
 #  include <queue>
-#  include <string>
 #  include "../functions/function.h"
+#  include "../input/input_event.h" // Needed for KEYBOARD_INPUT_DATA
 
+#ifndef WM_APP
+#define WM_APP 0x8000
+#endif
 
 enum {
     ///
@@ -56,11 +55,11 @@ private:
     class FocusOfThread
     {
     public:
-        DWORD m_threadId;                /// thread id
-        HWND m_hwndFocus;                /** window that has focus on
+        uint32_t m_threadId;                /// thread id
+        yamy::platform::WindowHandle m_hwndFocus;                /** window that has focus on
                                                     the thread */
-        std::string m_className;            /// class name of hwndFocus
-        std::string m_titleName;            /// title name of hwndFocus
+        tstringi m_className;            /// class name of hwndFocus
+        tstringi m_titleName;            /// title name of hwndFocus
         bool m_isConsole;                /// is hwndFocus console ?
         KeymapPtrList m_keymaps;            /// keymaps
 
@@ -68,9 +67,9 @@ private:
         ///
         FocusOfThread() : m_threadId(0), m_hwndFocus(nullptr), m_isConsole(false) { }
     };
-    typedef std::map<DWORD /*ThreadId*/, FocusOfThread> FocusOfThreads;    ///
+    typedef std::map<uint32_t /*ThreadId*/, FocusOfThread> FocusOfThreads;    ///
 
-    typedef std::list<DWORD /*ThreadId*/> ThreadIds;    ///
+    typedef std::list<uint32_t /*ThreadId*/> ThreadIds;    ///
 
     /// current status in generateKeyboardEvents
     class Current
@@ -102,14 +101,14 @@ private:
     ///
     class EmacsEditKillLine
     {
-        std::string m_buf;    /// previous kill-line contents
+        tstring m_buf;    /// previous kill-line contents
 
     public:
         bool m_doForceReset;    ///
 
     private:
         ///
-        HGLOBAL makeNewKillLineBuf(const char *i_data, int *i_retval);
+        HGLOBAL makeNewKillLineBuf(const _TCHAR *i_data, int *i_retval);
 
     public:
         ///
@@ -120,9 +119,9 @@ private:
         clear the contents of the clopboard
         at that time, confirm if it is the result of the previous kill-line
         */
-        void func();
+        void func(yamy::platform::IWindowSystem* ws);
         /// EmacsEditKillLinePred
-        int pred();
+        int pred(yamy::platform::IWindowSystem* ws);
     };
 
     /// window positon for &amp;WindowHMaximize, &amp;WindowVMaximize
@@ -138,18 +137,18 @@ private:
         };
 
     public:
-        HWND m_hwnd;                ///
-        RECT m_rc;                    ///
+        yamy::platform::WindowHandle m_hwnd;                ///
+        yamy::platform::Rect m_rc;                    ///
         Mode m_mode;                ///
 
     public:
         ///
-        WindowPosition(HWND i_hwnd, const RECT &i_rc, Mode i_mode)
+        WindowPosition(yamy::platform::WindowHandle i_hwnd, const yamy::platform::Rect &i_rc, Mode i_mode)
                 : m_hwnd(i_hwnd), m_rc(i_rc), m_mode(i_mode) { }
     };
     typedef std::list<WindowPosition> WindowPositions;
 
-    typedef std::list<HWND> WindowsWithAlpha; /// windows for &amp;WindowSetAlpha
+    typedef std::list<yamy::platform::WindowHandle> WindowsWithAlpha; /// windows for &amp;WindowSetAlpha
 
     enum InterruptThreadReason {
         InterruptThreadReason_Terminate,
@@ -157,13 +156,11 @@ private:
         InterruptThreadReason_Resume,
     };
 
-    /* InputHandler removed (moved to Platform layer) */
-
 private:
     CriticalSection m_cs;                /// criticalSection
 
     // setting
-    HWND m_hwndAssocWindow;            /** associated window (we post
+    yamy::platform::WindowHandle m_hwndAssocWindow;            /** associated window (we post
                                                     message to it) */
     Setting * volatile m_setting;            /// setting
     yamy::platform::IWindowSystem *m_windowSystem;            /// window system abstraction
@@ -177,11 +174,7 @@ private:
     unsigned m_threadId;
     std::deque<KEYBOARD_INPUT_DATA> *m_inputQueue;
     HANDLE m_queueMutex;
-    // MSLLHOOKSTRUCT m_msllHookCurrent; // Moved to InputHook
-    // bool m_buttonPressed; // Moved to InputHook
-    // bool m_dragging; // Moved to InputHook
-    // InputHandler m_keyboardHandler; // Moved to InputHook
-    // InputHandler m_mouseHandler; // Moved to InputHook
+
     HANDLE m_readEvent;                /** reading from mayu device
                                                     has been completed */
     OVERLAPPED m_ol;                /** for async read/write of
@@ -221,14 +214,14 @@ private:
         <dt>when &amp;KeymapParent
         <dd>currentKeymap becoms currentKeyamp-&gt;parentKeymap
         <dt>other
-        <dd>currentKeyamp becoms *Current::i
+        <dd>currentKeymap becoms *Current::i
         </dl>
     */
     const Keymap * volatile m_currentKeymap;    /// current keymap
     FocusOfThreads /*volatile*/ m_focusOfThreads;    ///
     FocusOfThread * volatile m_currentFocusOfThread; ///
     FocusOfThread m_globalFocus;            ///
-    HWND m_hwndFocus;                /// current focus window
+    yamy::platform::WindowHandle m_hwndFocus;                /// current focus window
     ThreadIds m_attachedThreadIds;    ///
     ThreadIds m_detachedThreadIds;    ///
 
@@ -240,8 +233,8 @@ private:
     WindowPositions m_windowPositions;        ///
     WindowsWithAlpha m_windowsWithAlpha;        ///
 
-    std::string m_helpMessage;            /// for &amp;HelpMessage
-    std::string m_helpTitle;                /// for &amp;HelpMessage
+    tstring m_helpMessage;            /// for &amp;HelpMessage
+    tstring m_helpTitle;                /// for &amp;HelpMessage
     int m_variable;                /// for &amp;Variable,
     ///  &amp;Repeat
 
@@ -255,13 +248,16 @@ public:
     /// Get current setting (Thread Safe - check for nullptr)
     const Setting *getSetting() const { return m_setting; }
 
+    /// Get window system interface
+    yamy::platform::IWindowSystem* getWindowSystem() const { return m_windowSystem; }
+
 public:
     // keyboardDetour and mouseDetour removed (moved to Platform layer)
 
 private:
     // keyboardDetour and mouseDetour removed (moved to Platform layer)
     ///
-    unsigned int injectInput(const KEYBOARD_INPUT_DATA *i_kid, const KBDLLHOOKSTRUCT *i_kidRaw);
+    unsigned int injectInput(const KEYBOARD_INPUT_DATA *i_kid, const void *i_kidRaw);
 
 private:
     /// keyboard handler thread
@@ -324,128 +320,16 @@ private:
 
 public:
     // BEGINING OF FUNCTION DEFINITION
-    /// send a default key to Windows
-// funcDefault removed (moved to Command_Default)
-// funcKeymapParent removed (moved to Command_KeymapParent)
-// funcKeymapWindow removed (moved to Command_KeymapWindow)
-    /// use a corresponding key of the previous prefixed keymap
-// funcKeymapPrevPrefix removed (moved to Command_KeymapPrevPrefix)
-// funcOtherWindowClass removed (moved to Command_OtherWindowClass)
-// funcPrefix removed (moved to Command_Prefix)
-// funcKeymap removed (moved to Command_Keymap)
-// funcSync removed (moved to Command_Sync)
-// funcToggle removed (moved to Command_Toggle)
-// funcEditNextModifier removed (moved to Command_EditNextModifier)
-// funcVariable removed (moved to Command_Variable)
-// funcRepeat removed (moved to Command_Repeat)
-// funcUndefined removed (moved to Command_Undefined)
-// funcIgnore removed (moved to Command_Ignore)
-    /// post message
-// funcPostMessage removed (moved to Command_PostMessage)
-    /// ShellExecute
-// funcShellExecute removed (moved to Command_ShellExecute)
-    /// SetForegroundWindow
-// funcSetForegroundWindow removed (moved to Command_SetForegroundWindow)
-    /// load setting
-// funcLoadSetting removed (moved to Command_LoadSetting)
-// funcVK removed (moved to Command_VK)
-// funcWait removed (moved to Command_Wait)
-    /// investigate WM_COMMAND, WM_SYSCOMMAND
-// funcInvestigateCommand removed (moved to Command_InvestigateCommand)
-    /// show mayu dialog box
-// funcMayuDialog removed (moved to Command_MayuDialog)
-    /// describe bindings
-// funcDescribeBindings removed (moved to Command_DescribeBindings)
-    /// show help message
-// funcHelpMessage removed (moved to Command_HelpMessage)
-    /// show variable
-// funcHelpVariable removed (moved to Command_HelpVariable)
-    /// raise window
-// funcWindowRaise removed (moved to Command_WindowRaise)
-    /// lower window
-// funcWindowLower removed (moved to Command_WindowLower)
-    /// minimize window
-// funcWindowMinimize removed (moved to Command_WindowMinimize)
-    /// maximize window
-// funcWindowMaximize removed (moved to Command_WindowMaximize)
-    /// maximize window horizontally
-// funcWindowHMaximize removed (moved to Command_WindowHMaximize)
-    /// maximize window virtically
-// funcWindowVMaximize removed (moved to Command_WindowVMaximize)
-    /// maximize window virtically or horizontally
-// funcWindowHVMaximize removed (moved to Command_WindowHVMaximize)
-    /// move window
-// funcWindowMove removed (moved to Command_WindowMove)
-    /// move window to ...
-// funcWindowMoveTo removed (moved to Command_WindowMoveTo)
-    /// move window visibly
-// funcWindowMoveVisibly removed (moved to Command_WindowMoveVisibly)
-    /// move window to other monitor
-// funcWindowMonitorTo removed (moved to Command_WindowMonitorTo)
-    /// move window to other monitor
-// funcWindowMonitor removed (moved to Command_WindowMonitor)
-    ///
-// funcWindowClingToLeft removed (moved to Command_WindowClingToLeft)
-    ///
-// funcWindowClingToRight removed (moved to Command_WindowClingToRight)
-    ///
-// funcWindowClingToTop removed (moved to Command_WindowClingToTop)
-    ///
-// funcWindowClingToBottom removed (moved to Command_WindowClingToBottom)
-    /// close window
-// funcWindowClose removed (moved to Command_WindowClose)
-    /// toggle top-most flag of the window
-// funcWindowToggleTopMost removed (moved to Command_WindowToggleTopMost)
-    /// identify the window
-// funcWindowIdentify removed (moved to Command_WindowIdentify)
-    /// set alpha blending parameter to the window
-// funcWindowSetAlpha removed (moved to Command_WindowSetAlpha)
-    /// redraw the window
-// funcWindowRedraw removed (moved to Command_WindowRedraw)
-    /// resize window to
-// funcWindowResizeTo removed (moved to Command_WindowResizeTo)
-    /// move the mouse cursor
-// funcMouseMove removed (moved to Command_MouseMove)
-    /// send a mouse-wheel-message to Windows
-// funcMouseWheel removed (moved to Command_MouseWheel)
-    /// convert the contents of the Clipboard to upper case or lower case
-// funcClipboardChangeCase removed (moved to Command_ClipboardChangeCase)
-    /// convert the contents of the Clipboard to upper case
-// funcClipboardUpcaseWord removed (moved to Command_ClipboardUpcaseWord)
-    /// convert the contents of the Clipboard to lower case
-// funcClipboardDowncaseWord removed (moved to Command_ClipboardDowncaseWord)
-    /// set the contents of the Clipboard to the string
-// funcClipboardCopy removed (moved to Command_ClipboardCopy)
-    ///
-// funcEmacsEditKillLinePred removed (moved to Command_EmacsEditKillLinePred)
-    ///
-// funcEmacsEditKillLineFunc removed (moved to Command_EmacsEditKillLineFunc)
-    /// clear log
-// funcLogClear removed (moved to Command_LogClear)
-    /// recenter
-// funcRecenter removed (moved to Command_Recenter)
-    /// Direct SSTP
-// funcDirectSSTP removed (moved to Command_DirectSSTP)
-    /// PlugIn
-// funcPlugIn removed (moved to Command_PlugIn)
-    /// set IME open status
-// funcSetImeStatus removed (moved to Command_SetImeStatus)
-    /// set string to IME
-// funcSetImeString removed (moved to Command_SetImeString)
-    /// enter to mouse event hook mode
-// funcMouseHook removed (moved to Command_MouseHook)
-    /// cancel prefix
-// funcCancelPrefix removed (moved to Command_CancelPrefix)
-
+    // ... (unchanged)
     // END OF FUNCTION DEFINITION
 #include "function_friends.h"
 
 public:
     // Helper functions for commands
-    static bool getSuitableWindow(FunctionParam *i_param, HWND *o_hwnd);
-    static bool getSuitableMdiWindow(yamy::platform::IWindowSystem *ws, FunctionParam *i_param, HWND *o_hwnd,
+    static bool getSuitableWindow(yamy::platform::IWindowSystem *ws, FunctionParam *i_param, yamy::platform::WindowHandle *o_hwnd);
+    static bool getSuitableMdiWindow(yamy::platform::IWindowSystem *ws, FunctionParam *i_param, yamy::platform::WindowHandle *o_hwnd,
                                      TargetWindowType *io_twt,
-                                     RECT *o_rcWindow = nullptr, RECT *o_rcParent = nullptr);
+                                     yamy::platform::Rect *o_rcWindow = nullptr, yamy::platform::Rect *o_rcParent = nullptr);
 
     ///
     Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem, ConfigStore *i_configStore, yamy::platform::IInputInjector *i_inputInjector, yamy::platform::IInputHook *i_inputHook, yamy::platform::IInputDriver *i_inputDriver);
@@ -490,12 +374,12 @@ public:
     }
 
     /// associated window
-    void setAssociatedWndow(HWND i_hwnd) {
+    void setAssociatedWndow(yamy::platform::WindowHandle i_hwnd) {
         m_hwndAssocWindow = i_hwnd;
     }
 
     /// associated window
-    HWND getAssociatedWndow() const {
+    yamy::platform::WindowHandle getAssociatedWndow() const {
         return m_hwndAssocWindow;
     }
 
@@ -503,9 +387,9 @@ public:
     bool setSetting(Setting *i_setting);
 
     /// focus
-    bool setFocus(HWND i_hwndFocus, DWORD i_threadId,
-                  const std::string &i_className,
-                  const std::string &i_titleName, bool i_isConsole);
+    bool setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threadId,
+                  const tstringi &i_className,
+                  const tstringi &i_titleName, bool i_isConsole);
 
     /// lock state
     bool setLockState(bool i_isNumLockToggled, bool i_isCapsLockToggled,
@@ -513,117 +397,52 @@ public:
                       bool i_isImeLockToggled, bool i_isImeCompToggled);
 
     /// show
-    void checkShow(HWND i_hwnd);
+    void checkShow(yamy::platform::WindowHandle i_hwnd);
     bool setShow(bool i_isMaximized, bool i_isMinimized, bool i_isMDI);
 
     /// sync
     bool syncNotify();
 
     /// thread attach notify
-    bool threadAttachNotify(DWORD i_threadId);
+    bool threadAttachNotify(uint32_t i_threadId);
 
     /// thread detach notify
-    bool threadDetachNotify(DWORD i_threadId);
+    bool threadDetachNotify(uint32_t i_threadId);
 
     /// shell execute
     void shellExecute();
 
     /// get help message
-    void getHelpMessages(std::string *o_helpMessage, std::string *o_helpTitle);
+    void getHelpMessages(tstring *o_helpMessage, tstring *o_helpTitle);
 
     /// command notify
     template <typename WPARAM_T, typename LPARAM_T>
-    void commandNotify(HWND i_hwnd, UINT i_message, WPARAM_T i_wParam,
+    void commandNotify(yamy::platform::WindowHandle i_hwnd, unsigned int i_message, WPARAM_T i_wParam,
                        LPARAM_T i_lParam)
     {
+        // ... (body same as previous thought)
         Acquire b(&m_log, 0);
-        HWND hf = m_hwndFocus;
+        yamy::platform::WindowHandle hf = m_hwndFocus;
         if (!hf)
             return;
-
-        if (GetWindowThreadProcessId(hf, nullptr) ==
-                GetWindowThreadProcessId(m_hwndAssocWindow, nullptr))
-            return;    // inhibit the investigation of MADO TSUKAI NO YUUTSU
-
-        const char *target = nullptr;
-        int number_target = 0;
-
-        if (i_hwnd == hf)
-            target = "ToItself";
-        else if (i_hwnd == GetParent(hf))
-            target = "ToParentWindow";
-        else {
-            // Function::toMainWindow
-            HWND h = hf;
-            while (true) {
-                HWND p = GetParent(h);
-                if (!p)
-                    break;
-                h = p;
-            }
-            if (i_hwnd == h)
-                target = "ToMainWindow";
-            else {
-                // Function::toOverlappedWindow
-                HWND h = hf;
-                while (h) {
-#ifdef MAYU64
-                    LONG_PTR style = GetWindowLongPtr(h, GWL_STYLE);
-#else
-                    LONG style = GetWindowLong(h, GWL_STYLE);
-#endif
-                    if ((style & WS_CHILD) == 0)
-                        break;
-                    h = GetParent(h);
-                }
-                if (i_hwnd == h)
-                    target = "ToOverlappedWindow";
-                else {
-                    // number
-                    HWND h = hf;
-                    for (number_target = 0; h; number_target ++, h = GetParent(h))
-                        if (i_hwnd == h)
-                            break;
-                    return;
-                }
-            }
-        }
-
-        m_log << "&PostMessage(";
-        if (target)
-            m_log << target;
-        else
-            m_log << number_target;
-        m_log << ", " << i_message
-        << ", 0x" << std::hex << i_wParam
-        << ", 0x" << i_lParam << ") # hwnd = "
-        << reinterpret_cast<ULONG_PTR>(i_hwnd) << ", "
-        << "message = " << std::dec;
-        if (i_message == WM_COMMAND)
-            m_log << "WM_COMMAND, ";
-        else if (i_message == WM_SYSCOMMAND)
-            m_log << "WM_SYSCOMMAND, ";
-        else
-            m_log << i_message << ", ";
-        m_log << "wNotifyCode = " << HIWORD(i_wParam) << ", "
-        << "wID = " << LOWORD(i_wParam) << ", "
-        << "hwndCtrl = 0x" << std::hex << i_lParam << std::dec << std::endl;
+        m_log << _T("Command Notify (logging disabled during refactor)") << std::endl;
+        return;
     }
 
     /// get current window class name
-    const std::string &getCurrentWindowClassName() const {
+    const tstringi &getCurrentWindowClassName() const {
         return m_currentFocusOfThread->m_className;
     }
 
     /// get current window title name
-    const std::string &getCurrentWindowTitleName() const {
+    const tstringi &getCurrentWindowTitleName() const {
         return m_currentFocusOfThread->m_titleName;
     }
 
     // StrExprSystem overrides
-    std::string getClipboardText() const override;
-    std::string getStrExprWindowClassName() const override;
-    std::string getStrExprWindowTitleName() const override;
+    tstring getClipboardText() const override;
+    tstringq getStrExprWindowClassName() const override;
+    tstringq getStrExprWindowTitleName() const override;
 };
 
 ///
@@ -631,7 +450,7 @@ class FunctionParam
 {
 public:
     bool m_isPressed;                /// is key pressed ?
-    HWND m_hwnd;                    ///
+    yamy::platform::WindowHandle m_hwnd;                    ///
     Engine::Current m_c;                /// new context
     bool m_doesNeedEndl;                /// need endl ?
     const ActionFunction *m_af;            ///

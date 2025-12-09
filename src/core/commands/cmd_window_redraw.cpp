@@ -4,8 +4,8 @@
 
 void Command_WindowRedraw::exec(Engine *i_engine, FunctionParam *i_param) const
 {
-    HWND hwnd;
-    if (!Engine::getSuitableWindow(i_param, &hwnd))
+    yamy::platform::WindowHandle hwnd;
+    if (!Engine::getSuitableWindow(i_engine->getWindowSystem(), i_param, &hwnd))
         return;
-    i_engine->m_windowSystem->redrawWindow((WindowSystem::WindowHandle)hwnd);
+    i_engine->getWindowSystem()->redrawWindow(hwnd);
 }

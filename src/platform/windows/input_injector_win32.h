@@ -2,26 +2,28 @@
 #ifndef _INPUT_INJECTOR_WIN32_H
 #define _INPUT_INJECTOR_WIN32_H
 
-#include "../../core/input/input_injector.h"
-#include "../../core/window/window_system.h"
 #include "../../core/platform/input_injector_interface.h"
+#include "../../core/platform/window_system_interface.h"
+#include "../../core/input/input_event.h" // For KEYBOARD_INPUT_DATA
 #include <windows.h>
 
-class InputInjectorWin32 : public InputInjector, public yamy::platform::IInputInjector {
-    WindowSystem *m_windowSystem;
+namespace yamy::platform {
+
+class InputInjectorWin32 : public IInputInjector {
+    IWindowSystem *m_windowSystem;
 public:
-    InputInjectorWin32(WindowSystem *ws) : m_windowSystem(ws) {}
+    InputInjectorWin32(IWindowSystem *ws) : m_windowSystem(ws) {}
+
     void inject(const KEYBOARD_INPUT_DATA *data, const InjectionContext &ctx, const void *rawData = 0) override;
 
-    // IInputInjector implementation
-    void keyDown(yamy::platform::KeyCode key) override;
-    void keyUp(yamy::platform::KeyCode key) override;
-
-    void injectKey(const yamy::platform::KeyEvent& event) override;
-
+    // New methods
+    void keyDown(KeyCode key) override;
+    void keyUp(KeyCode key) override;
     void mouseMove(int32_t dx, int32_t dy) override;
-    void mouseButton(yamy::platform::MouseButton button, bool down) override;
+    void mouseButton(MouseButton button, bool down) override;
     void mouseWheel(int32_t delta) override;
 };
+
+} // namespace yamy::platform
 
 #endif // !_INPUT_INJECTOR_WIN32_H

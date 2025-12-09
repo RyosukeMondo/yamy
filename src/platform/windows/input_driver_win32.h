@@ -1,23 +1,28 @@
-﻿#pragma once
+#pragma once
 #ifndef _INPUT_DRIVER_WIN32_H
 #define _INPUT_DRIVER_WIN32_H
 
-#include "../../core/input/input_driver.h"
+#include "../../core/platform/input_driver_interface.h"
 #include <windows.h>
+#include <string>
 
-class InputDriverWin32 : public InputDriver
+namespace yamy::platform {
+
+class InputDriverWin32 : public IInputDriver
 {
 public:
     InputDriverWin32();
     virtual ~InputDriverWin32();
 
-    virtual bool open(void *readEvent);
-    virtual void close();
-    virtual void manageExtension(const void *dllName, const void *dependDllName, bool load, void **moduleHandle);
+    virtual bool open(void *readEvent) override;
+    virtual void close() override;
+    virtual void manageExtension(const std::string& dllName, const std::string& dependDllName, bool load, void **moduleHandle) override;
 
 private:
     HANDLE m_hDevice;
     OVERLAPPED m_ol;
 };
+
+} // namespace yamy::platform
 
 #endif // !_INPUT_DRIVER_WIN32_H

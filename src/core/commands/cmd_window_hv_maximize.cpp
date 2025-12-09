@@ -24,10 +24,10 @@ void Command_WindowHVMaximize::load(SettingLoader *i_sl)
 
 void Command_WindowHVMaximize::exec(Engine *i_engine, FunctionParam *i_param) const
 {
-    HWND hwnd;
-    RECT rc, rcd;
+    yamy::platform::WindowHandle hwnd;
+    yamy::platform::Rect rc, rcd;
     TargetWindowType twt = m_twt;
-    if (!Engine::getSuitableMdiWindow(i_engine->m_windowSystem, i_param, &hwnd, &twt, &rc, &rcd))
+    if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt, &rc, &rcd))
         return;
 
     int x = rc.left;

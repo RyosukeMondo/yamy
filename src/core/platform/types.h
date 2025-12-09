@@ -35,7 +35,7 @@ enum class KeyCode : uint32_t {
     Unknown = 0,
     Escape = 0x1B,
     Space = 0x20,
-    // Add more as needed
+    // ... define key codes as needed
 };
 
 // Mouse buttons
@@ -47,13 +47,49 @@ enum class MouseButton {
     X2
 };
 
-// Input Event
+// Input Events
 struct KeyEvent {
     KeyCode key;
     bool isKeyDown;
     bool isExtended;
     uint32_t scanCode;
     uint32_t timestamp;
+};
+
+struct MouseEvent {
+    Point pt;
+    uint32_t mouseData;
+    uint32_t flags;
+    uint32_t time;
+    uintptr_t extraInfo;
+    uint32_t message;
+};
+
+// Additional enums from incoming branch
+enum class WindowShowCmd {
+    Normal,
+    Maximized,
+    Minimized,
+    Unknown
+};
+
+enum class SystemMetric {
+    VirtualScreenWidth,
+    VirtualScreenHeight,
+    ScreenWidth,
+    ScreenHeight
+};
+
+enum class ZOrder {
+    Top,
+    Bottom,
+    TopMost,
+    NoTopMost
+};
+
+struct InjectionContext {
+    bool isDragging;
+    Point dragStartPos;
 };
 
 } // namespace yamy::platform

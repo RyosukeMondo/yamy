@@ -22,13 +22,13 @@ void Command_WindowMaximize::load(SettingLoader *i_sl)
 
 void Command_WindowMaximize::exec(Engine *i_engine, FunctionParam *i_param) const
 {
-    HWND hwnd;
+    yamy::platform::WindowHandle hwnd;
     TargetWindowType twt = m_twt;
-    if (!Engine::getSuitableMdiWindow(i_engine->m_windowSystem, i_param, &hwnd, &twt))
+    if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt))
         return;
 
-    bool isZoomed = (i_engine->m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Maximized);
-    i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND,
+    bool isZoomed = (i_engine->getWindowSystem()->getShowCommand(hwnd) == WindowShowCmd::Maximized);
+    i_engine->getWindowSystem()->postMessage(hwnd, WM_SYSCOMMAND,
                 isZoomed ? SC_RESTORE : SC_MAXIMIZE, 0);
 }
 

@@ -44,6 +44,6 @@ void Command_LoadSetting::exec(Engine *i_engine, FunctionParam *i_param) const
 success:
         ;
     }
-    i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)i_engine->m_hwndAssocWindow,
+    i_engine->getWindowSystem()->postMessage(i_engine->m_hwndAssocWindow,
                 WM_APP_engineNotify, EngineNotify_loadSetting, 0);
 }

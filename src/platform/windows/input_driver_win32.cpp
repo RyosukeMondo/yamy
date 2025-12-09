@@ -1,9 +1,10 @@
 #include "input_driver_win32.h"
 #include "driver.h"
 #include "misc.h"
-#include "windowstool.h"
-#include "../../utils/stringtool.h"
+#include "utf_conversion.h"
 #include <tchar.h>
+
+namespace yamy::platform {
 
 InputDriverWin32::InputDriverWin32()
     : m_hDevice(INVALID_HANDLE_VALUE)
@@ -46,10 +47,18 @@ void InputDriverWin32::close()
     }
 }
 
-void InputDriverWin32::manageExtension(const void *dllName, const void *dependDllName, bool load, void **moduleHandle)
+void InputDriverWin32::manageExtension(const std::string& dllName, const std::string& dependDllName, bool load, void **moduleHandle)
 {
-    const TCHAR *ts4mayuDllName = (const TCHAR *)dllName;
-    const TCHAR *dependDllNameT = (const TCHAR *)dependDllName;
+#ifdef UNICODE
+    std::wstring dllNameT = utf8_to_wstring(dllName);
+    std::wstring dependDllNameT = utf8_to_wstring(dependDllName);
+    const wchar_t* pDllName = dllNameT.c_str();
+    const wchar_t* pDependName = dependDllNameT.c_str();
+#else
+    const char* pDllName = dllName.c_str();
+    const char* pDependName = dependDllName.c_str();
+#endif
+
     HMODULE *pTs4mayu = (HMODULE *)moduleHandle;
 
     if (load == false) {
@@ -65,10 +74,10 @@ void InputDriverWin32::manageExtension(const void *dllName, const void *dependDl
         if (*pTs4mayu) {
             // already loaded
         } else {
-            if (SearchPath(nullptr, dependDllNameT, nullptr, 0, nullptr, nullptr) == 0) {
+            if (SearchPath(nullptr, pDependName, nullptr, 0, nullptr, nullptr) == 0) {
                 // failed to find depend dll
             } else {
-                *pTs4mayu = LoadLibrary(ts4mayuDllName);
+                *pTs4mayu = LoadLibrary(pDllName);
                 if (*pTs4mayu == nullptr) {
                     // failed to load
                 } else {
@@ -83,30 +92,8 @@ void InputDriverWin32::manageExtension(const void *dllName, const void *dependDl
     }
 }
 
-// Implementation of IInputDriver interface
-
-bool InputDriverWin32::initialize() {
-    return open(nullptr);
+IInputDriver* createInputDriver() {
+    return new InputDriverWin32();
 }
 
-void InputDriverWin32::shutdown() {
-    close();
-}
-
-void InputDriverWin32::processEvents() {
-    // No-op for now
-}
-
-bool InputDriverWin32::isKeyPressed(uint32_t key) const {
-    return (GetAsyncKeyState((int)key) & 0x8000) != 0;
-}
-
-void InputDriverWin32::manageExtension(const std::string& dllName, const std::string& dependDllName, bool load, void** moduleHandle) {
-    manageExtension((const void*)to_tstring(dllName).c_str(), (const void*)to_tstring(dependDllName).c_str(), load, moduleHandle);
-}
-
-namespace yamy::platform {
-    IInputDriver* createInputDriver() {
-        return new InputDriverWin32();
-    }
-}
+} // namespace yamy::platform

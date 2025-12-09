@@ -17,7 +17,7 @@ void Command_ClipboardCopy::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!i_param->m_isPressed)
         return;
 
-    i_engine->m_windowSystem->setClipboardText(to_tstring(m_text.eval()));
+    i_engine->getWindowSystem()->setClipboardText(m_text.eval());
 }
 
 tostream &Command_ClipboardCopy::outputArgs(tostream &i_ost) const

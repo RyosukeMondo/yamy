@@ -4,15 +4,16 @@
 
 namespace yamy::platform {
 
-// KeyEvent is defined in types.h
+// KeyEvent and MouseEvent are defined in types.h
 
 using KeyCallback = std::function<bool(const KeyEvent&)>;
+using MouseCallback = std::function<bool(const MouseEvent&)>;
 
 class IInputHook {
 public:
     virtual ~IInputHook() = default;
 
-    virtual bool install(KeyCallback callback) = 0;
+    virtual bool install(KeyCallback keyCallback, MouseCallback mouseCallback) = 0;
     virtual void uninstall() = 0;
     virtual bool isInstalled() const = 0;
 };

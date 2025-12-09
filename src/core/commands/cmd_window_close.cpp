@@ -22,11 +22,11 @@ void Command_WindowClose::load(SettingLoader *i_sl)
 
 void Command_WindowClose::exec(Engine *i_engine, FunctionParam *i_param) const
 {
-    HWND hwnd;
+    yamy::platform::WindowHandle hwnd;
     TargetWindowType twt = m_twt;
-    if (!Engine::getSuitableMdiWindow(i_engine->m_windowSystem, i_param, &hwnd, &twt))
+    if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt))
         return;
-    i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
+    i_engine->getWindowSystem()->postMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
 }
 
 tostream &Command_WindowClose::outputArgs(tostream &i_ost) const

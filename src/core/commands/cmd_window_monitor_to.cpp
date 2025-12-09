@@ -1,44 +1,10 @@
 #include "cmd_window_monitor_to.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
-#include "../../platform/windows/windowstool.h" // For asyncMoveWindow, rcWidth, rcHeight
+// #include "../../platform/windows/windowstool.h" // Removed Win32 dependency
 #include <vector>
 
-// Helper structs for WindowMonitorTo
-struct EnumDisplayMonitorsForWindowMonitorToParam {
-    std::vector<HMONITOR> m_monitors;
-    std::vector<MONITORINFO> m_monitorinfos;
-    int m_primaryMonitorIdx;
-    int m_currentMonitorIdx;
-
-    HMONITOR m_hmon;
-
-public:
-    EnumDisplayMonitorsForWindowMonitorToParam(HMONITOR i_hmon)
-            : m_primaryMonitorIdx(-1), m_currentMonitorIdx(-1), m_hmon(i_hmon) {
-    }
-};
-
-static BOOL CALLBACK enumDisplayMonitorsForWindowMonitorTo(
-    HMONITOR i_hmon, HDC i_hdc, LPRECT i_rcMonitor, LPARAM i_data)
-{
-    EnumDisplayMonitorsForWindowMonitorToParam &ep =
-        *reinterpret_cast<EnumDisplayMonitorsForWindowMonitorToParam *>(i_data);
-
-    ep.m_monitors.push_back(i_hmon);
-
-    MONITORINFO mi;
-    mi.cbSize = sizeof(mi);
-    GetMonitorInfo(i_hmon, &mi);
-    ep.m_monitorinfos.push_back(mi);
-
-    if (mi.dwFlags & MONITORINFOF_PRIMARY)
-        ep.m_primaryMonitorIdx = (int)(ep.m_monitors.size() - 1);
-    if (i_hmon == ep.m_hmon)
-        ep.m_currentMonitorIdx = (int)(ep.m_monitors.size() - 1);
-
-    return TRUE;
-}
+using namespace yamy::platform;
 
 Command_WindowMonitorTo::Command_WindowMonitorTo()
 {
@@ -68,69 +34,72 @@ void Command_WindowMonitorTo::load(SettingLoader *i_sl)
 
 void Command_WindowMonitorTo::exec(Engine *i_engine, FunctionParam *i_param) const
 {
-    HWND hwnd;
-    if (! Engine::getSuitableWindow(i_param, &hwnd))
+    WindowHandle hwnd;
+    IWindowSystem* ws = i_engine->getWindowSystem();
+
+    if (! Engine::getSuitableWindow(ws, i_param, &hwnd))
         return;
 
-    HMONITOR hmonCur;
-    hmonCur = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    int currentIdx = ws->getMonitorIndex(hwnd);
+    int monitorCount = ws->getMonitorCount();
 
-    EnumDisplayMonitorsForWindowMonitorToParam ep(hmonCur);
-    EnumDisplayMonitors(nullptr, nullptr, enumDisplayMonitorsForWindowMonitorTo,
-                        reinterpret_cast<LPARAM>(&ep));
-    if (ep.m_monitors.size() < 1 ||
-            ep.m_primaryMonitorIdx < 0 || ep.m_currentMonitorIdx < 0)
+    if (monitorCount < 1 || currentIdx < 0)
         return;
 
     int targetIdx = 0;
     switch (m_fromType) {
     case WindowMonitorFromType_primary:
-        targetIdx = (ep.m_primaryMonitorIdx + m_monitor) % (int)ep.m_monitors.size();
+        // Assume primary is index 0
+        targetIdx = (0 + m_monitor) % monitorCount;
         break;
 
     case WindowMonitorFromType_current:
-        targetIdx = (ep.m_currentMonitorIdx + m_monitor) % (int)ep.m_monitors.size();
+        targetIdx = (currentIdx + m_monitor) % monitorCount;
         break;
     }
-    if (ep.m_currentMonitorIdx == targetIdx)
+    if (currentIdx == targetIdx)
         return;
 
-    RECT rcCur, rcTarget, rcWin;
-    rcCur = ep.m_monitorinfos[ep.m_currentMonitorIdx].rcWork;
-    rcTarget = ep.m_monitorinfos[targetIdx].rcWork;
-    GetWindowRect(hwnd, &rcWin);
+    Rect rcCur, rcTarget, rcWin;
+    // Using WorkArea as per original code (mi.rcWork)
+    if (!ws->getMonitorWorkArea(currentIdx, &rcCur) ||
+        !ws->getMonitorWorkArea(targetIdx, &rcTarget))
+        return;
+
+    ws->getWindowRect(hwnd, &rcWin);
 
     int x = rcTarget.left + (rcWin.left - rcCur.left);
     int y = rcTarget.top + (rcWin.top - rcCur.top);
-    int w = rcWidth(&rcWin);
-    int h = rcHeight(&rcWin);
+    int w = rcWin.width();
+    int h = rcWin.height();
 
     if (m_adjustPos) {
         if (x + w > rcTarget.right)
             x = rcTarget.right - w;
         if (x < rcTarget.left)
             x = rcTarget.left;
-        if (w > rcWidth(&rcTarget)) {
+        if (w > rcTarget.width()) {
             x = rcTarget.left;
-            w = rcWidth(&rcTarget);
+            w = rcTarget.width();
         }
 
         if (y + h > rcTarget.bottom)
             y = rcTarget.bottom - h;
         if (y < rcTarget.top)
             y = rcTarget.top;
-        if (h > rcHeight(&rcTarget)) {
+        if (h > rcTarget.height()) {
             y = rcTarget.top;
-            h = rcHeight(&rcTarget);
+            h = rcTarget.height();
         }
     }
 
     if (m_adjustPos && m_adjustSize) {
-        if (i_engine->m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Maximized)
-            i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-        asyncMoveWindow(hwnd, x, y, w, h);
+        if (ws->getShowCommand(hwnd) == WindowShowCmd::Maximized)
+            ws->showWindow(hwnd, 9); // SW_RESTORE
+
+        ws->moveWindow(hwnd, Rect(x, y, x+w, y+h));
     } else {
-        asyncMoveWindow(hwnd, x, y);
+        ws->moveWindow(hwnd, Rect(x, y, x+w, y+h));
     }
 }
 
