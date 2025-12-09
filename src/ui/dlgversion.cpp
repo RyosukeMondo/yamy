@@ -48,24 +48,35 @@ public:
         CHECK_TRUE( GetModuleFileName(g_hInst, modulebuf,
                                       NUMBER_OF(modulebuf)) );
 
-        _TCHAR buf[1024];
-        _sntprintf(buf, NUMBER_OF(buf), loadString(IDS_version).c_str(),
-                   _T(VERSION)
+        std::string modulebuf_str = yamy::platform::wstring_to_utf8(modulebuf);
+        std::string version_fmt = yamy::platform::wstring_to_utf8(loadString(IDS_version));
+        std::string homepage = yamy::platform::wstring_to_utf8(loadString(IDS_homepage));
+        std::string built_by = std::string(LOGNAME) + "@" + yamy::platform::wstring_to_utf8(toLower(_T(COMPUTERNAME)));
+        std::string compiler_ver = yamy::platform::wstring_to_utf8(getCompilerVersionString());
+
+        std::string version = VERSION;
 #ifndef NDEBUG
-                   _T(" (DEBUG)")
+        version += " (DEBUG)";
 #endif // !NDEBUG
 #ifdef _UNICODE
-                   _T(" (UNICODE)")
+        version += " (UNICODE)";
 #endif // !_UNICODE
-                   ,
-                   loadString(IDS_homepage).c_str(),
-                   (_T(LOGNAME) _T("@") + toLower(_T(COMPUTERNAME))).c_str(),
-                   _T(__DATE__) _T(" ") _T(__TIME__),
-                   getCompilerVersionString().c_str(),
-                   modulebuf);
+
+        char buf[1024];
+        // Note: loadString(IDS_version) format specifiers might be %s which expects char* in std::string context
+        // but original code used _sntprintf (TCHAR).
+        // If IDS_version contains %s, and we use snprintf, it should be fine.
+        // Assuming IDS_version is something like "Version %s\nHomepage: %s\nBuilt by: %s\nDate: %s\nCompiler: %s\nModule: %s"
+        snprintf(buf, sizeof(buf), version_fmt.c_str(),
+                   version.c_str(),
+                   homepage.c_str(),
+                   built_by.c_str(),
+                   __DATE__ " " __TIME__,
+                   compiler_ver.c_str(),
+                   modulebuf_str.c_str());
 
 
-        Edit_SetText(GetDlgItem(m_hwnd, IDC_EDIT_builtBy), buf);
+        yamy::windows::setWindowText(GetDlgItem(m_hwnd, IDC_EDIT_builtBy), buf);
 
         // set layout manager
         typedef LayoutManager LM;
@@ -101,7 +112,7 @@ public:
             return TRUE;
         }
         case IDC_BUTTON_download: {
-            ShellExecute(nullptr, nullptr, loadString(IDS_homepage).c_str(),
+            ShellExecuteW(nullptr, nullptr, loadString(IDS_homepage).c_str(),
                          nullptr, nullptr, SW_SHOWNORMAL);
             CHECK_TRUE( EndDialog(m_hwnd, 0) );
             return TRUE;

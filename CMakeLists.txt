@@ -193,6 +193,7 @@ set(ENGINE_SOURCES
     src/core/settings/parser.cpp
     src/platform/windows/input_driver_win32.cpp
     src/platform/windows/registry.cpp
+    src/platform/windows/utf_conversion.cpp
     src/platform/windows/window_system_win32.cpp
     src/platform/windows/windowstool.cpp
     src/platform/windows/utf_conversion.cpp
@@ -204,6 +205,12 @@ set(ENGINE_SOURCES
     src/ui/mayu.rc
     src/app/mayu.cpp
 )
+
+if(WIN32)
+    list(APPEND ENGINE_SOURCES src/platform/windows/thread_win32.cpp)
+elseif(UNIX)
+    list(APPEND ENGINE_SOURCES src/platform/linux/thread_linux.cpp)
+endif()
 
 add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
 set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
@@ -271,6 +278,11 @@ if(BUILD_TESTING)
     # We might need to compile gtest as a library first if not already managed
     # For simplicity, including gtest-all.cc directly as the vcxproj did
     
+    # Add platform specific sources
+    if(WIN32)
+        list(APPEND ENGINE_SOURCES src/platform/windows/utf_conversion.cpp)
+    endif()
+
     set(TEST_SOURCES
         ${ENGINE_SOURCES} # Tests often need the whole engine code mostly. 
                           # Note: Linking engine object or sources directly. 
@@ -283,6 +295,10 @@ if(BUILD_TESTING)
         src/tests/googletest/src/gtest-all.cc
         src/tests/test_main.cpp
     )
+
+    if(WIN32)
+        target_sources(yamy_test PRIVATE src/tests/test_utf_conversion.cpp)
+    endif()
     
     target_include_directories(yamy_test PRIVATE
         ${GTEST_DIR}/include

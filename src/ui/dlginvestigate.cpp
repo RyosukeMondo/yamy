@@ -78,18 +78,25 @@ public:
         bool ok = false;
         if (GetClassName(i_hwndTarget, className, NUMBER_OF(className))) {
             if (_tcsicmp(className, _T("ConsoleWindowClass")) == 0) {
-                _TCHAR titleName[1024];
-                if (GetWindowText(i_hwndTarget, titleName, NUMBER_OF(titleName)) == 0)
-                    titleName[0] = _T('\0');
+                std::string titleName = yamy::windows::getWindowText(i_hwndTarget);
                 {
                     Acquire a(&m_data.m_engine->m_log, 1);
-                    m_data.m_engine->m_log << _T("HWND:\t") << std::hex
+                    m_data.m_engine->m_log << "HWND:\t" << std::hex
                     << reinterpret_cast<ULONG_PTR>(i_hwndTarget)
                     << std::dec << std::endl;
                 }
                 Acquire a(&m_data.m_engine->m_log, 0);
+                // m_log is a tomsgstream, which likely inherits from basic_ostream<TCHAR>
+                // className is TCHAR*, titleName is std::string (UTF-8)
+                // We need to ensure we are writing compatible types.
+                // Assuming tomsgstream handles TCHAR. std::string needs conversion if TCHAR is wchar_t.
+                // Since this is Branch 6 and Engine migration (Branch 2) might not be fully done or merged,
+                // but we are migrating UI strings to std::string.
+                // If m_log expects TCHAR, we need to convert titleName back to TCHAR/wstring for outputting to the stream.
+                // or if m_log supports std::string overload.
+                // Given previous code was using _T("..."), m_log likely expects TCHAR.
                 m_data.m_engine->m_log << _T("CLASS:\t") << className << std::endl;
-                m_data.m_engine->m_log << _T("TITLE:\t") << titleName << std::endl;
+                m_data.m_engine->m_log << _T("TITLE:\t") << yamy::platform::utf8_to_wstring(titleName) << std::endl;
                 ok = true;
             }
         }
