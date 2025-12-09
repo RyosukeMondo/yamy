@@ -49,6 +49,22 @@
 #include "../commands/cmd_window_set_alpha.h"
 #include "../commands/cmd_window_redraw.h"
 #include "../commands/cmd_window_resize_to.h"
+#include "../commands/cmd_mouse_move.h"
+#include "../commands/cmd_mouse_wheel.h"
+#include "../commands/cmd_clipboard_change_case.h"
+#include "../commands/cmd_clipboard_upcase_word.h"
+#include "../commands/cmd_clipboard_downcase_word.h"
+#include "../commands/cmd_clipboard_copy.h"
+#include "../commands/cmd_emacs_edit_kill_line_pred.h"
+#include "../commands/cmd_emacs_edit_kill_line_func.h"
+#include "../commands/cmd_log_clear.h"
+#include "../commands/cmd_recenter.h"
+#include "../commands/cmd_direct_sstp.h"
+#include "../commands/cmd_plugin.h"
+#include "../commands/cmd_set_ime_status.h"
+#include "../commands/cmd_set_ime_string.h"
+#include "../commands/cmd_mouse_hook.h"
+#include "../commands/cmd_cancel_prefix.h"
 
 class FunctionCreator
 {
@@ -110,22 +126,22 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("WindowSetAlpha"), Command_WindowSetAlpha::create },
   { _T("WindowRedraw"), Command_WindowRedraw::create },
   { _T("WindowResizeTo"), Command_WindowResizeTo::create },
-  { _T("MouseMove"), FunctionData_MouseMove::create },
-  { _T("MouseWheel"), FunctionData_MouseWheel::create },
-  { _T("ClipboardChangeCase"), FunctionData_ClipboardChangeCase::create },
-  { _T("ClipboardUpcaseWord"), FunctionData_ClipboardUpcaseWord::create },
-  { _T("ClipboardDowncaseWord"), FunctionData_ClipboardDowncaseWord::create },
-  { _T("ClipboardCopy"), FunctionData_ClipboardCopy::create },
-  { _T("EmacsEditKillLinePred"), FunctionData_EmacsEditKillLinePred::create },
-  { _T("EmacsEditKillLineFunc"), FunctionData_EmacsEditKillLineFunc::create },
-  { _T("LogClear"), FunctionData_LogClear::create },
-  { _T("Recenter"), FunctionData_Recenter::create },
-  { _T("DirectSSTP"), FunctionData_DirectSSTP::create },
-  { _T("PlugIn"), FunctionData_PlugIn::create },
-  { _T("SetImeStatus"), FunctionData_SetImeStatus::create },
-  { _T("SetImeString"), FunctionData_SetImeString::create },
-  { _T("MouseHook"), FunctionData_MouseHook::create },
-  { _T("CancelPrefix"), FunctionData_CancelPrefix::create },
+  { _T("MouseMove"), Command_MouseMove::create },
+  { _T("MouseWheel"), Command_MouseWheel::create },
+  { _T("ClipboardChangeCase"), Command_ClipboardChangeCase::create },
+  { _T("ClipboardUpcaseWord"), Command_ClipboardUpcaseWord::create },
+  { _T("ClipboardDowncaseWord"), Command_ClipboardDowncaseWord::create },
+  { _T("ClipboardCopy"), Command_ClipboardCopy::create },
+  { _T("EmacsEditKillLinePred"), Command_EmacsEditKillLinePred::create },
+  { _T("EmacsEditKillLineFunc"), Command_EmacsEditKillLineFunc::create },
+  { _T("LogClear"), Command_LogClear::create },
+  { _T("Recenter"), Command_Recenter::create },
+  { _T("DirectSSTP"), Command_DirectSSTP::create },
+  { _T("PlugIn"), Command_PlugIn::create },
+  { _T("SetImeStatus"), Command_SetImeStatus::create },
+  { _T("SetImeString"), Command_SetImeString::create },
+  { _T("MouseHook"), Command_MouseHook::create },
+  { _T("CancelPrefix"), Command_CancelPrefix::create },
     };
 
     for (size_t i = 0; i != NUMBER_OF(functionCreators); ++ i)

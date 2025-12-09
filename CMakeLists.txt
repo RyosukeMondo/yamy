@@ -165,6 +165,22 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_window_set_alpha.cpp
     src/core/commands/cmd_window_redraw.cpp
     src/core/commands/cmd_window_resize_to.cpp
+    src/core/commands/cmd_mouse_move.cpp
+    src/core/commands/cmd_mouse_wheel.cpp
+    src/core/commands/cmd_clipboard_change_case.cpp
+    src/core/commands/cmd_clipboard_upcase_word.cpp
+    src/core/commands/cmd_clipboard_downcase_word.cpp
+    src/core/commands/cmd_clipboard_copy.cpp
+    src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
+    src/core/commands/cmd_emacs_edit_kill_line_func.cpp
+    src/core/commands/cmd_log_clear.cpp
+    src/core/commands/cmd_recenter.cpp
+    src/core/commands/cmd_direct_sstp.cpp
+    src/core/commands/cmd_plugin.cpp
+    src/core/commands/cmd_set_ime_status.cpp
+    src/core/commands/cmd_set_ime_string.cpp
+    src/core/commands/cmd_mouse_hook.cpp
+    src/core/commands/cmd_cancel_prefix.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/input/vkeytable.cpp

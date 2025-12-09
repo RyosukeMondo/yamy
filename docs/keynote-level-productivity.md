@@ -78,22 +78,22 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
     - [x] `WindowSetAlpha` (Removed from Engine)
     - [x] `WindowRedraw` (Removed from Engine)
     - [x] `WindowResizeTo` (Removed from Engine)
-    - [ ] `MouseMove`
-    - [ ] `MouseWheel`
-    - [ ] `ClipboardChangeCase`
-    - [ ] `ClipboardUpcaseWord`
-    - [ ] `ClipboardDowncaseWord`
-    - [ ] `ClipboardCopy`
-    - [ ] `EmacsEditKillLinePred`
-    - [ ] `EmacsEditKillLineFunc`
-    - [ ] `LogClear`
-    - [ ] `Recenter`
-    - [ ] `DirectSSTP`
-    - [ ] `PlugIn`
-    - [ ] `SetImeStatus`
-    - [ ] `SetImeString`
-    - [ ] `MouseHook`
-    - [ ] `CancelPrefix`
+    - [x] `MouseMove` (Removed from Engine)
+    - [x] `MouseWheel` (Removed from Engine)
+    - [x] `ClipboardChangeCase` (Removed from Engine)
+    - [x] `ClipboardUpcaseWord` (Removed from Engine)
+    - [x] `ClipboardDowncaseWord` (Removed from Engine)
+    - [x] `ClipboardCopy` (Removed from Engine)
+    - [x] `EmacsEditKillLinePred` (Removed from Engine)
+    - [x] `EmacsEditKillLineFunc` (Removed from Engine)
+    - [x] `LogClear` (Removed from Engine)
+    - [x] `Recenter` (Removed from Engine)
+    - [x] `DirectSSTP` (Removed from Engine)
+    - [x] `PlugIn` (Removed from Engine)
+    - [x] `SetImeStatus` (Removed from Engine)
+    - [x] `SetImeString` (Removed from Engine)
+    - [x] `MouseHook` (Removed from Engine)
+    - [x] `CancelPrefix` (Removed from Engine)
     </details>
 
 ### Phase 3: String Unification (Cognitive Load Reduction)

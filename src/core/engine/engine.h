@@ -400,47 +400,37 @@ public:
     /// resize window to
 // funcWindowResizeTo removed (moved to Command_WindowResizeTo)
     /// move the mouse cursor
-    void funcMouseMove(FunctionParam *i_param, int i_dx, int i_dy);
+// funcMouseMove removed (moved to Command_MouseMove)
     /// send a mouse-wheel-message to Windows
-    void funcMouseWheel(FunctionParam *i_param, int i_delta);
+// funcMouseWheel removed (moved to Command_MouseWheel)
     /// convert the contents of the Clipboard to upper case or lower case
-    void funcClipboardChangeCase(FunctionParam *i_param,
-                                 BooleanType i_doesConvertToUpperCase);
+// funcClipboardChangeCase removed (moved to Command_ClipboardChangeCase)
     /// convert the contents of the Clipboard to upper case
-    void funcClipboardUpcaseWord(FunctionParam *i_param);
+// funcClipboardUpcaseWord removed (moved to Command_ClipboardUpcaseWord)
     /// convert the contents of the Clipboard to lower case
-    void funcClipboardDowncaseWord(FunctionParam *i_param);
+// funcClipboardDowncaseWord removed (moved to Command_ClipboardDowncaseWord)
     /// set the contents of the Clipboard to the string
-    void funcClipboardCopy(FunctionParam *i_param, const StrExprArg &i_text);
+// funcClipboardCopy removed (moved to Command_ClipboardCopy)
     ///
-    void funcEmacsEditKillLinePred(FunctionParam *i_param,
-                                   const KeySeq *i_keySeq1,
-                                   const KeySeq *i_keySeq2);
+// funcEmacsEditKillLinePred removed (moved to Command_EmacsEditKillLinePred)
     ///
-    void funcEmacsEditKillLineFunc(FunctionParam *i_param);
+// funcEmacsEditKillLineFunc removed (moved to Command_EmacsEditKillLineFunc)
     /// clear log
-    void funcLogClear(FunctionParam *i_param);
+// funcLogClear removed (moved to Command_LogClear)
     /// recenter
-    void funcRecenter(FunctionParam *i_param);
+// funcRecenter removed (moved to Command_Recenter)
     /// Direct SSTP
-    void funcDirectSSTP(FunctionParam *i_param,
-                        const tregex &i_name,
-                        const StrExprArg &i_protocol,
-                        const std::list<tstringq> &i_headers);
+// funcDirectSSTP removed (moved to Command_DirectSSTP)
     /// PlugIn
-    void funcPlugIn(FunctionParam *i_param,
-                    const StrExprArg &i_dllName,
-                    const StrExprArg &i_funcName = StrExprArg(),
-                    const StrExprArg &i_funcParam = StrExprArg(),
-                    BooleanType i_doesCreateThread = BooleanType_false);
+// funcPlugIn removed (moved to Command_PlugIn)
     /// set IME open status
-    void funcSetImeStatus(FunctionParam *i_param, ToggleType i_toggle = ToggleType_toggle);
+// funcSetImeStatus removed (moved to Command_SetImeStatus)
     /// set string to IME
-    void funcSetImeString(FunctionParam *i_param, const StrExprArg &i_data);
+// funcSetImeString removed (moved to Command_SetImeString)
     /// enter to mouse event hook mode
-    void funcMouseHook(FunctionParam *i_param, MouseHookType i_hookType, int i_hookParam);
+// funcMouseHook removed (moved to Command_MouseHook)
     /// cancel prefix
-    void funcCancelPrefix(FunctionParam *i_param);
+// funcCancelPrefix removed (moved to Command_CancelPrefix)
 
     // END OF FUNCTION DEFINITION
 #include "function_friends.h"
