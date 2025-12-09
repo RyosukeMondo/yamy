@@ -36,16 +36,16 @@ void Command_WindowResizeTo::exec(Engine *i_engine, FunctionParam *i_param) cons
     int height = m_height;
 
     if (width == 0)
-        width = rcWidth(&rc);
+        width = rcWidth(reinterpret_cast<const RECT*>(&rc));
     else if (width < 0)
-        width += rcWidth(&rcd);
+        width += rcWidth(reinterpret_cast<const RECT*>(&rcd));
 
     if (height == 0)
-        height = rcHeight(&rc);
+        height = rcHeight(reinterpret_cast<const RECT*>(&rc));
     else if (height < 0)
-        height += rcHeight(&rcd);
+        height += rcHeight(reinterpret_cast<const RECT*>(&rcd));
 
-    asyncResize(hwnd, width, height);
+    asyncResize(static_cast<HWND>(hwnd), width, height);
 }
 
 tostream &Command_WindowResizeTo::outputArgs(tostream &i_ost) const
