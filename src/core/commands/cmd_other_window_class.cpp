@@ -3,13 +3,15 @@
 #include "../functions/function.h"
 #include "../input/keymap.h"
 #include <iostream>
+#include "cmd_default.h"
 
 void Command_OtherWindowClass::exec(Engine *i_engine, FunctionParam *i_param) const
 {
     Engine::Current c(i_param->m_c);
     ++ c.m_i;
     if (c.m_i == i_engine->m_currentFocusOfThread->m_keymaps.end()) {
-        i_engine->funcDefault(i_param);
+        Command_Default defaultCmd;
+        defaultCmd.exec(i_engine, i_param);
         return;
     }
 

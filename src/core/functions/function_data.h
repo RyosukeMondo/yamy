@@ -175,54 +175,8 @@ public:
   }
 };
 
-class FunctionData_LoadSetting : public FunctionData
-{
-public:
-  StrExprArg m_name;
-
-public:
-  static FunctionData *create()
-  {
-    FunctionData_LoadSetting *fd
-      = new FunctionData_LoadSetting;
-    fd->m_name = StrExprArg();
-    return fd;
-  }
-  
-  virtual void load(SettingLoader *i_sl)
-  {
-    if (!i_sl->getOpenParen(false, FunctionData_LoadSetting::getName()))
-      return;
-    if (i_sl->getCloseParen(false, FunctionData_LoadSetting::getName()))
-      return;
-    i_sl->load_ARGUMENT(&m_name);
-    i_sl->getCloseParen(true, FunctionData_LoadSetting::getName()); // throw ...
-  }
-
-  virtual void exec(Engine *i_engine, FunctionParam *i_param) const
-  {
-    i_engine->funcLoadSetting(i_param, m_name);
-  }
-
-  inline virtual const _TCHAR *getName() const
-  {
-    return _T("LoadSetting");
-  }
-
-  virtual tostream &output(tostream &i_ost) const
-  {
-    i_ost << _T("&") << getName();
-    i_ost << _T("(");
-    i_ost << m_name;
-    i_ost << _T(") ");
-    return i_ost;
-  }
-
-  virtual FunctionData *clone() const
-  {
-    return new FunctionData_LoadSetting(*this);
-  }
-};
+// FunctionData_LoadSetting is now Command_LoadSetting in commands/cmd_load_setting.h
+// Replaced by generic Command template system.
 
 // FunctionData_VK is now Command_VK in commands/cmd_vk.h
 // Replaced by generic Command template system.

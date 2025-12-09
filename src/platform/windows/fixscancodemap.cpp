@@ -17,7 +17,15 @@ static DWORD WINAPI invokeFunc(InjectInfo *info)
     FpRevertToSelf pRevertToSelf;
     FpOpenProcessToken pOpenProcessToken;
 
+#ifdef _UNICODE
     hAdvapi32 = info->pGetModuleHandle(info->advapi32_);
+#else
+    {
+        WCHAR wAdvapi32[NUMBER_OF(info->advapi32_)];
+        for(int i=0; i<NUMBER_OF(info->advapi32_); ++i) wAdvapi32[i] = info->advapi32_[i];
+        hAdvapi32 = info->pGetModuleHandle(wAdvapi32);
+    }
+#endif
 
     pImpersonateLoggedOnUser = (FpImpersonateLoggedOnUser)info->pGetProcAddress(hAdvapi32, info->impersonateLoggedOnUser_);
     pRevertToSelf = (FpRevertToSelf)info->pGetProcAddress(hAdvapi32, info->revertToSelf_);

@@ -3,13 +3,15 @@
 #include "../functions/function.h" // For FunctionParam
 #include "../input/keymap.h"
 #include <iostream>
+#include "cmd_default.h"
 
 void Command_KeymapParent::exec(Engine *i_engine, FunctionParam *i_param) const
 {
     Engine::Current c(i_param->m_c);
     c.m_keymap = c.m_keymap->getParentKeymap();
     if (!c.m_keymap) {
-        i_engine->funcDefault(i_param);
+        Command_Default defaultCmd;
+        defaultCmd.exec(i_engine, i_param);
         return;
     }
 

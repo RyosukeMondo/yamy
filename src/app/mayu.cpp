@@ -312,7 +312,7 @@ private:
 #ifdef MAYU64
                 SetWindowLongPtr(i_hwnd, 0, (LONG_PTR)This);
 #else
-                SetWindowLong(i_hwnd, 0, (long)This);
+                SetWindowLong(i_hwnd, 0, (long)(uintptr_t)This);
 #endif
                 return 0;
             }
@@ -559,7 +559,7 @@ private:
                         if (!This->m_isSettingDialogOpened) {
                             This->m_isSettingDialogOpened = true;
                             if (DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_setting),
-                                          nullptr, dlgSetting_dlgProc))
+                                          nullptr, (DLGPROC)dlgSetting_dlgProc))
                                 This->load();
                             This->m_isSettingDialogOpened = false;
                         }
@@ -850,6 +850,12 @@ private:
         m_log << _T(" (UNICODE)");
 #endif
         m_log << std::endl;
+#ifndef LOGNAME
+#define LOGNAME "unknown"
+#endif
+#ifndef COMPUTERNAME
+#define COMPUTERNAME "unknown"
+#endif
         m_log << _T("  built by ")
         << _T(LOGNAME) << _T("@") << toLower(_T(COMPUTERNAME))
         << _T(" (") << _T(__DATE__) <<  _T(" ")
@@ -1107,7 +1113,7 @@ public:
         dld.m_hwndTaskTray = m_hwndTaskTray;
         m_hwndLog =
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_log), nullptr,
-                              dlgLog_dlgProc, (LPARAM)&dld);
+                              (DLGPROC)dlgLog_dlgProc, (LPARAM)&dld);
         CHECK_TRUE( m_hwndLog );
 
         DlgInvestigateData did;
@@ -1115,12 +1121,12 @@ public:
         did.m_hwndLog = m_hwndLog;
         m_hwndInvestigate =
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_investigate), nullptr,
-                              dlgInvestigate_dlgProc, (LPARAM)&did);
+                              (DLGPROC)dlgInvestigate_dlgProc, (LPARAM)&did);
         CHECK_TRUE( m_hwndInvestigate );
 
         m_hwndVersion =
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_version),
-                              nullptr, dlgVersion_dlgProc,
+                              nullptr, (DLGPROC)dlgVersion_dlgProc,
                               (LPARAM)_T(""));
         CHECK_TRUE( m_hwndVersion );
 

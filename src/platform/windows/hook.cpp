@@ -18,6 +18,10 @@
 
 
 ///
+#ifndef VERSION
+#define VERSION "0.04"
+#endif
+
 #define HOOK_DATA_NAME _T("{08D6E55C-5103-4e00-8209-A1C4AB13BBEF}") _T(VERSION)
 #ifdef _WIN64
 #define HOOK_DATA_NAME_ARCH _T("{290C0D51-8AEE-403d-9172-E43D46270996}") _T(VERSION)
@@ -270,7 +274,7 @@ bool notify(void *i_data, size_t i_dataSize)
 #ifdef MAYU64
     DWORD_PTR result;
 #else  // MAYU64
-    DWORD result;
+    DWORD_PTR result; // Changed to DWORD_PTR for both, SendMessageTimeout expects PDWORD_PTR
 #endif // MAYU64
 
     DWORD len;

@@ -208,7 +208,7 @@ BOOL LayoutManager::wmNcHitTest(int i_x, int i_y)
 #ifdef MAYU64
         SetWindowLongPtr(m_hwnd, DWLP_MSGRESULT, HTBOTTOMRIGHT);
 #else
-        SetWindowLong(m_hwnd, DWL_MSGRESULT, HTBOTTOMRIGHT);
+        SetWindowLongPtr(m_hwnd, DWLP_MSGRESULT, HTBOTTOMRIGHT);
 #endif
         return TRUE;
     }

@@ -349,7 +349,7 @@ bool WindowSystemWin32::sendMessageTimeout(WindowHandle window, unsigned int msg
 #ifdef MAYU64
     DWORD_PTR res = 0;
 #else
-    DWORD res = 0;
+    DWORD_PTR res = 0;
 #endif
     LRESULT lRes = SendMessageTimeout((HWND)window, msg, (WPARAM)wParam, (LPARAM)lParam, flags, timeout, &res);
     if (result) *result = (uintptr_t)res;

@@ -80,7 +80,7 @@ template <class T> inline T getUserData(HWND i_hwnd, T *i_wc)
 #ifdef MAYU64
     return (*i_wc = reinterpret_cast<T>(GetWindowLongPtr(i_hwnd, GWLP_USERDATA)));
 #else
-    return (*i_wc = reinterpret_cast<T>(GetWindowLong(i_hwnd, GWL_USERDATA)));
+    return (*i_wc = reinterpret_cast<T>(GetWindowLongPtr(i_hwnd, GWLP_USERDATA)));
 #endif
 }
 
@@ -90,7 +90,7 @@ template <class T> inline T setUserData(HWND i_hwnd, T i_wc)
 #ifdef MAYU64
     SetWindowLongPtr(i_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(i_wc));
 #else
-    SetWindowLong(i_hwnd, GWL_USERDATA, reinterpret_cast<long>(i_wc));
+    SetWindowLongPtr(i_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(i_wc));
 #endif
     return i_wc;
 }

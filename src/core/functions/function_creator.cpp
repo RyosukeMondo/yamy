@@ -19,6 +19,7 @@
 #include "../commands/cmd_post_message.h"
 #include "../commands/cmd_wait.h"
 #include "../commands/cmd_vk.h"
+#include "../commands/cmd_load_setting.h"
 
 class FunctionCreator
 {
@@ -49,7 +50,7 @@ FunctionData *createFunctionData(const tstring &i_name)
   { _T("Ignore"), Command_Ignore::create },
   { _T("ShellExecute"), FunctionData_ShellExecute::create },
   { _T("SetForegroundWindow"), FunctionData_SetForegroundWindow::create },
-  { _T("LoadSetting"), FunctionData_LoadSetting::create },
+  { _T("LoadSetting"), Command_LoadSetting::create },
   { _T("VK"), Command_VK::create },
   { _T("Wait"), Command_Wait::create },
   { _T("PostMessage"), Command_PostMessage::create },

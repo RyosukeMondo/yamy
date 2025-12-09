@@ -668,17 +668,7 @@ int Engine::EmacsEditKillLine::pred()
 
 
 // send a default key to Windows
-void Engine::funcDefault(FunctionParam *i_param)
-{
-    {
-        Acquire a(&m_log, 1);
-        m_log << std::endl;
-        i_param->m_doesNeedEndl = false;
-    }
-    if (i_param->m_isPressed)
-        generateModifierEvents(i_param->m_c.m_mkey.m_modifier);
-    generateKeyEvent(i_param->m_c.m_mkey.m_key, i_param->m_isPressed, true);
-}
+// funcDefault moved to src/core/commands/cmd_default.cpp
 
 // use a corresponding key of a parent keymap
 // funcKeymapParent moved to src/core/commands/cmd_keymap_parent.cpp
@@ -687,18 +677,7 @@ void Engine::funcDefault(FunctionParam *i_param)
 // funcKeymapWindow moved to src/core/commands/cmd_keymap_window.cpp
 
 // use a corresponding key of the previous prefixed keymap
-void Engine::funcKeymapPrevPrefix(FunctionParam *i_param, int i_previous)
-{
-    Current c(i_param->m_c);
-    if (0 < i_previous && 0 <= m_keymapPrefixHistory.size() - i_previous) {
-        int n = i_previous - 1;
-        KeymapPtrList::reverse_iterator i = m_keymapPrefixHistory.rbegin();
-        while (0 < n && i != m_keymapPrefixHistory.rend())
-            --n, ++i;
-        c.m_keymap = *i;
-        generateKeyboardEvents(c);
-    }
-}
+// funcKeymapPrevPrefix moved to src/core/commands/cmd_keymap_prev_prefix.cpp
 
 // use a corresponding key of an other window class, or use a default key
 // funcOtherWindowClass moved to src/core/commands/cmd_other_window_class.cpp
@@ -824,45 +803,7 @@ void Engine::funcSetForegroundWindow(FunctionParam *i_param, const tregex &,
 
 
 // load setting
-void Engine::funcLoadSetting(FunctionParam *i_param, const StrExprArg &i_name)
-{
-    if (!i_param->m_isPressed)
-        return;
-    if (!i_name.eval().empty()) {
-        // set MAYU_REGISTRY_ROOT\.mayuIndex which name is same with i_name
-        if (!m_configStore) {
-            // Should not happen if properly initialized
-            return;
-        }
-
-        tregex split(_T("^([^;]*);([^;]*);(.*)$"));
-        tstringi dot_mayu;
-        for (size_t i = 0; i < MAX_MAYU_REGISTRY_ENTRIES; ++ i) {
-            _TCHAR buf[100];
-            _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), (int)i);
-            if (!m_configStore->read(buf, &dot_mayu))
-                break;
-
-            tsmatch what;
-            if (std::regex_match(dot_mayu, what, split) &&
-                    what.str(1) == i_name.eval()) {
-                m_configStore->write(_T(".mayuIndex"), (DWORD)i);
-                goto success;
-            }
-        }
-
-        {
-            Acquire a(&m_log, 0);
-            m_log << _T("unknown setting name: ") << i_name;
-        }
-        return;
-
-success:
-        ;
-    }
-    m_windowSystem->postMessage((WindowSystem::WindowHandle)m_hwndAssocWindow,
-                WM_APP_engineNotify, EngineNotify_loadSetting, 0);
-}
+// funcLoadSetting moved to src/core/commands/cmd_load_setting.cpp
 
 // virtual key
 
