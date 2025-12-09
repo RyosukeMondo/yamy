@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // engine_window.cpp
 
 
@@ -12,6 +12,8 @@
 
 #include <iomanip>
 #include <process.h>
+#include <string>
+#include "../../platform/windows/utf_conversion.h"
 
 
 void Engine::checkShow(HWND i_hwnd) {
@@ -113,10 +115,10 @@ bool Engine::setShow(bool i_isMaximized, bool i_isMinimized,
     }
     m_currentLock.on(max, i_isMaximized);
     m_currentLock.on(min, i_isMinimized);
-    m_log << _T("Set show to ") << (i_isMaximized ? _T("Maximized") :
-                                    i_isMinimized ? _T("Minimized") : _T("Normal"));
+    m_log << "Set show to " << (i_isMaximized ? "Maximized" :
+                                    i_isMinimized ? "Minimized" : "Normal");
     if (i_isMDI == true) {
-        m_log << _T(" (MDI)");
+        m_log << " (MDI)";
     }
     m_log << std::endl;
     return true;
@@ -124,17 +126,17 @@ bool Engine::setShow(bool i_isMaximized, bool i_isMinimized,
 
 
 // StrExprSystem implementation
-tstring Engine::getClipboardText() const
+std::string Engine::getClipboardText() const
 {
-    return m_windowSystem->getClipboardText();
+    return yamy::platform::wstring_to_utf8(m_windowSystem->getClipboardText());
 }
 
-tstringq Engine::getStrExprWindowClassName() const
+std::string Engine::getStrExprWindowClassName() const
 {
     return m_currentFocusOfThread->m_className;
 }
 
-tstringq Engine::getStrExprWindowTitleName() const
+std::string Engine::getStrExprWindowTitleName() const
 {
     return m_currentFocusOfThread->m_titleName;
 }
