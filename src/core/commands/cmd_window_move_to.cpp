@@ -1,6 +1,7 @@
 #include "cmd_window_move_to.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#include "../../platform/windows/windowstool.h" // For asyncMoveWindow, rcWidth, rcHeight
 
 Command_WindowMoveTo::Command_WindowMoveTo()
 {
@@ -9,17 +10,20 @@ Command_WindowMoveTo::Command_WindowMoveTo()
 
 void Command_WindowMoveTo::load(SettingLoader *i_sl)
 {
-    i_sl->getOpenParen(true, Name); // throw ...
+    tstring tsName = to_tstring(Name);
+    const _TCHAR* tName = tsName.c_str();
+
+    i_sl->getOpenParen(true, tName); // throw ...
     i_sl->load_ARGUMENT(&m_gravityType);
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_dx);
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_dy);
-    if (i_sl->getCloseParen(false, Name))
+    if (i_sl->getCloseParen(false, tName))
       return;
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_twt);
-    i_sl->getCloseParen(true, Name); // throw ...
+    i_sl->getCloseParen(true, tName); // throw ...
 }
 
 void Command_WindowMoveTo::exec(Engine *i_engine, FunctionParam *i_param) const
@@ -41,7 +45,7 @@ void Command_WindowMoveTo::exec(Engine *i_engine, FunctionParam *i_param) const
         x = m_dx + rcd.left;
     if (m_gravityType & GravityType_S)
         y = m_dy + rcd.bottom - rcHeight(&rc);
-    i_engine->asyncMoveWindow(hwnd, x, y);
+    asyncMoveWindow(hwnd, x, y);
 }
 
 tostream &Command_WindowMoveTo::outputArgs(tostream &i_ost) const

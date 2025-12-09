@@ -1,6 +1,7 @@
 #include "cmd_window_move_visibly.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#include "../../platform/windows/windowstool.h" // For asyncMoveWindow, rcWidth, rcHeight
 
 Command_WindowMoveVisibly::Command_WindowMoveVisibly()
 {
@@ -9,12 +10,15 @@ Command_WindowMoveVisibly::Command_WindowMoveVisibly()
 
 void Command_WindowMoveVisibly::load(SettingLoader *i_sl)
 {
-    if (!i_sl->getOpenParen(false, Name))
+    tstring tsName = to_tstring(Name);
+    const _TCHAR* tName = tsName.c_str();
+
+    if (!i_sl->getOpenParen(false, tName))
       return;
-    if (i_sl->getCloseParen(false, Name))
+    if (i_sl->getCloseParen(false, tName))
       return;
     i_sl->load_ARGUMENT(&m_twt);
-    i_sl->getCloseParen(true, Name); // throw ...
+    i_sl->getCloseParen(true, tName); // throw ...
 }
 
 void Command_WindowMoveVisibly::exec(Engine *i_engine, FunctionParam *i_param) const
@@ -35,7 +39,7 @@ void Command_WindowMoveVisibly::exec(Engine *i_engine, FunctionParam *i_param) c
         y = rcd.top;
     else if (rcd.bottom < rc.bottom)
         y = rcd.bottom - rcHeight(&rc);
-    i_engine->asyncMoveWindow(hwnd, x, y);
+    asyncMoveWindow(hwnd, x, y);
 }
 
 tostream &Command_WindowMoveVisibly::outputArgs(tostream &i_ost) const

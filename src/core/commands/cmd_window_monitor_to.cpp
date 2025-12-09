@@ -1,6 +1,7 @@
 #include "cmd_window_monitor_to.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#include "../../platform/windows/windowstool.h" // For asyncMoveWindow, rcWidth, rcHeight
 #include <vector>
 
 // Helper structs for WindowMonitorTo
@@ -47,19 +48,22 @@ Command_WindowMonitorTo::Command_WindowMonitorTo()
 
 void Command_WindowMonitorTo::load(SettingLoader *i_sl)
 {
-    i_sl->getOpenParen(true, Name); // throw ...
+    tstring tsName = to_tstring(Name);
+    const _TCHAR* tName = tsName.c_str();
+
+    i_sl->getOpenParen(true, tName); // throw ...
     i_sl->load_ARGUMENT(&m_fromType);
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_monitor);
-    if (i_sl->getCloseParen(false, Name))
+    if (i_sl->getCloseParen(false, tName))
       return;
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_adjustPos);
-    if (i_sl->getCloseParen(false, Name))
+    if (i_sl->getCloseParen(false, tName))
       return;
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_adjustSize);
-    i_sl->getCloseParen(true, Name); // throw ...
+    i_sl->getCloseParen(true, tName); // throw ...
 }
 
 void Command_WindowMonitorTo::exec(Engine *i_engine, FunctionParam *i_param) const
@@ -124,9 +128,9 @@ void Command_WindowMonitorTo::exec(Engine *i_engine, FunctionParam *i_param) con
     if (m_adjustPos && m_adjustSize) {
         if (i_engine->m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Maximized)
             i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-        i_engine->asyncMoveWindow(hwnd, x, y, w, h);
+        asyncMoveWindow(hwnd, x, y, w, h);
     } else {
-        i_engine->asyncMoveWindow(hwnd, x, y);
+        asyncMoveWindow(hwnd, x, y);
     }
 }
 

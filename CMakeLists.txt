@@ -224,12 +224,18 @@ target_include_directories(yamy_engine_new PRIVATE
 # -----------------------------------------------------------------------------
 # Verification: Check for missing sources
 # -----------------------------------------------------------------------------
-if(WIN32)
+if(CMAKE_HOST_WIN32)
     add_custom_command(TARGET yamy_engine_new PRE_BUILD
         COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_missing_sources.ps1
         COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_header_guards.ps1
         COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/check_encoding.ps1
         COMMENT "Running QA Checks: Sources, Header Guards, Encoding..."
+        VERBATIM
+    )
+elseif(CMAKE_HOST_UNIX)
+    add_custom_command(TARGET yamy_engine_new PRE_BUILD
+        COMMAND bash ${CMAKE_SOURCE_DIR}/scripts/check_missing_sources.sh || true
+        COMMENT "Running QA Checks: Sources..."
         VERBATIM
     )
 endif()

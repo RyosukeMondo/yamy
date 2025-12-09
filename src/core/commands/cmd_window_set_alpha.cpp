@@ -5,9 +5,12 @@
 
 void Command_WindowSetAlpha::load(SettingLoader *i_sl)
 {
-    i_sl->getOpenParen(true, Name); // throw ...
+    tstring tsName = to_tstring(Name);
+    const _TCHAR* tName = tsName.c_str();
+
+    i_sl->getOpenParen(true, tName); // throw ...
     i_sl->load_ARGUMENT(&m_alpha);
-    i_sl->getCloseParen(true, Name); // throw ...
+    i_sl->getCloseParen(true, tName); // throw ...
 }
 
 void Command_WindowSetAlpha::exec(Engine *i_engine, FunctionParam *i_param) const

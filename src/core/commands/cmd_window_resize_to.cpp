@@ -1,6 +1,7 @@
 #include "cmd_window_resize_to.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#include "../../platform/windows/windowstool.h" // For asyncResize, rcWidth, rcHeight
 
 Command_WindowResizeTo::Command_WindowResizeTo()
 {
@@ -9,15 +10,18 @@ Command_WindowResizeTo::Command_WindowResizeTo()
 
 void Command_WindowResizeTo::load(SettingLoader *i_sl)
 {
-    i_sl->getOpenParen(true, Name); // throw ...
+    tstring tsName = to_tstring(Name);
+    const _TCHAR* tName = tsName.c_str();
+
+    i_sl->getOpenParen(true, tName); // throw ...
     i_sl->load_ARGUMENT(&m_width);
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_height);
-    if (i_sl->getCloseParen(false, Name))
+    if (i_sl->getCloseParen(false, tName))
       return;
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_twt);
-    i_sl->getCloseParen(true, Name); // throw ...
+    i_sl->getCloseParen(true, tName); // throw ...
 }
 
 void Command_WindowResizeTo::exec(Engine *i_engine, FunctionParam *i_param) const
@@ -41,7 +45,7 @@ void Command_WindowResizeTo::exec(Engine *i_engine, FunctionParam *i_param) cons
     else if (height < 0)
         height += rcHeight(&rcd);
 
-    i_engine->asyncResize(hwnd, width, height);
+    asyncResize(hwnd, width, height);
 }
 
 tostream &Command_WindowResizeTo::outputArgs(tostream &i_ost) const

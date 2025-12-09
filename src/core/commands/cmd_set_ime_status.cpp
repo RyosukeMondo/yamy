@@ -9,12 +9,15 @@ Command_SetImeStatus::Command_SetImeStatus()
 
 void Command_SetImeStatus::load(SettingLoader *i_sl)
 {
-    if (!i_sl->getOpenParen(false, Name))
+    tstring tsName = to_tstring(Name);
+    const _TCHAR* tName = tsName.c_str();
+
+    if (!i_sl->getOpenParen(false, tName))
       return;
-    if (i_sl->getCloseParen(false, Name))
+    if (i_sl->getCloseParen(false, tName))
       return;
     i_sl->load_ARGUMENT(&m_toggle);
-    i_sl->getCloseParen(true, Name); // throw ...
+    i_sl->getCloseParen(true, tName); // throw ...
 }
 
 void Command_SetImeStatus::exec(Engine *i_engine, FunctionParam *i_param) const

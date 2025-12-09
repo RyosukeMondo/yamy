@@ -2,6 +2,7 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/misc.h" // for NUMBER_OF
+#include "../../platform/windows/windowstool.h" // For getToplevelWindow
 
 void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) const
 {

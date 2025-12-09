@@ -11,17 +11,20 @@ Command_WindowMonitor::Command_WindowMonitor()
 
 void Command_WindowMonitor::load(SettingLoader *i_sl)
 {
-    i_sl->getOpenParen(true, Name); // throw ...
+    tstring tsName = to_tstring(Name);
+    const _TCHAR* tName = tsName.c_str();
+
+    i_sl->getOpenParen(true, tName); // throw ...
     i_sl->load_ARGUMENT(&m_monitor);
-    if (i_sl->getCloseParen(false, Name))
+    if (i_sl->getCloseParen(false, tName))
       return;
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_adjustPos);
-    if (i_sl->getCloseParen(false, Name))
+    if (i_sl->getCloseParen(false, tName))
       return;
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_adjustSize);
-    i_sl->getCloseParen(true, Name); // throw ...
+    i_sl->getCloseParen(true, tName); // throw ...
 }
 
 void Command_WindowMonitor::exec(Engine *i_engine, FunctionParam *i_param) const

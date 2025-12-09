@@ -9,12 +9,15 @@ Command_WindowRaise::Command_WindowRaise()
 
 void Command_WindowRaise::load(SettingLoader *i_sl)
 {
-    if (!i_sl->getOpenParen(false, Name))
+    tstring tsName = to_tstring(Name);
+    const _TCHAR* tName = tsName.c_str();
+
+    if (!i_sl->getOpenParen(false, tName))
       return;
-    if (i_sl->getCloseParen(false, Name))
+    if (i_sl->getCloseParen(false, tName))
       return;
     i_sl->load_ARGUMENT(&m_twt);
-    i_sl->getCloseParen(true, Name); // throw ...
+    i_sl->getCloseParen(true, tName); // throw ...
 }
 
 void Command_WindowRaise::exec(Engine *i_engine, FunctionParam *i_param) const

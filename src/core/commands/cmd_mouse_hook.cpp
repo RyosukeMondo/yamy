@@ -1,15 +1,19 @@
 #include "cmd_mouse_hook.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
-#include "../functions/hook.h" // For g_hookData
+#include "../../platform/windows/hook.h" // For g_hookData
+#include "../../platform/windows/windowstool.h" // For getToplevelWindow
 
 void Command_MouseHook::load(SettingLoader *i_sl)
 {
-    i_sl->getOpenParen(true, Name); // throw ...
+    tstring tsName = to_tstring(Name);
+    const _TCHAR* tName = tsName.c_str();
+
+    i_sl->getOpenParen(true, tName); // throw ...
     i_sl->load_ARGUMENT(&m_hookType);
-    i_sl->getComma(false, Name); // throw ...
+    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_hookParam);
-    i_sl->getCloseParen(true, Name); // throw ...
+    i_sl->getCloseParen(true, tName); // throw ...
 }
 
 void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
