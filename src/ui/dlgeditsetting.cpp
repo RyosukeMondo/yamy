@@ -100,8 +100,8 @@ public:
         _TCHAR buf[GANA_MAX_PATH];
         switch (i_id) {
         case IDC_BUTTON_browse: {
-            tstring title = loadString(IDS_openMayu);
-            tstring filter = loadString(IDS_openMayuFilter);
+            tstring title = to_tstring(loadString(IDS_openMayu));
+            tstring filter = to_tstring(loadString(IDS_openMayuFilter));
             for (size_t i = 0; i < filter.size(); ++ i)
                 if (filter[i] == _T('|'))
                     filter[i] = _T('\0');

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // stringtool.h
 
@@ -109,8 +109,15 @@ tstring interpretMetaCharacters(const _TCHAR *i_str, size_t i_len,
                                 const _TCHAR *i_quote = nullptr,
                                 bool i_doesUseRegexpBackReference = false);
 
+// std::string version
+std::string interpretMetaCharacters(const char *i_str, size_t i_len,
+                                    const char *i_quote = nullptr,
+                                    bool i_doesUseRegexpBackReference = false);
+
+
 /// add session id to i_str
 tstring addSessionId(const _TCHAR *i_str);
+std::string addSessionId(const char *i_str);
 
 /// copy
 size_t strlcpy(char *o_dest, const char *i_src, size_t i_destSize);
@@ -142,6 +149,13 @@ std::string guardRegexpFromMbcs(const char *i_str);
 std::wstring to_wstring(const std::string &i_str);
 /// converter
 std::string to_string(const std::wstring &i_str);
+/// converter helper for tstring
+#ifndef _UNICODE
+inline std::string to_string(const tstring &i_str) {
+    return i_str;
+}
+#endif
+
 // convert wstring to UTF-8
 std::string to_UTF_8(const std::wstring &i_str);
 
@@ -288,6 +302,7 @@ extern tostream &operator<<(tostream &i_ost, const tregex &i_data);
 
 /// get lower string
 extern tstring toLower(const tstring &i_str);
-
+// std::string version
+std::string toLower(const std::string &i_str);
 
 #endif // !_STRINGTOOL_H

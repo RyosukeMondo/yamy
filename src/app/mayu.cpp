@@ -613,7 +613,7 @@ private:
                         CHECK_TRUE( GetModuleFileName(g_hInst, buf, NUMBER_OF(buf)) );
                         tstringi helpFilename = pathRemoveFileSpec(buf);
                         helpFilename += _T("\\");
-                        helpFilename += loadString(IDS_helpFilename);
+                        helpFilename += to_tstring(loadString(IDS_helpFilename));
                         ShellExecute(nullptr, _T("open"), helpFilename.c_str(),
                                      nullptr, nullptr, SW_SHOWNORMAL);
                         break;
@@ -842,7 +842,7 @@ private:
 
         Acquire a(&m_log, 0);
         m_log << _T("------------------------------------------------------------") << std::endl;
-        m_log << loadString(IDS_mayu) << _T(" ") _T(VERSION);
+        m_log << to_tstring(loadString(IDS_mayu)) << _T(" ") _T(VERSION);
 #ifndef NDEBUG
         m_log << _T(" (DEBUG)");
 #endif
@@ -880,8 +880,8 @@ private:
         _TCHAR title[1024];
         _TCHAR text[1024];
 
-        _sntprintf_s(title, NUMBER_OF(title), _TRUNCATE, loadString(IDS_mayu).c_str());
-        _sntprintf_s(text, NUMBER_OF(text), _TRUNCATE, loadString(ids).c_str(), code);
+        _sntprintf_s(title, NUMBER_OF(title), _TRUNCATE, to_tstring(loadString(IDS_mayu)).c_str());
+        _sntprintf_s(text, NUMBER_OF(text), _TRUNCATE, to_tstring(loadString(ids)).c_str(), code);
          return MessageBox((HWND)nullptr, text, title, style);
     }
 
@@ -1095,7 +1095,7 @@ public:
 #endif
 
         // create windows, dialogs
-        tstringi title = loadString(IDS_mayu);
+        tstringi title = to_tstring(loadString(IDS_mayu));
         m_hwndTaskTray = CreateWindow(_T("mayuTasktray"), title.c_str(),
                                       WS_OVERLAPPEDWINDOW,
                                       CW_USEDEFAULT, CW_USEDEFAULT,
@@ -1160,7 +1160,7 @@ public:
         m_ni.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
         m_ni.hIcon  = m_tasktrayIcon[1];
         m_ni.uCallbackMessage = WM_APP_taskTrayNotify;
-        tstring tip = loadString(IDS_mayu);
+        tstring tip = to_tstring(loadString(IDS_mayu));
         tcslcpy(m_ni.szTip, tip.c_str(), NUMBER_OF(m_ni.szTip));
         if (m_canUseTasktrayBaloon) {
             m_ni.cbSize = NOTIFYICONDATA_V3_SIZE;
@@ -1323,7 +1323,7 @@ void convertRegistry()
         doesAdd = true;
         index = 0;
     } else if (!reg.read(_T(".mayu0"), &dot_mayu)) {
-        reg.write(_T(".mayu0"), loadString(IDS_readFromHomeDirectory) + _T(";;"));
+        reg.write(_T(".mayu0"), to_tstring(loadString(IDS_readFromHomeDirectory)) + _T(";;"));
         doesAdd = true;
         index = 1;
     }
@@ -1334,22 +1334,22 @@ void convertRegistry()
                 commonreg.read(_T("layout"), &layout)) {
             tstringi tmp = _T(";") + dir + _T("\\dot.mayu");
             if (layout == _T("109")) {
-                reg.write(_T(".mayu1"), loadString(IDS_109Emacs) + tmp
+                reg.write(_T(".mayu1"), to_tstring(loadString(IDS_109Emacs)) + tmp
                           + _T(";-DUSE109") _T(";-DUSEdefault"));
-                reg.write(_T(".mayu2"), loadString(IDS_104on109Emacs) + tmp
+                reg.write(_T(".mayu2"), to_tstring(loadString(IDS_104on109Emacs)) + tmp
                           + _T(";-DUSE109") _T(";-DUSEdefault") _T(";-DUSE104on109"));
-                reg.write(_T(".mayu3"), loadString(IDS_109) + tmp
+                reg.write(_T(".mayu3"), to_tstring(loadString(IDS_109)) + tmp
                           + _T(";-DUSE109"));
-                reg.write(_T(".mayu4"), loadString(IDS_104on109) + tmp
+                reg.write(_T(".mayu4"), to_tstring(loadString(IDS_104on109)) + tmp
                           + _T(";-DUSE109") _T(";-DUSE104on109"));
             } else {
-                reg.write(_T(".mayu1"), loadString(IDS_104Emacs) + tmp
+                reg.write(_T(".mayu1"), to_tstring(loadString(IDS_104Emacs)) + tmp
                           + _T(";-DUSE104") _T(";-DUSEdefault"));
-                reg.write(_T(".mayu2"), loadString(IDS_109on104Emacs) + tmp
+                reg.write(_T(".mayu2"), to_tstring(loadString(IDS_109on104Emacs)) + tmp
                           + _T(";-DUSE104") _T(";-DUSEdefault") _T(";-DUSE109on104"));
-                reg.write(_T(".mayu3"), loadString(IDS_104) + tmp
+                reg.write(_T(".mayu3"), to_tstring(loadString(IDS_104)) + tmp
                           + _T(";-DUSE104"));
-                reg.write(_T(".mayu4"), loadString(IDS_109on104) + tmp
+                reg.write(_T(".mayu4"), to_tstring(loadString(IDS_109on104)) + tmp
                           + _T(";-DUSE104") _T(";-DUSE109on104"));
             }
             reg.write(_T(".mayuIndex"), index);

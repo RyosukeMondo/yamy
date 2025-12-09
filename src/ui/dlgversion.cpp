@@ -49,7 +49,7 @@ public:
                                       NUMBER_OF(modulebuf)) );
 
         _TCHAR buf[1024];
-        _sntprintf(buf, NUMBER_OF(buf), loadString(IDS_version).c_str(),
+        _sntprintf(buf, NUMBER_OF(buf), to_tstring(loadString(IDS_version)).c_str(),
                    _T(VERSION)
 #ifndef NDEBUG
                    _T(" (DEBUG)")
@@ -58,7 +58,7 @@ public:
                    _T(" (UNICODE)")
 #endif // !_UNICODE
                    ,
-                   loadString(IDS_homepage).c_str(),
+                   to_tstring(loadString(IDS_homepage)).c_str(),
                    (_T(LOGNAME) _T("@") + toLower(_T(COMPUTERNAME))).c_str(),
                    _T(__DATE__) _T(" ") _T(__TIME__),
                    getCompilerVersionString().c_str(),
@@ -101,7 +101,7 @@ public:
             return TRUE;
         }
         case IDC_BUTTON_download: {
-            ShellExecute(nullptr, nullptr, loadString(IDS_homepage).c_str(),
+            ShellExecute(nullptr, nullptr, to_tstring(loadString(IDS_homepage)).c_str(),
                          nullptr, nullptr, SW_SHOWNORMAL);
             CHECK_TRUE( EndDialog(m_hwnd, 0) );
             return TRUE;

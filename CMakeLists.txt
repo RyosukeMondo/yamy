@@ -192,6 +192,7 @@ set(ENGINE_SOURCES
     src/platform/windows/input_hook_win32.cpp
     src/core/settings/parser.cpp
     src/platform/windows/input_driver_win32.cpp
+    src/platform/windows/utf_conversion.cpp
     src/platform/windows/registry.cpp
     src/platform/windows/window_system_win32.cpp
     src/platform/windows/windowstool.cpp

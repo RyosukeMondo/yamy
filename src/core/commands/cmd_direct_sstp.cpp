@@ -138,7 +138,7 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
 
     if (!hasSender) {
         request += _T("Sender: ");
-        request += loadString(IDS_mayu);
+        request += to_tstring(loadString(IDS_mayu));
         request += _T("\r\n");
     }
 

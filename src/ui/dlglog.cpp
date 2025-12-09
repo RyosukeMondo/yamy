@@ -48,7 +48,7 @@ public:
 
         // set font
         Registry::read(MAYU_REGISTRY_ROOT, _T("logFont"), &m_lf,
-                       loadString(IDS_logFont));
+                       to_tstring(loadString(IDS_logFont)));
         m_hfont = CreateFontIndirect(&m_lf);
         SetWindowFont(m_hwndEdit, m_hfont, false);
 

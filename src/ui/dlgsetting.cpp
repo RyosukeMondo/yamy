@@ -117,13 +117,13 @@ public:
         lvc.fmt = LVCFMT_LEFT;
         lvc.cx = (rc.right - rc.left) / 3;
 
-        tstringi str = loadString(IDS_mayuPathName);
+        tstringi str = to_tstring(loadString(IDS_mayuPathName));
         lvc.pszText = const_cast<_TCHAR *>(str.c_str());
         CHECK( 0 ==, ListView_InsertColumn(m_hwndMayuPaths, 0, &lvc) );
-        str = loadString(IDS_mayuPath);
+        str = to_tstring(loadString(IDS_mayuPath));
         lvc.pszText = const_cast<_TCHAR *>(str.c_str());
         CHECK( 1 ==, ListView_InsertColumn(m_hwndMayuPaths, 1, &lvc) );
-        str = loadString(IDS_mayuSymbols);
+        str = to_tstring(loadString(IDS_mayuSymbols));
         lvc.pszText = const_cast<_TCHAR *>(str.c_str());
         CHECK( 2 ==, ListView_InsertColumn(m_hwndMayuPaths, 2, &lvc) );
 
