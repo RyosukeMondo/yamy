@@ -699,54 +699,7 @@ int Engine::EmacsEditKillLine::pred()
 // shell execute
 void Engine::shellExecute()
 {
-    Acquire a(&m_cs);
-
-    Command_ShellExecute *fd =
-        reinterpret_cast<Command_ShellExecute *>(
-            m_afShellExecute->m_functionData);
-
-    int r = m_windowSystem->shellExecute(
-                fd->m_operation.eval().empty() ? _T("open") : fd->m_operation.eval(),
-                fd->m_file.eval(),
-                fd->m_parameters.eval(),
-                fd->m_directory.eval(),
-                static_cast<int>(fd->m_showCommand));
-    if (32 < r)
-        return; // success
-
-    typedef TypeTable<int> ErrorTable;
-    static const ErrorTable errorTable[] = {
-        { 0, _T("The operating system is out of memory or resources.") },
-        { ERROR_FILE_NOT_FOUND, _T("The specified file was not found.") },
-        { ERROR_PATH_NOT_FOUND, _T("The specified path was not found.") },
-        { ERROR_BAD_FORMAT, _T("The .exe file is invalid ")
-          _T("(non-Win32R .exe or error in .exe image).") },
-        { SE_ERR_ACCESSDENIED,
-          _T("The operating system denied access to the specified file.") },
-        { SE_ERR_ASSOCINCOMPLETE,
-          _T("The file name association is incomplete or invalid.") },
-        { SE_ERR_DDEBUSY,
-          _T("The DDE transaction could not be completed ")
-          _T("because other DDE transactions were being processed. ") },
-        { SE_ERR_DDEFAIL, _T("The DDE transaction failed.") },
-        { SE_ERR_DDETIMEOUT, _T("The DDE transaction could not be completed ")
-          _T("because the request timed out.") },
-        { SE_ERR_DLLNOTFOUND,
-          _T("The specified dynamic-link library was not found.") },
-        { SE_ERR_FNF, _T("The specified file was not found.") },
-        { SE_ERR_NOASSOC, _T("There is no application associated ")
-          _T("with the given file name extension.") },
-        { SE_ERR_OOM,
-          _T("There was not enough memory to complete the operation.") },
-        { SE_ERR_PNF, _T("The specified path was not found.") },
-        { SE_ERR_SHARE, _T("A sharing violation occurred.") },
-    };
-
-    tstring errorMessage(_T("Unknown error."));
-    getTypeName(&errorMessage, r, errorTable, NUMBER_OF(errorTable));
-
-    Acquire b(&m_log, 0);
-    m_log << _T("error: ") << fd << _T(": ") << errorMessage << std::endl;
+    Command_ShellExecute::executeOnMainThread(this);
 }
 
 // SetForegroundWindow
