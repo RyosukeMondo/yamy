@@ -17,7 +17,7 @@ public:
 
     virtual void load(SettingLoader *i_sl) override;
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
-    virtual tostream &outputArgs(tostream &i_ost) const override;
+    virtual tostream &output(tostream &i_ost) const override;
 };
 
 #endif // _CMD_SHELL_EXECUTE_H

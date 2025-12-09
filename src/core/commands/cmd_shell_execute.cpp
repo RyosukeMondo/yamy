@@ -26,12 +26,14 @@ void Command_ShellExecute::exec(Engine *i_engine, FunctionParam *i_param) const
                 WM_APP_engineNotify, EngineNotify_shellExecute, 0);
 }
 
-tostream &Command_ShellExecute::outputArgs(tostream &i_ost) const
+tostream &Command_ShellExecute::output(tostream &i_ost) const
 {
+    i_ost << _T("&") << getName() << _T("(");
     i_ost << m_operation << _T(", ");
     i_ost << m_file << _T(", ");
     i_ost << m_parameters << _T(", ");
     i_ost << m_directory << _T(", ");
     i_ost << m_showCommand;
+    i_ost << _T(") ");
     return i_ost;
 }

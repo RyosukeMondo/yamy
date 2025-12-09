@@ -1,6 +1,6 @@
 #include "cmd_investigate_command.h"
 #include "../engine/engine.h"
-#include "../functions/hook.h" // For g_hookData
+#include "../../platform/windows/hook.h" // For g_hookData
 
 void Command_InvestigateCommand::exec(Engine *i_engine, FunctionParam *i_param) const
 {

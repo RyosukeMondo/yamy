@@ -94,10 +94,31 @@ public:
     virtual tostream &output(tostream &i_ost) const override
     {
         i_ost << _T("&") << getName();
+        // For commands with manual load/output (no template args),
+        // they may override outputArgs() to provide custom output
+        // Check if derived class has overridden outputArgs by calling it
+        // For template-arg commands, outputArgs calls outputArgsInternal
         if constexpr (sizeof...(Args) > 0) {
             i_ost << _T("(");
-            outputArgs(i_ost, std::make_index_sequence<sizeof...(Args)>{});
+            outputArgsInternal(i_ost, std::make_index_sequence<sizeof...(Args)>{});
             i_ost << _T(") ");
+        } else {
+            // For zero-arg commands that might have manual members,
+            // check if they need to output args
+            // This is a bit tricky - we'll just call outputArgs which may be overridden
+            // but only if there's something to output (derived class responsibility)
+        }
+        return i_ost;
+    }
+
+protected:
+    // Virtual method for custom output args - derived classes can override
+    // For commands that manually load their members (not using template Args)
+    virtual tostream &outputArgs(tostream &i_ost) const
+    {
+        // Default: delegate to template-based output if Args exist
+        if constexpr (sizeof...(Args) > 0) {
+            outputArgsInternal(i_ost, std::make_index_sequence<sizeof...(Args)>{});
         }
         return i_ost;
     }
@@ -134,7 +155,7 @@ private:
 
     // --- Output Helpers ---
     template <size_t... Is>
-    void outputArgs(tostream &i_ost, std::index_sequence<Is...>) const
+    void outputArgsInternal(tostream &i_ost, std::index_sequence<Is...>) const
     {
         int dummy[] = { 0, (outputOneArg<Is>(i_ost, Is < sizeof...(Args) - 1), 0)... };
         (void)dummy;
