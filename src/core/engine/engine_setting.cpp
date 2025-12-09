@@ -57,10 +57,10 @@ bool Engine::setSetting(Setting *i_setting) {
                 i != m_focusOfThreads.end(); i ++) {
             FocusOfThread *fot = &(*i).second;
             m_setting->m_keymaps.searchWindow(&fot->m_keymaps,
-                                              to_tstring(fot->m_className), to_tstring(fot->m_titleName));
+                                              fot->m_className, fot->m_titleName);
         }
     }
-    m_setting->m_keymaps.searchWindow(&m_globalFocus.m_keymaps, to_tstring(""), to_tstring(""));
+    m_setting->m_keymaps.searchWindow(&m_globalFocus.m_keymaps, tstringi(_T("")), tstringi(_T("")));
     if (m_globalFocus.m_keymaps.empty()) {
         Acquire a(&m_log, 0);
         m_log << "internal error: m_globalFocus.m_keymap is empty"

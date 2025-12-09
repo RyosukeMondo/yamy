@@ -16,25 +16,26 @@
 #include "../../platform/windows/utf_conversion.h"
 
 
-void Engine::checkShow(HWND i_hwnd) {
+void Engine::checkShow(yamy::platform::WindowHandle i_hwnd) {
     // update show style of window
     // this update should be done in hook DLL, but to
     // avoid update-loss for some applications(such as
     // cmd.exe), we update here.
+    HWND hwnd = static_cast<HWND>(i_hwnd);
     bool isMaximized = false;
     bool isMinimized = false;
     bool isMDIMaximized = false;
     bool isMDIMinimized = false;
-    while (i_hwnd) {
+    while (hwnd) {
 #ifdef MAYU64
-        LONG_PTR exStyle = GetWindowLongPtr(i_hwnd, GWL_EXSTYLE);
+        LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 #else
-        LONG exStyle = GetWindowLong(i_hwnd, GWL_EXSTYLE);
+        LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
 #endif
         if (exStyle & WS_EX_MDICHILD) {
             WINDOWPLACEMENT placement;
             placement.length = sizeof(WINDOWPLACEMENT);
-            if (GetWindowPlacement(i_hwnd, &placement)) {
+            if (GetWindowPlacement(hwnd, &placement)) {
                 switch (placement.showCmd) {
                 case SW_SHOWMAXIMIZED:
                     isMDIMaximized = true;
@@ -50,14 +51,14 @@ void Engine::checkShow(HWND i_hwnd) {
         }
 
 #ifdef MAYU64
-        LONG_PTR style = GetWindowLongPtr(i_hwnd, GWL_STYLE);
+        LONG_PTR style = GetWindowLongPtr(hwnd, GWL_STYLE);
 #else
-        LONG style = GetWindowLong(i_hwnd, GWL_STYLE);
+        LONG style = GetWindowLong(hwnd, GWL_STYLE);
 #endif
         if ((style & WS_CHILD) == 0) {
             WINDOWPLACEMENT placement;
             placement.length = sizeof(WINDOWPLACEMENT);
-            if (GetWindowPlacement(i_hwnd, &placement)) {
+            if (GetWindowPlacement(hwnd, &placement)) {
                 switch (placement.showCmd) {
                 case SW_SHOWMAXIMIZED:
                     isMaximized = true;
@@ -71,7 +72,7 @@ void Engine::checkShow(HWND i_hwnd) {
                 }
             }
         }
-        i_hwnd = GetParent(i_hwnd);
+        hwnd = GetParent(hwnd);
     }
     setShow(isMDIMaximized, isMDIMinimized, true);
     setShow(isMaximized, isMinimized, false);
@@ -128,15 +129,25 @@ bool Engine::setShow(bool i_isMaximized, bool i_isMinimized,
 // StrExprSystem implementation
 std::string Engine::getClipboardText() const
 {
-    return m_windowSystem->getClipboardString();
+    return m_windowSystem->getClipboardText();
 }
 
 std::string Engine::getStrExprWindowClassName() const
 {
-    return m_currentFocusOfThread->m_className;
+    // Convert tstringi to std::string
+#ifdef _UNICODE
+    return yamy::platform::wstring_to_utf8(m_currentFocusOfThread->m_className);
+#else
+    return std::string(m_currentFocusOfThread->m_className);
+#endif
 }
 
 std::string Engine::getStrExprWindowTitleName() const
 {
-    return m_currentFocusOfThread->m_titleName;
+    // Convert tstringi to std::string
+#ifdef _UNICODE
+    return yamy::platform::wstring_to_utf8(m_currentFocusOfThread->m_titleName);
+#else
+    return std::string(m_currentFocusOfThread->m_titleName);
+#endif
 }

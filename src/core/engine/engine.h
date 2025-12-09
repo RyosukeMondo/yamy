@@ -440,9 +440,9 @@ public:
     }
 
     // StrExprSystem overrides
-    tstring getClipboardText() const override;
-    tstringq getStrExprWindowClassName() const override;
-    tstringq getStrExprWindowTitleName() const override;
+    std::string getClipboardText() const override;
+    std::string getStrExprWindowClassName() const override;
+    std::string getStrExprWindowTitleName() const override;
 };
 
 ///

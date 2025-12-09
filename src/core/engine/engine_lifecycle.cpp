@@ -84,18 +84,24 @@ Engine::~Engine() {
 
 // start keyboard handler thread
 void Engine::start() {
-    m_inputHook->install([this](const yamy::platform::KeyEvent& e) {
-        KEYBOARD_INPUT_DATA kid;
-        kid.UnitId = 0;
-        kid.MakeCode = (USHORT)e.scanCode;
-        kid.Flags = 0;
-        if (!e.isKeyDown) kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
-        if (e.isExtended) kid.Flags |= KEYBOARD_INPUT_DATA::E0;
-        kid.Reserved = 0;
-        kid.ExtraInformation = 0;
-        this->pushInputEvent(kid);
-        return true;
-    });
+    m_inputHook->install(
+        [this](const yamy::platform::KeyEvent& e) {
+            KEYBOARD_INPUT_DATA kid;
+            kid.UnitId = 0;
+            kid.MakeCode = (USHORT)e.scanCode;
+            kid.Flags = 0;
+            if (!e.isKeyDown) kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
+            if (e.isExtended) kid.Flags |= KEYBOARD_INPUT_DATA::E0;
+            kid.Reserved = 0;
+            kid.ExtraInformation = 0;
+            this->pushInputEvent(kid);
+            return true;
+        },
+        [this](const yamy::platform::MouseEvent& e) {
+            // Mouse event handler (currently unused)
+            return true;
+        }
+    );
 
     CHECK_TRUE( m_inputQueue = new std::deque<KEYBOARD_INPUT_DATA> );
     CHECK_TRUE( m_queueMutex = CreateMutex(nullptr, FALSE, nullptr) );
@@ -104,7 +110,7 @@ void Engine::start() {
     m_ol.OffsetHigh = 0;
     m_ol.hEvent = m_readEvent;
 
-    m_inputDriver->initialize();
+    m_inputDriver->open(m_readEvent);
 
     CHECK_TRUE( m_threadHandle = (HANDLE)_beginthreadex(nullptr, 0, keyboardHandler, this, 0, &m_threadId) );
 }
@@ -113,7 +119,7 @@ void Engine::start() {
 // stop keyboard handler thread
 void Engine::stop() {
     m_inputHook->uninstall();
-    m_inputDriver->shutdown();
+    m_inputDriver->close();
 
     WaitForSingleObject(m_queueMutex, INFINITE);
     delete m_inputQueue;

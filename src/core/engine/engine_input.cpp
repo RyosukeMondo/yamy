@@ -14,7 +14,7 @@
 #include <process.h>
 
 
-unsigned int Engine::injectInput(const KEYBOARD_INPUT_DATA *i_kid, const KBDLLHOOKSTRUCT *i_kidRaw)
+unsigned int Engine::injectInput(const KEYBOARD_INPUT_DATA *i_kid, const void *i_kidRaw)
 {
     if (i_kid->ExtraInformation == 0x59414D59) {
         // Mouse event
@@ -36,14 +36,11 @@ unsigned int Engine::injectInput(const KEYBOARD_INPUT_DATA *i_kid, const KBDLLHO
         }
     } else {
         // Keyboard event
-        yamy::platform::KeyEvent e;
-        e.key = yamy::platform::KeyCode::Unknown;
-        e.scanCode = i_kid->MakeCode;
-        e.isKeyDown = !(i_kid->Flags & KEYBOARD_INPUT_DATA::BREAK);
-        e.isExtended = (i_kid->Flags & KEYBOARD_INPUT_DATA::E0) != 0;
-        e.timestamp = 0;
+        yamy::platform::InjectionContext ctx;
+        ctx.isDragging = false;
+        ctx.dragStartPos = yamy::platform::Point(0, 0);
 
-        m_inputInjector->injectKey(e);
+        m_inputInjector->inject(i_kid, ctx, i_kidRaw);
     }
     return 1;
 }
