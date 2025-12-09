@@ -1,5 +1,5 @@
-﻿#include "window_system_win32.h"
-#include "../utils/stringtool.h"
+#include "window_system_win32.h"
+#include "utf_conversion.h"
 #include "windowstool.h"
 #include <vector>
 #include <tchar.h>
@@ -11,7 +11,9 @@
 #define CF_TTEXT CF_TEXT
 #endif
 
-WindowSystem::WindowHandle WindowSystemWin32::getParent(WindowHandle window) {
+namespace yamy::platform {
+
+WindowHandle WindowSystemWin32::getParent(WindowHandle window) {
     return (WindowHandle)GetParent((HWND)window);
 }
 
@@ -56,29 +58,41 @@ WindowShowCmd WindowSystemWin32::getShowCommand(WindowHandle window) {
     return WindowShowCmd::Unknown;
 }
 
-tstring WindowSystemWin32::getClipboardText() {
+std::string WindowSystemWin32::getClipboardText() {
     HGLOBAL hdata;
     const _TCHAR* text = clipboardGetText(&hdata);
-    tstring result;
+    std::string result;
     if (text) {
+#ifdef UNICODE
+        result = wstring_to_utf8(text);
+#else
         result = text;
+#endif
     }
     clipboardClose(hdata);
     return result;
 }
 
-bool WindowSystemWin32::setClipboardText(const tstring& text) {
+bool WindowSystemWin32::setClipboardText(const std::string& text) {
     if (!OpenClipboard(nullptr))
         return false;
 
-    HGLOBAL hdataNew = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
-                                   (text.size() + 1) * sizeof(_TCHAR));
+#ifdef UNICODE
+    std::wstring wideText = utf8_to_wstring(text);
+    const wchar_t* pText = wideText.c_str();
+    size_t size = (wideText.size() + 1) * sizeof(wchar_t);
+#else
+    const char* pText = text.c_str();
+    size_t size = text.size() + 1;
+#endif
+
+    HGLOBAL hdataNew = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, size);
     if (!hdataNew) {
         CloseClipboard();
         return false;
     }
-    _TCHAR* dataNew = reinterpret_cast<_TCHAR*>(GlobalLock(hdataNew));
-    _tcscpy(dataNew, text.c_str());
+    void* dataNew = GlobalLock(hdataNew);
+    memcpy(dataNew, pText, size);
     GlobalUnlock(hdataNew);
     
     EmptyClipboard();
@@ -88,49 +102,140 @@ bool WindowSystemWin32::setClipboardText(const tstring& text) {
     return result;
 }
 
-tstring WindowSystemWin32::getClassName(WindowHandle window) {
+std::string WindowSystemWin32::getClassName(WindowHandle window) {
     HWND hwnd = (HWND)window;
     _TCHAR className[256]; 
     if (GetClassName(hwnd, className, 256)) {
+#ifdef UNICODE
+        return wstring_to_utf8(className);
+#else
         return className;
+#endif
     }
-    return _T("");
+    return "";
 }
 
-tstring WindowSystemWin32::getTitleName(WindowHandle window) {
+std::string WindowSystemWin32::getTitleName(WindowHandle window) {
     HWND hwnd = (HWND)window;
     int len = GetWindowTextLength(hwnd);
     if (len > 0) {
         std::vector<_TCHAR> buf(len + 1);
         GetWindowText(hwnd, &buf[0], len + 1);
+#ifdef UNICODE
+        return wstring_to_utf8(&buf[0]);
+#else
         return &buf[0];
+#endif
     }
-    return _T("");
+    return "";
+}
+
+uint32_t WindowSystemWin32::getWindowThreadId(WindowHandle window) {
+    return GetWindowThreadProcessId((HWND)window, nullptr);
+}
+
+uint32_t WindowSystemWin32::getWindowProcessId(WindowHandle window) {
+    DWORD pid = 0;
+    GetWindowThreadProcessId((HWND)window, &pid);
+    return pid;
 }
 
 bool WindowSystemWin32::isConsoleWindow(WindowHandle window) {
-    return _tcsicmp(getClassName(window).c_str(), _T("ConsoleWindowClass")) == 0;
+#ifdef UNICODE
+    return _wcsicmp(utf8_to_wstring(getClassName(window)).c_str(), L"ConsoleWindowClass") == 0;
+#else
+    return _stricmp(getClassName(window).c_str(), "ConsoleWindowClass") == 0;
+#endif
 }
 
-void WindowSystemWin32::setForegroundWindow(WindowHandle window) {
-    SetForegroundWindow((HWND)window);
+bool WindowSystemWin32::setForegroundWindow(WindowHandle window) {
+    return SetForegroundWindow((HWND)window) != 0;
 }
 
-bool WindowSystemWin32::getCursorPos(WindowPoint* outPoint) {
-    POINT pt;
-    if (GetCursorPos(&pt)) {
-        outPoint->x = pt.x;
-        outPoint->y = pt.y;
+WindowHandle WindowSystemWin32::getForegroundWindow() {
+    return (WindowHandle)GetForegroundWindow();
+}
+
+std::string WindowSystemWin32::getWindowText(WindowHandle hwnd) {
+    return getTitleName(hwnd);
+}
+
+bool WindowSystemWin32::moveWindow(WindowHandle hwnd, const Rect& rect) {
+    return MoveWindow((HWND)hwnd, rect.left, rect.top, rect.width(), rect.height(), TRUE) != 0;
+}
+
+bool WindowSystemWin32::showWindow(WindowHandle hwnd, int cmdShow) {
+    return ShowWindow((HWND)hwnd, cmdShow) != 0;
+}
+
+bool WindowSystemWin32::closeWindow(WindowHandle hwnd) {
+    return CloseWindow((HWND)hwnd) != 0;
+}
+
+int WindowSystemWin32::getMonitorCount() {
+    return GetSystemMetrics(SM_CMONITORS);
+}
+
+bool WindowSystemWin32::getMonitorRect(int monitorIndex, Rect* rect) {
+    // TODO: Use EnumDisplayMonitors to find correct monitor by index
+    if (monitorIndex == 0) {
+        rect->left = 0;
+        rect->top = 0;
+        rect->right = GetSystemMetrics(SM_CXSCREEN);
+        rect->bottom = GetSystemMetrics(SM_CYSCREEN);
         return true;
     }
     return false;
 }
 
-bool WindowSystemWin32::setCursorPos(int x, int y) {
-    return SetCursorPos(x, y) != 0;
+bool WindowSystemWin32::getMonitorWorkArea(int monitorIndex, Rect* rect) {
+    if (monitorIndex == 0) {
+        RECT rc;
+        if (SystemParametersInfo(SPI_GETWORKAREA, 0, &rc, 0)) {
+            rect->left = rc.left;
+            rect->top = rc.top;
+            rect->right = rc.right;
+            rect->bottom = rc.bottom;
+            return true;
+        }
+    }
+    return false;
 }
 
-WindowSystem::WindowHandle WindowSystemWin32::windowFromPoint(WindowPoint point) {
+int WindowSystemWin32::getMonitorIndex(WindowHandle window) {
+    HMONITOR hMon = MonitorFromWindow((HWND)window, MONITOR_DEFAULTTONEAREST);
+    struct EnumData {
+        HMONITOR target;
+        int index;
+        int foundIndex;
+    } data = { hMon, 0, -1 };
+
+    EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hMon, HDC, LPRECT, LPARAM lParam) -> BOOL {
+        EnumData* d = (EnumData*)lParam;
+        if (hMon == d->target) {
+            d->foundIndex = d->index;
+            return FALSE;
+        }
+        d->index++;
+        return TRUE;
+    }, (LPARAM)&data);
+
+    return data.foundIndex;
+}
+
+void WindowSystemWin32::getCursorPos(Point* outPoint) {
+    POINT pt;
+    if (GetCursorPos(&pt)) {
+        outPoint->x = pt.x;
+        outPoint->y = pt.y;
+    }
+}
+
+void WindowSystemWin32::setCursorPos(const Point& pt) {
+    SetCursorPos(pt.x, pt.y);
+}
+
+WindowHandle WindowSystemWin32::windowFromPoint(const Point& point) {
     POINT pt;
     pt.x = point.x;
     pt.y = point.y;
@@ -153,7 +258,7 @@ unsigned int WindowSystemWin32::mapVirtualKey(unsigned int vkey) {
     return MapVirtualKey(vkey, 0);
 }
 
-bool WindowSystemWin32::getWindowRect(WindowHandle window, WindowRect* outRect) {
+bool WindowSystemWin32::getWindowRect(WindowHandle window, Rect* outRect) {
     RECT rc;
     if (GetWindowRect((HWND)window, &rc)) {
         outRect->left = rc.left;
@@ -165,7 +270,7 @@ bool WindowSystemWin32::getWindowRect(WindowHandle window, WindowRect* outRect) 
     return false;
 }
 
-bool WindowSystemWin32::getClientRect(WindowHandle window, WindowRect* outRect) {
+bool WindowSystemWin32::getClientRect(WindowHandle window, Rect* outRect) {
     RECT rc;
     if (GetClientRect((HWND)window, &rc)) {
         outRect->left = rc.left;
@@ -177,7 +282,7 @@ bool WindowSystemWin32::getClientRect(WindowHandle window, WindowRect* outRect) 
     return false;
 }
 
-bool WindowSystemWin32::getChildWindowRect(WindowHandle window, WindowRect* outRect) {
+bool WindowSystemWin32::getChildWindowRect(WindowHandle window, Rect* outRect) {
     RECT rc;
     if (!GetWindowRect((HWND)window, &rc))
         return false;
@@ -197,7 +302,7 @@ bool WindowSystemWin32::getChildWindowRect(WindowHandle window, WindowRect* outR
     return true;
 }
 
-bool WindowSystemWin32::getWorkArea(WindowRect* outRect) {
+bool WindowSystemWin32::getWorkArea(Rect* outRect) {
     RECT rc;
     if (SystemParametersInfo(SPI_GETWORKAREA, 0, &rc, 0)) {
         outRect->left = rc.left;
@@ -213,8 +318,12 @@ bool WindowSystemWin32::postMessage(WindowHandle window, unsigned int message, u
     return PostMessage((HWND)window, message, (WPARAM)wParam, (LPARAM)lParam) != 0;
 }
 
-unsigned int WindowSystemWin32::registerWindowMessage(const tstring& name) {
+unsigned int WindowSystemWin32::registerWindowMessage(const std::string& name) {
+#ifdef UNICODE
+    return RegisterWindowMessage(utf8_to_wstring(name).c_str());
+#else
     return RegisterWindowMessage(name.c_str());
+#endif
 }
 
 bool WindowSystemWin32::setWindowZOrder(WindowHandle window, ZOrder order) {
@@ -295,15 +404,24 @@ bool WindowSystemWin32::redrawWindow(WindowHandle window) {
 }
 
 static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
-    WindowSystem::WindowEnumCallback* callback = (WindowSystem::WindowEnumCallback*)lParam;
-    return (*callback)((WindowSystem::WindowHandle)hwnd) ? TRUE : FALSE;
+    IWindowSystem::WindowEnumCallback* callback = (IWindowSystem::WindowEnumCallback*)lParam;
+    return (*callback)((WindowHandle)hwnd) ? TRUE : FALSE;
 }
 
 bool WindowSystemWin32::enumerateWindows(WindowEnumCallback callback) {
     return EnumWindows(EnumWindowsProc, (LPARAM)&callback) != 0;
 }
 
-int WindowSystemWin32::shellExecute(const tstring& operation, const tstring& file, const tstring& parameters, const tstring& directory, int showCmd) {
+int WindowSystemWin32::shellExecute(const std::string& operation, const std::string& file, const std::string& parameters, const std::string& directory, int showCmd) {
+#ifdef UNICODE
+    return (int)(INT_PTR)ShellExecute(
+        nullptr,
+        operation.empty() ? nullptr : utf8_to_wstring(operation).c_str(),
+        file.empty() ? nullptr : utf8_to_wstring(file).c_str(),
+        parameters.empty() ? nullptr : utf8_to_wstring(parameters).c_str(),
+        directory.empty() ? nullptr : utf8_to_wstring(directory).c_str(),
+        showCmd);
+#else
     return (int)(INT_PTR)ShellExecute(
         nullptr,
         operation.empty() ? nullptr : operation.c_str(),
@@ -311,6 +429,7 @@ int WindowSystemWin32::shellExecute(const tstring& operation, const tstring& fil
         parameters.empty() ? nullptr : parameters.c_str(),
         directory.empty() ? nullptr : directory.c_str(),
         showCmd);
+#endif
 }
 
 bool WindowSystemWin32::disconnectNamedPipe(void* handle) {
@@ -325,12 +444,20 @@ bool WindowSystemWin32::writeFile(void* handle, const void* buffer, unsigned int
     return WriteFile((HANDLE)handle, buffer, (DWORD)bytesToWrite, (LPDWORD)bytesWritten, (LPOVERLAPPED)overlapped) != 0;
 }
 
-void* WindowSystemWin32::openMutex(const tstring& name) {
+void* WindowSystemWin32::openMutex(const std::string& name) {
+#ifdef UNICODE
+    return OpenMutex(MUTEX_ALL_ACCESS, FALSE, utf8_to_wstring(name).c_str());
+#else
     return OpenMutex(MUTEX_ALL_ACCESS, FALSE, name.c_str());
+#endif
 }
 
-void* WindowSystemWin32::openFileMapping(const tstring& name) {
+void* WindowSystemWin32::openFileMapping(const std::string& name) {
+#ifdef UNICODE
+    return OpenFileMapping(FILE_MAP_READ, FALSE, utf8_to_wstring(name).c_str());
+#else
     return OpenFileMapping(FILE_MAP_READ, FALSE, name.c_str());
+#endif
 }
 
 void* WindowSystemWin32::mapViewOfFile(void* handle) {
@@ -356,8 +483,12 @@ bool WindowSystemWin32::sendMessageTimeout(WindowHandle window, unsigned int msg
     return lRes != 0;
 }
 
-void* WindowSystemWin32::loadLibrary(const tstring& path) {
+void* WindowSystemWin32::loadLibrary(const std::string& path) {
+#ifdef UNICODE
+    return LoadLibrary(utf8_to_wstring(path).c_str());
+#else
     return LoadLibrary(path.c_str());
+#endif
 }
 
 void* WindowSystemWin32::getProcAddress(void* module, const std::string& procName) {
@@ -367,3 +498,10 @@ void* WindowSystemWin32::getProcAddress(void* module, const std::string& procNam
 bool WindowSystemWin32::freeLibrary(void* module) {
     return FreeLibrary((HMODULE)module) != 0;
 }
+
+// Factory implementation
+IWindowSystem* createWindowSystem() {
+    return new WindowSystemWin32();
+}
+
+} // namespace yamy::platform

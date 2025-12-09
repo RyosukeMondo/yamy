@@ -48,7 +48,7 @@ void Command_VK::exec(Engine *i_engine, FunctionParam *i_param) const
             kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
 
         // Use WindowSystem to map virtual key to scan code
-        kid.MakeCode = static_cast<unsigned short>(i_engine->m_windowSystem->mapVirtualKey(vkey));
+        kid.MakeCode = static_cast<unsigned short>(i_engine->getWindowSystem()->mapVirtualKey(vkey));
     }
 
     InjectionContext ctx;

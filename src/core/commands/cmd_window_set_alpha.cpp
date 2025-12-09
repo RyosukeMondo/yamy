@@ -15,20 +15,20 @@ void Command_WindowSetAlpha::load(SettingLoader *i_sl)
 
 void Command_WindowSetAlpha::exec(Engine *i_engine, FunctionParam *i_param) const
 {
-    HWND hwnd;
-    if (!Engine::getSuitableWindow(i_param, &hwnd))
+    yamy::platform::WindowHandle hwnd;
+    if (!Engine::getSuitableWindow(i_engine->getWindowSystem(), i_param, &hwnd))
         return;
 
     if (m_alpha < 0) {    // remove all alpha
-        for (std::list<HWND>::iterator i = i_engine->m_windowsWithAlpha.begin();
+        for (std::list<yamy::platform::WindowHandle>::iterator i = i_engine->m_windowsWithAlpha.begin();
                 i != i_engine->m_windowsWithAlpha.end(); ++ i) {
-            i_engine->m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)*i, false);
-            i_engine->m_windowSystem->redrawWindow((WindowSystem::WindowHandle)*i);
+            i_engine->getWindowSystem()->setWindowLayered(*i, false);
+            i_engine->getWindowSystem()->redrawWindow(*i);
         }
         i_engine->m_windowsWithAlpha.clear();
     } else {
-        if (i_engine->m_windowSystem->isWindowLayered((WindowSystem::WindowHandle)hwnd)) {    // remove alpha
-            std::list<HWND>::iterator
+        if (i_engine->getWindowSystem()->isWindowLayered(hwnd)) {    // remove alpha
+            std::list<yamy::platform::WindowHandle>::iterator
             i = std::find(i_engine->m_windowsWithAlpha.begin(), i_engine->m_windowsWithAlpha.end(),
                           hwnd);
             if (i == i_engine->m_windowsWithAlpha.end())
@@ -36,21 +36,21 @@ void Command_WindowSetAlpha::exec(Engine *i_engine, FunctionParam *i_param) cons
 
             i_engine->m_windowsWithAlpha.erase(i);
 
-            i_engine->m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)hwnd, false);
+            i_engine->getWindowSystem()->setWindowLayered(hwnd, false);
         } else {    // add alpha
-            i_engine->m_windowSystem->setWindowLayered((WindowSystem::WindowHandle)hwnd, true);
+            i_engine->getWindowSystem()->setWindowLayered(hwnd, true);
             int alpha = m_alpha % 101;
-            if (!i_engine->m_windowSystem->setLayeredWindowAttributes((WindowSystem::WindowHandle)hwnd, 0,
+            if (!i_engine->getWindowSystem()->setLayeredWindowAttributes(hwnd, 0,
                                             (unsigned char)(255 * alpha / 100), LWA_ALPHA)) {
                 Acquire a(&i_engine->m_log, 0);
                 i_engine->m_log << _T("error: &WindowSetAlpha(") << alpha
-                << _T(") failed for HWND: ") << std::hex
+                << _T(") failed for yamy::platform::WindowHandle: ") << std::hex
                 << reinterpret_cast<ULONG_PTR>(hwnd) << std::dec << std::endl;
                 return;
             }
             i_engine->m_windowsWithAlpha.push_front(hwnd);
         }
-        i_engine->m_windowSystem->redrawWindow((WindowSystem::WindowHandle)hwnd);
+        i_engine->getWindowSystem()->redrawWindow(hwnd);
     }
 }
 

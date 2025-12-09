@@ -19,7 +19,7 @@ void Command_MouseHook::load(SettingLoader *i_sl)
 void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
 {
     WindowPoint wp;
-    i_engine->m_windowSystem->getCursorPos(&wp);
+    i_engine->getWindowSystem()->getCursorPos(&wp);
     g_hookData->m_mousePos.x = wp.x;
     g_hookData->m_mousePos.y = wp.y;
 
@@ -30,7 +30,7 @@ void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
     case MouseHookType_WindowMove: {
         // For this type, g_hookData->m_mouseHookParam means
         // target window type to move.
-        HWND target;
+        yamy::platform::WindowHandle target;
         bool isMDI;
 
         // i_hooParam < 0 means target window to move is MDI.
@@ -42,7 +42,7 @@ void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
         // abs(i_hookParam) == 2: target is window under mouse cursor
         // otherwise: target is current focus window
         if (m_hookParam == 2 || m_hookParam == -2)
-            target = (HWND)i_engine->m_windowSystem->windowFromPoint(wp);
+            target = (yamy::platform::WindowHandle)i_engine->getWindowSystem()->windowFromPoint(wp);
         else
             target = i_param->m_hwnd;
 

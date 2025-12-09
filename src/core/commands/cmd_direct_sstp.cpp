@@ -10,7 +10,7 @@ class DirectSSTPServer
 {
 public:
     tstring m_path;
-    HWND m_hwnd;
+    yamy::platform::WindowHandle m_hwnd;
     tstring m_name;
     tstring m_keroname;
 
@@ -52,7 +52,7 @@ public:
             (*m_directSSTPServers)[id].m_path = value;
         else if (member == _T("hwnd"))
             (*m_directSSTPServers)[id].m_hwnd =
-                reinterpret_cast<HWND>((LONG_PTR)_ttoi64(value.c_str()));
+                reinterpret_cast<yamy::platform::WindowHandle>((LONG_PTR)_ttoi64(value.c_str()));
         else if (member == _T("name"))
             (*m_directSSTPServers)[id].m_name = value;
         else if (member == _T("keroname"))
@@ -81,15 +81,15 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
         return;
 
     // check Direct SSTP server exist ?
-    if (void* hm = i_engine->m_windowSystem->openMutex(_T("sakura")))
-        i_engine->m_windowSystem->closeHandle(hm);
+    if (void* hm = i_engine->getWindowSystem()->openMutex(_T("sakura")))
+        i_engine->getWindowSystem()->closeHandle(hm);
     else {
         Acquire a(&i_engine->m_log, 0);
         i_engine->m_log << _T(" Error(1): Direct SSTP server does not exist.");
         return;
     }
 
-    void* hfm = i_engine->m_windowSystem->openFileMapping(_T("Sakura"));
+    void* hfm = i_engine->getWindowSystem()->openFileMapping(_T("Sakura"));
     if (!hfm) {
         Acquire a(&i_engine->m_log, 0);
         i_engine->m_log << _T(" Error(2): Direct SSTP server does not provide data.");
@@ -97,9 +97,9 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
     }
 
     char *data =
-        reinterpret_cast<char *>(i_engine->m_windowSystem->mapViewOfFile(hfm));
+        reinterpret_cast<char *>(i_engine->getWindowSystem()->mapViewOfFile(hfm));
     if (!data) {
-        i_engine->m_windowSystem->closeHandle(hfm);
+        i_engine->getWindowSystem()->closeHandle(hfm);
         Acquire a(&i_engine->m_log, 0);
         i_engine->m_log << _T(" Error(3): Direct SSTP server does not provide data.");
         return;
@@ -173,15 +173,15 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
             cd.lpData = (void *)request.c_str();
 #endif
             uintptr_t result;
-            i_engine->m_windowSystem->sendMessageTimeout((WindowSystem::WindowHandle)i->second.m_hwnd, WM_COPYDATA,
+            i_engine->getWindowSystem()->sendMessageTimeout(i->second.m_hwnd, WM_COPYDATA,
                                reinterpret_cast<uintptr_t>(i_engine->m_hwndAssocWindow),
                                reinterpret_cast<intptr_t>(&cd),
                                SMTO_ABORTIFHUNG | SMTO_BLOCK, 5000, &result);
         }
     }
 
-    i_engine->m_windowSystem->unmapViewOfFile(data);
-    i_engine->m_windowSystem->closeHandle(hfm);
+    i_engine->getWindowSystem()->unmapViewOfFile(data);
+    i_engine->getWindowSystem()->closeHandle(hfm);
 }
 
 tostream &Command_DirectSSTP::outputArgs(tostream &i_ost) const

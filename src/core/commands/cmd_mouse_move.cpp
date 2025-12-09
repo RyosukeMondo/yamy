@@ -19,8 +19,8 @@ void Command_MouseMove::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!i_param->m_isPressed)
         return;
     WindowPoint pt;
-    i_engine->m_windowSystem->getCursorPos(&pt);
-    i_engine->m_windowSystem->setCursorPos(pt.x + m_dx, pt.y + m_dy);
+    i_engine->getWindowSystem()->getCursorPos(&pt);
+    i_engine->getWindowSystem()->setCursorPos(pt.x + m_dx, pt.y + m_dy);
 }
 
 tostream &Command_MouseMove::outputArgs(tostream &i_ost) const

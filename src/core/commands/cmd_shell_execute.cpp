@@ -29,7 +29,7 @@ void Command_ShellExecute::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!i_param->m_isPressed)
         return;
     i_engine->m_afShellExecute = i_param->m_af;
-    i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)i_engine->m_hwndAssocWindow,
+    i_engine->getWindowSystem()->postMessage(i_engine->m_hwndAssocWindow,
                 WM_APP_engineNotify, EngineNotify_shellExecute, 0);
 }
 
@@ -54,7 +54,7 @@ void Command_ShellExecute::executeOnMainThread(Engine *i_engine)
         reinterpret_cast<Command_ShellExecute *>(
             i_engine->m_afShellExecute->m_functionData);
 
-    int r = i_engine->m_windowSystem->shellExecute(
+    int r = i_engine->getWindowSystem()->shellExecute(
                 fd->m_operation.eval().empty() ? _T("open") : fd->m_operation.eval(),
                 fd->m_file.eval(),
                 fd->m_parameters.eval(),

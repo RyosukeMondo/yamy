@@ -31,10 +31,10 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
     if (!i_param->m_isPressed)
         return;
 
-    HWND targetHwnd = nullptr;
+    yamy::platform::WindowHandle targetHwnd = nullptr;
 
-    i_engine->m_windowSystem->enumerateWindows([&](WindowSystem::WindowHandle window) -> bool {
-        tstring className = i_engine->m_windowSystem->getClassName(window);
+    i_engine->getWindowSystem()->enumerateWindows([&](WindowSystem::WindowHandle window) -> bool {
+        tstring className = i_engine->getWindowSystem()->getClassName(window);
         tsmatch what;
         if (!std::regex_search(className, what, m_windowClassName)) {
             if (m_logicalOp == LogicalOperatorType_and)
@@ -42,17 +42,17 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
         }
 
         if (m_logicalOp == LogicalOperatorType_and) {
-            tstring titleName = i_engine->m_windowSystem->getTitleName(window);
+            tstring titleName = i_engine->getWindowSystem()->getTitleName(window);
             if (!std::regex_search(titleName, what, m_windowTitleName))
                 return true; // continue
         }
 
-        targetHwnd = (HWND)window;
+        targetHwnd = (yamy::platform::WindowHandle)window;
         return false; // stop
     });
 
     if (targetHwnd)
-        i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)i_engine->m_hwndAssocWindow,
+        i_engine->getWindowSystem()->postMessage(i_engine->m_hwndAssocWindow,
                     WM_APP_engineNotify, EngineNotify_setForegroundWindow,
                     reinterpret_cast<LPARAM>(targetHwnd));
 }

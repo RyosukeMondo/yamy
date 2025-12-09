@@ -22,13 +22,13 @@ void Command_WindowMinimize::load(SettingLoader *i_sl)
 
 void Command_WindowMinimize::exec(Engine *i_engine, FunctionParam *i_param) const
 {
-    HWND hwnd;
+    yamy::platform::WindowHandle hwnd;
     TargetWindowType twt = m_twt;
-    if (!Engine::getSuitableMdiWindow(i_engine->m_windowSystem, i_param, &hwnd, &twt))
+    if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt))
         return;
 
-    bool isIconic = (i_engine->m_windowSystem->getShowCommand((WindowSystem::WindowHandle)hwnd) == WindowShowCmd::Minimized);
-    i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)hwnd, WM_SYSCOMMAND,
+    bool isIconic = (i_engine->getWindowSystem()->getShowCommand(hwnd) == WindowShowCmd::Minimized);
+    i_engine->getWindowSystem()->postMessage(hwnd, WM_SYSCOMMAND,
                 isIconic ? SC_RESTORE : SC_MINIMIZE, 0);
 }
 

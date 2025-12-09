@@ -23,7 +23,7 @@ void Command_HelpVariable::exec(Engine *i_engine, FunctionParam *i_param) const
 
     i_engine->m_helpTitle = m_title.eval();
     i_engine->m_helpMessage = buf;
-    i_engine->m_windowSystem->postMessage((WindowSystem::WindowHandle)i_engine->getAssociatedWndow(), WM_APP_engineNotify,
+    i_engine->getWindowSystem()->postMessage(i_engine->getAssociatedWndow(), WM_APP_engineNotify,
                 EngineNotify_helpMessage, true);
 }
 

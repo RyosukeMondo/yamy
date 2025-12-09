@@ -1,5 +1,7 @@
-﻿#include "input_injector_win32.h"
+#include "input_injector_win32.h"
 #include <tchar.h>
+
+namespace yamy::platform {
 
 void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const InjectionContext &ctx, const void *rawData)
 {
@@ -101,10 +103,11 @@ void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const Injectio
             i_kid->MakeCode != 4 && i_kid->MakeCode != 5 &&
             i_kid->MakeCode != 8 && i_kid->MakeCode != 9 &&
             i_kid->MakeCode != 10) {
-            WindowSystem::WindowHandle hwnd;
-            WindowPoint pt;
+            WindowHandle hwnd;
+            Point pt;
 
-            if (m_windowSystem->getCursorPos(&pt) && (hwnd = m_windowSystem->windowFromPoint(pt))) {
+            m_windowSystem->getCursorPos(&pt);
+            if ((hwnd = m_windowSystem->windowFromPoint(pt))) {
                 if (m_windowSystem->isConsoleWindow(hwnd)) {
                     m_windowSystem->setForegroundWindow(hwnd);
                 }
@@ -112,7 +115,6 @@ void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const Injectio
             if (ctx.isDragging) {
                 int cx = m_windowSystem->getSystemMetrics(SystemMetric::VirtualScreenWidth);
                 int cy = m_windowSystem->getSystemMetrics(SystemMetric::VirtualScreenHeight);
-                // Avoid division by zero if metrics fail
                 if (cx == 0) cx = GetSystemMetrics(SM_CXVIRTUALSCREEN);
                 if (cy == 0) cy = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
@@ -150,3 +152,29 @@ void InputInjectorWin32::inject(const KEYBOARD_INPUT_DATA *i_kid, const Injectio
         SendInput(1, &kid, sizeof(kid));
     }
 }
+
+void InputInjectorWin32::keyDown(KeyCode key) {
+    // Stub
+}
+
+void InputInjectorWin32::keyUp(KeyCode key) {
+    // Stub
+}
+
+void InputInjectorWin32::mouseMove(int32_t dx, int32_t dy) {
+    // Stub
+}
+
+void InputInjectorWin32::mouseButton(MouseButton button, bool down) {
+    // Stub
+}
+
+void InputInjectorWin32::mouseWheel(int32_t delta) {
+    // Stub
+}
+
+IInputInjector* createInputInjector(IWindowSystem* windowSystem) {
+    return new InputInjectorWin32(windowSystem);
+}
+
+} // namespace yamy::platform

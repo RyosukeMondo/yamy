@@ -135,7 +135,7 @@ void Command_PlugIn::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!i_param->m_isPressed)
         return;
 
-    shu::PlugIn *plugin = new shu::PlugIn(i_engine->m_windowSystem);
+    shu::PlugIn *plugin = new shu::PlugIn(i_engine->getWindowSystem());
     if (!plugin->load(m_dllName.eval(), m_funcName.eval(), m_funcParam.eval(), i_engine->m_log)) {
         delete plugin;
         return;
