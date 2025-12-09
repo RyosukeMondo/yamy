@@ -635,6 +635,17 @@ void SettingLoader::load_ARGUMENT(tstringq *o_arg)
 }
 
 
+// <ARGUMENT>
+void SettingLoader::load_ARGUMENT(std::string *o_arg)
+{
+#ifdef _UNICODE
+    *o_arg = to_UTF_8(getToken()->getString());
+#else
+    *o_arg = to_UTF_8(to_wstring(getToken()->getString()));
+#endif
+}
+
+
 // &lt;ARGUMENT&gt;
 void SettingLoader::load_ARGUMENT(std::list<tstringq> *o_arg)
 {
@@ -650,10 +661,45 @@ void SettingLoader::load_ARGUMENT(std::list<tstringq> *o_arg)
 }
 
 
+// <ARGUMENT>
+void SettingLoader::load_ARGUMENT(std::list<std::string> *o_arg)
+{
+    while (true) {
+        if (!lookToken()->isString())
+            return;
+        std::string s;
+#ifdef _UNICODE
+        s = to_UTF_8(getToken()->getString());
+#else
+        s = to_UTF_8(to_wstring(getToken()->getString()));
+#endif
+        o_arg->push_back(s);
+
+        if (!lookToken()->isComma())
+            return;
+        getToken();
+    }
+}
+
+
 // &lt;ARGUMENT&gt;
 void SettingLoader::load_ARGUMENT(tregex *o_arg)
 {
     *o_arg = getToken()->getRegexp();
+}
+
+
+// <ARGUMENT>
+void SettingLoader::load_ARGUMENT(Regex *o_arg)
+{
+    tstring pattern = getToken()->getRegexp().str();
+    std::string sPattern;
+#ifdef _UNICODE
+    sPattern = to_UTF_8(pattern);
+#else
+    sPattern = to_UTF_8(to_wstring(pattern));
+#endif
+    *o_arg = Regex(sPattern);
 }
 
 
@@ -843,7 +889,7 @@ void SettingLoader::load_ARGUMENT(StrExprArg *o_arg)
         type = StrExprArg::Builtin;
         t = getToken();
     }
-    *o_arg = StrExprArg(t->getString(), type);
+    *o_arg = StrExprArg(to_UTF_8(t->getString()), type);
 }
 
 

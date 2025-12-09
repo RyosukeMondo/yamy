@@ -17,7 +17,7 @@ private:
     void* m_dll;
     void* m_func;
     Type m_type;
-    tstringq m_funcParam;
+    std::string m_funcParam;
 
 public:
     PlugIn(WindowSystem* ws) : m_ws(ws), m_dll(nullptr), m_func(nullptr) {
@@ -28,43 +28,43 @@ public:
             m_ws->freeLibrary(m_dll);
     }
 
-    bool load(const tstringq &i_dllName, const tstringq &i_funcName,
-              const tstringq &i_funcParam, tomsgstream &i_log) {
-        m_dll = m_ws->loadLibrary((_T("Plugins\\") + i_dllName).c_str());
+    bool load(const std::string &i_dllName, const std::string &i_funcName,
+              const std::string &i_funcParam, tomsgstream &i_log) {
+
+        tstring tDllName = to_tstring(i_dllName);
+
+        m_dll = m_ws->loadLibrary((_T("Plugins\\") + tDllName).c_str());
         if (!m_dll) {
-            m_dll = m_ws->loadLibrary((_T("Plugin\\") + i_dllName).c_str());
+            m_dll = m_ws->loadLibrary((_T("Plugin\\") + tDllName).c_str());
             if (!m_dll) {
-                m_dll = m_ws->loadLibrary(i_dllName.c_str());
+                m_dll = m_ws->loadLibrary(tDllName.c_str());
                 if (!m_dll) {
                     Acquire a(&i_log);
                     i_log << std::endl;
-                    i_log << _T("error: &PlugIn() failed to load ") << i_dllName << std::endl;
+                    i_log << _T("error: &PlugIn() failed to load ") << tDllName << std::endl;
                     return false;
                 }
             }
         }
 
         // get function
-#ifdef UNICODE
-#  define to_wstring
-#else
-#  define to_string
-#endif
+        // i_funcName is UTF-8/ASCII.
+        std::string baseName = i_funcName;
+
         m_type = Type_W;
-        m_func = m_ws->getProcAddress(m_dll, to_string(_T("mayu") + i_funcName + _T("W")));
+        m_func = m_ws->getProcAddress(m_dll, "mayu" + baseName + "W");
         if (!m_func) {
             m_type = Type_A;
-            m_func
-            = m_ws->getProcAddress(m_dll, to_string(_T("mayu") + i_funcName + _T("A")));
+            m_func = m_ws->getProcAddress(m_dll, "mayu" + baseName + "A");
             if (!m_func) {
-                m_func = m_ws->getProcAddress(m_dll, to_string(_T("mayu") + i_funcName));
+                m_func = m_ws->getProcAddress(m_dll, "mayu" + baseName);
                 if (!m_func) {
-                    m_func = m_ws->getProcAddress(m_dll, to_string(i_funcName));
+                    m_func = m_ws->getProcAddress(m_dll, baseName);
                     if (!m_func) {
                         Acquire a(&i_log);
                         i_log << std::endl;
                         i_log << _T("error: &PlugIn() failed to find function: ")
-                        << i_funcName << std::endl;
+                        << to_tstring(baseName) << std::endl;
                         return false;
                     }
                 }
@@ -82,15 +82,15 @@ public:
         typedef void (WINAPI * PLUGIN_FUNCTION_W)(const wchar_t *i_arg);
         switch (m_type) {
         case Type_A:
-            reinterpret_cast<PLUGIN_FUNCTION_A>(m_func)(to_string(m_funcParam).c_str());
+            // UTF-8 -> MBCS
+            reinterpret_cast<PLUGIN_FUNCTION_A>(m_func)(to_string(to_wstring(m_funcParam)).c_str());
             break;
         case Type_W:
+            // UTF-8 -> Wide
             reinterpret_cast<PLUGIN_FUNCTION_W>(m_func)(to_wstring(m_funcParam).c_str());
             break;
         }
     }
-#undef to_string
-#undef to_wstring
 };
 
 static void plugInThread(void *i_plugin)

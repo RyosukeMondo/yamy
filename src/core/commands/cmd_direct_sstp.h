@@ -10,9 +10,9 @@ class Command_DirectSSTP : public Command<Command_DirectSSTP>
 public:
     static constexpr const char *Name = "DirectSSTP";
 
-    tregex m_name;
+    Regex m_name;
     StrExprArg m_protocol;
-    std::list<tstringq> m_headers;
+    std::list<std::string> m_headers;
 
     virtual void load(SettingLoader *i_sl) override;
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
