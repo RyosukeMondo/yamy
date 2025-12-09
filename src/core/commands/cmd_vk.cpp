@@ -51,9 +51,10 @@ void Command_VK::exec(Engine *i_engine, FunctionParam *i_param) const
         kid.MakeCode = static_cast<unsigned short>(i_engine->getWindowSystem()->mapVirtualKey(vkey));
     }
 
-    InjectionContext ctx;
+    yamy::platform::InjectionContext ctx;
     ctx.isDragging = false; // funcVK doesn't seem to support dragging context explicitly?
-    
+    ctx.dragStartPos = yamy::platform::Point(0, 0);
+
     if (i_engine->m_inputInjector) {
         i_engine->m_inputInjector->inject(&kid, ctx);
     }

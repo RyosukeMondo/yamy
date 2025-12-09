@@ -33,8 +33,13 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
 
     yamy::platform::WindowHandle targetHwnd = nullptr;
 
-    i_engine->getWindowSystem()->enumerateWindows([&](WindowSystem::WindowHandle window) -> bool {
-        tstring className = i_engine->getWindowSystem()->getClassName(window);
+    i_engine->getWindowSystem()->enumerateWindows([&](yamy::platform::WindowHandle window) -> bool {
+        std::string classNameUtf8 = i_engine->getWindowSystem()->getClassName(window);
+        std::string titleNameUtf8 = i_engine->getWindowSystem()->getTitleName(window);
+
+        tstring className = to_tstring(classNameUtf8);
+        tstring titleName = to_tstring(titleNameUtf8);
+
         tsmatch what;
         if (!std::regex_search(className, what, m_windowClassName)) {
             if (m_logicalOp == LogicalOperatorType_and)
@@ -42,12 +47,11 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
         }
 
         if (m_logicalOp == LogicalOperatorType_and) {
-            tstring titleName = i_engine->getWindowSystem()->getTitleName(window);
             if (!std::regex_search(titleName, what, m_windowTitleName))
                 return true; // continue
         }
 
-        targetHwnd = (yamy::platform::WindowHandle)window;
+        targetHwnd = window;
         return false; // stop
     });
 
