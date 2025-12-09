@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // function.cpp
 
 
@@ -12,6 +12,9 @@
 #include "windowstool.h"
 #include <algorithm>
 #include <process.h>
+#include <string>
+#include <cstring>
+#include "../../platform/windows/utf_conversion.h"
 
 #include "function_data.h"
 
@@ -24,12 +27,12 @@ template <class T> class TypeTable
 {
 public:
     T m_type;
-    const _TCHAR *m_name;
+    const char *m_name;
 };
 
 
 template <class T> static inline
-bool getTypeName(tstring *o_name, T i_type,
+bool getTypeName(std::string *o_name, T i_type,
                  const TypeTable<T> *i_table, size_t i_n)
 {
     for (size_t i = 0; i < i_n; ++ i)
@@ -41,11 +44,11 @@ bool getTypeName(tstring *o_name, T i_type,
 }
 
 template <class T> static inline
-bool getTypeValue(T *o_type, const tstringi &i_name,
+bool getTypeValue(T *o_type, const std::string &i_name,
                   const TypeTable<T> *i_table, size_t i_n)
 {
     for (size_t i = 0; i < i_n; ++ i)
-        if (i_table[i].m_name == i_name) {
+        if (_stricmp(i_table[i].m_name, i_name.c_str()) == 0) {
             *o_type = i_table[i].m_type;
             return true;
         }
@@ -61,11 +64,11 @@ bool getTypeValue(T *o_type, const tstringi &i_name,
 tostream &operator<<(tostream &i_ost, VKey i_data)
 {
     if (i_data & VKey_extended)
-        i_ost << _T("E-");
+        i_ost << "E-";
     if (i_data & VKey_released)
-        i_ost << _T("U-");
+        i_ost << "U-";
     if (i_data & VKey_pressed)
-        i_ost << _T("D-");
+        i_ost << "D-";
 
     u_int8 code = i_data & ~(VKey_extended | VKey_released | VKey_pressed);
     const VKeyTable *vkt;
@@ -75,7 +78,7 @@ tostream &operator<<(tostream &i_ost, VKey i_data)
     if (vkt->m_name)
         i_ost << vkt->m_name;
     else
-        i_ost << _T("0x") << std::hex << code << std::dec;
+        i_ost << "0x" << std::hex << code << std::dec;
     return i_ost;
 }
 
@@ -87,20 +90,20 @@ tostream &operator<<(tostream &i_ost, VKey i_data)
 // ToWindowType table
 typedef TypeTable<ToWindowType> TypeTable_ToWindowType;
 static const TypeTable_ToWindowType g_toWindowTypeTable[] = {
-    { ToWindowType_toOverlappedWindow, _T("toOverlappedWindow") },
-    { ToWindowType_toMainWindow,       _T("toMainWindow")       },
-    { ToWindowType_toItself,           _T("toItself")           },
-    { ToWindowType_toParentWindow,     _T("toParentWindow")     },
+    { ToWindowType_toOverlappedWindow, "toOverlappedWindow" },
+    { ToWindowType_toMainWindow,       "toMainWindow"       },
+    { ToWindowType_toItself,           "toItself"           },
+    { ToWindowType_toParentWindow,     "toParentWindow"     },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, ToWindowType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data,
                     g_toWindowTypeTable, NUMBER_OF(g_toWindowTypeTable)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
         i_ost << static_cast<int>(i_data);
     return i_ost;
@@ -108,7 +111,7 @@ tostream &operator<<(tostream &i_ost, ToWindowType i_data)
 
 
 // get value of ToWindowType
-bool getTypeValue(ToWindowType *o_type, const tstring &i_name)
+bool getTypeValue(ToWindowType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name,
                         g_toWindowTypeTable, NUMBER_OF(g_toWindowTypeTable));
@@ -122,37 +125,37 @@ bool getTypeValue(ToWindowType *o_type, const tstring &i_name)
 // GravityType table
 typedef TypeTable<GravityType> TypeTable_GravityType;
 static const TypeTable_GravityType g_gravityTypeTable[] = {
-    { GravityType_C,  _T("C")  },
-    { GravityType_N,  _T("N")  },
-    { GravityType_E,  _T("E")  },
-    { GravityType_W,  _T("W")  },
-    { GravityType_S,  _T("S")  },
-    { GravityType_NW, _T("NW") },
-    { GravityType_NW, _T("WN") },
-    { GravityType_NE, _T("NE") },
-    { GravityType_NE, _T("EN") },
-    { GravityType_SW, _T("SW") },
-    { GravityType_SW, _T("WS") },
-    { GravityType_SE, _T("SE") },
-    { GravityType_SE, _T("ES") },
+    { GravityType_C,  "C"  },
+    { GravityType_N,  "N"  },
+    { GravityType_E,  "E"  },
+    { GravityType_W,  "W"  },
+    { GravityType_S,  "S"  },
+    { GravityType_NW, "NW" },
+    { GravityType_NW, "WN" },
+    { GravityType_NE, "NE" },
+    { GravityType_NE, "EN" },
+    { GravityType_SW, "SW" },
+    { GravityType_SW, "WS" },
+    { GravityType_SE, "SE" },
+    { GravityType_SE, "ES" },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, GravityType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data,
                     g_gravityTypeTable, NUMBER_OF(g_gravityTypeTable)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(GravityType internal error)");
+        i_ost << "(GravityType internal error)";
     return i_ost;
 }
 
 
 // get value of GravityType
-bool getTypeValue(GravityType *o_type, const tstring &i_name)
+bool getTypeValue(GravityType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name,
                         g_gravityTypeTable, NUMBER_OF(g_gravityTypeTable));
@@ -166,27 +169,27 @@ bool getTypeValue(GravityType *o_type, const tstring &i_name)
 // MouseHookType table
 typedef TypeTable<MouseHookType> TypeTable_MouseHookType;
 static const TypeTable_MouseHookType g_mouseHookTypeTable[] = {
-    { MouseHookType_None,  _T("None")  },
-    { MouseHookType_Wheel,  _T("Wheel")  },
-    { MouseHookType_WindowMove,  _T("WindowMove")  },
+    { MouseHookType_None,  "None"  },
+    { MouseHookType_Wheel,  "Wheel"  },
+    { MouseHookType_WindowMove,  "WindowMove"  },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, MouseHookType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data,
                     g_mouseHookTypeTable, NUMBER_OF(g_mouseHookTypeTable)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(MouseHookType internal error)");
+        i_ost << "(MouseHookType internal error)";
     return i_ost;
 }
 
 
 // get value of MouseHookType
-bool getTypeValue(MouseHookType *o_type, const tstring &i_name)
+bool getTypeValue(MouseHookType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name, g_mouseHookTypeTable,
                         NUMBER_OF(g_mouseHookTypeTable));
@@ -200,26 +203,26 @@ bool getTypeValue(MouseHookType *o_type, const tstring &i_name)
 // ModifierLockType table
 typedef TypeTable<MayuDialogType> TypeTable_MayuDialogType;
 static const TypeTable_MayuDialogType g_mayuDialogTypeTable[] = {
-    { MayuDialogType_investigate, _T("investigate")  },
-    { MayuDialogType_log,         _T("log")          },
+    { MayuDialogType_investigate, "investigate"  },
+    { MayuDialogType_log,         "log"          },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, MayuDialogType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data,
                     g_mayuDialogTypeTable, NUMBER_OF(g_mayuDialogTypeTable)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(MayuDialogType internal error)");
+        i_ost << "(MayuDialogType internal error)";
     return i_ost;
 }
 
 
 // get value of MayuDialogType
-bool getTypeValue(MayuDialogType *o_type, const tstring &i_name)
+bool getTypeValue(MayuDialogType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name, g_mayuDialogTypeTable,
                         NUMBER_OF(g_mayuDialogTypeTable));
@@ -233,30 +236,30 @@ bool getTypeValue(MayuDialogType *o_type, const tstring &i_name)
 // ToggleType table
 typedef TypeTable<ToggleType> TypeTable_ToggleType;
 static const TypeTable_ToggleType g_toggleType[] = {
-    { ToggleType_toggle, _T("toggle") },
-    { ToggleType_off, _T("off") },
-    { ToggleType_off, _T("false") },
-    { ToggleType_off, _T("released") },
-    { ToggleType_on,  _T("on")  },
-    { ToggleType_on,  _T("true")  },
-    { ToggleType_on,  _T("pressed")  },
+    { ToggleType_toggle, "toggle" },
+    { ToggleType_off, "off" },
+    { ToggleType_off, "false" },
+    { ToggleType_off, "released" },
+    { ToggleType_on,  "on"  },
+    { ToggleType_on,  "true"  },
+    { ToggleType_on,  "pressed"  },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, ToggleType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data, g_toggleType, NUMBER_OF(g_toggleType)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(ToggleType internal error)");
+        i_ost << "(ToggleType internal error)";
     return i_ost;
 }
 
 
 // get value of ToggleType
-bool getTypeValue(ToggleType *o_type, const tstring &i_name)
+bool getTypeValue(ToggleType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name, g_toggleType,
                         NUMBER_OF(g_toggleType));
@@ -270,34 +273,34 @@ bool getTypeValue(ToggleType *o_type, const tstring &i_name)
 // ModifierLockType table
 typedef TypeTable<ModifierLockType> TypeTable_ModifierLockType;
 static const TypeTable_ModifierLockType g_modifierLockTypeTable[] = {
-    { ModifierLockType_Lock0, _T("lock0") },
-    { ModifierLockType_Lock1, _T("lock1") },
-    { ModifierLockType_Lock2, _T("lock2") },
-    { ModifierLockType_Lock3, _T("lock3") },
-    { ModifierLockType_Lock4, _T("lock4") },
-    { ModifierLockType_Lock5, _T("lock5") },
-    { ModifierLockType_Lock6, _T("lock6") },
-    { ModifierLockType_Lock7, _T("lock7") },
-    { ModifierLockType_Lock8, _T("lock8") },
-    { ModifierLockType_Lock9, _T("lock9") },
+    { ModifierLockType_Lock0, "lock0" },
+    { ModifierLockType_Lock1, "lock1" },
+    { ModifierLockType_Lock2, "lock2" },
+    { ModifierLockType_Lock3, "lock3" },
+    { ModifierLockType_Lock4, "lock4" },
+    { ModifierLockType_Lock5, "lock5" },
+    { ModifierLockType_Lock6, "lock6" },
+    { ModifierLockType_Lock7, "lock7" },
+    { ModifierLockType_Lock8, "lock8" },
+    { ModifierLockType_Lock9, "lock9" },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, ModifierLockType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data,
                     g_modifierLockTypeTable, NUMBER_OF(g_modifierLockTypeTable)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(ModifierLockType internal error)");
+        i_ost << "(ModifierLockType internal error)";
     return i_ost;
 }
 
 
 // get value of ModifierLockType
-bool getTypeValue(ModifierLockType *o_type, const tstring &i_name)
+bool getTypeValue(ModifierLockType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name, g_modifierLockTypeTable,
                         NUMBER_OF(g_modifierLockTypeTable));
@@ -311,36 +314,36 @@ bool getTypeValue(ModifierLockType *o_type, const tstring &i_name)
 // ShowCommandType table
 typedef TypeTable<ShowCommandType> TypeTable_ShowCommandType;
 static const TypeTable_ShowCommandType g_showCommandTypeTable[] = {
-    { ShowCommandType_hide,            _T("hide")            },
-    { ShowCommandType_maximize,        _T("maximize")        },
-    { ShowCommandType_minimize,        _T("minimize")        },
-    { ShowCommandType_restore,         _T("restore")         },
-    { ShowCommandType_show,            _T("show")            },
-    { ShowCommandType_showDefault,     _T("showDefault")     },
-    { ShowCommandType_showMaximized,   _T("showMaximized")   },
-    { ShowCommandType_showMinimized,   _T("showMinimized")   },
-    { ShowCommandType_showMinNoActive, _T("showMinNoActive") },
-    { ShowCommandType_showNA,          _T("showNA")          },
-    { ShowCommandType_showNoActivate,  _T("showNoActivate")  },
-    { ShowCommandType_showNormal,      _T("showNormal")      },
+    { ShowCommandType_hide,            "hide"            },
+    { ShowCommandType_maximize,        "maximize"        },
+    { ShowCommandType_minimize,        "minimize"        },
+    { ShowCommandType_restore,         "restore"         },
+    { ShowCommandType_show,            "show"            },
+    { ShowCommandType_showDefault,     "showDefault"     },
+    { ShowCommandType_showMaximized,   "showMaximized"   },
+    { ShowCommandType_showMinimized,   "showMinimized"   },
+    { ShowCommandType_showMinNoActive, "showMinNoActive" },
+    { ShowCommandType_showNA,          "showNA"          },
+    { ShowCommandType_showNoActivate,  "showNoActivate"  },
+    { ShowCommandType_showNormal,      "showNormal"      },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, ShowCommandType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data,
                     g_showCommandTypeTable, NUMBER_OF(g_showCommandTypeTable)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(ShowCommandType internal error)");
+        i_ost << "(ShowCommandType internal error)";
     return i_ost;
 }
 
 
 // get value of ShowCommandType
-bool getTypeValue(ShowCommandType *o_type, const tstring &i_name)
+bool getTypeValue(ShowCommandType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name, g_showCommandTypeTable,
                         NUMBER_OF(g_showCommandTypeTable));
@@ -354,26 +357,26 @@ bool getTypeValue(ShowCommandType *o_type, const tstring &i_name)
 // ModifierLockType table
 typedef TypeTable<TargetWindowType> TypeTable_TargetWindowType;
 static const TypeTable_TargetWindowType g_targetWindowType[] = {
-    { TargetWindowType_overlapped, _T("overlapped") },
-    { TargetWindowType_mdi,        _T("mdi")        },
+    { TargetWindowType_overlapped, "overlapped" },
+    { TargetWindowType_mdi,        "mdi"        },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, TargetWindowType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data,
                     g_targetWindowType, NUMBER_OF(g_targetWindowType)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(TargetWindowType internal error)");
+        i_ost << "(TargetWindowType internal error)";
     return i_ost;
 }
 
 
 // get value of TargetWindowType
-bool getTypeValue(TargetWindowType *o_type, const tstring &i_name)
+bool getTypeValue(TargetWindowType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name, g_targetWindowType,
                         NUMBER_OF(g_targetWindowType));
@@ -387,25 +390,25 @@ bool getTypeValue(TargetWindowType *o_type, const tstring &i_name)
 // BooleanType table
 typedef TypeTable<BooleanType> TypeTable_BooleanType;
 static const TypeTable_BooleanType g_booleanType[] = {
-    { BooleanType_false, _T("false") },
-    { BooleanType_true,  _T("true")  },
+    { BooleanType_false, "false" },
+    { BooleanType_true,  "true"  },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, BooleanType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data, g_booleanType, NUMBER_OF(g_booleanType)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(BooleanType internal error)");
+        i_ost << "(BooleanType internal error)";
     return i_ost;
 }
 
 
 // get value of BooleanType
-bool getTypeValue(BooleanType *o_type, const tstring &i_name)
+bool getTypeValue(BooleanType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name, g_booleanType,
                         NUMBER_OF(g_booleanType));
@@ -419,26 +422,26 @@ bool getTypeValue(BooleanType *o_type, const tstring &i_name)
 // LogicalOperatorType table
 typedef TypeTable<LogicalOperatorType> TypeTable_LogicalOperatorType;
 static const TypeTable_LogicalOperatorType g_logicalOperatorType[] = {
-    { LogicalOperatorType_or, _T("||") },
-    { LogicalOperatorType_and,  _T("&&")  },
+    { LogicalOperatorType_or, "||" },
+    { LogicalOperatorType_and,  "&&"  },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, LogicalOperatorType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data, g_logicalOperatorType,
                     NUMBER_OF(g_logicalOperatorType)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(LogicalOperatorType internal error)");
+        i_ost << "(LogicalOperatorType internal error)";
     return i_ost;
 }
 
 
 // get value of LogicalOperatorType
-bool getTypeValue(LogicalOperatorType *o_type, const tstring &i_name)
+bool getTypeValue(LogicalOperatorType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name, g_logicalOperatorType,
                         NUMBER_OF(g_logicalOperatorType));
@@ -452,26 +455,26 @@ bool getTypeValue(LogicalOperatorType *o_type, const tstring &i_name)
 // WindowMonitorFromType table
 typedef TypeTable<WindowMonitorFromType> TypeTable_WindowMonitorFromType;
 static const TypeTable_WindowMonitorFromType g_windowMonitorFromType[] = {
-    { WindowMonitorFromType_primary, _T("primary") },
-    { WindowMonitorFromType_current, _T("current") },
+    { WindowMonitorFromType_primary, "primary" },
+    { WindowMonitorFromType_current, "current" },
 };
 
 
 // stream output
 tostream &operator<<(tostream &i_ost, WindowMonitorFromType i_data)
 {
-    tstring name;
+    std::string name;
     if (getTypeName(&name, i_data, g_windowMonitorFromType,
                     NUMBER_OF(g_windowMonitorFromType)))
-        i_ost << name;
+        i_ost << to_tstring(name);
     else
-        i_ost << _T("(WindowMonitorFromType internal error)");
+        i_ost << "(WindowMonitorFromType internal error)";
     return i_ost;
 }
 
 
 // get value of WindowMonitorFromType
-bool getTypeValue(WindowMonitorFromType *o_type, const tstring &i_name)
+bool getTypeValue(WindowMonitorFromType *o_type, const std::string &i_name)
 {
     return getTypeValue(o_type, i_name, g_windowMonitorFromType,
                         NUMBER_OF(g_windowMonitorFromType));
@@ -483,11 +486,25 @@ bool getTypeValue(WindowMonitorFromType *o_type, const tstring &i_name)
 
 
 /// stream output
-tostream &operator<<(tostream &i_ost, const std::list<tstringq> &i_data)
+tostream &operator<<(tostream &i_ost, const std::list<std::string> &i_data)
 {
-    for (std::list<tstringq>::const_iterator
+    for (std::list<std::string>::const_iterator
             i = i_data.begin(); i != i_data.end(); ++ i) {
-        i_ost << *i << _T(", ");
+        i_ost << to_tstring(*i) << ", ";
+    }
+    return i_ost;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// std::list<std::string>
+
+
+/// stream output
+tostream &operator<<(tostream &i_ost, const std::list<std::string> &i_data)
+{
+    for (std::list<std::string>::const_iterator
+            i = i_data.begin(); i != i_data.end(); ++ i) {
+        i_ost << to_tstring(*i) << _T(", ");
     }
     return i_ost;
 }
@@ -593,7 +610,13 @@ void Engine::EmacsEditKillLine::func()
     if (!m_buf.empty()) {
         HGLOBAL g;
         const _TCHAR *text = clipboardGetText(&g);
-        if (text == nullptr || m_buf != text)
+
+        std::string textUtf8;
+        if (text) {
+             textUtf8 = yamy::platform::wstring_to_utf8(text);
+        }
+
+        if (text == nullptr || m_buf != textUtf8)
             reset();
         clipboardClose(g);
     }
@@ -615,10 +638,15 @@ void Engine::EmacsEditKillLine::func()
 </pre>
 */
 HGLOBAL Engine::EmacsEditKillLine::makeNewKillLineBuf(
-    const _TCHAR *i_data, int *o_retval)
+    const char *i_data, int *o_retval)
 {
-    size_t len = m_buf.size();
-    len += _tcslen(i_data) + 3;
+    std::wstring bufW = yamy::platform::utf8_to_wstring(m_buf);
+    std::wstring dataW = yamy::platform::utf8_to_wstring(i_data);
+    const wchar_t* i_data_w = dataW.c_str();
+
+    size_t len = bufW.size();
+    size_t i_data_len = dataW.length();
+    len += i_data_len + 3;
 
     HGLOBAL hdata = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
                                 len * sizeof(_TCHAR));
@@ -626,25 +654,24 @@ HGLOBAL Engine::EmacsEditKillLine::makeNewKillLineBuf(
         return nullptr;
     _TCHAR *dataNew = reinterpret_cast<_TCHAR *>(GlobalLock(hdata));
     *dataNew = _T('\0');
-    if (!m_buf.empty())
-        _tcscpy(dataNew, m_buf.c_str());
+    if (!bufW.empty())
+        _tcscpy(dataNew, bufW.c_str());
 
-    len = _tcslen(i_data);
-    if (3 <= len &&
-            i_data[len - 2] == _T('\r') && i_data[len - 1] == _T('\n')) {
-        _tcscat(dataNew, i_data);
-        len = _tcslen(dataNew);
-        dataNew[len - 2] = _T('\0'); // chomp
+    if (3 <= i_data_len &&
+            i_data_w[i_data_len - 2] == _T('\r') && i_data_w[i_data_len - 1] == _T('\n')) {
+        _tcscat(dataNew, i_data_w);
+        size_t newLen = _tcslen(dataNew);
+        dataNew[newLen - 2] = _T('\0'); // chomp
         *o_retval = 2;
-    } else if (len == 0) {
+    } else if (i_data_len == 0) {
         _tcscat(dataNew, _T("\r\n"));
         *o_retval = 1;
     } else {
-        _tcscat(dataNew, i_data);
+        _tcscat(dataNew, i_data_w);
         *o_retval = 0;
     }
 
-    m_buf = dataNew;
+    m_buf = yamy::platform::wstring_to_utf8(dataNew);
 
     GlobalUnlock(hdata);
     return hdata;
@@ -657,7 +684,9 @@ int Engine::EmacsEditKillLine::pred()
     HGLOBAL g;
     const _TCHAR *text = clipboardGetText(&g);
     int retval;
-    HGLOBAL hdata = makeNewKillLineBuf(text ? text : _T(""), &retval);
+    std::string textUtf8;
+    if (text) textUtf8 = yamy::platform::wstring_to_utf8(text);
+    HGLOBAL hdata = makeNewKillLineBuf(textUtf8.c_str(), &retval);
     clipboardClose(g, hdata);
     return retval;
 }

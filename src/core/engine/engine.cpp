@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // engine.cpp
 
 
@@ -63,9 +63,9 @@ void Engine::keyboardHandler()
                         } else
                             m_currentLock.off(Modifier::Type_Touchpad);
                         Acquire a(&m_log, 1);
-                        m_log << _T("touchpad: ") << message.wParam
-                        << _T(".") << (message.lParam & 0xffff)
-                        << _T(".") << (message.lParam >> 16 & 0xffff)
+                        m_log << "touchpad: " << message.wParam
+                        << "." << (message.lParam & 0xffff)
+                        << "." << (message.lParam >> 16 & 0xffff)
                         << std::endl;
                         break;
                     }
@@ -105,10 +105,10 @@ void Engine::keyboardHandler()
             injectInput(&kid, nullptr);
             Acquire a(&m_log, 0);
             if (!m_currentFocusOfThread)
-                m_log << _T("internal error: m_currentFocusOfThread == nullptr")
+                m_log << "internal error: m_currentFocusOfThread == nullptr"
                 << std::endl;
             if (!m_currentKeymap)
-                m_log << _T("internal error: m_currentKeymap == nullptr")
+                m_log << "internal error: m_currentKeymap == nullptr"
                 << std::endl;
             updateLastPressedKey(nullptr);
             continue;
@@ -174,7 +174,7 @@ void Engine::keyboardHandler()
         } else if (am == Keymap::AM_true) {
             {
                 Acquire a(&m_log, 1);
-                m_log << _T("* true modifier") << std::endl;
+                m_log << "* true modifier" << std::endl;
             }
             // true modifier doesn't generate scan code
             outputToLog(pProcessingKey, c.m_mkey, 1);
@@ -182,9 +182,9 @@ void Engine::keyboardHandler()
             {
                 Acquire a(&m_log, 1);
                 if (am == Keymap::AM_oneShot)
-                    m_log << _T("* one shot modifier") << std::endl;
+                    m_log << "* one shot modifier" << std::endl;
                 else
-                    m_log << _T("* one shot repeatable modifier") << std::endl;
+                    m_log << "* one shot repeatable modifier" << std::endl;
             }
             // oneShot modifier doesn't generate scan code
             outputToLog(pProcessingKey, c.m_mkey, 1);
@@ -238,7 +238,7 @@ void Engine::keyboardHandler()
         if (m_currentKeyPressCount <= 0) {
             {
                 Acquire a(&m_log, 1);
-                m_log << _T("* No key is pressed") << std::endl;
+                m_log << "* No key is pressed" << std::endl;
             }
             generateModifierEvents(Modifier());
             if (0 < m_currentKeyPressCountOnWin32)

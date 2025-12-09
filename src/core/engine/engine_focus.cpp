@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // engine_focus.cpp
 
 
@@ -12,6 +12,8 @@
 
 #include <iomanip>
 #include <process.h>
+#include <string>
+#include "../../platform/windows/utf_conversion.h"
 
 
 // check focus window
@@ -43,12 +45,12 @@ restart:
                     if (j != m_focusOfThreads.end()) {
                         FocusOfThread *fot = &((*j).second);
                         Acquire a(&m_log, 1);
-                        m_log << _T("RemoveThread") << std::endl;
-                        m_log << _T("\tHWND:\t") << std::hex << (ULONG_PTR)fot->m_hwndFocus
+                        m_log << "RemoveThread" << std::endl;
+                        m_log << "\tHWND:\t" << std::hex << (ULONG_PTR)fot->m_hwndFocus
                         << std::dec << std::endl;
-                        m_log << _T("\tTHREADID:") << fot->m_threadId << std::endl;
-                        m_log << _T("\tCLASS:\t") << fot->m_className << std::endl;
-                        m_log << _T("\tTITLE:\t") << fot->m_titleName << std::endl;
+                        m_log << "\tTHREADID:" << fot->m_threadId << std::endl;
+                        m_log << "\tCLASS:\t" << to_tstring(fot->m_className) << std::endl;
+                        m_log << "\tTITLE:\t" << to_tstring(fot->m_titleName) << std::endl;
                         m_log << std::endl;
                         m_focusOfThreads.erase(j);
                     }
@@ -69,16 +71,16 @@ restart:
                     checkShow(m_hwndFocus);
 
                     Acquire a(&m_log, 1);
-                    m_log << _T("FocusChanged") << std::endl;
-                    m_log << _T("\tHWND:\t")
+                    m_log << "FocusChanged" << std::endl;
+                    m_log << "\tHWND:\t"
                     << std::hex << (ULONG_PTR)m_currentFocusOfThread->m_hwndFocus
                     << std::dec << std::endl;
-                    m_log << _T("\tTHREADID:")
+                    m_log << "\tTHREADID:"
                     << m_currentFocusOfThread->m_threadId << std::endl;
-                    m_log << _T("\tCLASS:\t")
-                    << m_currentFocusOfThread->m_className << std::endl;
-                    m_log << _T("\tTITLE:\t")
-                    << m_currentFocusOfThread->m_titleName << std::endl;
+                    m_log << "\tCLASS:\t"
+                    << to_tstring(m_currentFocusOfThread->m_className) << std::endl;
+                    m_log << "\tTITLE:\t"
+                    << to_tstring(m_currentFocusOfThread->m_titleName) << std::endl;
                     m_log << std::endl;
                     return;
                 }
@@ -91,13 +93,17 @@ restart:
                 _TCHAR titleName[1024];
                 if (GetWindowText(hwndFore, titleName, NUMBER_OF(titleName)) == 0)
                     titleName[0] = _T('\0');
-                setFocus(hwndFore, threadId, className, titleName, true);
+
+                std::string classNameUtf8 = yamy::platform::wstring_to_utf8(className);
+                std::string titleNameUtf8 = yamy::platform::wstring_to_utf8(titleName);
+
+                setFocus(hwndFore, threadId, classNameUtf8, titleNameUtf8, true);
                 Acquire a(&m_log, 1);
-                m_log << _T("HWND:\t") << std::hex << reinterpret_cast<ULONG_PTR>(hwndFore)
+                m_log << "HWND:\t" << std::hex << reinterpret_cast<ULONG_PTR>(hwndFore)
                 << std::dec << std::endl;
-                m_log << _T("THREADID:") << threadId << std::endl;
-                m_log << _T("CLASS:\t") << className << std::endl;
-                m_log << _T("TITLE:\t") << titleName << std::endl << std::endl;
+                m_log << "THREADID:" << threadId << std::endl;
+                m_log << "CLASS:\t" << className << std::endl;
+                m_log << "TITLE:\t" << titleName << std::endl << std::endl;
                 goto restart;
             }
         }
@@ -106,13 +112,13 @@ restart:
     Acquire a(&m_cs);
     if (m_globalFocus.m_keymaps.empty()) {
         Acquire a(&m_log, 1);
-        m_log << _T("NO GLOBAL FOCUS") << std::endl;
+        m_log << "NO GLOBAL FOCUS" << std::endl;
         m_currentFocusOfThread = nullptr;
         setCurrentKeymap(nullptr);
     } else {
         if (m_currentFocusOfThread != &m_globalFocus) {
             Acquire a(&m_log, 1);
-            m_log << _T("GLOBAL FOCUS") << std::endl;
+            m_log << "GLOBAL FOCUS" << std::endl;
             m_currentFocusOfThread = &m_globalFocus;
             setCurrentKeymap(m_globalFocus.m_keymaps.front());
         }
@@ -123,7 +129,7 @@ restart:
 
 // focus
 bool Engine::setFocus(HWND i_hwndFocus, DWORD i_threadId,
-                      const tstringi &i_className, const tstringi &i_titleName,
+                      const std::string &i_className, const std::string &i_titleName,
                       bool i_isConsole) {
     Acquire a(&m_cs);
     if (m_isSynchronizing)
@@ -169,7 +175,7 @@ bool Engine::setFocus(HWND i_hwndFocus, DWORD i_threadId,
 
     if (m_setting) {
         m_setting->m_keymaps.searchWindow(&fot->m_keymaps,
-                                          i_className, i_titleName);
+                                          to_tstring(i_className), to_tstring(i_titleName));
         ASSERT(0 < fot->m_keymaps.size());
     } else
         fot->m_keymaps.clear();

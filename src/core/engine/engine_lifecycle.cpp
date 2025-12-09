@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // engine_lifecycle.cpp
 
 
@@ -12,6 +12,7 @@
 
 #include <iomanip>
 #include <process.h>
+#include <string>
 
 
 Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_configStore, InputInjector *i_inputInjector, InputHook *i_inputHook, InputDriver *i_inputDriver)
@@ -44,7 +45,7 @@ Engine::Engine(tomsgstream &i_log, WindowSystem *i_windowSystem, ConfigStore *i_
         m_variable(0),
         m_log(i_log) {
     BOOL (WINAPI *pChangeWindowMessageFilter)(UINT, DWORD) =
-        reinterpret_cast<BOOL (WINAPI*)(UINT, DWORD)>(GetProcAddress(GetModuleHandle(_T("user32.dll")), "ChangeWindowMessageFilter"));
+        reinterpret_cast<BOOL (WINAPI*)(UINT, DWORD)>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "ChangeWindowMessageFilter"));
 
     if(pChangeWindowMessageFilter != nullptr) {
         pChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
@@ -125,9 +126,9 @@ void Engine::stop() {
 
 bool Engine::prepairQuit() {
     // terminate and unload DLL for ThumbSense support if loaded
-    m_inputDriver->manageExtension(_T("sts4mayu.dll"), _T("SynCOM.dll"),
+    m_inputDriver->manageExtension(to_tstring("sts4mayu.dll").c_str(), to_tstring("SynCOM.dll").c_str(),
                   false, (void**)&m_sts4mayu);
-    m_inputDriver->manageExtension(_T("cts4mayu.dll"), _T("TouchPad.dll"),
+    m_inputDriver->manageExtension(to_tstring("cts4mayu.dll").c_str(), to_tstring("TouchPad.dll").c_str(),
                   false, (void**)&m_cts4mayu);
     return true;
 }
@@ -173,4 +174,3 @@ void Engine::pushInputEvent(const KEYBOARD_INPUT_DATA &kid)
     }
     ReleaseMutex(m_queueMutex);
 }
-

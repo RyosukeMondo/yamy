@@ -33,46 +33,55 @@ class DlgSetting : public LayoutManager
         item.mask = LVIF_TEXT;
         item.iItem = i_index;
 
+        std::wstring wName = yamy::platform::utf8_to_wstring(i_data.m_name);
         item.iSubItem = 0;
-        item.pszText = const_cast<_TCHAR *>(i_data.m_name.c_str());
+        item.pszText = const_cast<wchar_t*>(wName.c_str());
         CHECK_TRUE( ListView_InsertItem(m_hwndMayuPaths, &item) != -1 );
 
+        std::wstring wFilename = yamy::platform::utf8_to_wstring(i_data.m_filename);
         ListView_SetItemText(m_hwndMayuPaths, i_index, 1,
-                             const_cast<_TCHAR *>(i_data.m_filename.c_str()));
+                             const_cast<wchar_t*>(wFilename.c_str()));
+
+        std::wstring wSymbols = yamy::platform::utf8_to_wstring(i_data.m_symbols);
         ListView_SetItemText(m_hwndMayuPaths, i_index, 2,
-                             const_cast<_TCHAR *>(i_data.m_symbols.c_str()));
+                             const_cast<wchar_t*>(wSymbols.c_str()));
     }
 
     ///
     void setItem(int i_index, const Data &i_data) {
+        std::wstring wName = yamy::platform::utf8_to_wstring(i_data.m_name);
         ListView_SetItemText(m_hwndMayuPaths, i_index, 0,
-                             const_cast<_TCHAR *>(i_data.m_name.c_str()));
+                             const_cast<wchar_t*>(wName.c_str()));
+
+        std::wstring wFilename = yamy::platform::utf8_to_wstring(i_data.m_filename);
         ListView_SetItemText(m_hwndMayuPaths, i_index, 1,
-                             const_cast<_TCHAR *>(i_data.m_filename.c_str()));
+                             const_cast<wchar_t*>(wFilename.c_str()));
+
+        std::wstring wSymbols = yamy::platform::utf8_to_wstring(i_data.m_symbols);
         ListView_SetItemText(m_hwndMayuPaths, i_index, 2,
-                             const_cast<_TCHAR *>(i_data.m_symbols.c_str()));
+                             const_cast<wchar_t*>(wSymbols.c_str()));
     }
 
     ///
     void getItem(int i_index, Data *o_data) {
-        _TCHAR buf[GANA_MAX_PATH];
-        LVITEM item;
+        wchar_t buf[GANA_MAX_PATH];
+        LVITEMW item;
         item.mask = LVIF_TEXT;
         item.iItem = i_index;
         item.pszText = buf;
         item.cchTextMax = NUMBER_OF(buf);
 
         item.iSubItem = 0;
-        CHECK_TRUE( ListView_GetItem(m_hwndMayuPaths, &item) );
-        o_data->m_name = item.pszText;
+        CHECK_TRUE( SendMessage(m_hwndMayuPaths, LVM_GETITEMW, 0, (LPARAM)&item) );
+        o_data->m_name = yamy::platform::wstring_to_utf8(buf);
 
         item.iSubItem = 1;
-        CHECK_TRUE( ListView_GetItem(m_hwndMayuPaths, &item) );
-        o_data->m_filename = item.pszText;
+        CHECK_TRUE( SendMessage(m_hwndMayuPaths, LVM_GETITEMW, 0, (LPARAM)&item) );
+        o_data->m_filename = yamy::platform::wstring_to_utf8(buf);
 
         item.iSubItem = 2;
-        CHECK_TRUE( ListView_GetItem(m_hwndMayuPaths, &item) );
-        o_data->m_symbols = item.pszText;
+        CHECK_TRUE( SendMessage(m_hwndMayuPaths, LVM_GETITEMW, 0, (LPARAM)&item) );
+        o_data->m_symbols = yamy::platform::wstring_to_utf8(buf);
     }
 
     ///
@@ -117,7 +126,25 @@ public:
         lvc.fmt = LVCFMT_LEFT;
         lvc.cx = (rc.right - rc.left) / 3;
 
-        tstringi str = loadString(IDS_mayuPathName);
+        std::wstring wStr = yamy::platform::utf8_to_wstring(loadString(IDS_mayuPathName)); // assuming loadString returns std::string now? Wait, loadString returns tstring in old code.
+        // But prompt says: "Migrate platform utility functions from tstring to std::string" in Branch 7.
+        // Branch 6 prompt says "Update any string member variables: tstring → std::string".
+        // loadString is in windowstool.h, which I haven't changed the return type of yet, because Branch 7 is separate.
+        // But I should assume I need to handle whatever loadString returns.
+        // Wait, windowstool.h: extern tstring loadString(UINT i_id);
+        // If I am strictly following Branch 6, I haven't changed loadString.
+        // But I need to pass wide strings to ListView_InsertColumn if I want it to work correctly with Unicode.
+        // Actually, if tstring is wstring (Unicode build), then loadString returns wstring.
+        // If I am converting everything to std::string in this file, I should probably convert what loadString returns to utf8 if I were storing it,
+        // but here I need to pass it to Windows API.
+        // Since the prompt says "Migrate UI dialogs ... from tstring to std::string",
+        // I should probably convert loadString result to std::string if I was using it in logic,
+        // but here it goes straight to UI.
+        // However, I am replacing the UI code to be explicit about UTF-8 usage where possible, but ListView_InsertColumn needs TCHAR or WCHAR.
+        // If I am in a UNICODE build (which we are), TCHAR is WCHAR.
+        // loadString returns tstring (wstring).
+
+        tstring str = loadString(IDS_mayuPathName);
         lvc.pszText = const_cast<_TCHAR *>(str.c_str());
         CHECK( 0 ==, ListView_InsertColumn(m_hwndMayuPaths, 0, &lvc) );
         str = loadString(IDS_mayuPath);
@@ -131,16 +158,27 @@ public:
         insertItem(0, data);                // TODO: why ?
 
         // set list view
-        tregex split(_T("^([^;]*);([^;]*);(.*)$"));
-        tstringi dot_mayu;
+        // tregex split(_T("^([^;]*);([^;]*);(.*)$"));
+        // tstringi dot_mayu;
+        // Using std::regex and std::string as requested
+        std::regex split("^([^;]*);([^;]*);(.*)$");
+        std::string dot_mayu;
         int i;
         for (i = 0; i < MAX_MAYU_REGISTRY_ENTRIES; ++ i) {
             _TCHAR buf[100];
             _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), i);
-            if (!m_reg.read(buf, &dot_mayu))
+            // Registry::read uses tstring/TCHAR currently (Branch 7 changes it).
+            // I should use temporary tstring if Registry is not updated.
+            // But I cannot change Registry here easily without breaking other things or doing Branch 7 work.
+            // Wait, I can't easily change `m_reg.read` signature.
+            // I'll read into tstring and convert.
+            tstring t_dot_mayu;
+            if (!m_reg.read(buf, &t_dot_mayu))
                 break;
 
-            tsmatch what;
+            dot_mayu = yamy::platform::wstring_to_utf8(t_dot_mayu);
+
+            std::smatch what;
             if (std::regex_match(dot_mayu, what, split)) {
                 data.m_name = what.str(1);
                 data.m_filename = what.str(2);
@@ -290,8 +328,10 @@ public:
                 _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
                 Data data;
                 getItem(index, &data);
-                m_reg.write(buf, data.m_name + _T(";") +
-                            data.m_filename + _T(";") + data.m_symbols);
+                // Convert back to tstring for Registry (until Branch 7)
+                tstring val = yamy::platform::utf8_to_wstring(data.m_name + ";" +
+                            data.m_filename + ";" + data.m_symbols);
+                m_reg.write(buf, val);
             }
             for (; ; ++ index) {
                 _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);

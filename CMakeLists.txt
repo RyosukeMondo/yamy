@@ -103,7 +103,7 @@ endif()
 # -----------------------------------------------------------------------------
 # Target: yamy_engine (EXE)
 # -----------------------------------------------------------------------------
-set(CORE_SOURCES
+set(ENGINE_SOURCES
     src/utils/compiler_specific_func.cpp
     src/core/engine/engine.cpp
     src/core/engine/engine_lifecycle.cpp
@@ -186,6 +186,11 @@ set(CORE_SOURCES
     src/core/window/layoutmanager.cpp
     src/core/window/target.cpp
     src/core/settings/parser.cpp
+    src/platform/windows/input_driver_win32.cpp
+    src/platform/windows/registry.cpp
+    src/platform/windows/utf_conversion.cpp
+    src/platform/windows/window_system_win32.cpp
+    src/platform/windows/windowstool.cpp
     src/core/settings/setting.cpp
     src/core/settings/setting_loader.cpp
     src/core/functions/strexpr.cpp
@@ -194,7 +199,7 @@ set(CORE_SOURCES
 )
 
 if(WIN32)
-    set(PLATFORM_SOURCES
+    list(APPEND ENGINE_SOURCES
         src/ui/dlgeditsetting.cpp
         src/ui/dlginvestigate.cpp
         src/ui/dlglog.cpp
@@ -204,33 +209,13 @@ if(WIN32)
         src/platform/windows/fixscancodemap.cpp
         src/platform/windows/input_injector_win32.cpp
         src/platform/windows/input_hook_win32.cpp
-        src/platform/windows/input_driver_win32.cpp
-        src/platform/windows/registry.cpp
-        src/platform/windows/window_system_win32.cpp
-        src/platform/windows/windowstool.cpp
+        src/platform/windows/thread_win32.cpp
     )
-    set(PLATFORM_LIBS yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32)
 
-    add_executable(yamy_engine_new WIN32 ${CORE_SOURCES} ${PLATFORM_SOURCES})
+    add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
     set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
-    target_link_libraries(yamy_engine_new PRIVATE ${PLATFORM_LIBS})
-elseif(UNIX AND NOT APPLE)
-    set(STUB_SOURCES
-        src/app/main_linux.cpp
-        src/platform/linux/window_system_linux.cpp
-        src/platform/linux/input_injector_linux.cpp
-        src/platform/linux/input_hook_linux.cpp
-        src/platform/linux/input_driver_linux.cpp
-        src/platform/linux/thread_linux.cpp
-    )
-    add_executable(yamy_stub ${STUB_SOURCES})
-    target_link_libraries(yamy_stub PRIVATE pthread)
+    target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32)
 
-    # Note: Full engine build (yamy_engine_new) is disabled on Linux until Core Refactoring
-    # (Branch 2 & 10) is complete and merged.
-endif()
-
-if(WIN32)
     target_include_directories(yamy_engine_new PRIVATE
         src
         src/ui
@@ -244,12 +229,27 @@ if(WIN32)
         src/app
     )
 elseif(UNIX AND NOT APPLE)
+    # Linux stub backend - minimal implementation for testing architecture
+    set(STUB_SOURCES
+        src/app/main_linux.cpp
+        src/platform/linux/window_system_linux.cpp
+        src/platform/linux/input_injector_linux.cpp
+        src/platform/linux/input_hook_linux.cpp
+        src/platform/linux/input_driver_linux.cpp
+        src/platform/linux/thread_linux.cpp
+    )
+    add_executable(yamy_stub ${STUB_SOURCES})
+    target_link_libraries(yamy_stub PRIVATE pthread)
+
     target_include_directories(yamy_stub PRIVATE
         src
         src/core/platform
         src/platform/linux
         src/utils
     )
+
+    # Note: Full engine build (yamy_engine_new) is disabled on Linux until Core Refactoring
+    # (Branch 2 & 10) is complete and merged.
 endif()
 
 # -----------------------------------------------------------------------------
@@ -298,26 +298,35 @@ option(BUILD_TESTING "Build the testing tree." OFF)
 
 if(BUILD_TESTING)
     enable_testing()
-    
+
     # Using the existing gtest source in the repo as per vcxproj
     set(GTEST_DIR src/tests/googletest)
-    
+
     # We might need to compile gtest as a library first if not already managed
     # For simplicity, including gtest-all.cc directly as the vcxproj did
-    
+
+    # Add platform specific sources
+    if(WIN32)
+        list(APPEND ENGINE_SOURCES src/platform/windows/utf_conversion.cpp)
+    endif()
+
     set(TEST_SOURCES
-        ${ENGINE_SOURCES} # Tests often need the whole engine code mostly. 
-                          # Note: Linking engine object or sources directly. 
+        ${ENGINE_SOURCES} # Tests often need the whole engine code mostly.
+                          # Note: Linking engine object or sources directly.
                           # Excluding main app entry point mayu.cpp to avoid double main
     )
     list(REMOVE_ITEM TEST_SOURCES src/app/mayu.cpp)
-    
+
     add_executable(yamy_test
         ${TEST_SOURCES}
         src/tests/googletest/src/gtest-all.cc
         src/tests/test_main.cpp
     )
-    
+
+    if(WIN32)
+        target_sources(yamy_test PRIVATE src/tests/test_utf_conversion.cpp)
+    endif()
+
     target_include_directories(yamy_test PRIVATE
         ${GTEST_DIR}/include
         ${GTEST_DIR}
@@ -332,8 +341,8 @@ if(BUILD_TESTING)
         src/utils
         src/app
     )
-    
+
     target_link_libraries(yamy_test PRIVATE yamy_hook)  # Engine depends on hook
-    
+
     add_test(NAME yamy_test COMMAND yamy_test)
 endif()
