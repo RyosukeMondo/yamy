@@ -51,7 +51,7 @@
   - _Requirements: FR-1.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: ErrorMessage class uses tstring for message storage, Convert to std::string - Step 1: Change member variable tstring m_message to std::string m_message, Step 2: Update constructor ErrorMessage(const tstring& msg) to ErrorMessage(const std::string& msg), Step 3: Update getter const tstring& getMessage() to const std::string& getMessage(), Step 4: Remove any _T() macros in error messages | Restrictions: Do not change error message content, Maintain API compatibility for error handling code | Success: No tstring in file, std::string used throughout, No _T() macros, All error messages display correctly in UTF-8 | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.6 Update keyboard.cpp string handling
+- [x] 1.1.6 Update keyboard.cpp string handling (already done)
   - File: src/core/input/keyboard.cpp
   - Convert key name storage from tstring to std::string
   - Update key name parsing functions
