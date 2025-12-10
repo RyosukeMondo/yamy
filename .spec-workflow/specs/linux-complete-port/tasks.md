@@ -365,7 +365,7 @@
   - _Requirements: FR-1.1 through FR-1.8_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with platform API expertise | Task: Fix compilation errors in Platform - Step 1: Run cmake and make on Linux, Step 2: Fix X11 API usage errors, Step 3: Fix include directives for X11 headers, Step 4: Fix XTest and XRecord usage, Step 5: Verify Windows platform code still compiles, Step 6: Iterate until Platform module compiles cleanly on both platforms | Restrictions: Ensure proper X11 header includes, Link against correct libraries, Maintain Windows compatibility | Success: Platform module compiles on Linux, Windows code still compiles, No API usage errors, Libraries linked correctly, Both platforms build successfully | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.13 Create unit tests for WindowSystemLinux
+- [x] 1.2.13 Create unit tests for WindowSystemLinux
   - File: tests/platform/window_system_linux_test.cpp
   - Test X11 window operations
   - Verify EWMH property handling

@@ -515,3 +515,44 @@ if(BUILD_TESTING)
 
     add_test(NAME yamy_test COMMAND yamy_test)
 endif()
+
+# -----------------------------------------------------------------------------
+# Target: yamy_linux_test (Linux Platform Unit Tests)
+# -----------------------------------------------------------------------------
+if(UNIX AND NOT APPLE AND NOT WIN32)
+    option(BUILD_LINUX_TESTING "Build Linux platform tests" ON)
+
+    if(BUILD_LINUX_TESTING)
+        enable_testing()
+
+        set(GTEST_DIR src/tests/googletest)
+
+        # Linux platform test sources
+        set(LINUX_TEST_SOURCES
+            src/tests/platform/test_main_linux.cpp
+            src/tests/platform/window_system_linux_test.cpp
+            src/platform/linux/window_system_linux_queries.cpp
+        )
+
+        add_executable(yamy_linux_test
+            ${LINUX_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_linux_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core/platform
+            src/platform/linux
+        )
+
+        target_link_libraries(yamy_linux_test PRIVATE
+            pthread
+            ${X11_LIBRARIES}
+        )
+
+        # Add test to CTest
+        add_test(NAME yamy_linux_test COMMAND yamy_linux_test)
+    endif()
+endif()
