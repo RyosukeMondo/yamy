@@ -639,7 +639,7 @@
   - _Requirements: FR-3.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer with X11 expertise | Task: Create CrosshairWidget class extending QWidget - Step 1: Set window flags Qt::WindowStaysOnTopHint, Qt::FramelessWindowHint, Qt::Tool, Step 2: Set attributes Qt::WA_TranslucentBackground, Qt::WA_NoSystemBackground, Step 3: Enable mouse tracking and create crosshair cursor, Step 4: In paintEvent draw red crosshair lines and center dot at cursor position, Step 5: In mousePressEvent use XQueryPointer to get window under cursor, emit windowSelected signal, Step 6: Add activate/deactivate methods for showing/hiding overlay | Restrictions: Use X11 API correctly, Handle cursor traversal to leaf window, Ensure overlay doesn't block other windows, Use QX11Info for Display access | Success: CrosshairWidget displays fullscreen transparent overlay, Crosshair follows cursor, Left-click selects window under cursor, Window selection accurate, Signal emitted with correct WindowHandle | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.2 Create InvestigateDialog UI structure
+- [x] 3.2 Create InvestigateDialog UI structure
   - File: src/ui/qt/dialog_investigate_qt.h, src/ui/qt/dialog_investigate_qt.cpp, src/ui/qt/dialog_investigate_qt.ui
   - Design dialog layout with info panels and crosshair trigger button
   - Integrate CrosshairWidget into dialog
