@@ -389,7 +389,7 @@
   - _Requirements: FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with X11 and threading expertise | Task: Create unit tests for InputHookLinux - Step 1: Create test fixture with mock XRecord functions, Step 2: Test install creates XRecord context, Step 3: Test callback invoked when key event captured, Step 4: Test event consumption when callback returns true, Step 5: Test thread-safety of callback invocation, Step 6: Test uninstall cleans up properly | Restrictions: Mock XRecord or use test environment, Test threading behavior, Ensure tests don't interfere with system | Success: All InputHookLinux methods tested, Callback behavior verified, Event consumption tested, Thread-safety confirmed, Cleanup verified, Tests pass reliably | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.16 Create unit tests for IPCChannelLinux
+- [x] 1.2.16 Create unit tests for IPCChannelLinux
   - File: tests/platform/ipc_channel_linux_test.cpp
   - Test Unix domain socket communication
   - Verify message sending and receiving
