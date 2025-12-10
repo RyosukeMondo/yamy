@@ -511,7 +511,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Implement ConfigManager - Create singleton managing vector of config file paths, Track active config index, Methods: listConfigs, getActiveConfig, setActiveConfig, addConfig, removeConfig, refreshList - Use ConfigStore for persistence, Scan ~/.yamy/ directory for .mayu files | Restrictions: Thread-safe access, Validate config paths exist, Handle missing files gracefully | Success: ConfigManager manages config list, Active config tracked, Persistence works, Thread-safe, Config scanning works | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [-] 2.1.2 Add config switching API to Engine
+- [x] 2.1.2 Add config switching API to Engine
   - File: src/core/engine.h, src/core/engine.cpp
   - Add method switchConfiguration(configPath)
   - Reload parser and keymaps with new config
