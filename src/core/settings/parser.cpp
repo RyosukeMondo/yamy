@@ -6,6 +6,7 @@
 
 #include "errormessage.h"
 #include "parser.h"
+#include "core/logging/logger.h"
 #include <cassert>
 
 
@@ -138,6 +139,7 @@ Parser::Parser(const char *i_str, size_t i_length)
         m_ptr(i_str),
         m_end(i_str + i_length)
 {
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Parser", "Parser initialized.");
 }
 
 // set string that may be prefix of a token.
@@ -349,14 +351,20 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
                 continue;
             }
         }
+        try {
+            if (continueToNextLine)
+                continue;
 
-        if (continueToNextLine)
-            continue;
-
-        if (0 < o_tokens->size())
-            break;
-        m_lineNumber = m_internalLineNumber;
-        isTokenExist = false;
+            if (0 < o_tokens->size())
+                break;
+            m_lineNumber = m_internalLineNumber;
+            isTokenExist = false;
+        } catch (const ErrorMessage &e) {
+            yamy::logging::Logger::getInstance().log(
+                yamy::logging::LogLevel::Error, "Parser",
+                "Line " + std::to_string(m_lineNumber) + ": " + e.getMessage());
+            throw;
+        }
     }
 
     return 0 < o_tokens->size();

@@ -12,6 +12,7 @@
 #include "windowstool.h"
 #endif
 #include "../platform/sync.h"
+#include "core/logging/logger.h"
 #include "../../utils/metrics.h"
 
 #include <iomanip>
@@ -58,6 +59,10 @@ void Engine::keyboardHandler()
         }
         ReleaseMutex(m_queueMutex);
 
+        yamy::logging::Logger::getInstance().log(
+            yamy::logging::LogLevel::Trace, "Engine",
+            "Processing key event: scancode=" + std::to_string(event.scanCode) +
+                ", isKeyDown=" + std::to_string(event.isKeyDown));
         // Start timing key processing
         auto keyProcessingStart = std::chrono::high_resolution_clock::now();
 

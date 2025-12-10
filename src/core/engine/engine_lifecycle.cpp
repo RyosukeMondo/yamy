@@ -13,6 +13,7 @@
 #endif
 #include "../platform/message_constants.h"
 #include "../platform/sync.h"
+#include "core/logging/logger.h"
 #include "../../utils/metrics.h"
 
 #include <iomanip>
@@ -95,6 +96,7 @@ Engine::~Engine() {
 
 // start keyboard handler thread
 void Engine::start() {
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Starting engine...");
     // Start performance metrics collection with 60-second reporting interval
     yamy::metrics::PerformanceMetrics::instance().startPeriodicLogging(60);
 
@@ -132,6 +134,7 @@ void Engine::start() {
 
 // stop keyboard handler thread
 void Engine::stop() {
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Stopping engine...");
     // Stop performance metrics collection
     yamy::metrics::PerformanceMetrics::instance().stopPeriodicLogging();
 
