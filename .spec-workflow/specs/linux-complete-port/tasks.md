@@ -357,7 +357,7 @@
   - _Requirements: FR-1.1, FR-1.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with Qt expertise | Task: Fix compilation errors in UI - Step 1: Run cmake and make on Linux, Step 2: Fix tstring to QString conversion issues, Step 3: Fix ShowCommand usage, Step 4: Fix include directives for Qt headers, Step 5: Iterate until UI module compiles cleanly | Restrictions: Fix errors without breaking UI behavior, Ensure QString UTF-8 handling correct, Maintain Qt best practices | Success: UI module compiles on Linux, No compiler errors, Qt integration works, Windows build unaffected, GUI displays correctly | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.12 Fix compilation errors in Platform module
+- [x] 1.2.12 Fix compilation errors in Platform module
   - Files: src/platform/linux/*.cpp, src/platform/win32/*.cpp
   - Fix platform-specific compilation issues
   - Resolve X11 and Win32 API usage errors
