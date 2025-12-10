@@ -19,6 +19,7 @@ set(QT_GUI_SOURCES
     dialog_settings_qt.cpp
     dialog_log_qt.cpp
     dialog_about_qt.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
 )
 
 # Qt header files
@@ -27,6 +28,7 @@ set(QT_GUI_HEADERS
     dialog_settings_qt.h
     dialog_log_qt.h
     dialog_about_qt.h
+    ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
 )
 
 # Qt UI files (Designer) - Not used, using code-based layouts
