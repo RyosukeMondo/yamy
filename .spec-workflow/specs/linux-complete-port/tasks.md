@@ -551,7 +551,7 @@
   - _Requirements: FR-2.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Implement config import/export - Add methods to ConfigManager: exportConfig(configPath, archivePath) creates zip with config and included files, importConfig(archivePath, targetDir) extracts to target directory, Parse include directives to find dependencies, Validate archive contents on import, Use zip format for portability | Restrictions: Handle missing includes gracefully, Validate archive integrity, Don't overwrite without confirmation, Use standard zip format | Success: Export creates zip with all dependencies, Import extracts correctly, Include dependencies resolved, Archive validated, Portable across systems | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.1.7 Add config metadata storage
+- [x] 2.1.7 Add config metadata storage
   - File: src/core/settings/config_metadata.h, src/core/settings/config_metadata.cpp
   - Store config name, description, author, last modified
   - Persist metadata separately from .mayu file
