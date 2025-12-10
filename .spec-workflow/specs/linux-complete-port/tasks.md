@@ -647,7 +647,7 @@
   - _Requirements: FR-3.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create InvestigateDialog UI - Step 1: Create QDialog with layout containing: Select Window button, WindowInfoPanel QGroupBox with labels for handle/title/class/process/geometry/state, KeymapStatusPanel QGroupBox for keymap info, LiveLogPanel QTextEdit for real-time events, Close button, Step 2: Create CrosshairWidget member, connect windowSelected signal to updateWindowInfo slot, Step 3: On Select Window button click call crosshair->activate(), Step 4: Set dialog size to 800x600, make resizable | Restrictions: Follow Qt best practices, Use layouts not fixed positioning, Ensure panels are clearly labeled, Make dialog non-modal | Success: Dialog displays with all panels, Select Window button functional, Crosshair activates on click, Layout responsive, All UI elements accessible | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.3 Implement window information retrieval
+- [x] 3.3 Implement window information retrieval
   - File: src/ui/qt/dialog_investigate_qt.cpp
   - Use IWindowSystem to get window properties
   - Display window handle, title, class name, geometry, state
