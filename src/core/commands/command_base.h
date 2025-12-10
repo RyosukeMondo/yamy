@@ -72,14 +72,14 @@ public:
         // Most commands with args imply required parens.
         // Commands without args usually check optional parens.
         
-        tstring tsName = to_tstring(getName());
-        const _TCHAR* tName = tsName.c_str();
+        std::string name = getName();
+        const char* cName = name.c_str();
 
         if constexpr (sizeof...(Args) == 0) {
             // No args: parens are optional but if present must be empty
-            if (!i_sl->getOpenParen(false, tName))
+            if (!i_sl->getOpenParen(false, cName))
                 return;
-            i_sl->getCloseParen(true, tName);
+            i_sl->getCloseParen(true, cName);
         } else {
             // Args present: parens required (heuristic based on majority of commands)
             // If strict adherence to legacy "optional paren" logic is needed for commands with args, we might need a flag.
@@ -90,11 +90,11 @@ public:
             
             // Let's support the generic flow:
             // Check OpenParen (Strict = true because if we have args, we likely need to parse them)
-            i_sl->getOpenParen(true, tName);
+            i_sl->getOpenParen(true, cName);
             
             loadArgs(i_sl, std::make_index_sequence<sizeof...(Args)>{});
             
-            i_sl->getCloseParen(true, tName);
+            i_sl->getCloseParen(true, cName);
         }
     }
 
@@ -102,7 +102,7 @@ public:
     virtual tostream &output(tostream &i_ost) const override
     {
         // getName() now returns std::string, convert to tstring for output
-        i_ost << "&" << to_tstring(getName());
+        i_ost << "&" << getName();
         // For commands with manual load/output (no template args),
         // they may override outputArgs() to provide custom output
         // Check if derived class has overridden outputArgs by calling it
@@ -142,7 +142,7 @@ private:
             // For subsequent arguments (I > 0), we must check for a comma first.
             bool canProceed = true;
             if constexpr (I > 0) {
-                 if (!i_sl->getComma(false, to_tstring(getName()).c_str())) {
+                 if (!i_sl->getComma(false, getName().c_str())) {
                      canProceed = false;
                  }
             }
@@ -173,11 +173,7 @@ private:
     template <size_t I>
     void outputOneArg(tostream &i_ost, bool hasMore) const
     {
-        if constexpr (std::is_same_v<typename std::decay<decltype(std::get<I>(m_args))>::type, std::string>) {
-            i_ost << to_tstring(std::get<I>(m_args));
-        } else {
-            i_ost << std::get<I>(m_args);
-        }
+        i_ost << std::get<I>(m_args);
         if (hasMore) {
             i_ost << ", ";
         }

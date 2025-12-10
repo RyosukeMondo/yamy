@@ -138,6 +138,15 @@ inline tostream &operator<<(tostream &i_ost, const Regex &i_data) {
 #endif
 }
 
+// Support for std::string (UTF-8) to tostream (potentially wostream)
+inline tostream &operator<<(tostream &i_ost, const std::string &i_str) {
+#ifdef _UNICODE
+    return i_ost << to_wstring(i_str);
+#else
+    return i_ost << i_str;
+#endif
+}
+
 
 /// string with custom stream output
 class tstringq : public tstring

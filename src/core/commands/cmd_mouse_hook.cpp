@@ -7,14 +7,14 @@
 
 void Command_MouseHook::load(SettingLoader *i_sl)
 {
-    tstring tsName = to_tstring(Name);
-    const _TCHAR* tName = tsName.c_str();
+    std::string sName = getName();
+    const char* cName = sName.c_str();
 
-    i_sl->getOpenParen(true, tName); // throw ...
+    i_sl->getOpenParen(true, cName); // throw ...
     i_sl->load_ARGUMENT(&m_hookType);
-    i_sl->getComma(false, tName); // throw ...
+    i_sl->getComma(false, cName); // throw ...
     i_sl->load_ARGUMENT(&m_hookParam);
-    i_sl->getCloseParen(true, tName); // throw ...
+    i_sl->getCloseParen(true, cName); // throw ...
 }
 
 void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const

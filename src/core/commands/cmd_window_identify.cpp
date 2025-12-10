@@ -4,11 +4,6 @@
 #include "../../platform/windows/windowstool.h" // For getToplevelWindow
 #include "../../platform/windows/hook.h" // For WM_MAYU_MESSAGE_NAME
 
-void Command_WindowIdentify::load(SettingLoader *i_sl)
-{
-    // no argument
-}
-
 void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) const
 {
     if (i_param->m_isPressed) {
@@ -31,7 +26,3 @@ void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) cons
     }
 }
 
-tostream &Command_WindowIdentify::outputArgs(tostream &i_ost) const
-{
-    return i_ost;
-}

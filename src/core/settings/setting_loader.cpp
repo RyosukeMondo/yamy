@@ -49,7 +49,7 @@ Token *SettingLoader::lookToken()
 
 
 // argument "("
-bool SettingLoader::getOpenParen(bool i_doesThrow, const _TCHAR *i_name)
+bool SettingLoader::getOpenParen(bool i_doesThrow, const char *i_name)
 {
     if (!isEOL() && lookToken()->isOpenParen()) {
         getToken();
@@ -57,34 +57,34 @@ bool SettingLoader::getOpenParen(bool i_doesThrow, const _TCHAR *i_name)
     }
     if (i_doesThrow)
         throw ErrorMessage() << _T("there must be `(' after `&")
-        << i_name << _T("'.");
+        << (i_name ? i_name : "unknown") << _T("'.");
     return false;
 }
 
 
 // argument ")"
-bool SettingLoader::getCloseParen(bool i_doesThrow, const _TCHAR *i_name)
+bool SettingLoader::getCloseParen(bool i_doesThrow, const char *i_name)
 {
     if (!isEOL() && lookToken()->isCloseParen()) {
         getToken();
         return true;
     }
     if (i_doesThrow)
-        throw ErrorMessage() << _T("`&")  << i_name
+        throw ErrorMessage() << _T("`&")  << (i_name ? i_name : "unknown")
         << _T("': too many arguments.");
     return false;
 }
 
 
 // argument ","
-bool SettingLoader::getComma(bool i_doesThrow, const _TCHAR *i_name)
+bool SettingLoader::getComma(bool i_doesThrow, const char *i_name)
 {
     if (!isEOL() && lookToken()->isComma()) {
         getToken();
         return true;
     }
     if (i_doesThrow)
-        throw ErrorMessage() << _T("`&")  << i_name
+        throw ErrorMessage() << _T("`&")  << (i_name ? i_name : "unknown")
         << _T("': comma expected.");
     return false;
 }

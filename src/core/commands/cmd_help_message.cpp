@@ -10,19 +10,19 @@ Command_HelpMessage::Command_HelpMessage()
 
 void Command_HelpMessage::load(SettingLoader *i_sl)
 {
-    tstring tsName = to_tstring(Name);
-    const _TCHAR* tName = tsName.c_str();
+    std::string sName = getName();
+    const char* cName = sName.c_str();
 
-    if (!i_sl->getOpenParen(false, tName))
+    if (!i_sl->getOpenParen(false, cName))
       return;
-    if (i_sl->getCloseParen(false, tName))
+    if (i_sl->getCloseParen(false, cName))
       return;
     i_sl->load_ARGUMENT(&m_title);
-    if (i_sl->getCloseParen(false, tName))
+    if (i_sl->getCloseParen(false, cName))
       return;
-    i_sl->getComma(false, tName); // throw ...
+    i_sl->getComma(false, cName); // throw ...
     i_sl->load_ARGUMENT(&m_message);
-    i_sl->getCloseParen(true, tName); // throw ...
+    i_sl->getCloseParen(true, cName); // throw ...
 }
 
 void Command_HelpMessage::exec(Engine *i_engine, FunctionParam *i_param) const
@@ -30,8 +30,8 @@ void Command_HelpMessage::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!i_param->m_isPressed)
         return;
 
-    i_engine->m_helpTitle = to_tstring(m_title.eval());
-    i_engine->m_helpMessage = to_tstring(m_message.eval());
+    i_engine->m_helpTitle = m_title.eval();
+    i_engine->m_helpMessage = m_message.eval();
     bool doesShow = !(m_title.eval().size() == 0 && m_message.eval().size() == 0);
     i_engine->getWindowSystem()->postMessage(i_engine->getAssociatedWndow(), WM_APP_engineNotify,
                 EngineNotify_helpMessage, doesShow);

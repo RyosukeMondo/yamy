@@ -3,14 +3,19 @@
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../../platform/windows/windowstool.h" // For asyncMoveWindow
 
+Command_WindowMoveVisibly::Command_WindowMoveVisibly()
+{
+    m_twt = TargetWindowType_overlapped;
+}
+
 void Command_WindowMoveVisibly::load(SettingLoader *i_sl)
 {
-    tstring tsName = to_tstring(Name);
-    const _TCHAR* tName = tsName.c_str();
+    std::string sName = getName();
+    const char* cName = sName.c_str();
 
-    i_sl->getOpenParen(true, tName); // throw ...
+    i_sl->getOpenParen(true, cName); // throw ...
     i_sl->load_ARGUMENT(&m_twt);
-    i_sl->getCloseParen(true, tName); // throw ...
+    i_sl->getCloseParen(true, cName); // throw ...
 }
 
 void Command_WindowMoveVisibly::exec(Engine *i_engine, FunctionParam *i_param) const
@@ -31,7 +36,7 @@ void Command_WindowMoveVisibly::exec(Engine *i_engine, FunctionParam *i_param) c
         i_engine->getWindowSystem()->getMonitorWorkArea(monitorIndex, &monitorWorkArea);
     }
 
-    if (isRectInRect(&rc, &monitorWorkArea))
+    if (isRectInRect(reinterpret_cast<const RECT*>(&rc), reinterpret_cast<const RECT*>(&monitorWorkArea)))
         return;
 
     int w = rc.width();

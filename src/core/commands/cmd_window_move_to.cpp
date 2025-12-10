@@ -3,20 +3,28 @@
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../../platform/windows/windowstool.h" // For asyncMoveWindow
 
+Command_WindowMoveTo::Command_WindowMoveTo()
+{
+    m_gravityType = GravityType_NW;
+    m_dx = 0;
+    m_dy = 0;
+    m_twt = TargetWindowType_overlapped;
+}
+
 void Command_WindowMoveTo::load(SettingLoader *i_sl)
 {
-    tstring tsName = to_tstring(Name);
-    const _TCHAR* tName = tsName.c_str();
+    std::string sName = getName();
+    const char* cName = sName.c_str();
 
-    i_sl->getOpenParen(true, tName); // throw ...
-    i_sl->load_ARGUMENT(&m_x);
-    i_sl->getComma(false, tName); // throw ...
-    i_sl->load_ARGUMENT(&m_y);
-    if (i_sl->getCloseParen(false, tName))
+    i_sl->getOpenParen(true, cName); // throw ...
+    i_sl->load_ARGUMENT(&m_dx);
+    i_sl->getComma(false, cName); // throw ...
+    i_sl->load_ARGUMENT(&m_dy);
+    if (i_sl->getCloseParen(false, cName))
       return;
-    i_sl->getComma(false, tName); // throw ...
+    i_sl->getComma(false, cName); // throw ...
     i_sl->load_ARGUMENT(&m_twt);
-    i_sl->getCloseParen(true, tName); // throw ...
+    i_sl->getCloseParen(true, cName); // throw ...
 }
 
 void Command_WindowMoveTo::exec(Engine *i_engine, FunctionParam *i_param) const
@@ -26,13 +34,13 @@ void Command_WindowMoveTo::exec(Engine *i_engine, FunctionParam *i_param) const
     TargetWindowType twt = m_twt;
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt, &rc, &rcd))
         return;
-    asyncMoveWindow(static_cast<HWND>(hwnd), m_x, m_y);
+    asyncMoveWindow(static_cast<HWND>(hwnd), m_dx, m_dy);
 }
 
 tostream &Command_WindowMoveTo::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_x << _T(", ");
-    i_ost << m_y << _T(", ");
+    i_ost << m_dx << _T(", ");
+    i_ost << m_dy << _T(", ");
     i_ost << m_twt;
     return i_ost;
 }

@@ -169,7 +169,7 @@ private:
 
             if (n->m_type == Notify::Type_setFocus)
                 m_engine.setFocus((HWND)(ULONG_PTR)n->m_hwnd, n->m_threadId,
-                                  n->m_className, n->m_titleName, false);
+                                  to_UTF_8(n->m_className), to_UTF_8(n->m_titleName), false);
 
             {
                 Acquire a(&m_log, 1);
@@ -787,10 +787,10 @@ private:
     void showHelpMessage(bool i_doesShow = true) {
         if (m_canUseTasktrayBaloon) {
             if (i_doesShow) {
-                tstring helpMessage, helpTitle;
+                std::string helpMessage, helpTitle;
                 m_engine.getHelpMessages(&helpMessage, &helpTitle);
-                tcslcpy(m_ni.szInfo, helpMessage.c_str(), NUMBER_OF(m_ni.szInfo));
-                tcslcpy(m_ni.szInfoTitle, helpTitle.c_str(),
+                tcslcpy(m_ni.szInfo, to_tstring(helpMessage).c_str(), NUMBER_OF(m_ni.szInfo));
+                tcslcpy(m_ni.szInfoTitle, to_tstring(helpTitle).c_str(),
                         NUMBER_OF(m_ni.szInfoTitle));
                 m_ni.dwInfoFlags = NIIF_INFO;
             } else

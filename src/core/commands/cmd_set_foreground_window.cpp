@@ -14,20 +14,27 @@ struct FindWindowData {
         : ws(w), classRegex(c, std::regex::icase), titleRegex(t, std::regex::icase), found(nullptr) {}
 };
 
+Command_SetForegroundWindow::Command_SetForegroundWindow()
+{
+    m_windowClassName = tregex(_T(""));
+    m_logicalOp = LogicalOperatorType_or;
+    m_windowTitleName = tregex(_T(""));
+}
+
 void Command_SetForegroundWindow::load(SettingLoader *i_sl)
 {
-    tstring tsName = to_tstring(Name);
-    const _TCHAR* tName = tsName.c_str();
+    std::string sName = getName();
+    const char* cName = sName.c_str();
 
-    i_sl->getOpenParen(true, tName); // throw ...
-    i_sl->load_ARGUMENT(&m_className);
-    i_sl->getComma(false, tName); // throw ...
-    i_sl->load_ARGUMENT(&m_titleName);
-    if (i_sl->getCloseParen(false, tName))
+    i_sl->getOpenParen(true, cName); // throw ...
+    i_sl->load_ARGUMENT(&m_windowClassName);
+    i_sl->getComma(false, cName); // throw ...
+    i_sl->load_ARGUMENT(&m_windowTitleName);
+    if (i_sl->getCloseParen(false, cName))
       return;
-    i_sl->getComma(false, tName); // throw ...
+    i_sl->getComma(false, cName); // throw ...
     i_sl->load_ARGUMENT(&m_logicalOp);
-    i_sl->getCloseParen(true, tName); // throw ...
+    i_sl->getCloseParen(true, cName); // throw ...
 }
 
 void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param) const
@@ -35,8 +42,8 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
     if (!i_param->m_isPressed)
         return;
 
-    std::string classNameUtf8 = to_UTF_8(m_className.eval());
-    std::string titleNameUtf8 = to_UTF_8(m_titleName.eval());
+    std::string classNameUtf8 = to_UTF_8(m_windowClassName.str());
+    std::string titleNameUtf8 = to_UTF_8(m_windowTitleName.str());
 
     FindWindowData data(i_engine->getWindowSystem(), classNameUtf8, titleNameUtf8);
 
@@ -77,8 +84,8 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
 
 tostream &Command_SetForegroundWindow::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_className << _T(", ");
-    i_ost << m_titleName << _T(", ");
+    i_ost << m_windowClassName << _T(", ");
+    i_ost << m_windowTitleName << _T(", ");
     i_ost << m_logicalOp;
     return i_ost;
 }

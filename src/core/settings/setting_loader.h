@@ -66,9 +66,9 @@ private:
     bool isEOL();                    /// is there no more tokens ?
     Token *getToken();                /// get next token
     Token *lookToken();                /// look next token
-    bool getOpenParen(bool i_doesThrow, const _TCHAR *i_name); /// argument "("
-    bool getCloseParen(bool i_doesThrow, const _TCHAR *i_name); /// argument ")"
-    bool getComma(bool i_doesThrow, const _TCHAR *i_name); /// argument ","
+    bool getOpenParen(bool i_doesThrow, const char *i_name = nullptr); /// argument "("
+    bool getCloseParen(bool i_doesThrow, const char *i_name = nullptr); /// argument ")"
+    bool getComma(bool i_doesThrow, const char *i_name = nullptr); /// argument ","
 
     void load_LINE();                /// &lt;LINE&gt;
     void load_DEFINE();                /// &lt;DEFINE&gt;
