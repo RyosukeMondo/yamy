@@ -15,28 +15,27 @@ set(CMAKE_AUTOUIC ON)
 
 # Qt source files
 set(QT_GUI_SOURCES
-    main_qt.cpp
     tray_icon_qt.cpp
-    tray_menu_qt.cpp
-    dialog_settings_qt.cpp
-    dialog_log_qt.cpp
-    dialog_about_qt.cpp
+    # tray_menu_qt.cpp           # Phase 4
+    # dialog_settings_qt.cpp     # Phase 5
+    # dialog_log_qt.cpp          # Phase 5
+    # dialog_about_qt.cpp        # Phase 5
 )
 
 # Qt header files
 set(QT_GUI_HEADERS
     tray_icon_qt.h
-    tray_menu_qt.h
-    dialog_settings_qt.h
-    dialog_log_qt.h
-    dialog_about_qt.h
+    # tray_menu_qt.h             # Phase 4
+    # dialog_settings_qt.h       # Phase 5
+    # dialog_log_qt.h            # Phase 5
+    # dialog_about_qt.h          # Phase 5
 )
 
 # Qt UI files (Designer)
 set(QT_GUI_UI_FILES
-    dialog_settings_qt.ui
-    dialog_log_qt.ui
-    dialog_about_qt.ui
+    # dialog_settings_qt.ui      # Phase 5
+    # dialog_log_qt.ui           # Phase 5
+    # dialog_about_qt.ui         # Phase 5
 )
 
 # Qt resources

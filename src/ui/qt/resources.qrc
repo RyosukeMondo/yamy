@@ -1,7 +1,7 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
-    <qresource>
-        <file>../../resources/icons/yamy_enabled.png</file>
-        <file>../../resources/icons/yamy_disabled.png</file>
+    <qresource prefix="/icons">
+        <file alias="yamy_enabled.png">../../resources/icons/yamy_enabled.png</file>
+        <file alias="yamy_disabled.png">../../resources/icons/yamy_disabled.png</file>
     </qresource>
 </RCC>
