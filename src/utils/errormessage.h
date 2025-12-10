@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // errormessage.h
 
@@ -6,14 +6,14 @@
 #ifndef _ERRORMESSAGE_H
 #  define _ERRORMESSAGE_H
 
-#  include "stringtool.h"
+#  include <string>
 #  include <sstream>
 
 
 ///
 class ErrorMessage
 {
-    tstringstream m_ost;                ///
+    std::stringstream m_ost;                ///
 
 public:
     ///
@@ -24,7 +24,7 @@ public:
     }
 
     /// get error message
-    tstring getMessage() const {
+    std::string getMessage() const {
         return m_ost.str();
     }
 
@@ -43,26 +43,12 @@ public:
 
 
     /// stream output
-    friend tostream &operator<<(tostream &i_ost, const ErrorMessage &i_em);
+    friend std::ostream &operator<<(std::ostream &i_ost, const ErrorMessage &i_em);
 };
-
-#ifdef UNICODE
-/// add message
-template<> inline ErrorMessage &ErrorMessage::operator<<(const std::string &i_value) {
-    m_ost << to_wstring(i_value);
-    return *this;
-}
-
-/// add message
-template<> inline ErrorMessage &ErrorMessage::operator<<(const char * const &i_value) {
-    m_ost << to_wstring(i_value);
-    return *this;
-}
-#endif
 
 
 /// stream output
-inline tostream &operator<<(tostream &i_ost, const ErrorMessage &i_em)
+inline std::ostream &operator<<(std::ostream &i_ost, const ErrorMessage &i_em)
 {
     return i_ost << i_em.getMessage();
 }

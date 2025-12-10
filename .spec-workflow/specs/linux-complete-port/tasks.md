@@ -43,8 +43,8 @@
   - _Requirements: FR-1.2, FR-1.6_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Update ConfigStore implementation to use std::string - Step 1: Remove tstring function implementations, Step 2: On Windows update registry calls to convert UTF-8 to UTF-16 at API boundary using utf8::toWide(key), Step 3: On Linux use QSettings which already handles UTF-8, Step 4: Update internal cache to std::map<std::string, std::string> m_cache | Restrictions: Maintain registry compatibility on Windows, Ensure UTF-8 round-trip works correctly, Do not break config file format | Success: Compiles on both Linux and Windows, Windows uses UTF-8 to UTF-16 bridge at registry API boundary, All tests pass, Config persistence works | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.5 Remove tstring from errormessage.h
-  - File: src/core/settings/errormessage.h
+- [x] 1.1.5 Remove tstring from errormessage.h
+  - File: src/utils/errormessage.h (actual location)
   - Convert ErrorMessage class to use std::string
   - Update member variables and method signatures
   - _Leverage: src/core/settings/errormessage.cpp_
