@@ -8,6 +8,9 @@
 #include <QVBoxLayout>
 
 #include "core/platform/types.h"
+#include "core/platform/window_system_interface.h"
+
+#include <memory>
 
 class CrosshairWidget;
 
@@ -88,6 +91,22 @@ private:
      * @brief Clear all information panels
      */
     void clearPanels();
+
+    /**
+     * @brief Update window information panel with data from selected window
+     * @param hwnd Handle of the window to retrieve info from
+     *
+     * Uses IWindowSystem to query window properties:
+     * - Title (getWindowText)
+     * - Class name (getClassName)
+     * - Geometry (getWindowRect)
+     * - Visibility state (getShowCommand)
+     * Handles invalid windows gracefully.
+     */
+    void updateWindowInfo(yamy::platform::WindowHandle hwnd);
+
+    // Window system interface for platform abstraction
+    std::unique_ptr<yamy::platform::IWindowSystem> m_windowSystem;
 
     // Crosshair widget for window selection
     CrosshairWidget* m_crosshair;

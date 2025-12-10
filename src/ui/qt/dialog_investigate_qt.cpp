@@ -9,6 +9,7 @@
 
 DialogInvestigateQt::DialogInvestigateQt(QWidget* parent)
     : QDialog(parent)
+    , m_windowSystem(yamy::platform::createWindowSystem())
     , m_crosshair(nullptr)
     , m_labelHandle(nullptr)
     , m_labelTitle(nullptr)
@@ -228,20 +229,19 @@ void DialogInvestigateQt::onWindowSelected(yamy::platform::WindowHandle hwnd)
     // Clear previous info
     clearPanels();
 
-    // Display window handle (this is just the basic info for Task 3.2)
-    // Full window info retrieval is Task 3.3
-    if (hwnd) {
-        m_labelHandle->setText(QString("0x%1").arg(
-            reinterpret_cast<quintptr>(hwnd), 0, 16));
+    // Log selection
+    QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
 
-        // Log selection
-        QString timestamp = QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
+    if (hwnd) {
         m_liveLog->append(QString("[%1] Window selected: 0x%2")
             .arg(timestamp)
             .arg(reinterpret_cast<quintptr>(hwnd), 0, 16));
+
+        // Retrieve and display full window information
+        updateWindowInfo(hwnd);
     } else {
         m_labelHandle->setText("(none)");
-        m_liveLog->append("No window selected");
+        m_liveLog->append(QString("[%1] No window selected").arg(timestamp));
     }
 
     emit windowInvestigated(hwnd);
@@ -273,4 +273,65 @@ void DialogInvestigateQt::clearPanels()
     m_labelKeymapName->setText("-");
     m_labelMatchedRegex->setText("-");
     m_labelModifiers->setText("-");
+}
+
+void DialogInvestigateQt::updateWindowInfo(yamy::platform::WindowHandle hwnd)
+{
+    if (!hwnd || !m_windowSystem) {
+        m_labelHandle->setText("(invalid)");
+        return;
+    }
+
+    // Display window handle in hex format
+    m_labelHandle->setText(QString("0x%1").arg(
+        reinterpret_cast<quintptr>(hwnd), 0, 16));
+
+    // Get window title
+    std::string title = m_windowSystem->getWindowText(hwnd);
+    if (!title.empty()) {
+        m_labelTitle->setText(QString::fromUtf8(title.c_str()));
+    } else {
+        m_labelTitle->setText("(no title)");
+    }
+
+    // Get class name
+    std::string className = m_windowSystem->getClassName(hwnd);
+    if (!className.empty()) {
+        m_labelClass->setText(QString::fromUtf8(className.c_str()));
+    } else {
+        m_labelClass->setText("(unknown)");
+    }
+
+    // Get window geometry
+    yamy::platform::Rect rect;
+    if (m_windowSystem->getWindowRect(hwnd, &rect)) {
+        m_labelGeometry->setText(QString("%1, %2  %3x%4")
+            .arg(rect.left)
+            .arg(rect.top)
+            .arg(rect.width())
+            .arg(rect.height()));
+    } else {
+        m_labelGeometry->setText("(unavailable)");
+    }
+
+    // Get window state
+    yamy::platform::WindowShowCmd showCmd = m_windowSystem->getShowCommand(hwnd);
+    QString stateText;
+    switch (showCmd) {
+        case yamy::platform::WindowShowCmd::Normal:
+            stateText = "Normal";
+            break;
+        case yamy::platform::WindowShowCmd::Maximized:
+            stateText = "Maximized";
+            break;
+        case yamy::platform::WindowShowCmd::Minimized:
+            stateText = "Minimized";
+            break;
+        default:
+            stateText = "Unknown";
+            break;
+    }
+    m_labelState->setText(stateText);
+
+    // Note: Process info (m_labelProcess, m_labelProcessPath) is Task 3.4
 }
