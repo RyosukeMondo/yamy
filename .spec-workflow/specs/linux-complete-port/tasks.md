@@ -527,7 +527,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Implement config validator - Create ConfigValidator class, Method: vector<ValidationError> validate(configPath), Check syntax errors, Check semantic errors (undefined keys, circular references), Return errors with line numbers and messages, Use existing parser for syntax checking | Restrictions: Don't load config into engine, Fast validation (<100ms for typical config), Comprehensive error reporting | Success: Validator catches syntax errors, Semantic errors detected, Line numbers accurate, Fast validation, Error messages helpful | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.1.4 Add config file watcher
+- [x] 2.1.4 Add config file watcher
   - File: src/core/settings/config_watcher.h, src/core/settings/config_watcher.cpp
   - Watch active config file for changes
   - Auto-reload on modification
