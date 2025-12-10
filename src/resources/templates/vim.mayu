@@ -1,0 +1,224 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# yamy - vim.mayu
+# Vim-style keybindings template
+#
+# This template provides Vim-like keybindings for navigation and editing
+# across applications. Useful for Vim users who want consistent keybindings.
+#
+# Note: This provides basic Vim motions, not full Vim emulation.
+# For complete Vim behavior, consider a dedicated Vim emulator.
+#
+# Escape is used to enter "normal mode" where h/j/k/l become movement keys.
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CapsLock to Escape
+# Many Vim users prefer CapsLock as Escape for faster mode switching
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keymap Global
+
+# Remap CapsLock to Escape (common Vim user preference)
+key *CapsLock = *Escape
+key *E0CapsLock = *Escape
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Vim Normal Mode
+# Press Escape to enter this mode where h/j/k/l become movement keys
+# Press i, a, or other insert commands to return to insert mode
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keymap2 VimNormal : Global
+  event prefixed = &HelpMessage("VIM", "-- NORMAL --")
+  event before-key-down = &HelpMessage
+
+  # Basic movement (h/j/k/l)
+  key H = Left                # Move left
+  key J = Down                # Move down
+  key K = Up                  # Move up
+  key L = Right               # Move right
+
+  # Word movement
+  key W = C-Right             # Forward to start of next word
+  key B = C-Left              # Backward to start of word
+  key E = C-Right Left        # Forward to end of word
+
+  # Line movement
+  key _0 = Home               # Beginning of line
+  key S-_4 = End              # End of line ($)
+  key S-_6 = Home             # First non-blank character (^)
+
+  # Document movement
+  key G G = C-Home            # Go to start of document
+  key S-G = C-End             # Go to end of document
+
+  # Page movement
+  key C-F = Next              # Page forward (Page Down)
+  key C-B = Prior             # Page backward (Page Up)
+  key C-D = Next              # Half page down (simplified)
+  key C-U = Prior             # Half page up (simplified)
+
+  # Insert mode transitions
+  key I = &Undefined          # Insert before cursor (exit normal mode)
+  key A = Right &Undefined    # Append after cursor
+  key S-I = Home &Undefined   # Insert at beginning of line
+  key S-A = End &Undefined    # Append at end of line
+  key O = End Return &Undefined  # Open line below
+  key S-O = Home Return Up &Undefined  # Open line above
+
+  # Editing in normal mode
+  key X = Delete              # Delete character under cursor
+  key S-X = BackSpace         # Delete character before cursor
+  key R = &Prefix(VimReplace) # Replace single character
+
+  # Delete operations
+  key D D = Home S-End C-X    # Delete entire line
+  key D W = S-C-Right C-X     # Delete word
+  key D S-_4 = S-End C-X      # Delete to end of line (d$)
+  key S-D = S-End C-X         # Delete to end of line (D)
+
+  # Yank (copy) operations
+  key Y Y = Home S-End C-C Right  # Yank entire line
+  key Y W = S-C-Right C-C Left    # Yank word
+  key Y S-_4 = S-End C-C      # Yank to end of line
+
+  # Put (paste)
+  key P = C-V                 # Put after cursor
+  key S-P = C-V Left          # Put before cursor
+
+  # Change operations (delete and enter insert mode)
+  key C C = Home S-End C-X &Undefined  # Change entire line
+  key C W = S-C-Right C-X &Undefined   # Change word
+  key S-C = S-End C-X &Undefined       # Change to end of line
+
+  # Undo/Redo
+  key U = C-Z                 # Undo
+  key C-R = C-Y               # Redo
+
+  # Search
+  key Slash = C-F             # Search forward
+  key N = F3                  # Next search result
+  key S-N = S-F3              # Previous search result
+
+  # Join lines
+  key S-J = End Delete Space  # Join lines
+
+  # Cancel/Escape stays in normal mode
+  key Escape = &Prefix(VimNormal)
+
+keymap Global
+  # Enter normal mode with Escape
+  key Escape = &Prefix(VimNormal)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Vim Replace Mode
+# Replace a single character, then return to normal mode
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keymap2 VimReplace : VimNormal
+  event prefixed = &HelpMessage("VIM", "-- REPLACE --")
+  event before-key-down = &HelpMessage
+
+  # Any key replaces current character
+  # After replacement, go back to normal mode
+  # (This is simplified - true Vim replace is more complex)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Vim Visual Mode (Selection)
+# Press v in normal mode to start visual selection
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keymap2 VimVisual : Global
+  event prefixed = &HelpMessage("VIM", "-- VISUAL --")
+  event before-key-down = &HelpMessage
+
+  # Movement with selection
+  key H = S-Left &Prefix(VimVisual)
+  key J = S-Down &Prefix(VimVisual)
+  key K = S-Up &Prefix(VimVisual)
+  key L = S-Right &Prefix(VimVisual)
+  key W = S-C-Right &Prefix(VimVisual)
+  key B = S-C-Left &Prefix(VimVisual)
+  key _0 = S-Home &Prefix(VimVisual)
+  key S-_4 = S-End &Prefix(VimVisual)
+
+  # Visual mode operations
+  key Y = C-C &Prefix(VimNormal)  # Yank selection
+  key D = C-X &Prefix(VimNormal)  # Delete selection
+  key X = C-X &Prefix(VimNormal)  # Delete selection
+  key C = C-X &Undefined          # Change selection (delete and insert)
+
+  # Exit visual mode
+  key Escape = Right &Prefix(VimNormal)
+  key V = Right &Prefix(VimNormal)
+
+keymap2 VimNormal
+  # Enter visual mode
+  key V = &Prefix(VimVisual)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Command Line Mode (simplified)
+# : commands for common operations
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keymap2 VimCommand : Global
+  event prefixed = &HelpMessage("VIM", ":")
+  event before-key-down = &HelpMessage
+
+  key W Return = C-S &Prefix(VimNormal)   # :w - save
+  key Q Return = A-F4                      # :q - quit
+  key Q S-_1 Return = A-F4                # :q! - force quit
+  key W Q Return = C-S A-F4               # :wq - save and quit
+  key X Return = C-S A-F4                 # :x - save and quit
+
+  # Cancel command
+  key Escape = &Prefix(VimNormal)
+
+keymap2 VimNormal
+  # Enter command mode
+  key S-Semicolon = &Prefix(VimCommand)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Application-Specific Settings
+# Only enable Vim keys in text editing contexts
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+window EditControl /:(Edit|TEdit|RichEdit(20[AW])?)$/ : Global
+  key Escape = &Prefix(VimNormal)
+
+window ComboBox /:ComboBox(:Edit)?$/ : Global
+  key Escape = &Prefix(VimNormal)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Exclude Real Vim/Terminal Applications
+# Don't apply these remappings in actual Vim or terminal emulators
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keymap VimExclude : Global
+  # Pass through all keys - don't remap in real Vim
+
+window GVim /gvim.*:Vim$/ : VimExclude
+window Vim /vim:/ : VimExclude
+window Terminal /:(ConsoleWindowClass|mintty|Terminal)$/ : VimExclude
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Global Shortcuts (always available)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keymap Global
+  # Reload configuration
+  key C-S-S = &LoadSetting
+
+  # Window management (Vim-inspired)
+  key C-W H = &WindowMove(-16, 0)   # Move window left
+  key C-W J = &WindowMove(0, 16)    # Move window down
+  key C-W K = &WindowMove(0, -16)   # Move window up
+  key C-W L = &WindowMove(16, 0)    # Move window right

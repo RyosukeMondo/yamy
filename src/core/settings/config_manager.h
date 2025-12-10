@@ -158,6 +158,48 @@ public:
     /// Archive file extension
     static constexpr const char* ARCHIVE_EXTENSION = ".yamy-pkg";
 
+    // ==================== Templates ====================
+
+    /// Result of a template operation
+    struct TemplateResult {
+        bool success;
+        std::string errorMessage;
+        std::string createdPath;
+
+        TemplateResult() : success(false) {}
+        TemplateResult(bool s) : success(s) {}
+        TemplateResult(bool s, const std::string& err) : success(s), errorMessage(err) {}
+    };
+
+    /// Available template names
+    enum class TemplateName {
+        Default,    /// Basic remappings (CapsLock to Ctrl, window shortcuts)
+        Emacs,      /// Emacs-style keybindings
+        Vim         /// Vim-style keybindings
+    };
+
+    /// Create a new configuration from a template
+    /// @param templateName Name of the template to use
+    /// @param targetPath Path where the new config will be created
+    /// @return Result with success status and created file path
+    TemplateResult createFromTemplate(TemplateName templateName,
+                                      const std::string& targetPath);
+
+    /// Create a new configuration from a template by string name
+    /// @param templateNameStr Template name as string ("default", "emacs", "vim")
+    /// @param targetPath Path where the new config will be created
+    /// @return Result with success status and created file path
+    TemplateResult createFromTemplate(const std::string& templateNameStr,
+                                      const std::string& targetPath);
+
+    /// List available template names
+    /// @return Vector of template name strings
+    static std::vector<std::string> listTemplates();
+
+    /// Get the templates directory path
+    /// @return Path to the templates directory
+    static std::string getTemplatesDir();
+
 private:
     ConfigManager();
     ~ConfigManager();

@@ -1,0 +1,89 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# yamy - default.mayu
+# Default configuration template with common keyboard remappings
+#
+# This template provides essential keyboard customizations that most users
+# find helpful. It serves as a good starting point for further customization.
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Keyboard Type Detection
+# Automatically detects whether you have a 104-key (US) or 109-key (JP) layout
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+if ( !KBD109 ) and ( !KBD104 )
+  # Default to 109-key Japanese keyboard layout if not specified
+  # Change this if you have a different keyboard layout
+endif
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CapsLock to Control
+# One of the most popular remappings - makes CapsLock act as Control
+# This reduces strain on your pinky and makes Ctrl combinations easier
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keymap Global
+
+# Remap CapsLock to Left Control
+mod control += CapsLock
+key *CapsLock = *LControl
+
+# Also handle E0-prefixed CapsLock (some keyboards send this)
+mod control += E0CapsLock
+key *E0CapsLock = *LControl
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Window Management Shortcuts
+# Useful keyboard shortcuts for managing windows
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Move window with Ctrl+Shift+Arrow keys
+key C-S-Left   = &WindowMove(-16, 0)   # Move window left
+key C-S-Right  = &WindowMove(16, 0)    # Move window right
+key C-S-Up     = &WindowMove(0, -16)   # Move window up
+key C-S-Down   = &WindowMove(0, 16)    # Move window down
+
+# Fine-grained window movement with Ctrl+Shift+Alt+Arrow
+key C-S-A-Left  = &WindowMove(-1, 0)   # Move window left (1 pixel)
+key C-S-A-Right = &WindowMove(1, 0)    # Move window right (1 pixel)
+key C-S-A-Up    = &WindowMove(0, -1)   # Move window up (1 pixel)
+key C-S-A-Down  = &WindowMove(0, 1)    # Move window down (1 pixel)
+
+# Window state shortcuts
+key C-S-Z = &WindowMaximize     # Maximize window
+key C-S-I = &WindowMinimize     # Minimize window
+key C-S-X = &WindowVMaximize    # Maximize window vertically
+key C-S-C = &WindowHMaximize    # Maximize window horizontally
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Mouse Movement via Keyboard
+# Use Win+Arrow keys to move the mouse cursor
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+key W-Left  = &MouseMove(-16, 0)   # Move mouse left
+key W-Right = &MouseMove(16, 0)    # Move mouse right
+key W-Up    = &MouseMove(0, -16)   # Move mouse up
+key W-Down  = &MouseMove(0, 16)    # Move mouse down
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Utility Shortcuts
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Reload configuration (Ctrl+Shift+S)
+key C-S-S = &LoadSetting
+
+# Show window information (Ctrl+Shift+D) - useful for debugging
+key C-S-D = &WindowIdentify
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Dialog Box Handling
+# Make Escape and Ctrl+G close dialog boxes
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+window DialogBox /:#32770:/ : Global
+  key C-G = Escape
