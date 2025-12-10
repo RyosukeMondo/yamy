@@ -622,6 +622,15 @@ std::string toLower(const std::string &i_str)
 }
 
 
+// Case-insensitive string comparison for std::string (UTF-8)
+int strcasecmp_utf8(const char* s1, const char* s2) {
+#ifdef _WIN32
+    return _stricmp(s1, s2);
+#else
+    return strcasecmp(s1, s2);
+#endif
+}
+
 // convert wstring to UTF-8
 std::string to_UTF_8(const std::wstring &i_str)
 {

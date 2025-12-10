@@ -6,7 +6,7 @@ namespace yamy::platform {
 class InputDriverLinux : public IInputDriver {
 public:
     bool open(void *readEvent) override {
-        std::cerr << "[STUB] InputDriver::open()" << std::endl;
+        std::cerr << "[STUB] InputDriver::open() - not supported on Linux" << std::endl;
         return true;
     }
 

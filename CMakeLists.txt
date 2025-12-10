@@ -229,7 +229,9 @@ if(WIN32)
         src/utils
         src/app
     )
-elseif(UNIX AND NOT APPLE)
+endif()
+
+if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     # Linux stub backend - minimal implementation for testing architecture
     set(STUB_SOURCES
         src/app/main_linux.cpp
@@ -296,6 +298,7 @@ endif()
 # -----------------------------------------------------------------------------
 # Target: yamy_test (EXE)
 # -----------------------------------------------------------------------------
+option(BUILD_LINUX_STUB "Build Linux stub backend" OFF)
 option(BUILD_TESTING "Build the testing tree." OFF)
 
 if(BUILD_TESTING)

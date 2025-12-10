@@ -1,12 +1,7 @@
 #include "cmd_window_resize_to.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
-#include "../../platform/windows/windowstool.h" // For asyncResize, rcWidth, rcHeight
-
-Command_WindowResizeTo::Command_WindowResizeTo()
-{
-    m_twt = TargetWindowType_overlapped;
-}
+#include "../../platform/windows/windowstool.h" // For asyncResize
 
 void Command_WindowResizeTo::load(SettingLoader *i_sl)
 {
@@ -31,21 +26,7 @@ void Command_WindowResizeTo::exec(Engine *i_engine, FunctionParam *i_param) cons
     TargetWindowType twt = m_twt;
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt, &rc, &rcd))
         return;
-
-    int width = m_width;
-    int height = m_height;
-
-    if (width == 0)
-        width = rcWidth(reinterpret_cast<const RECT*>(&rc));
-    else if (width < 0)
-        width += rcWidth(reinterpret_cast<const RECT*>(&rcd));
-
-    if (height == 0)
-        height = rcHeight(reinterpret_cast<const RECT*>(&rc));
-    else if (height < 0)
-        height += rcHeight(reinterpret_cast<const RECT*>(&rcd));
-
-    asyncResize(static_cast<HWND>(hwnd), width, height);
+    asyncResize(static_cast<HWND>(hwnd), m_width, m_height);
 }
 
 tostream &Command_WindowResizeTo::outputArgs(tostream &i_ost) const

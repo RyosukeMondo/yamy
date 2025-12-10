@@ -52,7 +52,7 @@ public:
             (*m_directSSTPServers)[id].m_path = value;
         else if (member == _T("hwnd"))
             (*m_directSSTPServers)[id].m_hwnd =
-                reinterpret_cast<yamy::platform::WindowHandle>((LONG_PTR)_ttoi64(value.c_str()));
+                reinterpret_cast<yamy::platform::WindowHandle>((intptr_t)_ttoi64(value.c_str()));
         else if (member == _T("name"))
             (*m_directSSTPServers)[id].m_name = value;
         else if (member == _T("keroname"))
@@ -145,7 +145,7 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
 
     _TCHAR buf[100];
     _sntprintf(buf, NUMBER_OF(buf), _T("HWnd: %Iu\r\n"),
-               reinterpret_cast<ULONG_PTR>(i_engine->m_hwndAssocWindow));
+               reinterpret_cast<uintptr_t>(i_engine->m_hwndAssocWindow));
     request += buf;
 
 #ifdef _UNICODE
@@ -165,20 +165,27 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
         std::smatch what;
         std::string name_utf8 = to_UTF_8(i->second.m_name);
         if (std::regex_match(name_utf8, what, m_name)) {
+            // Use local definition or rely on Win32 include but abstract it.
+            // Since we are eliminating Win32 types, we use generic types.
+            // But we must construct COPYDATASTRUCT for Windows message.
+            // We'll rely on COPYDATASTRUCT from windows.h since this is a platform specific message.
+            // But we cast it to intptr_t for the call.
             COPYDATASTRUCT cd;
             cd.dwData = 9801;
 #ifdef _UNICODE
-            cd.cbData = (DWORD)request_UTF_8.size();
+            cd.cbData = (uint32_t)request_UTF_8.size();
             cd.lpData = (void *)request_UTF_8.c_str();
 #else
-            cd.cbData = (DWORD)request.size();
+            cd.cbData = (uint32_t)request.size();
             cd.lpData = (void *)request.c_str();
 #endif
             uintptr_t result;
-            i_engine->getWindowSystem()->sendMessageTimeout(i->second.m_hwnd, WM_COPYDATA,
+            // 0x004A is WM_COPYDATA
+            i_engine->getWindowSystem()->sendMessageTimeout(i->second.m_hwnd, 0x004A,
                                reinterpret_cast<uintptr_t>(i_engine->m_hwndAssocWindow),
                                reinterpret_cast<intptr_t>(&cd),
-                               SMTO_ABORTIFHUNG | SMTO_BLOCK, 5000, &result);
+                               0x0002 | 0x0001, // SMTO_ABORTIFHUNG | SMTO_BLOCK
+                               5000, &result);
         }
     }
 

@@ -1,12 +1,7 @@
 #include "cmd_window_hv_maximize.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
-#include "../../platform/windows/windowstool.h" // For rcWidth, rcHeight
-
-Command_WindowHVMaximize::Command_WindowHVMaximize()
-{
-    m_twt = TargetWindowType_overlapped;
-}
+#include "../../platform/windows/windowstool.h" // For asyncMoveWindow
 
 void Command_WindowHVMaximize::load(SettingLoader *i_sl)
 {
@@ -14,10 +9,6 @@ void Command_WindowHVMaximize::load(SettingLoader *i_sl)
     const _TCHAR* tName = tsName.c_str();
 
     i_sl->getOpenParen(true, tName); // throw ...
-    i_sl->load_ARGUMENT(&m_isHorizontal);
-    if (i_sl->getCloseParen(false, tName))
-      return;
-    i_sl->getComma(false, tName); // throw ...
     i_sl->load_ARGUMENT(&m_twt);
     i_sl->getCloseParen(true, tName); // throw ...
 }
@@ -30,24 +21,20 @@ void Command_WindowHVMaximize::exec(Engine *i_engine, FunctionParam *i_param) co
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt, &rc, &rcd))
         return;
 
-    int x = rc.left;
-    int y = rc.top;
-    int w = rcWidth(reinterpret_cast<const RECT*>(&rc));
-    int h = rcHeight(reinterpret_cast<const RECT*>(&rc));
+    yamy::platform::Rect monitorWorkArea;
 
-    if (m_isHorizontal) {
-        x = rcd.left;
-        w = rcWidth(reinterpret_cast<const RECT*>(&rcd));
+    if (twt == TargetWindowType_mdi) {
+        monitorWorkArea = rcd;
     } else {
-        y = rcd.top;
-        h = rcHeight(reinterpret_cast<const RECT*>(&rcd));
+        int monitorIndex = i_engine->getWindowSystem()->getMonitorIndex(hwnd);
+        i_engine->getWindowSystem()->getMonitorWorkArea(monitorIndex, &monitorWorkArea);
     }
-    asyncMoveWindow(static_cast<HWND>(hwnd), x, y, w, h);
+    asyncMoveWindow(static_cast<HWND>(hwnd), monitorWorkArea.left, monitorWorkArea.top,
+                    monitorWorkArea.width(), monitorWorkArea.height());
 }
 
 tostream &Command_WindowHVMaximize::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_isHorizontal << _T(", ");
     i_ost << m_twt;
     return i_ost;
 }
