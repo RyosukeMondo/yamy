@@ -75,8 +75,8 @@
   - _Requirements: FR-1.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Scanner uses tstring for buffer storage, Convert to std::string - Step 1: Update buffer from tstring m_buffer to std::string m_buffer, Step 2: Update getCurrentToken() from returning tstring to std::string, Step 3: Remove _T() macros from scanner error messages, Step 4: Ensure UTF-8 scanning works correctly | Restrictions: Maintain scanner behavior, Preserve token positions for error reporting, Do not break string literal parsing | Success: No tstring references, Buffer uses std::string, Scanner tests pass, String literals scanned correctly | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.9 Create WindowHandle type alias
-  - File: src/platform/types.h
+- [x] 1.1.9 Create WindowHandle type alias (already done)
+  - File: src/core/platform/types.h (actual location)
   - Create platform-agnostic WindowHandle type
   - Add conditional compilation for Windows HWND vs Linux Window
   - _Leverage: src/platform/window_system.h_
