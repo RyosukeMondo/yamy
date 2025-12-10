@@ -1,4 +1,5 @@
 #include "core/platform/window_system_interface.h"
+#include "ipc_linux.h"
 #include <iostream>
 
 namespace yamy::platform {
@@ -293,9 +294,7 @@ public:
                      uint32_t flags,
                      uint32_t timeout_ms,
                      uintptr_t* result) override {
-        std::cerr << "[STUB] sendCopyData()" << std::endl;
-        if (result) *result = 0;
-        return false;
+        return IPCLinux::sendCopyData(sender, target, data, flags, timeout_ms, result);
     }
 
     WindowHandle getToplevelWindow(WindowHandle hwnd, bool* isMDI) override {
