@@ -534,6 +534,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/tests/platform/input_injector_linux_test.cpp
             src/tests/platform/input_hook_linux_test.cpp
             src/tests/platform/ipc_linux_test.cpp
+            src/tests/platform/ipc_multi_instance_test.cpp
             src/platform/linux/window_system_linux_queries.cpp
             src/platform/linux/keycode_mapping.cpp
             src/platform/linux/input_hook_linux.cpp
