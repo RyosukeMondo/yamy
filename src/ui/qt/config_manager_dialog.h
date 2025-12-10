@@ -16,6 +16,8 @@
 #include <QSet>
 #include <QMutex>
 #include <QMenu>
+#include <QLineEdit>
+#include <QComboBox>
 #include <memory>
 
 class ConfigManager;
@@ -117,6 +119,28 @@ private slots:
      * @brief Refresh the configuration list
      */
     void refreshConfigList();
+
+    /**
+     * @brief Apply search and status filter to the config list
+     */
+    void applyFilters();
+
+    /**
+     * @brief Handle search text change
+     * @param text New search text
+     */
+    void onSearchTextChanged(const QString& text);
+
+    /**
+     * @brief Handle status filter change
+     * @param index New filter index
+     */
+    void onStatusFilterChanged(int index);
+
+    /**
+     * @brief Clear search field
+     */
+    void onClearSearch();
 
     /**
      * @brief Handle validation results from worker thread
@@ -223,7 +247,18 @@ private:
      */
     void setupFileWatcher();
 
+    /**
+     * @brief Check if a config item matches the current search/filter criteria
+     * @param configPath Path to the config file
+     * @param displayName Display name shown in list
+     * @return true if item should be visible
+     */
+    bool matchesFilter(const QString& configPath, const QString& displayName) const;
+
     // UI Components
+    QLineEdit* m_searchEdit;
+    QPushButton* m_btnClearSearch;
+    QComboBox* m_statusFilter;
     QListWidget* m_configList;
     QPushButton* m_btnNew;
     QPushButton* m_btnDuplicate;

@@ -22,6 +22,9 @@
 
 ConfigManagerDialog::ConfigManagerDialog(QWidget* parent)
     : QDialog(parent)
+    , m_searchEdit(nullptr)
+    , m_btnClearSearch(nullptr)
+    , m_statusFilter(nullptr)
     , m_configList(nullptr)
     , m_btnNew(nullptr)
     , m_btnDuplicate(nullptr)
@@ -92,6 +95,30 @@ void ConfigManagerDialog::setupUI()
     // Configuration list group
     QGroupBox* listGroup = new QGroupBox("Available Configurations");
     QVBoxLayout* listLayout = new QVBoxLayout(listGroup);
+
+    // Search and filter row
+    QHBoxLayout* searchFilterLayout = new QHBoxLayout();
+
+    // Search field
+    m_searchEdit = new QLineEdit();
+    m_searchEdit->setPlaceholderText("Search by name, description, or tags...");
+    m_searchEdit->setClearButtonEnabled(true);
+    connect(m_searchEdit, &QLineEdit::textChanged,
+            this, &ConfigManagerDialog::onSearchTextChanged);
+    searchFilterLayout->addWidget(m_searchEdit, 1);
+
+    // Status filter combo box
+    m_statusFilter = new QComboBox();
+    m_statusFilter->addItem("All", -1);
+    m_statusFilter->addItem("Valid", 0);
+    m_statusFilter->addItem("Has Warnings", 1);
+    m_statusFilter->addItem("Has Errors", 2);
+    m_statusFilter->setToolTip("Filter by validation status");
+    connect(m_statusFilter, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &ConfigManagerDialog::onStatusFilterChanged);
+    searchFilterLayout->addWidget(m_statusFilter);
+
+    listLayout->addLayout(searchFilterLayout);
 
     m_configList = new QListWidget();
     m_configList->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -210,6 +237,13 @@ void ConfigManagerDialog::setupUI()
     mainLayout->addLayout(dialogBtnLayout);
 }
 
+// User roles for storing data in list items
+static const int RoleConfigPath = Qt::UserRole;
+static const int RoleConfigIndex = Qt::UserRole + 1;
+static const int RoleSearchableName = Qt::UserRole + 2;
+static const int RoleDescription = Qt::UserRole + 3;
+static const int RoleTags = Qt::UserRole + 4;
+
 void ConfigManagerDialog::refreshConfigList()
 {
     m_configList->clear();
@@ -228,7 +262,8 @@ void ConfigManagerDialog::refreshConfigList()
 
     for (size_t i = 0; i < configs.size(); ++i) {
         const ConfigEntry& config = configs[i];
-        QString displayName = QString::fromStdString(config.name);
+        QString baseName = QString::fromStdString(config.name);
+        QString displayName = baseName;
         QString configPath = QString::fromStdString(config.path);
 
         // Add indicator for active config
@@ -242,8 +277,25 @@ void ConfigManagerDialog::refreshConfigList()
         }
 
         QListWidgetItem* item = new QListWidgetItem(displayName);
-        item->setData(Qt::UserRole, configPath);
-        item->setData(Qt::UserRole + 1, static_cast<int>(i));
+        item->setData(RoleConfigPath, configPath);
+        item->setData(RoleConfigIndex, static_cast<int>(i));
+        item->setData(RoleSearchableName, baseName);
+
+        // Load metadata for search
+        ConfigMetadata metadata;
+        if (metadata.load(configPath.toStdString())) {
+            const ConfigMetadataInfo& info = metadata.info();
+            QString description = QString::fromStdString(info.description);
+            QStringList tags;
+            for (const auto& tag : info.tags) {
+                tags << QString::fromStdString(tag);
+            }
+            item->setData(RoleDescription, description);
+            item->setData(RoleTags, tags.join(" "));
+        } else {
+            item->setData(RoleDescription, QString());
+            item->setData(RoleTags, QString());
+        }
 
         // Set initial icon as pending
         item->setIcon(m_iconPending);
@@ -268,6 +320,9 @@ void ConfigManagerDialog::refreshConfigList()
 
     m_labelStatus->setText(QString("%1 configuration(s) found").arg(configs.size()));
     updateButtonStates();
+
+    // Apply current filters
+    applyFilters();
 
     // Start validation for all configs
     startValidationForAll();
@@ -1052,6 +1107,9 @@ void ConfigManagerDialog::onValidationComplete(const QString& configPath,
     // Update list item icon
     updateItemValidationStatus(configPath, hasErrors, hasWarnings);
 
+    // Re-apply filters since status may have changed
+    applyFilters();
+
     // If this is the currently selected config, update the details view
     QString selectedPath = getSelectedConfigPath();
     if (selectedPath == configPath) {
@@ -1154,10 +1212,131 @@ void ConfigManagerDialog::onEditMetadata()
 
     ConfigMetadataDialog dialog(path, this);
     if (dialog.exec() == QDialog::Accepted && dialog.wasSaved()) {
-        // Refresh the list to show updated metadata
-        // For now, the metadata is stored separately, so no list refresh needed
-        // unless we want to show metadata info in the list
+        // Refresh the list to show updated metadata for search
+        refreshConfigList();
         m_labelStatus->setText("Metadata updated successfully");
+    }
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Search and filter implementation
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+void ConfigManagerDialog::onSearchTextChanged(const QString& text)
+{
+    Q_UNUSED(text);
+    applyFilters();
+}
+
+void ConfigManagerDialog::onStatusFilterChanged(int index)
+{
+    Q_UNUSED(index);
+    applyFilters();
+}
+
+void ConfigManagerDialog::onClearSearch()
+{
+    m_searchEdit->clear();
+}
+
+bool ConfigManagerDialog::matchesFilter(const QString& configPath, const QString& displayName) const
+{
+    // Get search text (case-insensitive)
+    QString searchText = m_searchEdit->text().trimmed().toLower();
+
+    // Get status filter
+    int statusFilter = m_statusFilter->currentData().toInt();
+
+    // Check status filter first (more efficient to fail fast)
+    if (statusFilter >= 0) {
+        // Use const_cast to access mutex in const method - safe because we're only reading
+        QMutexLocker locker(const_cast<QMutex*>(&m_validationCacheMutex));
+        if (m_validationCache.contains(configPath)) {
+            const ValidationStatus& status = m_validationCache[configPath];
+            bool matches = false;
+            switch (statusFilter) {
+                case 0: // Valid - no errors and no warnings
+                    matches = !status.hasErrors && !status.hasWarnings;
+                    break;
+                case 1: // Has Warnings
+                    matches = status.hasWarnings && !status.hasErrors;
+                    break;
+                case 2: // Has Errors
+                    matches = status.hasErrors;
+                    break;
+            }
+            if (!matches) {
+                return false;
+            }
+        } else {
+            // Validation not yet complete - hide if filtering by status
+            return false;
+        }
+    }
+
+    // If no search text, match all (that passed status filter)
+    if (searchText.isEmpty()) {
+        return true;
+    }
+
+    // Search in name (from display name, minus the indicators)
+    if (displayName.toLower().contains(searchText)) {
+        return true;
+    }
+
+    // Search in metadata fields using stored data
+    // We need to get the item to access the metadata
+    for (int i = 0; i < m_configList->count(); ++i) {
+        QListWidgetItem* item = m_configList->item(i);
+        if (item && item->data(RoleConfigPath).toString() == configPath) {
+            // Search in searchable name
+            QString name = item->data(RoleSearchableName).toString().toLower();
+            if (name.contains(searchText)) {
+                return true;
+            }
+            // Search in description
+            QString desc = item->data(RoleDescription).toString().toLower();
+            if (desc.contains(searchText)) {
+                return true;
+            }
+            // Search in tags
+            QString tags = item->data(RoleTags).toString().toLower();
+            if (tags.contains(searchText)) {
+                return true;
+            }
+            break;
+        }
+    }
+
+    return false;
+}
+
+void ConfigManagerDialog::applyFilters()
+{
+    int visibleCount = 0;
+    int totalCount = m_configList->count();
+
+    for (int i = 0; i < totalCount; ++i) {
+        QListWidgetItem* item = m_configList->item(i);
+        if (!item) continue;
+
+        QString configPath = item->data(RoleConfigPath).toString();
+        QString displayName = item->text();
+
+        bool visible = matchesFilter(configPath, displayName);
+        item->setHidden(!visible);
+
+        if (visible) {
+            ++visibleCount;
+        }
+    }
+
+    // Update status label to show filter results
+    if (visibleCount == totalCount) {
+        m_labelStatus->setText(QString("%1 configuration(s) found").arg(totalCount));
+    } else {
+        m_labelStatus->setText(QString("Showing %1 of %2 configuration(s)")
+            .arg(visibleCount).arg(totalCount));
     }
 }
 
