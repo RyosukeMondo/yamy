@@ -559,7 +559,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Implement config metadata - Create ConfigMetadata class with fields: name, description, author, createdDate, modifiedDate, tags, Create metadata file .mayu.meta in JSON format alongside .mayu file, Methods: load, save, update, Store in ~/.yamy/.metadata/ directory, Auto-update modifiedDate on config changes | Restrictions: Use JSON format, Handle missing metadata gracefully, Don't require metadata, Auto-create if missing | Success: Metadata stored separately, JSON format parseable, Auto-updated on changes, Optional (works without), Backward compatible | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.1.8 Add config templates
+- [x] 2.1.8 Add config templates
   - Files: src/resources/templates/default.mayu, src/resources/templates/emacs.mayu, src/resources/templates/vim.mayu
   - Create preset configurations for common use cases
   - Allow creating new config from template
