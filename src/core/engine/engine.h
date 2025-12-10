@@ -108,7 +108,7 @@ private:
 
     private:
         ///
-        HGLOBAL makeNewKillLineBuf(const _TCHAR *i_data, int *i_retval);
+        HGLOBAL makeNewKillLineBuf(const char *i_data, int *i_retval);
 
     public:
         ///
@@ -425,7 +425,7 @@ public:
         yamy::platform::WindowHandle hf = m_hwndFocus;
         if (!hf)
             return;
-        m_log << _T("Command Notify (logging disabled during refactor)") << std::endl;
+        m_log << "Command Notify (logging disabled during refactor)" << std::endl;
         return;
     }
 

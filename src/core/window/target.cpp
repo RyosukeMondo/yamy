@@ -222,6 +222,6 @@ uint16_t Register_target()
     wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszMenuName  = nullptr;
-    wc.lpszClassName = _T("mayuTarget");
+    wc.lpszClassName = "mayuTarget";
     return RegisterClass(&wc);
 }

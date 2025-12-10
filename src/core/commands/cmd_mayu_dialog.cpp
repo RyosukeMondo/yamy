@@ -24,7 +24,7 @@ void Command_MayuDialog::exec(Engine *i_engine, FunctionParam *i_param) const
 
 tostream &Command_MayuDialog::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_dialog << _T(", ");
+    i_ost << m_dialog << ", ";
     i_ost << m_showCommand;
     return i_ost;
 }

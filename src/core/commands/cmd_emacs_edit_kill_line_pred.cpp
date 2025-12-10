@@ -33,7 +33,7 @@ void Command_EmacsEditKillLinePred::exec(Engine *i_engine, FunctionParam *i_para
 
 tostream &Command_EmacsEditKillLinePred::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_keySeq1 << _T(", ");
+    i_ost << m_keySeq1 << ", ";
     i_ost << m_keySeq2;
     return i_ost;
 }

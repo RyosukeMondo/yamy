@@ -28,13 +28,13 @@ public:
     class FunctionCreator
     {
     public:
-        const _TCHAR *m_name;            ///
+        const char *m_name;            ///
         FunctionData *m_creator;            ///
     };
 
 private:
     typedef std::vector<Token> Tokens;        ///
-    typedef std::vector<tstringi> Prefixes;    ///
+    typedef std::vector<std::string> Prefixes;    ///
     typedef std::vector<bool> CanReadStack;    ///
 
 private:
@@ -150,7 +150,7 @@ public:
     bool initialize(Setting *o_setting);
 
     /// load setting from data string
-    void loadFromData(const tstring &data);
+    void loadFromData(const std::string &data);
 };
 
 #endif // !_SETTING_LOADER_H

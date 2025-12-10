@@ -150,9 +150,3 @@ FunctionData *createFunctionData(const std::string &i_name)
     return nullptr;
 }
 
-#ifdef _UNICODE
-FunctionData *createFunctionData(const tstring &i_name)
-{
-    return createFunctionData(to_UTF_8(i_name));
-}
-#endif

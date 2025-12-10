@@ -30,8 +30,8 @@ void Command_WindowMoveTo::exec(Engine *i_engine, FunctionParam *i_param) const
 
 tostream &Command_WindowMoveTo::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_x << _T(", ");
-    i_ost << m_y << _T(", ");
+    i_ost << m_x << ", ";
+    i_ost << m_y << ", ";
     i_ost << m_twt;
     return i_ost;
 }

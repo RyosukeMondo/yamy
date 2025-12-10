@@ -13,6 +13,7 @@
 #  include <list>
 #  include <map>
 #  include <array>
+#  include <ostream>
 
 
 /// a scan code with flags
@@ -129,7 +130,7 @@ public:
     bool isPrefixScanCode(const Key &i_key) const;
 
     /// stream output
-    friend tostream &operator<<(tostream &i_ost, const Key &i_key);
+    friend std::ostream &operator<<(std::ostream &i_ost, const Key &i_key);
 
     /// <
     bool operator<(const Key &i_key) const {
@@ -290,7 +291,7 @@ public:
     }
 
     /// stream output
-    friend tostream &operator<<(tostream &i_ost, const Modifier &i_m);
+    friend std::ostream &operator<<(std::ostream &i_ost, const Modifier &i_m);
 
     /// <
     bool operator<(const Modifier &i_m) const {
@@ -301,7 +302,7 @@ public:
 
 
 /// stream output
-tostream &operator<<(tostream &i_ost, Modifier::Type i_type);
+std::ostream &operator<<(std::ostream &i_ost, Modifier::Type i_type);
 
 
 ///
@@ -329,7 +330,7 @@ public:
     }
 
     /// stream output
-    friend tostream &operator<<(tostream &i_ost, const ModifiedKey &i_mk);
+    friend std::ostream &operator<<(std::ostream &i_ost, const ModifiedKey &i_mk);
 
     /// <
     bool operator<(const ModifiedKey &i_mk) const {

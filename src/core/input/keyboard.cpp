@@ -64,7 +64,7 @@ bool Key::isPrefixScanCode(const Key &i_key) const
 
 
 // stream output
-tostream &operator<<(tostream &i_ost, const Key &i_mk)
+std::ostream &operator<<(std::ostream &i_ost, const Key &i_mk)
 {
     return i_ost << i_mk.getName();
 }
@@ -109,7 +109,7 @@ void Modifier::add(const Modifier &i_m)
 }
 
 // stream output
-tostream &operator<<(tostream &i_ost, const Modifier &i_m)
+std::ostream &operator<<(std::ostream &i_ost, const Modifier &i_m)
 {
     struct Mods {
         Modifier::Type m_mt;
@@ -166,7 +166,7 @@ tostream &operator<<(tostream &i_ost, const Modifier &i_m)
 
 
 /// stream output
-tostream &operator<<(tostream &i_ost, Modifier::Type i_type)
+std::ostream &operator<<(std::ostream &i_ost, Modifier::Type i_type)
 {
     const char *modNames[] = {
         "Shift",
@@ -233,7 +233,7 @@ tostream &operator<<(tostream &i_ost, Modifier::Type i_type)
 
 
 // stream output
-tostream &operator<<(tostream &i_ost, const ModifiedKey &i_mk)
+std::ostream &operator<<(std::ostream &i_ost, const ModifiedKey &i_mk)
 {
     if (i_mk.m_key)
         i_ost << i_mk.m_modifier << *i_mk.m_key;

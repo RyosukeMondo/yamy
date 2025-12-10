@@ -18,7 +18,7 @@
 class Setting
 {
 public:
-    typedef std::set<tstringi> Symbols;        ///
+    typedef std::set<std::string> Symbols;        ///
     typedef std::list<Modifier> Modifiers;    ///
 
 public:
@@ -63,12 +63,12 @@ class SettingLoader;
 
 
 /// get home directory path
-typedef std::list<tstringi> HomeDirectories;
+typedef std::list<std::string> HomeDirectories;
 extern void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_path);
 
 /// get mayu filename from config
 extern bool getFilenameFromConfig(const ConfigStore &i_config,
-    tstringi *o_name, tstringi *o_filename, Setting::Symbols *o_symbols);
+    std::string *o_name, std::string *o_filename, Setting::Symbols *o_symbols);
 
 
 #endif // !_SETTING_H

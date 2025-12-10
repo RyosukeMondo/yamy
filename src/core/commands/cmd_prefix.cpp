@@ -23,7 +23,7 @@ void Command_Prefix::exec(Engine *i_engine, FunctionParam *i_param) const
 
     {
         Acquire a(&i_engine->m_log, 1);
-        i_engine->m_log << _T("(") << i_keymap->getName() << _T(", ")
-                        << (i_doesIgnoreModifiers ? _T("true") : _T("false")) << _T(")");
+        i_engine->m_log << "(" << i_keymap->getName() << ", "
+                        << (i_doesIgnoreModifiers ? "true" : "false") << ")";
     }
 }

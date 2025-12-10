@@ -16,22 +16,23 @@ void Command_ClipboardChangeCase::exec(Engine *i_engine, FunctionParam *i_param)
     if (!i_param->m_isPressed)
         return;
 
-    tstring text = to_tstring(i_engine->getWindowSystem()->getClipboardText());
+    std::string text = i_engine->getWindowSystem()->getClipboardText();
     if (text.empty())
         return;
 
     for (size_t i = 0; i < text.size(); ++i) {
-        _TCHAR c = text[i];
-#ifndef _UNICODE
-        if (_istlead(c)) {
-            ++i; // Skip next char as it is trail byte
+        char c = text[i];
+        // Skip multi-byte UTF-8 continuation bytes
+        if ((c & 0xC0) == 0x80) {
             continue;
         }
-#endif
-        text[i] = m_doesConvertToUpperCase ? _totupper(c) : _totlower(c);
+        // Only convert ASCII characters
+        if (c >= 0 && c < 128) {
+            text[i] = m_doesConvertToUpperCase ? toupper(c) : tolower(c);
+        }
     }
 
-    i_engine->getWindowSystem()->setClipboardText(to_UTF_8(text));
+    i_engine->getWindowSystem()->setClipboardText(text);
 }
 
 tostream &Command_ClipboardChangeCase::outputArgs(tostream &i_ost) const

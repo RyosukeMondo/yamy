@@ -3,16 +3,19 @@
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../../platform/windows/windowstool.h" // For loadString
 #include "../../ui/mayurc.h" // For IDS_mayu
+#include "../../utils/stringtool.h" // For strcasecmp_utf8
 #include <map>
+#include <cstring>
+#include <cstdio>
 
 // Direct SSTP Server
 class DirectSSTPServer
 {
 public:
-    tstring m_path;
+    std::string m_path;
     yamy::platform::WindowHandle m_hwnd;
-    tstring m_name;
-    tstring m_keroname;
+    std::string m_name;
+    std::string m_keroname;
 
 public:
     DirectSSTPServer()
@@ -26,7 +29,7 @@ class ParseDirectSSTPData
     typedef std::match_results<const char*> MR;
 
 public:
-    typedef std::map<tstring, DirectSSTPServer> DirectSSTPServers;
+    typedef std::map<std::string, DirectSSTPServer> DirectSSTPServers;
 
 private:
     DirectSSTPServers *m_directSSTPServers;
@@ -38,24 +41,18 @@ public:
     }
 
     bool operator()(const MR& i_what) {
-#ifdef _UNICODE
-        tstring id(to_wstring(std::string(i_what[1].first, i_what[1].second)));
-        tstring member(to_wstring(std::string(i_what[2].first, i_what[2].second)));
-        tstring value(to_wstring(std::string(i_what[3].first, i_what[3].second)));
-#else
-        tstring id(i_what[1].first, i_what[1].second);
-        tstring member(i_what[2].first, i_what[2].second);
-        tstring value(i_what[3].first, i_what[3].second);
-#endif
+        std::string id(i_what[1].first, i_what[1].second);
+        std::string member(i_what[2].first, i_what[2].second);
+        std::string value(i_what[3].first, i_what[3].second);
 
-        if (member == _T("path"))
+        if (member == "path")
             (*m_directSSTPServers)[id].m_path = value;
-        else if (member == _T("hwnd"))
+        else if (member == "hwnd")
             (*m_directSSTPServers)[id].m_hwnd =
-                reinterpret_cast<yamy::platform::WindowHandle>((intptr_t)_ttoi64(value.c_str()));
-        else if (member == _T("name"))
+                reinterpret_cast<yamy::platform::WindowHandle>((intptr_t)std::stoll(value));
+        else if (member == "name")
             (*m_directSSTPServers)[id].m_name = value;
-        else if (member == _T("keroname"))
+        else if (member == "keroname")
             (*m_directSSTPServers)[id].m_keroname = value;
         return true;
     }
@@ -84,14 +81,14 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
         i_engine->getWindowSystem()->closeHandle(hm);
     else {
         Acquire a(&i_engine->m_log, 0);
-        i_engine->m_log << _T(" Error(1): Direct SSTP server does not exist.");
+        i_engine->m_log << " Error(1): Direct SSTP server does not exist.";
         return;
     }
 
     void* hfm = i_engine->getWindowSystem()->openFileMapping("Sakura");
     if (!hfm) {
         Acquire a(&i_engine->m_log, 0);
-        i_engine->m_log << _T(" Error(2): Direct SSTP server does not provide data.");
+        i_engine->m_log << " Error(2): Direct SSTP server does not provide data.";
         return;
     }
 
@@ -100,7 +97,7 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!data) {
         i_engine->getWindowSystem()->closeHandle(hfm);
         Acquire a(&i_engine->m_log, 0);
-        i_engine->m_log << _T(" Error(3): Direct SSTP server does not provide data.");
+        i_engine->m_log << " Error(3): Direct SSTP server does not provide data.";
         return;
     }
 
@@ -116,54 +113,48 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
         ((ParseDirectSSTPData)(&servers))(*it);
 
     // make request
-    tstring request;
+    std::string request;
     if (!m_protocol.eval().size())
-        request += _T("NOTIFY SSTP/1.1");
+        request += "NOTIFY SSTP/1.1";
     else
-        request += to_tstring(m_protocol.eval());
-    request += _T("\r\n");
+        request += m_protocol.eval();
+    request += "\r\n";
 
     bool hasSender = false;
     for (std::list<std::string>::const_iterator
             i = m_headers.begin(); i != m_headers.end(); ++ i) {
-        tstringq header = to_tstring(*i);
-        if (_tcsnicmp(_T("Charset"), header.c_str(), 7) == 0 ||
-                _tcsnicmp(_T("Hwnd"),    header.c_str(), 4) == 0)
+        const std::string& header = *i;
+        // Case-insensitive comparison using strcasecmp_utf8
+        if (strcasecmp_utf8(header.c_str(), "Charset") == 0 ||
+                strcasecmp_utf8(header.c_str(), "Hwnd") == 0)
             continue;
-        if (_tcsnicmp(_T("Sender"), header.c_str(), 6) == 0)
+        if (strcasecmp_utf8(header.c_str(), "Sender") == 0)
             hasSender = true;
         request += header;
-        request += _T("\r\n");
+        request += "\r\n";
     }
 
     if (!hasSender) {
-        request += _T("Sender: ");
-        request += to_tstring(loadString(IDS_mayu));
-        request += _T("\r\n");
+        request += "Sender: ";
+        request += loadString(IDS_mayu);
+        request += "\r\n";
     }
 
-    _TCHAR buf[100];
-    _sntprintf(buf, NUMBER_OF(buf), _T("HWnd: %Iu\r\n"),
-               reinterpret_cast<uintptr_t>(i_engine->m_hwndAssocWindow));
+    char buf[100];
+    snprintf(buf, sizeof(buf), "HWnd: %zu\r\n",
+               reinterpret_cast<size_t>(i_engine->m_hwndAssocWindow));
     request += buf;
 
-#ifdef _UNICODE
-    request += _T("Charset: UTF-8\r\n");
-#else
-    request += _T("Charset: Shift_JIS\r\n");
-#endif
-    request += _T("\r\n");
+    request += "Charset: UTF-8\r\n";
+    request += "\r\n";
 
-#ifdef _UNICODE
-    std::string request_UTF_8 = to_UTF_8(request);
-#endif
+    std::string request_UTF_8 = request;
 
     // send request to Direct SSTP Server which matches m_name;
     for (ParseDirectSSTPData::DirectSSTPServers::iterator
             i = servers.begin(); i != servers.end(); ++ i) {
         std::smatch what;
-        std::string name_utf8 = to_UTF_8(i->second.m_name);
-        if (std::regex_match(name_utf8, what, m_name)) {
+        if (std::regex_match(i->second.m_name, what, m_name)) {
             // Use local definition or rely on Win32 include but abstract it.
             // Since we are eliminating Win32 types, we use generic types.
             // But we must construct COPYDATASTRUCT for Windows message.
@@ -171,13 +162,8 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
             // But we cast it to intptr_t for the call.
             COPYDATASTRUCT cd;
             cd.dwData = 9801;
-#ifdef _UNICODE
             cd.cbData = (uint32_t)request_UTF_8.size();
             cd.lpData = (void *)request_UTF_8.c_str();
-#else
-            cd.cbData = (uint32_t)request.size();
-            cd.lpData = (void *)request.c_str();
-#endif
             uintptr_t result;
             // 0x004A is WM_COPYDATA
             i_engine->getWindowSystem()->sendMessageTimeout(i->second.m_hwnd, 0x004A,
@@ -192,10 +178,10 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
     i_engine->getWindowSystem()->closeHandle(hfm);
 }
 
-tostream &Command_DirectSSTP::outputArgs(tostream &i_ost) const
+std::ostream &Command_DirectSSTP::outputArgs(std::ostream &i_ost) const
 {
-    i_ost << m_name << _T(", ");
-    i_ost << m_protocol << _T(", ");
+    i_ost << m_name << ", ";
+    i_ost << m_protocol << ", ";
     i_ost << m_headers;
     return i_ost;
 }

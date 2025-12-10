@@ -101,8 +101,8 @@ public:
     // 5. Output
     virtual tostream &output(tostream &i_ost) const override
     {
-        // getName() now returns std::string, convert to tstring for output
-        i_ost << "&" << to_tstring(getName());
+        // getName() returns std::string, output directly
+        i_ost << "&" << getName();
         // For commands with manual load/output (no template args),
         // they may override outputArgs() to provide custom output
         // Check if derived class has overridden outputArgs by calling it
@@ -173,11 +173,7 @@ private:
     template <size_t I>
     void outputOneArg(tostream &i_ost, bool hasMore) const
     {
-        if constexpr (std::is_same_v<typename std::decay<decltype(std::get<I>(m_args))>::type, std::string>) {
-            i_ost << to_tstring(std::get<I>(m_args));
-        } else {
-            i_ost << std::get<I>(m_args);
-        }
+        i_ost << std::get<I>(m_args);
         if (hasMore) {
             i_ost << ", ";
         }

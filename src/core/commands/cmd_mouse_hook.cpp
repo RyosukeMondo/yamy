@@ -58,7 +58,7 @@ void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
 
 tostream &Command_MouseHook::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_hookType << _T(", ");
+    i_ost << m_hookType << ", ";
     i_ost << m_hookParam;
     return i_ost;
 }

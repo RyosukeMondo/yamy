@@ -22,7 +22,7 @@ Token::Token(const Token &i_token)
 {
 }
 
-Token::Token(int i_value, const tstringi &i_display)
+Token::Token(int i_value, const std::string &i_display)
         : m_type(Type_number),
         m_isValueQuoted(false),
         m_numericValue(i_value),
@@ -31,7 +31,7 @@ Token::Token(int i_value, const tstringi &i_display)
 {
 }
 
-Token::Token(const tstringi &i_value, bool i_isValueQuoted, bool i_isRegexp)
+Token::Token(const std::string &i_value, bool i_isValueQuoted, bool i_isRegexp)
         : m_type(i_isRegexp ? Type_regexp : Type_string),
         m_isValueQuoted(i_isValueQuoted),
         m_numericValue(0),
@@ -44,7 +44,7 @@ Token::Token(Type i_m_type)
         : m_type(i_m_type),
         m_isValueQuoted(false),
         m_numericValue(0),
-        m_stringValue(_T("")),
+        m_stringValue(""),
         m_data(0)
 {
     ASSERT(m_type == Type_openParen || m_type == Type_closeParen ||
@@ -59,43 +59,43 @@ int Token::getNumber() const
     if (m_stringValue.empty())
         return 0;
     else
-        throw ErrorMessage() << _T("`") << *this << _T("' is not a Type_number.");
+        throw ErrorMessage() << "`" << *this << "' is not a Type_number.";
 }
 
 // get string value
-tstringi Token::getString() const
+std::string Token::getString() const
 {
     if (m_type == Type_string)
         return m_stringValue;
-    throw ErrorMessage() << _T("`") << *this << _T("' is not a string.");
+    throw ErrorMessage() << "`" << *this << "' is not a string.";
 }
 
 // get regexp value
-tstringi Token::getRegexp() const
+std::string Token::getRegexp() const
 {
     if (m_type == Type_regexp)
         return m_stringValue;
-    throw ErrorMessage() << _T("`") << *this << _T("' is not a regexp.");
+    throw ErrorMessage() << "`" << *this << "' is not a regexp.";
 }
 
 // case insensitive equal
-bool Token::operator==(const _TCHAR *i_str) const
+bool Token::operator==(const char *i_str) const
 {
     if (m_type == Type_string)
-        return m_stringValue == i_str;
+        return strcasecmp_utf8(m_stringValue.c_str(), i_str) == 0;
     return false;
 }
 
 // paren equal
-bool Token::operator==(const _TCHAR i_c) const
+bool Token::operator==(const char i_c) const
 {
-    if (i_c == _T('(')) return m_type == Type_openParen;
-    if (i_c == _T(')')) return m_type == Type_openParen;
+    if (i_c == '(') return m_type == Type_openParen;
+    if (i_c == ')') return m_type == Type_openParen;
     return false;
 }
 
 // add string
-void Token::add(const tstringi &i_str)
+void Token::add(const std::string &i_str)
 {
     m_stringValue += i_str;
 }
@@ -114,13 +114,13 @@ tostream &operator<<(tostream &i_ost, const Token &i_token)
         i_ost << i_token.m_stringValue;
         break;
     case Token::Type_openParen:
-        i_ost << _T("(");
+        i_ost << "(";
         break;
     case Token::Type_closeParen:
-        i_ost << _T(")");
+        i_ost << ")";
         break;
     case Token::Type_comma:
-        i_ost << _T(", ");
+        i_ost << ", ";
         break;
     }
     return i_ost;
@@ -131,7 +131,7 @@ tostream &operator<<(tostream &i_ost, const Token &i_token)
 // Parser
 
 
-Parser::Parser(const _TCHAR *i_str, size_t i_length)
+Parser::Parser(const char *i_str, size_t i_length)
         : m_lineNumber(1),
         m_prefixes(nullptr),
         m_internalLineNumber(1),
@@ -148,29 +148,25 @@ void Parser::setPrefixes(const Prefixes *i_prefixes)
 }
 
 // get a line
-bool Parser::getLine(tstringi *o_line)
+bool Parser::getLine(std::string *o_line)
 {
     o_line->resize(0);
 
     if (m_ptr == m_end)
         return false;
 
-    const _TCHAR *begin = m_ptr;
-    const _TCHAR *end = m_end;
+    const char *begin = m_ptr;
+    const char *end = m_end;
 
-    // lines are separated by: "\r\n", "\n", "\x2028" (Unicode Line Separator)
+    // lines are separated by: "\r\n", "\n"
     while (m_ptr != m_end)
         switch (*m_ptr) {
-        case _T('\n'):
-#ifdef UNICODE
-        case 0x2028:
-            //case _T('\x2028'):    //  (U+2028)
-#endif
+        case '\n':
             end = m_ptr;
             ++ m_ptr;
             goto got_line_end;
-        case _T('\r'):
-            if (m_ptr + 1 != m_end && m_ptr[1] == _T('\n')) {
+        case '\r':
+            if (m_ptr + 1 != m_end && m_ptr[1] == '\n') {
                 end = m_ptr;
                 m_ptr += 2;
                 goto got_line_end;
@@ -188,31 +184,24 @@ got_line_end:
 }
 
 // symbol test
-static bool isSymbolChar(_TCHAR i_c)
+static bool isSymbolChar(char i_c)
 {
-    if (i_c == _T('\0'))
+    if (i_c == '\0')
         return false;
-    if (_istlead(i_c) ||
-            _istalpha(i_c) ||
-            _istdigit(i_c) ||
-            _istlead(i_c))
+
+    unsigned char uc = static_cast<unsigned char>(i_c);
+
+    // Check for multi-byte UTF-8 lead byte
+    if (uc >= 0x80)
         return true;
 
-#ifdef UNICODE
-    if (0x80 <= i_c && _istgraph(i_c))
+    if (std::isalpha(uc) || std::isdigit(uc))
         return true;
-#endif // UNICODE
 
-    if (_istpunct(i_c))
-        return !!_tcschr(_T("-+/?_\\"), i_c);
+    if (std::ispunct(uc))
+        return !!strchr("-+/?_\\", i_c);
 
-#ifdef UNICODE
-    // check arrows
-    if (_tcschr(_T("\x2190\x2191\x2192\x2193"), i_c)) {
-        return true;
-    }
-#endif // UNICODE
-    return _istgraph(i_c);
+    return std::isgraph(uc);
 }
 
 
@@ -223,30 +212,30 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
     o_tokens->clear();
     m_lineNumber = m_internalLineNumber;
 
-    tstringi line;
+    std::string line;
     bool isTokenExist = false;
 
     while (getLine(&line)) {
-        const _TCHAR *t = line.c_str();
+        const char *t = line.c_str();
         bool continueToNextLine = false;
 
         while (true) {
             // skip white space
-            while (*t != _T('\0') && _istspace(*t))
+            while (*t != '\0' && std::isspace(static_cast<unsigned char>(*t)))
                 t ++;
-            if (*t == _T('\0') || *t == _T('#'))
+            if (*t == '\0' || *t == '#')
                 break; // break inner loop
-            if (*t == _T('\\') && *(t + 1) == _T('\0')) {
+            if (*t == '\\' && *(t + 1) == '\0') {
                 continueToNextLine = true;
                 break; // break inner loop, continue outer loop
             }
 
-            const _TCHAR *tokenStart = t;
+            const char *tokenStart = t;
 
             // comma or empty token
-            if (*t == _T(',')) {
+            if (*t == ',') {
                 if (!isTokenExist)
-                    o_tokens->push_back(Token(_T(""), false));
+                    o_tokens->push_back(Token("", false));
                 isTokenExist = false;
                 o_tokens->push_back(Token(Token::Type_comma));
                 t ++;
@@ -254,15 +243,15 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
             }
 
             // paren
-            if (*t == _T('(')) {
+            if (*t == '(') {
                 o_tokens->push_back(Token(Token::Type_openParen));
                 isTokenExist = false;
                 t ++;
                 continue;
             }
-            if (*t == _T(')')) {
+            if (*t == ')') {
                 if (!isTokenExist)
-                    o_tokens->push_back(Token(_T(""), false));
+                    o_tokens->push_back(Token("", false));
                 isTokenExist = true;
                 o_tokens->push_back(Token(Token::Type_closeParen));
                 t ++;
@@ -275,7 +264,7 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
             bool matchedPrefix = false;
             if (m_prefixes)
                 for (size_t i = 0; i < m_prefixes->size(); i ++)
-                    if (_tcsnicmp(tokenStart, m_prefixes->at(i).c_str(),
+                    if (strncasecmp(tokenStart, m_prefixes->at(i).c_str(),
                                   m_prefixes->at(i).size()) == 0) {
                         o_tokens->push_back(Token(m_prefixes->at(i), false));
                         t += m_prefixes->at(i).size();
@@ -285,31 +274,29 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
             if (matchedPrefix) continue;
 
             // quoted or regexp
-            if (*t == _T('"') || *t == _T('\'') ||
-                    *t == _T('/') || (*t == _T('\\') && *(t + 1) == _T('m') &&
-                                      *(t + 2) != _T('\0'))) {
-                bool isRegexp = !(*t == _T('"') || *t == _T('\''));
-                _TCHAR q[2] = { *t++, _T('\0') }; // quote character
-                if (q[0] == _T('\\')) {
+            if (*t == '"' || *t == '\'' ||
+                    *t == '/' || (*t == '\\' && *(t + 1) == 'm' &&
+                                      *(t + 2) != '\0')) {
+                bool isRegexp = !(*t == '"' || *t == '\'');
+                char q[2] = { *t++, '\0' }; // quote character
+                if (q[0] == '\\') {
                     t++;
                     q[0] = *t++;
                 }
                 tokenStart = t;
 
-                while (*t != _T('\0') && *t != q[0]) {
-                    if (*t == _T('\\') && *(t + 1))
+                while (*t != '\0' && *t != q[0]) {
+                    if (*t == '\\' && *(t + 1))
                         t ++;
-                    if (_istlead(*t) && *(t + 1))
+                    // Handle UTF-8 multi-byte sequences
+                    unsigned char uc = static_cast<unsigned char>(*t);
+                    if (uc >= 0x80 && *(t + 1))
                         t ++;
                     t ++;
                 }
 
-                tstring str =
+                std::string str =
                     interpretMetaCharacters(tokenStart, t - tokenStart, q, isRegexp);
-#ifdef _MBCS
-                if (isRegexp)
-                    str = guardRegexpFromMbcs(str.c_str());
-#endif
                 // concatinate continuous string
                 if (!isRegexp &&
                         0 < o_tokens->size() && o_tokens->back().isString() &&
@@ -317,7 +304,7 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
                     o_tokens->back().add(str);
                 else
                     o_tokens->push_back(Token(str, true, isRegexp));
-                if (*t != _T('\0'))
+                if (*t != '\0')
                     t ++;
                 continue;
             }
@@ -325,48 +312,44 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
             // not quoted
             {
                 while (isSymbolChar(*t)) {
-                    if (*t == _T('\\')) {
+                    if (*t == '\\') {
                         if (*(t + 1))
                             t ++;
                         else
                             break;
                     }
-                    if (_istlead(*t) && *(t + 1))
+                    // Handle UTF-8 multi-byte sequences
+                    unsigned char uc = static_cast<unsigned char>(*t);
+                    if (uc >= 0x80 && *(t + 1))
                         t ++;
                     t ++;
                 }
                 if (t == tokenStart) {
                     ErrorMessage e;
-                    e << _T("invalid character ");
-#ifdef UNICODE
-                    e << _T("U+");
-                    e << std::hex; // << std::setw(4) << std::setfill(_T('0'));
-                    e << (int)(wchar_t)*t;
-#else
-                    e << _T("\\x");
-                    e << std::hex; // << std::setw(2) << std::setfill(_T('0'));
-                    e << (int)(u_char)*t;
-#endif
+                    e << "invalid character ";
+                    e << "\\x";
+                    e << std::hex;
+                    e << (int)(unsigned char)*t;
                     e << std::dec;
-                    if (_istprint(*t))
-                        e << _T("(") << *t << _T(")");
+                    if (std::isprint(static_cast<unsigned char>(*t)))
+                        e << "(" << *t << ")";
                     throw e;
                 }
 
-                _TCHAR *numEnd = nullptr;
-                long value = _tcstol(tokenStart, &numEnd, 0);
+                char *numEnd = nullptr;
+                long value = strtol(tokenStart, &numEnd, 0);
                 if (tokenStart == numEnd) {
-                    tstring str = interpretMetaCharacters(tokenStart, t - tokenStart);
+                    std::string str = interpretMetaCharacters(tokenStart, t - tokenStart);
                     o_tokens->push_back(Token(str, false));
                 } else {
                     o_tokens->push_back(
-                        Token(value, tstringi(tokenStart, numEnd - tokenStart)));
+                        Token(value, std::string(tokenStart, numEnd - tokenStart)));
                     t = numEnd;
                 }
                 continue;
             }
         }
-        
+
         if (continueToNextLine)
             continue;
 

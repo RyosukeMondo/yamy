@@ -49,8 +49,8 @@ restart:
                         m_log << "\tHWND:\t" << std::hex << (ULONG_PTR)fot->m_hwndFocus
                         << std::dec << std::endl;
                         m_log << "\tTHREADID:" << fot->m_threadId << std::endl;
-                        m_log << "\tCLASS:\t" << to_tstring(fot->m_className) << std::endl;
-                        m_log << "\tTITLE:\t" << to_tstring(fot->m_titleName) << std::endl;
+                        m_log << "\tCLASS:\t" << fot->m_className << std::endl;
+                        m_log << "\tTITLE:\t" << fot->m_titleName << std::endl;
                         m_log << std::endl;
                         m_focusOfThreads.erase(j);
                     }
@@ -78,9 +78,9 @@ restart:
                     m_log << "\tTHREADID:"
                     << m_currentFocusOfThread->m_threadId << std::endl;
                     m_log << "\tCLASS:\t"
-                    << to_tstring(m_currentFocusOfThread->m_className) << std::endl;
+                    << m_currentFocusOfThread->m_className << std::endl;
                     m_log << "\tTITLE:\t"
-                    << to_tstring(m_currentFocusOfThread->m_titleName) << std::endl;
+                    << m_currentFocusOfThread->m_titleName << std::endl;
                     m_log << std::endl;
                     return;
                 }
@@ -96,8 +96,8 @@ restart:
             m_log << "HWND:\t" << std::hex << reinterpret_cast<ULONG_PTR>(hwndFore)
             << std::dec << std::endl;
             m_log << "THREADID:" << threadId << std::endl;
-            m_log << "CLASS:\t" << to_tstring(className) << std::endl;
-            m_log << "TITLE:\t" << to_tstring(titleName) << std::endl << std::endl;
+            m_log << "CLASS:\t" << className << std::endl;
+            m_log << "TITLE:\t" << titleName << std::endl << std::endl;
             goto restart;
         }
     }

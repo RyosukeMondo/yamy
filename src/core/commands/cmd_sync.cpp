@@ -28,7 +28,7 @@ void Command_Sync::exec(Engine *i_engine, FunctionParam *i_param) const
     uint32_t r = WaitForSingleObject(i_engine->m_eSync, 5000);
     if (r == WAIT_TIMEOUT) {
         Acquire a(&i_engine->m_log, 0);
-        i_engine->m_log << _T(" *FAILED*") << std::endl;
+        i_engine->m_log << " *FAILED*" << std::endl;
     }
     i_engine->m_cs.acquire();
     i_engine->m_isSynchronizing = false;

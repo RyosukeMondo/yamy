@@ -42,8 +42,8 @@ void Command_WindowSetAlpha::exec(Engine *i_engine, FunctionParam *i_param) cons
             if (!i_engine->getWindowSystem()->setLayeredWindowAttributes(hwnd, 0,
                                             (unsigned char)(255 * alpha / 100), LWA_ALPHA)) {
                 Acquire a(&i_engine->m_log, 0);
-                i_engine->m_log << _T("error: &WindowSetAlpha(") << alpha
-                << _T(") failed for yamy::platform::WindowHandle: ") << std::hex
+                i_engine->m_log << "error: &WindowSetAlpha(" << alpha
+                << ") failed for yamy::platform::WindowHandle: " << std::hex
                 << reinterpret_cast<ULONG_PTR>(hwnd) << std::dec << std::endl;
                 return;
             }

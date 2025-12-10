@@ -38,8 +38,8 @@ void Command_WindowMonitor::exec(Engine *i_engine, FunctionParam *i_param) const
 
 tostream &Command_WindowMonitor::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_monitor << _T(", ");
-    i_ost << m_adjustPos << _T(", ");
+    i_ost << m_monitor << ", ";
+    i_ost << m_adjustPos << ", ";
     i_ost << m_adjustSize;
     return i_ost;
 }

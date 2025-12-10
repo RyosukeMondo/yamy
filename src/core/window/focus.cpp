@@ -62,6 +62,6 @@ ATOM Register_focus()
     wc.hCursor       = LoadCursor(nullptr, IDC_IBEAM);
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     wc.lpszMenuName  = nullptr;
-    wc.lpszClassName = _T("mayuFocus");
+    wc.lpszClassName = "mayuFocus";
     return RegisterClass(&wc);
 }

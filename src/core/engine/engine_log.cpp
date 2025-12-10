@@ -28,7 +28,7 @@ void Engine::outputToLog(const Key *i_key, const ModifiedKey &i_mkey,
         if (i_key->getScanCodes()[i].m_flags & ScanCode::E1) m_log << "E1-";
         if (!(i_key->getScanCodes()[i].m_flags & ScanCode::E0E1))
             m_log << "   ";
-        m_log << "0x" << std::hex << std::setw(2) << std::setfill((_TCHAR)'0')
+        m_log << "0x" << std::hex << std::setw(2) << std::setfill('0')
         << static_cast<int>(i_key->getScanCodes()[i].m_scan)
         << std::dec << " ";
     }

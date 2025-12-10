@@ -60,9 +60,9 @@ void Engine::generateKeyEvent(Key *i_key, bool i_doPress, bool i_isByAssign)
 
     {
         Acquire a(&m_log, 1);
-        m_log << _T("\t\t    =>\t");
+        m_log << "\t\t    =>\t";
         if (isAlreadyReleased)
-            m_log << _T("(already released) ");
+            m_log << "(already released) ";
     }
     ModifiedKey mkey(i_key);
     mkey.m_modifier.on(Modifier::Type_Up, !i_doPress);
@@ -81,7 +81,7 @@ void Engine::generateEvents(Current i_c, const Keymap *i_keymap, Key *i_event)
                 i_c.m_keymap->searchAssignment(i_c.m_mkey)) {
         {
             Acquire a(&m_log, 1);
-            m_log << std::endl << _T("           ")
+            m_log << std::endl << "           "
             << i_event->getName() << std::endl;
         }
         generateKeySeqEvents(i_c, keyAssign->m_keySeq, Part_all);
@@ -94,7 +94,7 @@ void Engine::generateModifierEvents(const Modifier &i_mod)
 {
     {
         Acquire a(&m_log, 1);
-        m_log << _T("* Gen Modifiers\t{") << std::endl;
+        m_log << "* Gen Modifiers\t{" << std::endl;
     }
 
     for (int i = Modifier::Type_begin; i < Modifier::Type_BASIC; ++ i) {
@@ -155,7 +155,7 @@ void Engine::generateModifierEvents(const Modifier &i_mod)
 
     {
         Acquire a(&m_log, 1);
-        m_log << _T("\t\t}") << std::endl;
+        m_log << "\t\t}" << std::endl;
     }
 }
 
@@ -212,7 +212,7 @@ void Engine::generateActionEvents(const Current &i_c, const Action *i_a,
 
         {
             Acquire a(&m_log, 1);
-            m_log << _T("\t\t     >\t") << af->m_functionData;
+            m_log << "\t\t     >\t" << af->m_functionData;
         }
 
         FunctionParam param;
@@ -265,7 +265,7 @@ void Engine::generateKeyboardEvents(const Current &i_c)
     if (++ m_generateKeyboardEventsRecursionGuard ==
             MAX_GENERATE_KEYBOARD_EVENTS_RECURSION_COUNT) {
         Acquire a(&m_log);
-        m_log << _T("error: too deep keymap recursion.  there may be a loop.")
+        m_log << "error: too deep keymap recursion.  there may be a loop."
         << std::endl;
         return;
     }
@@ -324,7 +324,7 @@ void Engine::beginGeneratingKeyboardEvents(
 
         {
             Acquire a(&m_log, 1);
-            m_log << _T("* substitute") << std::endl;
+            m_log << "* substitute" << std::endl;
         }
         outputToLog(mkey.m_key, cnew.m_mkey, 1);
     }

@@ -30,8 +30,8 @@ void Command_WindowResizeTo::exec(Engine *i_engine, FunctionParam *i_param) cons
 
 tostream &Command_WindowResizeTo::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_width << _T(", ");
-    i_ost << m_height << _T(", ");
+    i_ost << m_width << ", ";
+    i_ost << m_height << ", ";
     i_ost << m_twt;
     return i_ost;
 }

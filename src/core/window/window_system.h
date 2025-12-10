@@ -49,11 +49,11 @@ public:
     virtual bool isMDIChild(WindowHandle window) = 0;
     virtual bool isChild(WindowHandle window) = 0;
     virtual WindowShowCmd getShowCommand(WindowHandle window) = 0;
-    virtual tstring getClipboardText() = 0;
-    virtual bool setClipboardText(const tstring& text) = 0;
-    
-    virtual tstring getClassName(WindowHandle window) = 0;
-    virtual tstring getTitleName(WindowHandle window) = 0;
+    virtual std::string getClipboardText() = 0;
+    virtual bool setClipboardText(const std::string& text) = 0;
+
+    virtual std::string getClassName(WindowHandle window) = 0;
+    virtual std::string getTitleName(WindowHandle window) = 0;
     virtual bool isConsoleWindow(WindowHandle window) = 0;
     virtual void setForegroundWindow(WindowHandle window) = 0;
 
@@ -71,7 +71,7 @@ public:
     virtual bool getChildWindowRect(WindowHandle window, WindowRect* outRect) = 0;
     virtual bool getWorkArea(WindowRect* outRect) = 0;
     virtual bool postMessage(WindowHandle window, unsigned int message, uintptr_t wParam, intptr_t lParam) = 0;
-    virtual unsigned int registerWindowMessage(const tstring& name) = 0;
+    virtual unsigned int registerWindowMessage(const std::string& name) = 0;
     
     // Window Styling and Layering
     virtual bool setWindowZOrder(WindowHandle window, ZOrder order) = 0;
@@ -86,7 +86,7 @@ public:
     virtual bool enumerateWindows(WindowEnumCallback callback) = 0;
 
     // Shell
-    virtual int shellExecute(const tstring& operation, const tstring& file, const tstring& parameters, const tstring& directory, int showCmd) = 0;
+    virtual int shellExecute(const std::string& operation, const std::string& file, const std::string& parameters, const std::string& directory, int showCmd) = 0;
 
     // IPC / Pipe wrappers
     virtual bool disconnectNamedPipe(void* handle) = 0;
@@ -94,15 +94,15 @@ public:
     virtual bool writeFile(void* handle, const void* buffer, unsigned int bytesToWrite, unsigned int* bytesWritten, void* overlapped) = 0;
 
     // IPC (Mutex/Shared Memory)
-    virtual void* openMutex(const tstring& name) = 0;
-    virtual void* openFileMapping(const tstring& name) = 0;
+    virtual void* openMutex(const std::string& name) = 0;
+    virtual void* openFileMapping(const std::string& name) = 0;
     virtual void* mapViewOfFile(void* handle) = 0;
     virtual bool unmapViewOfFile(void* address) = 0;
     virtual void closeHandle(void* handle) = 0;
     virtual bool sendMessageTimeout(WindowHandle window, unsigned int msg, uintptr_t wParam, intptr_t lParam, unsigned int flags, unsigned int timeout, uintptr_t* result) = 0;
 
     // Dynamic Library
-    virtual void* loadLibrary(const tstring& path) = 0;
+    virtual void* loadLibrary(const std::string& path) = 0;
     virtual void* getProcAddress(void* module, const std::string& procName) = 0;
     virtual bool freeLibrary(void* module) = 0;
 };

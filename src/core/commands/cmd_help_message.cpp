@@ -38,7 +38,7 @@ void Command_HelpMessage::exec(Engine *i_engine, FunctionParam *i_param) const
 
 tostream &Command_HelpMessage::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_title << _T(", ");
+    i_ost << m_title << ", ";
     i_ost << m_message;
     return i_ost;
 }

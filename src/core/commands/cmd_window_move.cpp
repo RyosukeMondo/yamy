@@ -35,8 +35,8 @@ void Command_WindowMove::exec(Engine *i_engine, FunctionParam *i_param) const
 
 tostream &Command_WindowMove::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_dx << _T(", ");
-    i_ost << m_dy << _T(", ");
+    i_ost << m_dx << ", ";
+    i_ost << m_dy << ", ";
     i_ost << m_twt;
     return i_ost;
 }

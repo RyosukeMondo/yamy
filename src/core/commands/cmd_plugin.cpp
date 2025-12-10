@@ -31,17 +31,15 @@ public:
     bool load(const std::string &i_dllName, const std::string &i_funcName,
               const std::string &i_funcParam, tomsgstream &i_log) {
 
-        tstring tDllName = to_tstring(i_dllName);
-
-        m_dll = m_ws->loadLibrary(to_UTF_8(_T("Plugins\\") + tDllName));
+        m_dll = m_ws->loadLibrary("Plugins\\" + i_dllName);
         if (!m_dll) {
-            m_dll = m_ws->loadLibrary(to_UTF_8(_T("Plugin\\") + tDllName));
+            m_dll = m_ws->loadLibrary("Plugin\\" + i_dllName);
             if (!m_dll) {
                 m_dll = m_ws->loadLibrary(i_dllName);
                 if (!m_dll) {
                     Acquire a(&i_log);
                     i_log << std::endl;
-                    i_log << _T("error: &PlugIn() failed to load ") << tDllName << std::endl;
+                    i_log << "error: &PlugIn() failed to load " << i_dllName << std::endl;
                     return false;
                 }
             }
@@ -63,8 +61,8 @@ public:
                     if (!m_func) {
                         Acquire a(&i_log);
                         i_log << std::endl;
-                        i_log << _T("error: &PlugIn() failed to find function: ")
-                        << to_tstring(baseName) << std::endl;
+                        i_log << "error: &PlugIn() failed to find function: "
+                        << baseName << std::endl;
                         return false;
                     }
                 }
@@ -144,7 +142,7 @@ void Command_PlugIn::exec(Engine *i_engine, FunctionParam *i_param) const
             delete plugin;
             Acquire a(&i_engine->m_log);
             i_engine->m_log << std::endl;
-            i_engine->m_log << _T("error: &PlugIn() failed to create thread.");
+            i_engine->m_log << "error: &PlugIn() failed to create thread.";
         }
         return;
     } else
@@ -153,9 +151,9 @@ void Command_PlugIn::exec(Engine *i_engine, FunctionParam *i_param) const
 
 tostream &Command_PlugIn::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_dllName << _T(", ");
-    i_ost << m_funcName << _T(", ");
-    i_ost << m_funcParam << _T(", ");
+    i_ost << m_dllName << ", ";
+    i_ost << m_funcName << ", ";
+    i_ost << m_funcParam << ", ";
     i_ost << m_doesCreateThread;
     return i_ost;
 }

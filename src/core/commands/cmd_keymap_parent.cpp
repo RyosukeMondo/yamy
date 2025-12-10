@@ -17,7 +17,7 @@ void Command_KeymapParent::exec(Engine *i_engine, FunctionParam *i_param) const
 
     {
         Acquire a(&i_engine->m_log, 1);
-        i_engine->m_log << _T("(") << c.m_keymap->getName() << _T(")") << std::endl;
+        i_engine->m_log << "(" << c.m_keymap->getName() << ")" << std::endl;
     }
     i_param->m_doesNeedEndl = false;
     i_engine->generateKeyboardEvents(c);

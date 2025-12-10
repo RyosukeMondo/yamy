@@ -34,8 +34,8 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
     if (!i_param->m_isPressed)
         return;
 
-    std::string classNameUtf8 = to_UTF_8(m_className.eval());
-    std::string titleNameUtf8 = to_UTF_8(m_titleName.eval());
+    std::string classNameUtf8 = m_className.eval();
+    std::string titleNameUtf8 = m_titleName.eval();
 
     FindWindowData data(i_engine->getWindowSystem(), classNameUtf8, titleNameUtf8);
 
@@ -67,17 +67,15 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
         setForegroundWindow(data.found);
     } else {
         // log warning
-        tstring className = to_tstring(classNameUtf8);
-        tstring titleName = to_tstring(titleNameUtf8);
         Acquire a(&i_engine->m_log, 0);
-        i_engine->m_log << _T("Window not found: class='") << className << _T("', title='") << titleName << _T("'") << std::endl;
+        i_engine->m_log << "Window not found: class='" << classNameUtf8 << "', title='" << titleNameUtf8 << "'" << std::endl;
     }
 }
 
 tostream &Command_SetForegroundWindow::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_className << _T(", ");
-    i_ost << m_titleName << _T(", ");
+    i_ost << m_className << ", ";
+    i_ost << m_titleName << ", ";
     i_ost << m_logicalOp;
     return i_ost;
 }

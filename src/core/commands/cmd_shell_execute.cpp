@@ -32,15 +32,15 @@ void Command_ShellExecute::exec(Engine *i_engine, FunctionParam *i_param) const
                 WM_APP_engineNotify, EngineNotify_shellExecute, 0);
 }
 
-tostream &Command_ShellExecute::output(tostream &i_ost) const
+std::ostream &Command_ShellExecute::output(std::ostream &i_ost) const
 {
-    i_ost << _T("&") << to_tstring(getName()) << _T("(");
-    i_ost << m_operation << _T(", ");
-    i_ost << m_file << _T(", ");
-    i_ost << m_parameters << _T(", ");
-    i_ost << m_directory << _T(", ");
+    i_ost << "&" << getName() << "(";
+    i_ost << m_operation << ", ";
+    i_ost << m_file << ", ";
+    i_ost << m_parameters << ", ";
+    i_ost << m_directory << ", ";
     i_ost << m_showCommand;
-    i_ost << _T(") ");
+    i_ost << ") ";
     return i_ost;
 }
 
@@ -64,36 +64,36 @@ void Command_ShellExecute::executeOnMainThread(Engine *i_engine)
 
     struct ErrorEntry {
         int m_type;
-        const _TCHAR *m_name;
+        const char *m_name;
     };
     static const ErrorEntry errorTable[] = {
-        { 0, _T("The operating system is out of memory or resources.") },
-        { ERROR_FILE_NOT_FOUND, _T("The specified file was not found.") },
-        { ERROR_PATH_NOT_FOUND, _T("The specified path was not found.") },
-        { ERROR_BAD_FORMAT, _T("The .exe file is invalid ")
-          _T("(non-Win32R .exe or error in .exe image).") },
+        { 0, "The operating system is out of memory or resources." },
+        { ERROR_FILE_NOT_FOUND, "The specified file was not found." },
+        { ERROR_PATH_NOT_FOUND, "The specified path was not found." },
+        { ERROR_BAD_FORMAT, "The .exe file is invalid "
+          "(non-Win32R .exe or error in .exe image)." },
         { SE_ERR_ACCESSDENIED,
-          _T("The operating system denied access to the specified file.") },
+          "The operating system denied access to the specified file." },
         { SE_ERR_ASSOCINCOMPLETE,
-          _T("The file name association is incomplete or invalid.") },
+          "The file name association is incomplete or invalid." },
         { SE_ERR_DDEBUSY,
-          _T("The DDE transaction could not be completed ")
-          _T("because other DDE transactions were being processed. ") },
-        { SE_ERR_DDEFAIL, _T("The DDE transaction failed.") },
-        { SE_ERR_DDETIMEOUT, _T("The DDE transaction could not be completed ")
-          _T("because the request timed out.") },
+          "The DDE transaction could not be completed "
+          "because other DDE transactions were being processed. " },
+        { SE_ERR_DDEFAIL, "The DDE transaction failed." },
+        { SE_ERR_DDETIMEOUT, "The DDE transaction could not be completed "
+          "because the request timed out." },
         { SE_ERR_DLLNOTFOUND,
-          _T("The specified dynamic-link library was not found.") },
-        { SE_ERR_FNF, _T("The specified file was not found.") },
-        { SE_ERR_NOASSOC, _T("There is no application associated ")
-          _T("with the given file name extension.") },
+          "The specified dynamic-link library was not found." },
+        { SE_ERR_FNF, "The specified file was not found." },
+        { SE_ERR_NOASSOC, "There is no application associated "
+          "with the given file name extension." },
         { SE_ERR_OOM,
-          _T("There was not enough memory to complete the operation.") },
-        { SE_ERR_PNF, _T("The specified path was not found.") },
-        { SE_ERR_SHARE, _T("A sharing violation occurred.") },
+          "There was not enough memory to complete the operation." },
+        { SE_ERR_PNF, "The specified path was not found." },
+        { SE_ERR_SHARE, "A sharing violation occurred." },
     };
 
-    tstring errorMessage(_T("Unknown error."));
+    std::string errorMessage("Unknown error.");
 
     for (size_t i = 0; i < NUMBER_OF(errorTable); ++ i)
         if (errorTable[i].m_type == r) {
@@ -102,5 +102,5 @@ void Command_ShellExecute::executeOnMainThread(Engine *i_engine)
         }
 
     Acquire b(&i_engine->m_log, 0);
-    i_engine->m_log << _T("error: ") << fd << _T(": ") << errorMessage << std::endl;
+    i_engine->m_log << "error: " << fd << ": " << errorMessage << std::endl;
 }

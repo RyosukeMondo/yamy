@@ -17,10 +17,10 @@ void Command_HelpVariable::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!i_param->m_isPressed)
         return;
 
-    _TCHAR buf[20];
-    _sntprintf(buf, NUMBER_OF(buf), _T("%d"), i_engine->m_variable);
+    char buf[20];
+    snprintf(buf, NUMBER_OF(buf), "%d", i_engine->m_variable);
 
-    i_engine->m_helpTitle = to_tstring(m_title.eval());
+    i_engine->m_helpTitle = m_title.eval();
     i_engine->m_helpMessage = buf;
     i_engine->getWindowSystem()->postMessage(i_engine->getAssociatedWndow(), WM_APP_engineNotify,
                 EngineNotify_helpMessage, true);

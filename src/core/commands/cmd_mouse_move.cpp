@@ -27,7 +27,7 @@ void Command_MouseMove::exec(Engine *i_engine, FunctionParam *i_param) const
 
 tostream &Command_MouseMove::outputArgs(tostream &i_ost) const
 {
-    i_ost << m_dx << _T(", ");
+    i_ost << m_dx << ", ";
     i_ost << m_dy;
     return i_ost;
 }

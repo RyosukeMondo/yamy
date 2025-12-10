@@ -9,7 +9,7 @@ void Command_InvestigateCommand::exec(Engine *i_engine, FunctionParam *i_param) 
     Acquire a(&i_engine->m_log, 0);
     g_hookData->m_doesNotifyCommand = !g_hookData->m_doesNotifyCommand;
     if (g_hookData->m_doesNotifyCommand)
-        i_engine->m_log << _T(" begin") << std::endl;
+        i_engine->m_log << " begin" << std::endl;
     else
-        i_engine->m_log << _T(" end") << std::endl;
+        i_engine->m_log << " end" << std::endl;
 }

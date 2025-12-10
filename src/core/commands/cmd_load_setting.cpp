@@ -19,25 +19,25 @@ void Command_LoadSetting::exec(Engine *i_engine, FunctionParam *i_param) const
             return;
         }
 
-        tregex split(_T("^([^;]*);([^;]*);(.*)$"));
-        tstringi dot_mayu;
+        std::regex split("^([^;]*);([^;]*);(.*)$");
+        std::string dot_mayu;
         for (size_t i = 0; i < MAX_MAYU_REGISTRY_ENTRIES; ++ i) {
-            _TCHAR buf[100];
-            _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), (int)i);
+            char buf[100];
+            snprintf(buf, NUMBER_OF(buf), ".mayu%d", (int)i);
             if (!i_engine->m_configStore->read(buf, &dot_mayu))
                 break;
 
-            tsmatch what;
+            std::smatch what;
             if (std::regex_match(dot_mayu, what, split) &&
-                    what.str(1) == to_tstring(i_name.eval())) {
-                i_engine->m_configStore->write(_T(".mayuIndex"), (uint32_t)i);
+                    what.str(1) == i_name.eval()) {
+                i_engine->m_configStore->write(".mayuIndex", (uint32_t)i);
                 goto success;
             }
         }
 
         {
             Acquire a(&i_engine->m_log, 0);
-            i_engine->m_log << _T("unknown setting name: ") << i_name;
+            i_engine->m_log << "unknown setting name: " << i_name;
         }
         return;
 
