@@ -1,0 +1,178 @@
+# Valgrind suppression file for YAMY
+# Use with: valgrind --suppressions=valgrind.supp ./build/bin/yamy_leak_test
+
+# X11 library known issues - these are library internals, not application leaks
+{
+   X11_XOpenDisplay_init
+   Memcheck:Leak
+   ...
+   fun:XOpenDisplay
+}
+
+{
+   X11_XInitExtension
+   Memcheck:Leak
+   ...
+   fun:XInitExtension
+}
+
+{
+   X11_XAddExtension
+   Memcheck:Leak
+   ...
+   fun:XAddExtension
+}
+
+{
+   X11_XGetDefault
+   Memcheck:Leak
+   ...
+   fun:XGetDefault
+}
+
+{
+   X11_xcb_connect
+   Memcheck:Leak
+   ...
+   fun:xcb_connect*
+}
+
+{
+   X11_XRRGetScreenResources
+   Memcheck:Leak
+   ...
+   fun:XRRGetScreenResources
+}
+
+# Glib/GIO known issues
+{
+   glib_type_init
+   Memcheck:Leak
+   ...
+   fun:g_type_init*
+}
+
+{
+   glib_thread_init
+   Memcheck:Leak
+   ...
+   fun:g_thread_init*
+}
+
+# pthread known issues
+{
+   pthread_create_leak
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:pthread_create*
+}
+
+# dlopen issues - dynamic library loading
+{
+   dlopen_leak
+   Memcheck:Leak
+   ...
+   fun:dlopen*
+}
+
+{
+   dl_init_leak
+   Memcheck:Leak
+   ...
+   fun:_dl_init
+}
+
+# Qt5 known issues (if using Qt GUI)
+{
+   qt5_qapplication_init
+   Memcheck:Leak
+   ...
+   fun:*QApplication*
+}
+
+{
+   qt5_qguiapplication_init
+   Memcheck:Leak
+   ...
+   fun:*QGuiApplication*
+}
+
+{
+   qt5_qcoreapplication_init
+   Memcheck:Leak
+   ...
+   fun:*QCoreApplication*
+}
+
+# XRandr known issues
+{
+   xrandr_get_screen_info
+   Memcheck:Leak
+   ...
+   fun:XRRGetScreenInfo
+}
+
+{
+   xrandr_get_providers
+   Memcheck:Leak
+   ...
+   fun:XRRGetProviders
+}
+
+# uinput/evdev issues
+{
+   evdev_open
+   Memcheck:Leak
+   ...
+   fun:open
+   ...
+   fun:*evdev*
+}
+
+# libudev issues
+{
+   udev_enumerate
+   Memcheck:Leak
+   ...
+   fun:udev_enumerate*
+}
+
+{
+   udev_device
+   Memcheck:Leak
+   ...
+   fun:udev_device*
+}
+
+# C++ standard library known issues
+{
+   std_locale
+   Memcheck:Leak
+   ...
+   fun:*std*locale*
+}
+
+{
+   std_string_internal
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:*std*string*
+}
+
+# GCC runtime
+{
+   gcc_eh_alloc
+   Memcheck:Leak
+   ...
+   fun:__cxa_allocate_exception
+}
+
+# Google Test framework
+{
+   gtest_init
+   Memcheck:Leak
+   ...
+   fun:*testing*internal*
+}

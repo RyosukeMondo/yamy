@@ -34,6 +34,59 @@ To run the application (which will print stub messages):
 ./bin/yamy_stub
 ```
 
+## Memory Leak Detection with AddressSanitizer
+
+YAMY supports building with AddressSanitizer (ASAN) for detecting memory leaks and other memory errors.
+
+### Building with ASAN
+
+```bash
+# Clean build with ASAN enabled
+rm -rf build_asan
+cmake -B build_asan -DENABLE_ASAN=ON
+cmake --build build_asan
+```
+
+### Running Leak Tests
+
+```bash
+# Run the leak test suite
+./build_asan/bin/yamy_leak_test
+
+# Or use CTest
+cd build_asan && ctest -R yamy_leak_test --output-on-failure
+```
+
+ASAN will automatically report any memory leaks at program exit.
+
+### Using Valgrind (Alternative)
+
+For systems where ASAN is not available, you can use Valgrind:
+
+```bash
+# Build without ASAN (normal build)
+cmake -B build ..
+cmake --build build
+
+# Run with Valgrind (use suppression file to filter library issues)
+valgrind --leak-check=full --suppressions=valgrind.supp ./build/bin/yamy_leak_test
+```
+
+### ASAN Environment Variables
+
+Useful ASAN runtime options:
+
+```bash
+# Detect memory leaks (enabled by default)
+ASAN_OPTIONS=detect_leaks=1 ./build_asan/bin/yamy_leak_test
+
+# Get more detailed stack traces
+ASAN_OPTIONS=malloc_context_size=30 ./build_asan/bin/yamy_leak_test
+
+# Abort on first error (useful for debugging)
+ASAN_OPTIONS=halt_on_error=1 ./build_asan/bin/yamy_leak_test
+```
+
 ## Note
 
 The current Linux implementation is a stub. It validates that the platform abstraction layer (interfaces) can be compiled and linked against the new Linux backend stubs.

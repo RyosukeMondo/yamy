@@ -11,6 +11,24 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_UNICODE ON) # For Windows Unicode support if using CMake 3.20+, else we define UNICODE manually
 
+# AddressSanitizer option (Linux/macOS only)
+option(ENABLE_ASAN "Enable AddressSanitizer for memory error detection" OFF)
+
+if(ENABLE_ASAN)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "AddressSanitizer enabled")
+        set(ASAN_FLAGS "-fsanitize=address -fno-omit-frame-pointer -g")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ASAN_FLAGS}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ASAN_FLAGS}")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ASAN_FLAGS}")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ASAN_FLAGS}")
+        # Ensure symbols are available for ASAN stack traces
+        add_compile_definitions(ASAN_ENABLED)
+    else()
+        message(WARNING "ENABLE_ASAN is only supported with GCC or Clang")
+    endif()
+endif()
+
 # Output Directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -723,5 +741,61 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
 
         add_test(NAME yamy_keyremap_test COMMAND yamy_keyremap_test)
+
+        # -----------------------------------------------------------------------------
+        # Target: yamy_leak_test (Memory Leak Detection Tests)
+        # Tests for memory leaks in platform components using AddressSanitizer
+        # Run with: cmake -B build -DENABLE_ASAN=ON && cmake --build build
+        # -----------------------------------------------------------------------------
+        set(LEAK_TEST_SOURCES
+            tests/leak_test.cpp
+            src/platform/linux/window_system_linux.cpp
+            src/platform/linux/window_system_linux_queries.cpp
+            src/platform/linux/window_system_linux_manipulation.cpp
+            src/platform/linux/window_system_linux_hierarchy.cpp
+            src/platform/linux/window_system_linux_mouse.cpp
+            src/platform/linux/window_system_linux_monitor.cpp
+            src/platform/linux/x11_connection.cpp
+            src/platform/linux/input_injector_linux.cpp
+            src/platform/linux/input_hook_linux.cpp
+            src/platform/linux/input_driver_linux.cpp
+            src/platform/linux/device_manager_linux.cpp
+            src/platform/linux/keycode_mapping.cpp
+            src/utils/metrics.cpp
+        )
+
+        add_executable(yamy_leak_test
+            ${LEAK_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_leak_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/core/input
+            src/utils
+            src/platform/linux
+        )
+
+        target_link_libraries(yamy_leak_test PRIVATE
+            pthread
+            ${X11_LIBRARIES}
+            ${XRANDR_LIBRARIES}
+            ${UDEV_LIBRARIES}
+        )
+
+        add_test(NAME yamy_leak_test COMMAND yamy_leak_test)
+
+        # Add a custom target for running leak tests with ASAN
+        if(ENABLE_ASAN)
+            add_custom_target(run_leak_test
+                COMMAND ${CMAKE_CTEST_COMMAND} -R yamy_leak_test --output-on-failure
+                DEPENDS yamy_leak_test
+                COMMENT "Running memory leak tests with AddressSanitizer"
+            )
+        endif()
     endif()
 endif()
