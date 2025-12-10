@@ -455,7 +455,7 @@
   - _Requirements: NF-1 Performance_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Optimize keycode mapping - Step 1: Create static std::unordered_map<uint16_t, KeyCode> mapping Windows scancodes to X11 keycodes, Step 2: Initialize map at static initialization time, Step 3: Use const lookup in injectKey methods, Step 4: Benchmark and ensure <1μs lookup time, Step 5: Cover all 100+ common keys | Restrictions: Use efficient data structure, Ensure complete key coverage, Keep lookup time minimal | Success: Keycode lookup <1μs, All common keys covered, Map initialized efficiently, No runtime overhead, Both directions supported if needed | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.3.6 Add performance metrics collection
+- [x] 1.3.6 Add performance metrics collection
   - File: src/utils/metrics.cpp, src/core/engine.cpp
   - Collect latency metrics for key event processing
   - Report average, p95, p99 latencies
