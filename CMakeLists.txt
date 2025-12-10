@@ -565,5 +565,151 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         # Add test to CTest
         add_test(NAME yamy_linux_test COMMAND yamy_linux_test)
+
+        # -----------------------------------------------------------------------------
+        # Target: yamy_keyremap_test (Key Remapping Integration Tests)
+        # Tests the full key remapping flow including config loading and keymap resolution
+        # This is a full integration test using the complete core module
+        # -----------------------------------------------------------------------------
+        set(KEYREMAP_TEST_CORE_SOURCES
+            src/core/input/keyboard.cpp
+            src/core/input/keymap.cpp
+            src/core/input/modifier_state.cpp
+            src/core/input/vkeytable.cpp
+            src/core/settings/parser.cpp
+            src/core/settings/setting.cpp
+            src/core/settings/setting_loader.cpp
+            src/core/functions/strexpr.cpp
+            src/core/functions/function.cpp
+            src/core/functions/function_creator.cpp
+            src/core/window/focus.cpp
+            src/core/window/layoutmanager.cpp
+            src/core/window/target.cpp
+            src/core/engine/engine.cpp
+            src/core/engine/engine_lifecycle.cpp
+            src/core/engine/engine_input.cpp
+            src/core/engine/engine_modifier.cpp
+            src/core/engine/engine_generator.cpp
+            src/core/engine/engine_focus.cpp
+            src/core/engine/engine_window.cpp
+            src/core/engine/engine_setting.cpp
+            src/core/engine/engine_log.cpp
+            src/utils/stringtool.cpp
+            src/utils/compiler_specific_func.cpp
+            src/platform/linux/sync_linux.cpp
+            src/platform/linux/thread_linux.cpp
+            src/platform/linux/hook_data_linux.cpp
+            src/platform/linux/window_system_linux.cpp
+            src/platform/linux/window_system_linux_queries.cpp
+            src/platform/linux/window_system_linux_manipulation.cpp
+            src/platform/linux/window_system_linux_hierarchy.cpp
+            src/platform/linux/window_system_linux_mouse.cpp
+            src/platform/linux/window_system_linux_monitor.cpp
+            src/platform/linux/input_injector_linux.cpp
+            src/platform/linux/keycode_mapping.cpp
+        )
+
+        # Command sources needed for function_creator linkage
+        set(KEYREMAP_TEST_CMD_SOURCES
+            src/core/commands/cmd_keymap_parent.cpp
+            src/core/commands/cmd_keymap_window.cpp
+            src/core/commands/cmd_other_window_class.cpp
+            src/core/commands/cmd_prefix.cpp
+            src/core/commands/cmd_keymap.cpp
+            src/core/commands/cmd_sync.cpp
+            src/core/commands/cmd_toggle.cpp
+            src/core/commands/cmd_edit_next_modifier.cpp
+            src/core/commands/cmd_variable.cpp
+            src/core/commands/cmd_repeat.cpp
+            src/core/commands/cmd_undefined.cpp
+            src/core/commands/cmd_ignore.cpp
+            src/core/commands/cmd_post_message.cpp
+            src/core/commands/cmd_wait.cpp
+            src/core/commands/cmd_vk.cpp
+            src/core/commands/cmd_default.cpp
+            src/core/commands/cmd_keymap_prev_prefix.cpp
+            src/core/commands/cmd_load_setting.cpp
+            src/core/commands/cmd_shell_execute.cpp
+            src/core/commands/cmd_set_foreground_window.cpp
+            src/core/commands/cmd_investigate_command.cpp
+            src/core/commands/cmd_mayu_dialog.cpp
+            src/core/commands/cmd_describe_bindings.cpp
+            src/core/commands/cmd_help_message.cpp
+            src/core/commands/cmd_help_variable.cpp
+            src/core/commands/cmd_window_raise.cpp
+            src/core/commands/cmd_window_lower.cpp
+            src/core/commands/cmd_window_minimize.cpp
+            src/core/commands/cmd_window_maximize.cpp
+            src/core/commands/cmd_window_h_maximize.cpp
+            src/core/commands/cmd_window_v_maximize.cpp
+            src/core/commands/cmd_window_hv_maximize.cpp
+            src/core/commands/cmd_window_move.cpp
+            src/core/commands/cmd_window_move_to.cpp
+            src/core/commands/cmd_window_move_visibly.cpp
+            src/core/commands/cmd_window_monitor_to.cpp
+            src/core/commands/cmd_window_monitor.cpp
+            src/core/commands/cmd_window_cling_to_left.cpp
+            src/core/commands/cmd_window_cling_to_right.cpp
+            src/core/commands/cmd_window_cling_to_top.cpp
+            src/core/commands/cmd_window_cling_to_bottom.cpp
+            src/core/commands/cmd_window_close.cpp
+            src/core/commands/cmd_window_toggle_top_most.cpp
+            src/core/commands/cmd_window_identify.cpp
+            src/core/commands/cmd_window_set_alpha.cpp
+            src/core/commands/cmd_window_redraw.cpp
+            src/core/commands/cmd_window_resize_to.cpp
+            src/core/commands/cmd_mouse_move.cpp
+            src/core/commands/cmd_mouse_wheel.cpp
+            src/core/commands/cmd_clipboard_change_case.cpp
+            src/core/commands/cmd_clipboard_upcase_word.cpp
+            src/core/commands/cmd_clipboard_downcase_word.cpp
+            src/core/commands/cmd_clipboard_copy.cpp
+            src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
+            src/core/commands/cmd_emacs_edit_kill_line_func.cpp
+            src/core/commands/cmd_log_clear.cpp
+            src/core/commands/cmd_recenter.cpp
+            src/core/commands/cmd_direct_sstp.cpp
+            src/core/commands/cmd_plugin.cpp
+            src/core/commands/cmd_set_ime_status.cpp
+            src/core/commands/cmd_set_ime_string.cpp
+            src/core/commands/cmd_mouse_hook.cpp
+            src/core/commands/cmd_cancel_prefix.cpp
+        )
+
+        add_executable(yamy_keyremap_test
+            src/tests/platform/test_main_linux.cpp
+            src/tests/platform/key_remap_linux_test.cpp
+            ${KEYREMAP_TEST_CORE_SOURCES}
+            ${KEYREMAP_TEST_CMD_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_keyremap_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/core/engine
+            src/core/settings
+            src/core/input
+            src/core/window
+            src/core/functions
+            src/core/commands
+            src/sync
+            src/misc
+            src/utils
+            src/app
+            src/ui
+            src/platform/linux
+        )
+
+        target_link_libraries(yamy_keyremap_test PRIVATE
+            pthread
+            ${X11_LIBRARIES}
+            ${XRANDR_LIBRARIES}
+        )
+
+        add_test(NAME yamy_keyremap_test COMMAND yamy_keyremap_test)
     endif()
 endif()
