@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/linux-complete-port/requirements.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-10T15:14:18.654Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765379658651_3hu5b46oy",
+      "approvalTitle": "Spec: Requirements (Linux Complete Port)"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-12-10T15:31:54.153Z",
+      "trigger": "approved",
+      "approvalId": "approval_1765379658651_3hu5b46oy",
+      "approvalTitle": "Spec: Requirements (Linux Complete Port)"
+    }
+  ]
+}

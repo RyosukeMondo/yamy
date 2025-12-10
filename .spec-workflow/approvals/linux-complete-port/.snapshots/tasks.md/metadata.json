@@ -1,0 +1,30 @@
+{
+  "filePath": ".spec-workflow/specs/linux-complete-port/tasks.md",
+  "currentVersion": 3,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-10T15:47:52.414Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765381672409_e5qwqfs9e",
+      "approvalTitle": "Tasks Document - Linux Complete Port (121 tasks)"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-12-10T15:53:10.044Z",
+      "trigger": "revision_requested",
+      "approvalId": "approval_1765381672409_e5qwqfs9e",
+      "approvalTitle": "Tasks Document - Linux Complete Port (121 tasks)"
+    },
+    {
+      "version": 3,
+      "filename": "snapshot-003.json",
+      "timestamp": "2025-12-10T16:02:50.757Z",
+      "trigger": "approved",
+      "approvalId": "approval_1765382529472_5fil1opt7",
+      "approvalTitle": "Tasks Document - All 121 tasks fully expanded"
+    }
+  ]
+}

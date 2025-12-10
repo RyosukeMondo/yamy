@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/linux-complete-port/design.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-10T15:14:18.743Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765379658741_zcu5qvrda",
+      "approvalTitle": "Spec: Design (Linux Complete Port)"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-12-10T15:31:53.379Z",
+      "trigger": "approved",
+      "approvalId": "approval_1765379658741_zcu5qvrda",
+      "approvalTitle": "Spec: Design (Linux Complete Port)"
+    }
+  ]
+}
