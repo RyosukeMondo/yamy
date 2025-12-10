@@ -471,7 +471,7 @@
   - _Requirements: NF-4 Reliability_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with memory debugging expertise | Task: Add memory leak detection - Step 1: Add CMake option to enable AddressSanitizer (ENABLE_ASAN), Step 2: Add compiler flags -fsanitize=address -fno-omit-frame-pointer when enabled, Step 3: Create leak test running full lifecycle (init, process events, cleanup), Step 4: Run test under ASAN and verify no leaks, Step 5: Document ASAN usage in docs, Step 6: Add Valgrind suppression file if needed | Restrictions: Ensure ASAN build works, Test covers all code paths, Fix any leaks found, Don't break release build | Success: ASAN build compiles, Leak test passes with no leaks, X11 resources freed properly, Platform code leak-free, Documentation updated | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.3.8 Add automated regression tests
+- [-] 1.3.8 Add automated regression tests
   - File: tests/regression/regression_suite.cpp
   - Create test suite covering all platform functionality
   - Run tests in CI pipeline
