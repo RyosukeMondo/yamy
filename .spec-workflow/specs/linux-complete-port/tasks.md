@@ -617,7 +617,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create metadata editor - Create QDialog with fields: Name (QLineEdit), Description (QTextEdit), Author (QLineEdit), Tags (QLineEdit comma-separated), Display dates as read-only labels, Save button updates metadata, Cancel button discards changes, Show from ConfigManagerDialog context menu or double-click | Restrictions: Validate name not empty, Handle missing metadata gracefully, Update modifiedDate automatically | Success: Metadata editor displays current values, All fields editable except dates, Save updates metadata, Validation prevents empty name, Dates updated automatically | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.2.7 Add config search and filter
+- [x] 2.2.7 Add config search and filter
   - File: src/ui/qt/config_manager_dialog.cpp
   - Search configs by name, description, tags
   - Filter by validation status
