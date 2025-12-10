@@ -43,12 +43,12 @@ void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
         // abs(i_hookParam) == 2: target is window under mouse cursor
         // otherwise: target is current focus window
         if (m_hookParam == 2 || m_hookParam == -2)
-            target = (yamy::platform::WindowHandle)i_engine->getWindowSystem()->windowFromPoint(wp);
+            target = i_engine->getWindowSystem()->windowFromPoint(wp);
         else
             target = i_param->m_hwnd;
 
         g_hookData->m_hwndMouseHookTarget =
-            (DWORD)((ULONG_PTR)getToplevelWindow(static_cast<HWND>(target), &isMDI));
+            (uint32_t)((uintptr_t)getToplevelWindow(static_cast<HWND>(target), &isMDI));
         break;
     }
     default:

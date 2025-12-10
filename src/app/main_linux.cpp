@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     yamy::platform::IWindowSystem* windowSystem = yamy::platform::createWindowSystem();
 
     std::cout << "Initializing Input Injector..." << std::endl;
-    yamy::platform::IInputInjector* inputInjector = yamy::platform::createInputInjector();
+    yamy::platform::IInputInjector* inputInjector = yamy::platform::createInputInjector(windowSystem);
 
     std::cout << "Initializing Input Hook..." << std::endl;
     yamy::platform::IInputHook* inputHook = yamy::platform::createInputHook();
