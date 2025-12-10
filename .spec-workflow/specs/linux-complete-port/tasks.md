@@ -67,7 +67,7 @@
   - _Requirements: FR-1.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Parser uses tstring for token storage and comparisons, Convert to std::string - Step 1: Update token storage from std::vector<tstring> to std::vector<std::string>, Step 2: Update string comparison functions to use std::string, Step 3: Remove _T() macros from keyword table, Step 4: Ensure UTF-8 file parsing works correctly | Restrictions: Maintain .mayu file parsing compatibility, Ensure line numbers and error positions remain accurate, Do not change parser behavior | Success: No tstring references, Token storage uses std::string, Parser tests pass, .mayu files parse correctly | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.8 Update mayu_scanner.cpp string handling
+- [x] 1.1.8 Update mayu_scanner.cpp string handling (N/A - file does not exist)
   - File: src/core/parser/mayu_scanner.cpp
   - Convert scanner string buffer to std::string
   - Update string literal handling
