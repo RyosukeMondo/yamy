@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // layoutmanager.h
 
@@ -7,6 +7,7 @@
 #  define _LAYOUTMANAGER_H
 
 #  include "misc.h"
+#  include "../platform/types.h"
 #  include <list>
 
 
@@ -36,10 +37,10 @@ private:
     class Item
     {
     public:
-        HWND m_hwnd;                ///
-        HWND m_hwndParent;                ///
-        RECT m_rc;                    ///
-        RECT m_rcParent;                ///
+        yamy::platform::WindowHandle m_hwnd;                ///
+        yamy::platform::WindowHandle m_hwndParent;                ///
+        yamy::platform::Rect m_rc;                    ///
+        yamy::platform::Rect m_rcParent;                ///
         Origin m_origin[4];                ///
     };
 
@@ -47,8 +48,8 @@ private:
     class SmallestSize
     {
     public:
-        HWND m_hwnd;                ///
-        SIZE m_size;                ///
+        yamy::platform::WindowHandle m_hwnd;                ///
+        yamy::platform::Size m_size;                ///
 
     public:
         ///
@@ -58,39 +59,39 @@ private:
     typedef std::list<Item> Items;        ///
 
 protected:
-    HWND m_hwnd;                    ///
+    yamy::platform::WindowHandle m_hwnd;                    ///
 
 private:
     Items m_items;                ///
     Restrict m_smallestRestriction;        ///
-    SIZE m_smallestSize;                ///
+    yamy::platform::Size m_smallestSize;                ///
     Restrict m_largestRestriction;        ///
-    SIZE m_largestSize;                ///
+    yamy::platform::Size m_largestSize;                ///
 
 public:
     ///
-    LayoutManager(HWND i_hwnd);
+    LayoutManager(yamy::platform::WindowHandle i_hwnd);
 
     /** restrict the smallest size of the window to the current size of it or
         specified by i_size */
     void restrictSmallestSize(Restrict i_restrict = RESTRICT_BOTH,
-                              SIZE *i_size = nullptr);
+                              yamy::platform::Size *i_size = nullptr);
 
     /** restrict the largest size of the window to the current size of it or
         specified by i_size */
     void restrictLargestSize(Restrict i_restrict = RESTRICT_BOTH,
-                             SIZE *i_size = nullptr);
+                             yamy::platform::Size *i_size = nullptr);
 
     /** Calculate new rectangle for a child window based on origins and parent resizing.
         Exposed for unit testing.
      */
-    static RECT calculateRect(const RECT& originalParentRect, 
-                              const RECT& originalChildRect, 
-                              const RECT& currentParentRect, 
+    static yamy::platform::Rect calculateRect(const yamy::platform::Rect& originalParentRect,
+                              const yamy::platform::Rect& originalChildRect,
+                              const yamy::platform::Rect& currentParentRect,
                               const Origin origins[4]);
 
     ///
-    bool addItem(HWND i_hwnd,
+    bool addItem(yamy::platform::WindowHandle i_hwnd,
                  Origin i_originLeft = ORIGIN_LEFT_EDGE,
                  Origin i_originTop = ORIGIN_TOP_EDGE,
                  Origin i_originRight = ORIGIN_LEFT_EDGE,
@@ -99,21 +100,21 @@ public:
     void adjust() const;
 
     /// draw size box
-    virtual BOOL wmPaint();
+    virtual bool wmPaint();
 
     /// size restriction
-    virtual BOOL wmSizing(int i_edge, RECT *io_rc);
+    virtual bool wmSizing(int i_edge, yamy::platform::Rect *io_rc);
 
     /// hittest for size box
-    virtual BOOL wmNcHitTest(int i_x, int i_y);
+    virtual bool wmNcHitTest(int i_x, int i_y);
 
     /// WM_SIZE
-    virtual BOOL wmSize(DWORD /* i_fwSizeType */, short /* i_nWidth */,
+    virtual bool wmSize(uint32_t /* i_fwSizeType */, short /* i_nWidth */,
                         short /* i_nHeight */);
 
     /// forward message
-    virtual BOOL defaultWMHandler(UINT i_message, WPARAM i_wParam,
-                                  LPARAM i_lParam);
+    virtual bool defaultWMHandler(uint32_t i_message, uintptr_t i_wParam,
+                                  intptr_t i_lParam);
 };
 
 

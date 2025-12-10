@@ -1,9 +1,10 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // focus.cpp
 
 
 #include "focus.h"
 #include "windowstool.h"
+#include "../platform/types.h"
 
 
 ///
@@ -32,14 +33,14 @@ static LRESULT CALLBACK WndProc(
         ShowCaret(i_hwnd);
         SetCaretPos(rcWidth(&rc) / 2, rcHeight(&rc) / 4);
         SendMessage(GetParent(i_hwnd), WM_APP_notifyFocus,
-                    TRUE, (LPARAM)i_hwnd);
+                    true, (intptr_t)i_hwnd);
         return 0;
     }
     case WM_KILLFOCUS: {
         HideCaret(i_hwnd);
         DestroyCaret();
         SendMessage(GetParent(i_hwnd), WM_APP_notifyFocus,
-                    FALSE, (LPARAM)i_hwnd);
+                    false, (intptr_t)i_hwnd);
         return 0;
     }
     case WM_GETDLGCODE:
