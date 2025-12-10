@@ -39,9 +39,6 @@ extern tostream &operator<<(tostream &i_ost, const FunctionData *i_data);
 
 // create function
 extern FunctionData *createFunctionData(const std::string &i_name);
-#ifdef _UNICODE
-extern FunctionData *createFunctionData(const tstring &i_name);
-#endif
 
 ///
 enum VKey {
@@ -68,11 +65,6 @@ extern tostream &operator<<(tostream &i_ost, ToWindowType i_data);
 
 // get value of ToWindowType
 extern bool getTypeValue(ToWindowType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(ToWindowType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 ///
@@ -93,11 +85,6 @@ extern tostream &operator<<(tostream &i_ost, GravityType i_data);
 
 /// get value of GravityType
 extern bool getTypeValue(GravityType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(GravityType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 /// enum MouseHookType is defined in hook.h
@@ -107,11 +94,6 @@ extern tostream &operator<<(tostream &i_ost, MouseHookType i_data);
 
 /// get value of MouseHookType
 extern bool getTypeValue(MouseHookType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(MouseHookType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 ///
@@ -126,11 +108,6 @@ extern tostream &operator<<(tostream &i_ost, MayuDialogType i_data);
 
 // get value of MayuDialogType
 extern bool getTypeValue(MayuDialogType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(MayuDialogType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 ///
@@ -159,11 +136,6 @@ extern tostream &operator<<(tostream &i_ost, ToggleType i_data);
 
 // get value of ShowCommandType
 extern bool getTypeValue(ToggleType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(ToggleType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 /// stream output
@@ -171,11 +143,6 @@ extern tostream &operator<<(tostream &i_ost, ModifierLockType i_data);
 
 // get value of ModifierLockType
 extern bool getTypeValue(ModifierLockType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(ModifierLockType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 ///
@@ -199,11 +166,6 @@ extern tostream &operator<<(tostream &i_ost, ShowCommandType i_data);
 
 // get value of ShowCommandType
 extern bool getTypeValue(ShowCommandType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(ShowCommandType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 ///
@@ -217,11 +179,6 @@ extern tostream &operator<<(tostream &i_ost, TargetWindowType i_data);
 
 // get value of TargetWindowType
 extern bool getTypeValue(TargetWindowType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(TargetWindowType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 ///
@@ -235,11 +192,6 @@ extern tostream &operator<<(tostream &i_ost, BooleanType i_data);
 
 // get value of BooleanType
 extern bool getTypeValue(BooleanType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(BooleanType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 ///
@@ -253,11 +205,6 @@ extern tostream &operator<<(tostream &i_ost, LogicalOperatorType i_data);
 
 // get value of LogicalOperatorType
 extern bool getTypeValue(LogicalOperatorType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(LogicalOperatorType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 ///
@@ -271,11 +218,6 @@ extern tostream &operator<<(tostream &i_ost, WindowMonitorFromType i_data);
 
 // get value of WindowMonitorFromType
 extern bool getTypeValue(WindowMonitorFromType *o_type, const std::string &i_name);
-#ifdef _UNICODE
-inline bool getTypeValue(WindowMonitorFromType *o_type, const tstring &i_name) {
-    return getTypeValue(o_type, to_UTF_8(i_name));
-}
-#endif
 
 
 /// stream output

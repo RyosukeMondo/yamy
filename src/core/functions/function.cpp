@@ -11,7 +11,6 @@
 #include "vkeytable.h"
 // #include "windowstool.h" // Removed Win32 dependency
 #include <algorithm>
-#include <process.h>
 
 #include "function_data.h"
 #include "../../platform/windows/utf_conversion.h" // For conversion if needed (but prefer std::string)
@@ -71,11 +70,11 @@ bool getTypeValue(T *o_type, const std::string &i_name,
 tostream &operator<<(tostream &i_ost, VKey i_data)
 {
     if (i_data & VKey_extended)
-        i_ost << _T("E-");
+        i_ost << "E-";
     if (i_data & VKey_released)
-        i_ost << _T("U-");
+        i_ost << "U-";
     if (i_data & VKey_pressed)
-        i_ost << _T("D-");
+        i_ost << "D-";
 
     u_int8 code = i_data & ~(VKey_extended | VKey_released | VKey_pressed);
     const VKeyTable *vkt;
@@ -85,7 +84,7 @@ tostream &operator<<(tostream &i_ost, VKey i_data)
     if (vkt->m_name)
         i_ost << vkt->m_name;
     else
-        i_ost << _T("0x") << std::hex << code << std::dec;
+        i_ost << "0x" << std::hex << code << std::dec;
     return i_ost;
 }
 
@@ -144,7 +143,7 @@ tostream &operator<<(tostream &i_ost, GravityType i_data)
                     g_gravityTypeTable, NUMBER_OF(g_gravityTypeTable)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(GravityType internal error)");
+        i_ost << "(GravityType internal error)";
     return i_ost;
 }
 
@@ -171,7 +170,7 @@ tostream &operator<<(tostream &i_ost, MouseHookType i_data)
                     g_mouseHookTypeTable, NUMBER_OF(g_mouseHookTypeTable)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(MouseHookType internal error)");
+        i_ost << "(MouseHookType internal error)";
     return i_ost;
 }
 
@@ -197,7 +196,7 @@ tostream &operator<<(tostream &i_ost, MayuDialogType i_data)
                     g_mayuDialogTypeTable, NUMBER_OF(g_mayuDialogTypeTable)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(MayuDialogType internal error)");
+        i_ost << "(MayuDialogType internal error)";
     return i_ost;
 }
 
@@ -227,7 +226,7 @@ tostream &operator<<(tostream &i_ost, ToggleType i_data)
     if (getTypeName(&name, i_data, g_toggleType, NUMBER_OF(g_toggleType)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(ToggleType internal error)");
+        i_ost << "(ToggleType internal error)";
     return i_ost;
 }
 
@@ -261,7 +260,7 @@ tostream &operator<<(tostream &i_ost, ModifierLockType i_data)
                     g_modifierLockTypeTable, NUMBER_OF(g_modifierLockTypeTable)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(ModifierLockType internal error)");
+        i_ost << "(ModifierLockType internal error)";
     return i_ost;
 }
 
@@ -297,7 +296,7 @@ tostream &operator<<(tostream &i_ost, ShowCommandType i_data)
                     g_showCommandTypeTable, NUMBER_OF(g_showCommandTypeTable)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(ShowCommandType internal error)");
+        i_ost << "(ShowCommandType internal error)";
     return i_ost;
 }
 
@@ -323,7 +322,7 @@ tostream &operator<<(tostream &i_ost, TargetWindowType i_data)
                     g_targetWindowType, NUMBER_OF(g_targetWindowType)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(TargetWindowType internal error)");
+        i_ost << "(TargetWindowType internal error)";
     return i_ost;
 }
 
@@ -348,7 +347,7 @@ tostream &operator<<(tostream &i_ost, BooleanType i_data)
     if (getTypeName(&name, i_data, g_booleanType, NUMBER_OF(g_booleanType)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(BooleanType internal error)");
+        i_ost << "(BooleanType internal error)";
     return i_ost;
 }
 
@@ -374,7 +373,7 @@ tostream &operator<<(tostream &i_ost, LogicalOperatorType i_data)
                     NUMBER_OF(g_logicalOperatorType)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(LogicalOperatorType internal error)");
+        i_ost << "(LogicalOperatorType internal error)";
     return i_ost;
 }
 
@@ -400,7 +399,7 @@ tostream &operator<<(tostream &i_ost, WindowMonitorFromType i_data)
                     NUMBER_OF(g_windowMonitorFromType)))
         i_ost << to_tstring(name);
     else
-        i_ost << _T("(WindowMonitorFromType internal error)");
+        i_ost << "(WindowMonitorFromType internal error)";
     return i_ost;
 }
 
@@ -417,7 +416,7 @@ tostream &operator<<(tostream &i_ost, const std::list<tstringq> &i_data)
 {
     for (std::list<tstringq>::const_iterator
             i = i_data.begin(); i != i_data.end(); ++ i) {
-        i_ost << *i << _T(", ");
+        i_ost << *i << ", ";
     }
     return i_ost;
 }
@@ -426,7 +425,7 @@ tostream &operator<<(tostream &i_ost, const std::list<std::string> &i_data)
 {
     for (std::list<std::string>::const_iterator
             i = i_data.begin(); i != i_data.end(); ++ i) {
-        i_ost << to_tstring(*i) << _T(", ");
+        i_ost << to_tstring(*i) << ", ";
     }
     return i_ost;
 }
