@@ -5,6 +5,7 @@
 #include "misc.h"
 #include <list>
 #include <string>
+#include <cstdint>
 
 /// Abstract interface for configuration storage (Registry, Ini, etc.)
 class ConfigStore
@@ -43,12 +44,12 @@ public:
 #endif //!USE_INI
 
     /// read binary data
-    virtual bool read(const std::string &i_name, BYTE *o_value, DWORD *i_valueSize,
-                      const BYTE *i_defaultValue = nullptr, DWORD i_defaultValueSize = 0) const = 0;
+    virtual bool read(const std::string &i_name, uint8_t *o_value, uint32_t *i_valueSize,
+                      const uint8_t *i_defaultValue = nullptr, uint32_t i_defaultValueSize = 0) const = 0;
 
     /// write binary data
-    virtual bool write(const std::string &i_name, const BYTE *i_value,
-                       DWORD i_valueSize) const = 0;
+    virtual bool write(const std::string &i_name, const uint8_t *i_value,
+                       uint32_t i_valueSize) const = 0;
 };
 
 #endif // _CONFIG_STORE_H

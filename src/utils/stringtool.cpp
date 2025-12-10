@@ -204,7 +204,7 @@ size_t mbslcpy(unsigned char *o_dest, const unsigned char *i_src,
 
 
 /// stream output (escaped/quoted string output)
-std::ostream &operator<<(std::ostream &i_ost, const tstringq &i_data)
+std::ostream &operator<<(std::ostream &i_ost, const stringq &i_data)
 {
     i_ost << "\"";
     for (const char *s = i_data.c_str(); *s; ++ s) {
@@ -263,156 +263,168 @@ std::ostream &operator<<(std::ostream &i_ost, const tstringq &i_data)
 }
 
 
+namespace {
+
+// Helper to parse a hexadecimal escape sequence like \x{...} or \x..
+// Advances the source pointer and writes the character to the destination.
+static void interpretHexEscape(const char*& i_str, const char* end, char*& d)
+{
+    i_str++; // consume 'x' or 'X'
+    static const char* hexchar = "0123456789ABCDEFabcdef";
+    static int hexvalue[] = { 0, 1, 2, 3, 4, 5 ,6, 7, 8, 9,
+                              10, 11, 12, 13, 14, 15,
+                              10, 11, 12, 13, 14, 15,
+                            };
+    bool brace = false;
+    if (i_str < end && *i_str == '{') {
+        i_str++;
+        brace = true;
+    }
+    int n = 0;
+    for (; i_str < end && *i_str; i_str++) {
+        if (const char* cc = strchr(hexchar, *i_str)) {
+            n = n * 16 + hexvalue[cc - hexchar];
+        } else {
+            break;
+        }
+    }
+    if (i_str < end && *i_str == '}' && brace) {
+        i_str++;
+    }
+    if (0 < n) {
+        *d++ = static_cast<char>(n);
+    }
+}
+
+// Helper to parse an octal escape sequence.
+// Advances the source pointer and writes the character to the destination.
+static void interpretOctalEscape(const char*& i_str, const char* end, char*& d)
+{
+    static const char* octalchar = "01234567";
+    static int octalvalue[] = { 0, 1, 2, 3, 4, 5 ,6, 7, };
+    int n = 0;
+    for (; i_str < end && *i_str; i_str++) {
+        if (const char* cc = strchr(octalchar, *i_str)) {
+            n = n * 8 + octalvalue[cc - octalchar];
+        } else {
+            break;
+        }
+    }
+    if (0 < n) {
+        *d++ = static_cast<char>(n);
+    }
+}
+
+// Helper to parse a control character escape sequence like \c[.
+// Advances the source pointer and writes the character to the destination.
+static void interpretControlCode(const char*& i_str, const char* end, char*& d)
+{
+    i_str++; // consume 'c'
+    if (i_str < end && *i_str) {
+        static const char* ctrlchar =
+            "@ABCDEFGHIJKLMNO"
+            "PQRSTUVWXYZ[\\]^_"
+            "@abcdefghijklmno"
+            "pqrstuvwxyz@@@@?";
+        static const char* ctrlcode =
+            "\00\01\02\03\04\05\06\07\10\11\12\13\14\15\16\17"
+            "\20\21\22\23\24\25\26\27\30\31\32\33\34\35\36\37"
+            "\00\01\02\03\04\05\06\07\10\11\12\13\14\15\16\17"
+            "\20\21\22\23\24\25\26\27\30\31\32\00\00\00\00\177";
+        if (const char* cc = strchr(ctrlchar, *i_str)) {
+            *d++ = ctrlcode[cc - ctrlchar];
+            i_str++;
+        }
+    }
+}
+
+// Helper to interpret a single escape sequence starting after the backslash.
+// Advances the source pointer and writes the character(s) to the destination.
+static void interpretEscapeSequence(const char*& i_str, const char* end, char*& d,
+                                    const char* i_quote, bool i_doesUseRegexpBackReference)
+{
+    if (i_quote && strchr(i_quote, *i_str)) {
+        *d++ = *i_str++;
+        return;
+    }
+
+    switch (*i_str) {
+    case 'a': *d++ = '\x07'; i_str++; break;
+    case 'e': *d++ = '\x1b'; i_str++; break;
+    case 'f': *d++ = '\f'; i_str++; break;
+    case 'n': *d++ = '\n'; i_str++; break;
+    case 'r': *d++ = '\r'; i_str++; break;
+    case 't': *d++ = '\t'; i_str++; break;
+    case 'v': *d++ = '\v'; i_str++; break;
+    case '\'': *d++ = '\''; i_str++; break;
+    case '"': *d++ = '"'; i_str++; break;
+    case '\\': *d++ = '\\'; i_str++; break;
+    case 'c':
+        interpretControlCode(i_str, end, d);
+        break;
+    case 'x':
+    case 'X':
+        interpretHexEscape(i_str, end, d);
+        break;
+    case '1': case '2': case '3': case '4':
+    case '5': case '6': case '7':
+        if (i_doesUseRegexpBackReference) {
+            goto handle_default;
+        }
+        // fall through
+    case '0':
+        interpretOctalEscape(i_str, end, d);
+        break;
+    default:
+    handle_default:
+        *d++ = '\\';
+        *d++ = *i_str++;
+        break;
+    }
+}
+
+} // namespace
+
+
 // interpret meta characters such as \n (UTF-8 version)
 std::string interpretMetaCharacters(const char *i_str, size_t i_len,
                                     const char *i_quote,
                                     bool i_doesUseRegexpBackReference)
 {
-    // interpreted string is always less than i_len
+    // interpreted string is always less than or equal to i_len
     std::vector<char> result(i_len + 1);
-    // destination
     char *d = result.data();
-    // end pointer
     const char *end = i_str + i_len;
 
     while (i_str < end && *i_str) {
-        // Handle UTF-8 multi-byte sequences
-        unsigned char c = static_cast<unsigned char>(*i_str);
-        if ((c & 0x80) != 0 && *i_str != '\\') {
-            // UTF-8 multi-byte character - copy as-is
-            int bytes = 1;
-            if ((c & 0xE0) == 0xC0) bytes = 2;
-            else if ((c & 0xF0) == 0xE0) bytes = 3;
-            else if ((c & 0xF8) == 0xF0) bytes = 4;
+        if (*i_str == '\\') {
+            i_str++; // Consume backslash
+            if (i_str < end && *i_str) {
+                // We have a character after the backslash, so interpret it
+                interpretEscapeSequence(i_str, end, d, i_quote, i_doesUseRegexpBackReference);
+            } else {
+                // Dangling backslash at the end of the string, treat as literal
+                *d++ = '\\';
+            }
+        } else {
+             // Handle UTF-8 multi-byte sequences by copying them completely
+            unsigned char c = static_cast<unsigned char>(*i_str);
+            if ((c & 0x80) != 0) {
+                int bytes = 1;
+                if ((c & 0xE0) == 0xC0) bytes = 2;
+                else if ((c & 0xF0) == 0xE0) bytes = 3;
+                else if ((c & 0xF8) == 0xF0) bytes = 4;
 
-            for (int i = 0; i < bytes && i_str < end && *i_str; ++i) {
+                for (int i = 0; i < bytes && i_str < end && *i_str; ++i) {
+                    *d++ = *i_str++;
+                }
+            } else {
+                // Plain ASCII character
                 *d++ = *i_str++;
             }
-            continue;
-        }
-
-        if (*i_str != '\\') {
-            *d++ = *i_str++;
-        } else if (*(i_str + 1) != '\0') {
-            i_str ++;
-            if (i_quote && strchr(i_quote, *i_str))
-                *d++ = *i_str++;
-            else
-                switch (*i_str) {
-                case 'a':
-                    *d++ = '\x07';
-                    i_str ++;
-                    break;
-                case 'e':
-                    *d++ = '\x1b';
-                    i_str ++;
-                    break;
-                case 'f':
-                    *d++ = '\f';
-                    i_str ++;
-                    break;
-                case 'n':
-                    *d++ = '\n';
-                    i_str ++;
-                    break;
-                case 'r':
-                    *d++ = '\r';
-                    i_str ++;
-                    break;
-                case 't':
-                    *d++ = '\t';
-                    i_str ++;
-                    break;
-                case 'v':
-                    *d++ = '\v';
-                    i_str ++;
-                    break;
-                case '\'':
-                    *d++ = '\'';
-                    i_str ++;
-                    break;
-                case '"':
-                    *d++ = '"';
-                    i_str ++;
-                    break;
-                case '\\':
-                    *d++ = '\\';
-                    i_str ++;
-                    break;
-                case 'c': // control code, for example '\c[' is escape: '\x1b'
-                    i_str ++;
-                    if (i_str < end && *i_str) {
-                        static const char *ctrlchar =
-                            "@ABCDEFGHIJKLMNO"
-                            "PQRSTUVWXYZ[\\]^_"
-                            "@abcdefghijklmno"
-                            "pqrstuvwxyz@@@@?";
-                        static const char *ctrlcode =
-                            "\00\01\02\03\04\05\06\07\10\11\12\13\14\15\16\17"
-                            "\20\21\22\23\24\25\26\27\30\31\32\33\34\35\36\37"
-                            "\00\01\02\03\04\05\06\07\10\11\12\13\14\15\16\17"
-                            "\20\21\22\23\24\25\26\27\30\31\32\00\00\00\00\177";
-                        if (const char *cc = strchr(ctrlchar, *i_str))
-                            *d++ = ctrlcode[cc - ctrlchar], i_str ++;
-                    }
-                    break;
-                case 'x':
-                case 'X': {
-                    i_str ++;
-                    static const char *hexchar = "0123456789ABCDEFabcdef";
-                    static int hexvalue[] = { 0, 1, 2, 3, 4, 5 ,6, 7, 8, 9,
-                                              10, 11, 12, 13, 14, 15,
-                                              10, 11, 12, 13, 14, 15,
-                                            };
-                    bool brace = false;
-                    if (i_str < end && *i_str == '{') {
-                        i_str ++;
-                        brace = true;
-                    }
-                    int n = 0;
-                    for (; i_str < end && *i_str; i_str ++)
-                        if (const char *cc = strchr(hexchar, *i_str))
-                            n = n * 16 + hexvalue[cc - hexchar];
-                        else
-                            break;
-                    if (i_str < end && *i_str == '}' && brace)
-                        i_str ++;
-                    if (0 < n)
-                        *d++ = static_cast<char>(n);
-                    break;
-                }
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                    if (i_doesUseRegexpBackReference)
-                        goto case_default;
-                    // fall through
-                case '0': {
-                    static const char *octalchar = "01234567";
-                    static int octalvalue[] = { 0, 1, 2, 3, 4, 5 ,6, 7, };
-                    int n = 0;
-                    for (; i_str < end && *i_str; i_str ++)
-                        if (const char *cc = strchr(octalchar, *i_str))
-                            n = n * 8 + octalvalue[cc - octalchar];
-                        else
-                            break;
-                    if (0 < n)
-                        *d++ = static_cast<char>(n);
-                    break;
-                }
-                default:
-case_default:
-                    *d++ = '\\';
-                    *d++ = *i_str++;
-                    break;
-                }
         }
     }
-    *d ='\0';
+    *d = '\0';
     return std::string(result.data());
 }
 

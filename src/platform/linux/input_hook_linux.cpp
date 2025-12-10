@@ -13,6 +13,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <chrono>
+#include <memory>
+#include <mutex>
 
 namespace yamy::platform {
 
@@ -24,7 +26,6 @@ EventReaderThread::EventReaderThread(int fd, const std::string& devNode, KeyCall
     : m_fd(fd)
     , m_devNode(devNode)
     , m_callback(callback)
-    , m_thread(0)
     , m_running(false)
     , m_stopRequested(false)
 {
@@ -40,11 +41,7 @@ bool EventReaderThread::start()
     if (m_running) return true;
 
     m_stopRequested = false;
-    if (pthread_create(&m_thread, nullptr, threadFunc, this) != 0) {
-        PLATFORM_LOG_ERROR("input", "Failed to create thread for %s", m_devNode.c_str());
-        return false;
-    }
-
+    m_thread = std::thread(&EventReaderThread::run, this);
     m_running = true;
     return true;
 }
@@ -54,17 +51,10 @@ void EventReaderThread::stop()
     if (!m_running) return;
 
     m_stopRequested = true;
-
-    // Wait for thread to finish
-    pthread_join(m_thread, nullptr);
+    if (m_thread.joinable()) {
+        m_thread.join();
+    }
     m_running = false;
-}
-
-void* EventReaderThread::threadFunc(void* arg)
-{
-    EventReaderThread* self = static_cast<EventReaderThread*>(arg);
-    self->run();
-    return nullptr;
 }
 
 void EventReaderThread::run()
@@ -169,6 +159,7 @@ InputHookLinux::~InputHookLinux()
 
 bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallback)
 {
+    std::lock_guard<std::mutex> lock(m_readerThreadsMutex);
     if (m_isInstalled) {
         PLATFORM_LOG_WARN("input", "Input hook already installed");
         return true;
@@ -256,14 +247,13 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
         m_openDevices.push_back(dev);
 
         // Create reader thread
-        EventReaderThread* reader = new EventReaderThread(fd, kbInfo.devNode, m_keyCallback);
+        auto reader = std::make_unique<EventReaderThread>(fd, kbInfo.devNode, m_keyCallback);
         if (!reader->start()) {
             PLATFORM_LOG_WARN("input", "Failed to start reader thread for %s", kbInfo.devNode.c_str());
-            delete reader;
             continue;
         }
 
-        m_readerThreads.push_back(reader);
+        m_readerThreads.push_back(std::move(reader));
         PLATFORM_LOG_INFO("input", "Successfully hooked %s", kbInfo.devNode.c_str());
     }
 
@@ -305,10 +295,10 @@ void InputHookLinux::uninstall()
 
 void InputHookLinux::cleanup()
 {
+    std::lock_guard<std::mutex> lock(m_readerThreadsMutex);
     // Stop all reader threads
-    for (EventReaderThread* reader : m_readerThreads) {
+    for (auto& reader : m_readerThreads) {
         reader->stop();
-        delete reader;
     }
     m_readerThreads.clear();
 
