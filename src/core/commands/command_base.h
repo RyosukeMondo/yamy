@@ -1,10 +1,11 @@
-﻿#pragma once
+#pragma once
 #ifndef _COMMAND_BASE_H
 #define _COMMAND_BASE_H
 
 #include "../functions/function_data.h"
 #include <tuple>
 #include <utility>
+#include "utils/stringtool.h"
 
 // Helper to check if a type is distinct from another (for SFINAE if needed, though not heavily used here yet)
 // We rely on standard C++17 features.
@@ -101,15 +102,15 @@ public:
     virtual tostream &output(tostream &i_ost) const override
     {
         // getName() now returns std::string, convert to tstring for output
-        i_ost << _T("&") << to_tstring(getName());
+        i_ost << "&" << to_tstring(getName());
         // For commands with manual load/output (no template args),
         // they may override outputArgs() to provide custom output
         // Check if derived class has overridden outputArgs by calling it
         // For template-arg commands, outputArgs calls outputArgsInternal
         if constexpr (sizeof...(Args) > 0) {
-            i_ost << _T("(");
+            i_ost << "(";
             outputArgsInternal(i_ost, std::make_index_sequence<sizeof...(Args)>{});
-            i_ost << _T(") ");
+            i_ost << ") ";
         } else {
             // For zero-arg commands that might have manual members,
             // check if they need to output args
@@ -178,7 +179,7 @@ private:
             i_ost << std::get<I>(m_args);
         }
         if (hasMore) {
-            i_ost << _T(", ");
+            i_ost << ", ";
         }
     }
 };

@@ -5,21 +5,18 @@ namespace yamy::platform {
 
 class InputDriverLinux : public IInputDriver {
 public:
-    bool initialize() override {
-        std::cerr << "[STUB] InputDriver::initialize() - not supported on Linux" << std::endl;
+    bool open(void *readEvent) override {
+        std::cerr << "[STUB] InputDriver::open()" << std::endl;
         return true;
     }
 
-    void shutdown() override {
-        std::cerr << "[STUB] InputDriver::shutdown()" << std::endl;
+    void close() override {
+        std::cerr << "[STUB] InputDriver::close()" << std::endl;
     }
 
-    void processEvents() override {
-        // No-op for stub
-    }
-
-    bool isKeyPressed(uint32_t key) const override {
-        return false;
+    void manageExtension(const std::string& dllName, const std::string& dependDllName, bool load, void **moduleHandle) override {
+        std::cerr << "[STUB] InputDriver::manageExtension()" << std::endl;
+        if (moduleHandle) *moduleHandle = nullptr;
     }
 };
 

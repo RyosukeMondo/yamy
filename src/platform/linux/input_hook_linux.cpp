@@ -4,16 +4,19 @@
 namespace yamy::platform {
 
 class InputHookLinux : public IInputHook {
-    bool install(KeyCallback callback) override {
-        std::cerr << "[STUB] InputHook::install() - not supported on Linux" << std::endl;
-        return false;
+public:
+    bool install(KeyCallback keyCallback, MouseCallback mouseCallback) override {
+        std::cerr << "[STUB] InputHook::install()" << std::endl;
+        return true;
     }
 
     void uninstall() override {
-        std::cerr << "[STUB] InputHook::uninstall() - not supported on Linux" << std::endl;
+        std::cerr << "[STUB] InputHook::uninstall()" << std::endl;
     }
 
-    bool isInstalled() const override { return false; }
+    bool isInstalled() const override {
+        return false;
+    }
 };
 
 IInputHook* createInputHook() {
