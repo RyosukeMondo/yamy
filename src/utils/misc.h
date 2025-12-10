@@ -16,6 +16,7 @@
      // Shim for Win32 types on Linux/non-Windows
      typedef uint32_t DWORD;
      typedef uint16_t WORD;
+     typedef uint16_t USHORT;
      typedef uint8_t BYTE;
      typedef int32_t LONG;
      typedef int32_t BOOL;

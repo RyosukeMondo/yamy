@@ -182,6 +182,7 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_cancel_prefix.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
+    src/core/input/modifier_state.cpp
     src/core/input/vkeytable.cpp
     src/core/window/layoutmanager.cpp
     src/core/window/target.cpp
