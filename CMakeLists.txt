@@ -681,6 +681,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/tests/platform/test_main_linux.cpp
             src/tests/platform/key_remap_linux_test.cpp
             src/tests/platform/window_context_keymap_test.cpp
+            tests/integration/key_remapping_integration_test.cpp
             ${KEYREMAP_TEST_CORE_SOURCES}
             ${KEYREMAP_TEST_CMD_SOURCES}
             src/tests/googletest/src/gtest-all.cc
@@ -704,6 +705,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/app
             src/ui
             src/platform/linux
+            tests/integration
         )
 
         target_link_libraries(yamy_keyremap_test PRIVATE
