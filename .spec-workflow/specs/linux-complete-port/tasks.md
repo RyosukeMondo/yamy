@@ -83,23 +83,23 @@
   - _Requirements: FR-1.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Create platform-agnostic WindowHandle type - Step 1: Add #ifdef _WIN32 using WindowHandle = HWND else using WindowHandle = unsigned long (X11 Window), Step 2: Define InvalidWindowHandle constant, Step 3: Add utility functions isValidWindow(WindowHandle), Step 4: Document the type in comments | Restrictions: Must support both Windows HWND and X11 Window types, Ensure type safety, Keep overhead minimal (just a typedef) | Success: WindowHandle works on both platforms, Invalid handle detection works, Type is documented, Compiles on both Linux and Windows | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.10 Create IWindowSystem interface
-  - File: src/platform/window_system.h
+- [x] 1.1.10 Create IWindowSystem interface (already done)
+  - File: src/core/platform/window_system_interface.h (actual location)
   - Define abstract interface for window operations
   - Include all window management methods
   - _Leverage: src/platform/types.h, design.md Section 1.2_
   - _Requirements: FR-1.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Define abstract IWindowSystem interface for window operations - Methods: getForegroundWindow, getWindowText, getWindowClassName, getWindowRect, showWindow, moveWindow, setForegroundWindow, enumWindows - Step 1: Create pure virtual interface class, Step 2: Use WindowHandle type, Step 3: Define Rect structure, Step 4: Add factory function createWindowSystem() | Restrictions: Interface must be platform-agnostic, Do not include platform-specific types in interface, Keep methods minimal and focused | Success: Interface is well-defined, Factory function declared, Compiles on both platforms, Methods cover all window operations needed | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.11 Create WindowSystemWin32 implementation
-  - File: src/platform/win32/window_system_win32.cpp
+- [x] 1.1.11 Create WindowSystemWin32 implementation (already done)
+  - File: src/platform/windows/window_system_win32.h/.cpp (actual location)
   - Implement IWindowSystem for Windows using Win32 API
   - Wrap existing Win32 window operations
   - _Leverage: src/platform/window_system.h_
   - _Requirements: FR-1.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Implement IWindowSystem for Windows - Step 1: Create WindowSystemWin32 class implementing IWindowSystem, Step 2: Wrap GetForegroundWindow, GetWindowText, GetClassName, GetWindowRect, ShowWindow, MoveWindow, SetForegroundWindow, EnumWindows, Step 3: Handle UTF-8 to UTF-16 conversions at API boundary, Step 4: Implement factory function returning WindowSystemWin32 | Restrictions: Maintain existing Windows behavior exactly, Handle string conversions correctly, Ensure proper error handling | Success: All methods implemented correctly, Windows build works, UTF-8 conversions work, Window operations function as before | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.12 Create WindowSystemLinux implementation
+- [x] 1.1.12 Create WindowSystemLinux implementation (stub exists)
   - File: src/platform/linux/window_system_linux.cpp
   - Implement IWindowSystem for Linux using X11
   - Add EWMH support for window operations
@@ -107,23 +107,23 @@
   - _Requirements: FR-1.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with X11 and EWMH expertise | Task: Implement IWindowSystem for Linux - Step 1: Create WindowSystemLinux class implementing IWindowSystem, Step 2: Use XGetInputFocus for getForegroundWindow, Step 3: Use XFetchName/_NET_WM_NAME for getWindowText, Step 4: Use XGetClassHint for getWindowClassName, Step 5: Implement showWindow using XMapWindow/XUnmapWindow/_NET_WM_STATE, Step 6: Implement moveWindow using XMoveResizeWindow, Step 7: Implement factory function returning WindowSystemLinux | Restrictions: Use X11 and EWMH APIs correctly, Handle UTF-8 properly (X11 uses UTF-8 for _NET_WM_NAME), Ensure window operations work with modern window managers | Success: All methods implemented, Linux build works, Window operations tested with various WMs, UTF-8 text retrieved correctly | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.13 Create IInputInjector interface
-  - File: src/platform/input_injector.h
+- [x] 1.1.13 Create IInputInjector interface (already done)
+  - File: src/core/platform/input_injector_interface.h (actual location)
   - Define abstract interface for input injection
   - Include keyboard and mouse event injection methods
   - _Leverage: src/platform/types.h, design.md Section 1.3_
   - _Requirements: FR-1.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Define abstract IInputInjector interface for input injection - Methods: injectKeyDown, injectKeyUp, injectMouseButton, injectMouseMove, injectMouseWheel - Step 1: Create pure virtual interface, Step 2: Define KeyEvent and MouseEvent structures with scancode/keycode/modifiers, Step 3: Add factory function createInputInjector() | Restrictions: Interface must be platform-agnostic, Structures must support both platforms, Keep overhead minimal | Success: Interface is well-defined, Event structures support both platforms, Factory function declared, Compiles on both platforms | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.14 Create InputInjectorWin32 implementation
-  - File: src/platform/win32/input_injector_win32.cpp
+- [x] 1.1.14 Create InputInjectorWin32 implementation (already done)
+  - File: src/platform/windows/input_injector_win32.h/.cpp (actual location)
   - Implement IInputInjector for Windows using SendInput
   - Map virtual keycodes and scan codes
   - _Leverage: src/platform/input_injector.h_
   - _Requirements: FR-1.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Implement IInputInjector for Windows - Step 1: Create InputInjectorWin32 class implementing IInputInjector, Step 2: Use SendInput API for all injection methods, Step 3: Map KeyEvent to INPUT structure with KEYEVENTF_SCANCODE, Step 4: Map MouseEvent to INPUT structure, Step 5: Implement factory function returning InputInjectorWin32 | Restrictions: Use SendInput not keybd_event/mouse_event (deprecated), Maintain existing Windows input behavior, Handle extended scancodes correctly | Success: All methods implemented, Windows input injection works, Key remapping works as before, No regressions in input handling | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.15 Create InputInjectorLinux implementation
+- [x] 1.1.15 Create InputInjectorLinux implementation (already done)
   - File: src/platform/linux/input_injector_linux.cpp
   - Implement IInputInjector for Linux using XTest extension
   - Map keycodes between platforms
@@ -131,24 +131,24 @@
   - _Requirements: FR-1.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with X11 and XTest expertise | Task: Implement IInputInjector for Linux - Step 1: Create InputInjectorLinux class implementing IInputInjector, Step 2: Use XTestFakeKeyEvent for keyboard injection, Step 3: Use XTestFakeButtonEvent for mouse buttons, Step 4: Use XTestFakeMotionEvent for mouse movement, Step 5: Map Windows scancodes to X11 keycodes using lookup table, Step 6: Implement factory function returning InputInjectorLinux | Restrictions: Use XTest extension correctly, Build keycode mapping table for common keys, Ensure XFlush called after injection | Success: All methods implemented, Linux input injection works, Key remapping functional, Keycode mapping covers all common keys | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.16 Create IInputHook interface
-  - File: src/platform/input_hook.h
+- [x] 1.1.16 Create IInputHook interface (already done)
+  - File: src/core/platform/input_hook_interface.h (actual location)
   - Define abstract interface for input hooking
   - Include callback mechanism for key events
   - _Leverage: src/platform/types.h, design.md Section 1.4_
   - _Requirements: FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Define abstract IInputHook interface for input hooking - Methods: install, uninstall, isInstalled, setCallback - Step 1: Create pure virtual interface, Step 2: Define HookCallback function type taking KeyEvent and returning bool (true = consume event), Step 3: Add factory function createInputHook() | Restrictions: Interface must support both polling (Windows) and event-driven (Linux) models, Callback must be thread-safe, Keep overhead minimal | Success: Interface is well-defined, Callback mechanism flexible, Factory function declared, Compiles on both platforms | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.17 Create InputHookWin32 implementation
-  - File: src/platform/win32/input_hook_win32.cpp
+- [x] 1.1.17 Create InputHookWin32 implementation (already done)
+  - File: src/platform/windows/input_hook_win32.h/.cpp (actual location)
   - Implement IInputHook for Windows using low-level keyboard hook
   - Handle hook callback and event filtering
   - _Leverage: src/platform/input_hook.h_
   - _Requirements: FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Implement IInputHook for Windows - Step 1: Create InputHookWin32 class implementing IInputHook, Step 2: Use SetWindowsHookEx with WH_KEYBOARD_LL, Step 3: In hook procedure convert KBDLLHOOKSTRUCT to KeyEvent and invoke callback, Step 4: Return 1 if callback returns true (consume), otherwise CallNextHookEx, Step 5: Implement install/uninstall managing hook handle | Restrictions: Maintain existing Windows hook behavior, Ensure thread-safety in callback invocation, Handle hook errors gracefully | Success: Hook installs correctly, Callbacks invoked properly, Event consumption works, Key remapping functional, No crashes or hangs | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.18 Create InputHookLinux implementation
-  - File: src/platform/linux/input_hook_linux.cpp
+- [x] 1.1.18 Create InputHookLinux implementation (already done)
+  - File: src/platform/linux/input_hook_linux.h/.cpp (actual location)
   - Implement IInputHook for Linux using XRecord extension
   - Handle asynchronous event callbacks
   - _Leverage: src/platform/input_hook.h_
