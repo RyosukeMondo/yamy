@@ -11,45 +11,48 @@ pkg_check_modules(UDEV REQUIRED libudev)
 # Source files for Linux platform
 # Each track will add its implementation file
 set(LINUX_PLATFORM_SOURCES
+    # Core X11 infrastructure
+    x11_connection.cpp
+
     # Main delegator (to be created)
     # window_system_linux_main.cpp
 
     # Track 1: Window Queries
-    # window_system_linux_queries.cpp
+    window_system_linux_queries.cpp
 
     # Track 2: Window Manipulation
-    # window_system_linux_manipulation.cpp
+    window_system_linux_manipulation.cpp
 
     # Track 3: Window Hierarchy
     window_system_linux_hierarchy.cpp
 
     # Track 4: Mouse & Cursor
-    # window_system_linux_mouse.cpp
+    window_system_linux_mouse.cpp
 
     # Track 5: Monitor Support
-    # window_system_linux_monitor.cpp
+    window_system_linux_monitor.cpp
 
     # Track 6: POSIX Synchronization
     sync_linux.cpp
 
     # Track 7: Unix IPC
-    # ipc_linux.cpp
+    ipc_linux.cpp
 
     # Track 8: Hook Data
-    # hook_data_linux.cpp
+    hook_data_linux.cpp
 
     # Track 9: evdev Input Capture
-    # input_hook_linux.cpp
-    # device_manager_linux.cpp
+    input_hook_linux.cpp
+    device_manager_linux.cpp
 
     # Track 10: uinput Injection
     input_injector_linux.cpp
 
     # Track 11: Key Code Mapping
-    # keycode_mapping.cpp
+    keycode_mapping.cpp
 
     # Track 12: Thread Management
-    # thread_linux.cpp
+    thread_linux.cpp
 
     # Existing files (keep as-is for now)
     window_system_linux.cpp

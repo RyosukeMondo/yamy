@@ -1,0 +1,109 @@
+#pragma once
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// platform_exception.h - Platform-specific exception classes
+
+#include <stdexcept>
+#include <string>
+
+namespace yamy::platform {
+
+/// Base exception for all platform-related errors
+class PlatformException : public std::runtime_error {
+public:
+    explicit PlatformException(const std::string& message)
+        : std::runtime_error(message) {}
+};
+
+/// Exception for display/window system connection failures
+class DisplayConnectionException : public PlatformException {
+public:
+    explicit DisplayConnectionException(const std::string& displayName = "")
+        : PlatformException(buildMessage(displayName))
+        , m_displayName(displayName) {}
+
+    const std::string& displayName() const { return m_displayName; }
+
+private:
+    std::string m_displayName;
+
+    static std::string buildMessage(const std::string& displayName) {
+        std::string msg = "Failed to connect to display server";
+        if (!displayName.empty()) {
+            msg += " (display: " + displayName + ")";
+        }
+        msg += ". Please check:\n";
+        msg += "  1. The DISPLAY environment variable is set correctly\n";
+        msg += "  2. The X11 server is running\n";
+        msg += "  3. You have permission to connect to the display";
+        return msg;
+    }
+};
+
+/// Exception for X11 extension unavailability
+class ExtensionUnavailableException : public PlatformException {
+public:
+    explicit ExtensionUnavailableException(const std::string& extensionName,
+                                           const std::string& suggestion = "")
+        : PlatformException(buildMessage(extensionName, suggestion))
+        , m_extensionName(extensionName) {}
+
+    const std::string& extensionName() const { return m_extensionName; }
+
+private:
+    std::string m_extensionName;
+
+    static std::string buildMessage(const std::string& extensionName,
+                                    const std::string& suggestion) {
+        std::string msg = "Required X11 extension '" + extensionName + "' is not available";
+        if (!suggestion.empty()) {
+            msg += ". " + suggestion;
+        }
+        return msg;
+    }
+};
+
+/// Exception for X11 protocol errors
+class X11ProtocolException : public PlatformException {
+public:
+    X11ProtocolException(int errorCode, const std::string& errorText)
+        : PlatformException(buildMessage(errorCode, errorText))
+        , m_errorCode(errorCode) {}
+
+    int errorCode() const { return m_errorCode; }
+
+private:
+    int m_errorCode;
+
+    static std::string buildMessage(int errorCode, const std::string& errorText) {
+        return "X11 protocol error " + std::to_string(errorCode) + ": " + errorText;
+    }
+};
+
+/// Exception for device access errors (e.g., /dev/uinput, /dev/input/*)
+class DeviceAccessException : public PlatformException {
+public:
+    DeviceAccessException(const std::string& devicePath, int errorCode,
+                          const std::string& errorText)
+        : PlatformException(buildMessage(devicePath, errorCode, errorText))
+        , m_devicePath(devicePath)
+        , m_errorCode(errorCode) {}
+
+    const std::string& devicePath() const { return m_devicePath; }
+    int errorCode() const { return m_errorCode; }
+
+private:
+    std::string m_devicePath;
+    int m_errorCode;
+
+    static std::string buildMessage(const std::string& devicePath,
+                                    int errorCode, const std::string& errorText) {
+        std::string msg = "Failed to access device '" + devicePath + "': " + errorText;
+        msg += " (errno " + std::to_string(errorCode) + ")";
+        msg += "\nPlease check:\n";
+        msg += "  1. The device exists\n";
+        msg += "  2. You have permission to access the device (try adding user to 'input' group)";
+        return msg;
+    }
+};
+
+} // namespace yamy::platform

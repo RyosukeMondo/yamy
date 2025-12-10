@@ -4,6 +4,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #include "window_system_linux_hierarchy.h"
+#include "x11_connection.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -18,35 +19,22 @@
 
 namespace yamy::platform {
 
-// Static helper to manage X11 display connection
-// In a full implementation, this might be shared or injected
-static Display* g_display = nullptr;
-
+// Helper: Get X11 display via centralized connection manager
 static Display* getDisplay() {
-    if (!g_display) {
-        g_display = XOpenDisplay(nullptr);
-        if (!g_display) {
-            std::cerr << "Failed to open X display" << std::endl;
-        }
-    }
-    return g_display;
+    return X11Connection::instance().getDisplayOrNull();
 }
 
+// Helper: Get atom by name
 static Atom getAtom(const char* name) {
-    Display* dpy = getDisplay();
-    if (!dpy) return None;
-    return XInternAtom(dpy, name, False);
+    return X11Connection::instance().getAtom(name);
 }
 
 WindowSystemLinuxHierarchy::WindowSystemLinuxHierarchy() {
-    // Ensure display is initialized
-    getDisplay();
+    // X11 connection is managed by X11Connection singleton
 }
 
 WindowSystemLinuxHierarchy::~WindowSystemLinuxHierarchy() {
-    // We don't close the display here because it's a static global
-    // that might be used by other tracks or instances.
-    // In a real app, this would be managed by the main application loop.
+    // X11 connection lifecycle managed by X11Connection singleton
 }
 
 WindowHandle WindowSystemLinuxHierarchy::getParent(WindowHandle window) {

@@ -3,6 +3,7 @@
 // Track 5: Multi-monitor support using XRandR
 
 #include "window_system_linux_monitor.h"
+#include "x11_connection.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xrandr.h>
@@ -12,38 +13,15 @@
 
 namespace yamy::platform {
 
-// Helper to open/close display if needed, or use existing one if we had a way to access it.
-// Since this class is standalone, we might need to open display or assume it's passed.
-// However, the interface doesn't pass Display*.
-// We will open a local display connection for queries if needed, or use a static helper.
-// In a real integration, this would likely share the Display connection from WindowSystemLinux.
-
-// For this track, we'll assume we need to obtain the display.
-// A robust implementation would likely cache the display or accept it in constructor.
-// But the constructor takes no arguments.
-// We will use XOpenDisplay(NULL) for now, but be mindful of performance.
-// Ideally, we should share the display.
-
-// Let's assume we can get the display. But wait, XRandR resources are tied to the display.
-// If I open a new display, XRandR info should be valid for the screen.
-
 WindowSystemLinuxMonitor::WindowSystemLinuxMonitor() {
 }
 
 WindowSystemLinuxMonitor::~WindowSystemLinuxMonitor() {
 }
 
+// Helper: Get X11 display via centralized connection manager
 static Display* getDisplay() {
-    // In a real app, this should return the main application display.
-    // For this isolated track implementation, we'll open a display.
-    // WARNING: Opening/closing display on every call is slow.
-    // We'll use a static display for this track's purpose or open/close.
-    // Let's try to open once.
-    static Display* display = XOpenDisplay(NULL);
-    if (!display) {
-        std::cerr << "Failed to open X display" << std::endl;
-    }
-    return display;
+    return X11Connection::instance().getDisplayOrNull();
 }
 
 MonitorHandle WindowSystemLinuxMonitor::getMonitorFromWindow(WindowHandle hwnd) {

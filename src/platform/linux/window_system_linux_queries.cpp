@@ -1,4 +1,5 @@
 #include "window_system_linux_queries.h"
+#include "x11_connection.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -6,16 +7,14 @@
 
 namespace yamy::platform {
 
-// Helper: Get X11 display (create once, reuse)
+// Helper: Get X11 display via centralized connection manager
 static Display* getDisplay() {
-    static Display* display = XOpenDisplay(nullptr);
-    return display;
+    return X11Connection::instance().getDisplayOrNull();
 }
 
 // Helper: Get atom by name
 static Atom getAtom(const char* name) {
-    Display* display = getDisplay();
-    return XInternAtom(display, name, False);
+    return X11Connection::instance().getAtom(name);
 }
 
 // Helper: Get window property
@@ -37,8 +36,12 @@ static bool getWindowProperty(WindowHandle hwnd, Atom property,
 }
 
 WindowSystemLinuxQueries::WindowSystemLinuxQueries() {
-    // Initialize X11 connection
-    getDisplay();
+    // X11 connection is managed by X11Connection singleton
+    // Check connection at construction time to fail early
+    if (!X11Connection::instance().isConnected()) {
+        // Log warning but don't throw - allow graceful degradation
+        // Individual methods will handle null display
+    }
 }
 
 WindowSystemLinuxQueries::~WindowSystemLinuxQueries() {

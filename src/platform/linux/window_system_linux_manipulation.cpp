@@ -1,4 +1,5 @@
 #include "window_system_linux_manipulation.h"
+#include "x11_connection.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -6,13 +7,14 @@
 
 namespace yamy::platform {
 
+// Helper: Get X11 display via centralized connection manager
 static Display* getDisplay() {
-    static Display* display = XOpenDisplay(nullptr);
-    return display;
+    return X11Connection::instance().getDisplayOrNull();
 }
 
+// Helper: Get atom by name
 static Atom getAtom(const char* name) {
-    return XInternAtom(getDisplay(), name, False);
+    return X11Connection::instance().getAtom(name);
 }
 
 WindowSystemLinuxManipulation::WindowSystemLinuxManipulation() {}
@@ -22,6 +24,8 @@ bool WindowSystemLinuxManipulation::setForegroundWindow(WindowHandle hwnd) {
     if (!hwnd) return false;
 
     Display* display = getDisplay();
+    if (!display) return false;
+
     Window window = reinterpret_cast<Window>(hwnd);
 
     // Raise window
@@ -54,6 +58,8 @@ bool WindowSystemLinuxManipulation::moveWindow(WindowHandle hwnd,
     if (!hwnd) return false;
 
     Display* display = getDisplay();
+    if (!display) return false;
+
     Window window = reinterpret_cast<Window>(hwnd);
 
     int x = rect.left;
@@ -72,6 +78,8 @@ bool WindowSystemLinuxManipulation::showWindow(WindowHandle hwnd,
     if (!hwnd) return false;
 
     Display* display = getDisplay();
+    if (!display) return false;
+
     Window window = reinterpret_cast<Window>(hwnd);
 
     // cmdShow values (Windows compatible):
@@ -102,6 +110,8 @@ bool WindowSystemLinuxManipulation::closeWindow(WindowHandle hwnd) {
     if (!hwnd) return false;
 
     Display* display = getDisplay();
+    if (!display) return false;
+
     Window window = reinterpret_cast<Window>(hwnd);
 
     // Send WM_DELETE_WINDOW protocol message
@@ -126,7 +136,10 @@ bool WindowSystemLinuxManipulation::closeWindow(WindowHandle hwnd) {
 uint32_t WindowSystemLinuxManipulation::registerWindowMessage(
     const std::string& name) {
     // In X11, messages are atoms
-    Atom atom = XInternAtom(getDisplay(), name.c_str(), False);
+    Display* display = getDisplay();
+    if (!display) return 0;
+
+    Atom atom = XInternAtom(display, name.c_str(), False);
     return static_cast<uint32_t>(atom);
 }
 
@@ -139,6 +152,8 @@ bool WindowSystemLinuxManipulation::sendMessageTimeout(
     if (!hwnd) return false;
 
     Display* display = getDisplay();
+    if (!display) return false;
+
     Window window = reinterpret_cast<Window>(hwnd);
 
     // Send custom client message

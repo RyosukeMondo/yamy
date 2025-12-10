@@ -345,6 +345,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     # Linux platform backend sources
     set(STUB_SOURCES
         src/app/main_linux.cpp
+        src/platform/linux/x11_connection.cpp
         src/platform/linux/window_system_linux.cpp
         src/platform/linux/window_system_linux_queries.cpp
         src/platform/linux/window_system_linux_manipulation.cpp
