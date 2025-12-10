@@ -1,0 +1,49 @@
+============================================
+  Legacy String Usage Tracking
+============================================
+
+=== TCHAR/tstring Legacy Usage ===
+tstring usages: 214
+_T() macro usages: 596
+_TCHAR usages: 80
+tstringi usages: 81
+
+TOTAL legacy string usages: 971
+
+=== Win32 Type Leakage ===
+Win32 type usages: 57
+Files with Win32 types: 21
+
+Files with Win32 type leakage:
+  - src/core/commands/cmd_mouse_hook.cpp
+  - src/core/commands/cmd_window_move_visibly.cpp
+  - src/core/commands/cmd_post_message.cpp
+  - src/core/commands/cmd_set_foreground_window.cpp
+  - src/core/commands/cmd_window_identify.cpp
+  - src/core/commands/cmd_window_resize_to.cpp
+  - src/core/commands/cmd_window_hv_maximize.cpp
+  - src/core/commands/cmd_window_move_to.cpp
+  - src/core/commands/cmd_sync.cpp
+  - src/core/commands/cmd_post_message.h
+  - src/core/commands/cmd_window_move.cpp
+  - src/core/settings/setting.cpp
+  - src/core/window/target.cpp
+  - src/core/window/layoutmanager.cpp
+  - src/core/window/layoutmanager.h
+  - src/core/window/focus.cpp
+  - src/core/engine/engine.h
+  - src/core/engine/engine_focus.cpp
+  - src/core/engine/engine_lifecycle.cpp
+  - src/core/engine/engine.cpp
+  - src/core/engine/engine_window.cpp
+
+=== windows.h Includes in Core ===
+windows.h includes in src/core: 0
+✅ CLEAN: No windows.h includes in src/core
+
+============================================
+  Migration Progress Summary
+============================================
+⚠️  Phase 3 (String Unification): 971 usages remaining
+⚠️  Phase 4 (PAL Completion): 21 files with Win32 leakage
+✅ Architecture: CLEAN (zero windows.h in core)

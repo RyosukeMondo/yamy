@@ -10,8 +10,7 @@ Command_WindowClingToLeft::Command_WindowClingToLeft()
 
 void Command_WindowClingToLeft::load(SettingLoader *i_sl)
 {
-    tstring tsName = to_tstring(Name);
-    const _TCHAR* tName = tsName.c_str();
+    const char* tName = Name;
 
     if (!i_sl->getOpenParen(false, tName))
       return;

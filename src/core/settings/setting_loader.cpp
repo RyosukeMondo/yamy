@@ -3,6 +3,7 @@
 
 
 #include "misc.h"
+#include "stringtool.h"
 
 #include "dlgsetting.h"
 #include "errormessage.h"
@@ -49,7 +50,7 @@ Token *SettingLoader::lookToken()
 
 
 // argument "("
-bool SettingLoader::getOpenParen(bool i_doesThrow, const _TCHAR *i_name)
+bool SettingLoader::getOpenParen(bool i_doesThrow, const char *i_name)
 {
     if (!isEOL() && lookToken()->isOpenParen()) {
         getToken();
@@ -57,34 +58,34 @@ bool SettingLoader::getOpenParen(bool i_doesThrow, const _TCHAR *i_name)
     }
     if (i_doesThrow)
         throw ErrorMessage() << _T("there must be `(' after `&")
-        << i_name << _T("'.");
+        << to_tstring(i_name) << _T("'.");
     return false;
 }
 
 
 // argument ")"
-bool SettingLoader::getCloseParen(bool i_doesThrow, const _TCHAR *i_name)
+bool SettingLoader::getCloseParen(bool i_doesThrow, const char *i_name)
 {
     if (!isEOL() && lookToken()->isCloseParen()) {
         getToken();
         return true;
     }
     if (i_doesThrow)
-        throw ErrorMessage() << _T("`&")  << i_name
+        throw ErrorMessage() << _T("`&")  << to_tstring(i_name)
         << _T("': too many arguments.");
     return false;
 }
 
 
 // argument ","
-bool SettingLoader::getComma(bool i_doesThrow, const _TCHAR *i_name)
+bool SettingLoader::getComma(bool i_doesThrow, const char *i_name)
 {
     if (!isEOL() && lookToken()->isComma()) {
         getToken();
         return true;
     }
     if (i_doesThrow)
-        throw ErrorMessage() << _T("`&")  << i_name
+        throw ErrorMessage() << _T("`&")  << to_tstring(i_name)
         << _T("': comma expected.");
     return false;
 }
@@ -97,7 +98,7 @@ void SettingLoader::load_INCLUDE()
     loader.m_currentFilename = m_currentFilename;
     loader.m_defaultAssignModifier = m_defaultAssignModifier;
     loader.m_defaultKeySeqModifier = m_defaultKeySeqModifier;
-    if (!loader.load(m_setting, (*getToken()).getString()))
+    if (!loader.load(m_setting, to_UTF_8((*getToken()).getString())))
         m_isThereAnyError = true;
 }
 
@@ -222,7 +223,7 @@ void SettingLoader::load_DEFINE_SUBSTITUTE()
     } while (!(*lookToken() == _T("=>") || *lookToken() == _T("=")));
     getToken();
 
-    KeySeq *keySeq = load_KEY_SEQUENCE(_T(""), false, Modifier::Type_ASSIGN);
+    KeySeq *keySeq = load_KEY_SEQUENCE("", false, Modifier::Type_ASSIGN);
     ModifiedKey mkey = keySeq->getFirstModifiedKey();
     if (!mkey.m_key)
         throw ErrorMessage() << _T("no key is specified for substitute.");
@@ -867,7 +868,7 @@ void SettingLoader::load_ARGUMENT(const KeySeq **o_arg)
     Token *t = getToken();
     const KeySeq *&keySeq = *o_arg;
     if (t->isOpenParen()) {
-        keySeq = load_KEY_SEQUENCE(_T(""), true);
+        keySeq = load_KEY_SEQUENCE("", true);
         getToken(); // close paren
     } else if (*t == _T("$")) {
         t = getToken();
@@ -906,9 +907,9 @@ void SettingLoader::load_ARGUMENT(WindowMonitorFromType *o_arg)
 
 // <KEY_SEQUENCE>
 KeySeq *SettingLoader::load_KEY_SEQUENCE(
-    const tstringi &i_name, bool i_isInParen, Modifier::Type i_mode)
+    const std::string &i_name, bool i_isInParen, Modifier::Type i_mode)
 {
-    KeySeq keySeq(to_UTF_8(i_name));
+    KeySeq keySeq(i_name);
     while (!isEOL()) {
         Modifier::Type mode;
         Modifier modifier = load_MODIFIER(i_mode, m_defaultKeySeqModifier, &mode);
@@ -918,7 +919,7 @@ KeySeq *SettingLoader::load_KEY_SEQUENCE(
             break;
         else if (t->isOpenParen()) {
             getToken(); // open paren
-            KeySeq *ks = load_KEY_SEQUENCE(_T(""), true, i_mode);
+            KeySeq *ks = load_KEY_SEQUENCE("", true, i_mode);
             getToken(); // close paren
             keySeq.add(ActionKeySeq(ks));
         } else if (*t == _T("$")) { // <KEYSEQ_NAME>
@@ -1110,7 +1111,7 @@ void SettingLoader::load_KEYSEQ_DEFINITION()
     Token *name = getToken();
     if (*getToken() != _T("="))
         throw ErrorMessage() << _T("there must be `=' after keyseq naem");
-    load_KEY_SEQUENCE(name->getString(), false, Modifier::Type_ASSIGN);
+    load_KEY_SEQUENCE(to_UTF_8(name->getString()), false, Modifier::Type_ASSIGN);
 }
 
 
@@ -1160,7 +1161,7 @@ void SettingLoader::load_IF()
 
 
 // <ELSE> <ELSEIF>
-void SettingLoader::load_ELSE(bool i_isElseIf, const tstringi &i_token)
+void SettingLoader::load_ELSE(bool i_isElseIf, const std::string &i_token)
 {
     bool doesRead = !load_ENDIF(i_token);
     if (0 < m_canReadStack.size())
@@ -1185,10 +1186,10 @@ void SettingLoader::load_ELSE(bool i_isElseIf, const tstringi &i_token)
 
 
 // <ENDIF>
-bool SettingLoader::load_ENDIF(const tstringi &i_token)
+bool SettingLoader::load_ENDIF(const std::string &i_token)
 {
     if (m_canReadStack.size() == 0)
-        throw ErrorMessage() << _T("unbalanced `") << i_token << _T("'");
+        throw ErrorMessage() << _T("unbalanced `") << to_tstring(i_token) << _T("'");
     bool r = m_canReadStack.back();
     m_canReadStack.pop_back();
     return r;
@@ -1203,12 +1204,12 @@ void SettingLoader::load_LINE()
     // <COND_SYMBOL>
     if      (*i_token == _T("if") ||
              *i_token == _T("and")) load_IF();
-    else if (*i_token == _T("else")) load_ELSE(false, i_token->getString());
+    else if (*i_token == _T("else")) load_ELSE(false, to_UTF_8(i_token->getString()));
     else if (*i_token == _T("elseif") ||
              *i_token == _T("elsif")  ||
              *i_token == _T("elif")   ||
-             *i_token == _T("or")) load_ELSE(true, i_token->getString());
-    else if (*i_token == _T("endif")) load_ENDIF(_T("endif"));
+             *i_token == _T("or")) load_ELSE(true, to_UTF_8(i_token->getString()));
+    else if (*i_token == _T("endif")) load_ENDIF("endif");
     else if (0 < m_canReadStack.size() && !m_canReadStack.back()) {
         while (!isEOL())
             getToken();
@@ -1245,18 +1246,20 @@ static bool prefixSortPred(const tstringi &i_a, const tstringi &i_b)
   _UNICODE: read file (UTF-16 LE/BE, UTF-8, locale specific multibyte encoding)
   _MBCS: read file
 */
-static bool readFile(tstring *o_data, const tstringi &i_filename)
+static bool readFile(tstring *o_data, const std::string &i_filename)
 {
+    tstring tFilename = to_tstring(i_filename);
+
     // get size of file
 #if 0
     // bcc's _wstat cannot obtain file size
     struct _stat sbuf;
-    if (_tstat(i_filename.c_str(), &sbuf) < 0 || sbuf.st_size == 0)
+    if (_tstat(tFilename.c_str(), &sbuf) < 0 || sbuf.st_size == 0)
         return false;
 #else
     // so, we use _wstati64 for bcc
     struct stati64_t sbuf;
-    if (_tstati64(i_filename.c_str(), &sbuf) < 0 || sbuf.st_size == 0)
+    if (_tstati64(tFilename.c_str(), &sbuf) < 0 || sbuf.st_size == 0)
         return false;
     // following check is needed to cast sbuf.st_size to size_t safely
     // this cast occurs because of above workaround for bcc
@@ -1265,7 +1268,7 @@ static bool readFile(tstring *o_data, const tstringi &i_filename)
 #endif
 
     // open
-    FILE *fp = _tfopen(i_filename.c_str(), _T("rb"));
+    FILE *fp = _tfopen(tFilename.c_str(), _T("rb"));
     if (!fp)
         return false;
 
@@ -1386,14 +1389,14 @@ not_UTF_8:
 
 
 // load (called from load(Setting *, const tstringi &) only)
-void SettingLoader::load(const tstringi &i_filename)
+void SettingLoader::load(const std::string &i_filename)
 {
     m_currentFilename = i_filename;
 
     tstring data;
     if (!readFile(&data, m_currentFilename)) {
         Acquire a(m_soLog);
-        *m_log << m_currentFilename << _T(" : error: file not found") << std::endl;
+        *m_log << to_tstring(m_currentFilename) << _T(" : error: file not found") << std::endl;
 #if 1
         *m_log << data << std::endl;
 #endif
@@ -1491,26 +1494,28 @@ void SettingLoader::loadFromData(const tstring &data)
 
 
 // is the filename readable ?
-bool SettingLoader::isReadable(const tstringi &i_filename,
+bool SettingLoader::isReadable(const std::string &i_filename,
                                int i_debugLevel) const
 {
     if (i_filename.empty())
         return false;
+
+    tstring tFilename = to_tstring(i_filename);
 #ifdef UNICODE
-    tifstream ist(i_filename.c_str());
+    tifstream ist(tFilename.c_str());
 #else
-    tifstream ist(i_filename.c_str());
+    tifstream ist(tFilename.c_str());
 #endif
     if (ist.good()) {
         if (m_log && m_soLog) {
             Acquire a(m_soLog, 0);
-            *m_log << _T("  loading: ") << i_filename << std::endl;
+            *m_log << _T("  loading: ") << to_tstring(i_filename) << std::endl;
         }
         return true;
     } else {
         if (m_log && m_soLog) {
             Acquire a(m_soLog, i_debugLevel);
-            *m_log << _T("not found: ") << i_filename << std::endl;
+            *m_log << _T("not found: ") << to_tstring(i_filename) << std::endl;
         }
         return false;
     }
@@ -1519,11 +1524,11 @@ bool SettingLoader::isReadable(const tstringi &i_filename,
 
 // get filename
 // get filename
-bool SettingLoader::getFilename(const tstringi &i_name, tstringi *o_path,
+bool SettingLoader::getFilename(const std::string &i_name, std::string *o_path,
                                 int i_debugLevel) const
 {
     // the default filename is ".mayu"
-    const tstringi &name = i_name.empty() ? tstringi(_T(".mayu")) : i_name;
+    const std::string &name = i_name.empty() ? ".mayu" : i_name;
 
     bool isFirstTime = true;
 
@@ -1531,7 +1536,10 @@ bool SettingLoader::getFilename(const tstringi &i_name, tstringi *o_path,
         // find file from registry
         if (i_name.empty()) {            // called not from 'include'
             Setting::Symbols symbols;
-            if (m_config && getFilenameFromConfig(*m_config, nullptr, o_path, &symbols)) {
+            tstringi tName = to_tstring(name);
+            tstringi tPath;
+            if (m_config && getFilenameFromConfig(*m_config, nullptr, &tPath, &symbols)) {
+                *o_path = to_UTF_8(tPath);
                 if (o_path->empty())
                     // find file from home directory
                 {
@@ -1539,7 +1547,7 @@ bool SettingLoader::getFilename(const tstringi &i_name, tstringi *o_path,
                     getHomeDirectories(m_config, &pathes);
                     for (HomeDirectories::iterator
                             i = pathes.begin(); i != pathes.end(); ++ i) {
-                        *o_path = *i + _T("\\") + name;
+                        *o_path = to_UTF_8(*i) + "\\" + name;
                         if (isReadable(*o_path, i_debugLevel))
                             goto add_symbols;
                     }
@@ -1564,14 +1572,14 @@ add_symbols:
 
         // check relative to current file
         if (!m_currentFilename.empty()) {
-            tstringi dir = pathRemoveFileSpec(m_currentFilename);
+            std::string dir = pathRemoveFileSpec(m_currentFilename);
             if (!dir.empty())
-                pathes.push_back(dir);
+                pathes.push_back(to_tstring(dir));
         }
 
         getHomeDirectories(m_config, &pathes);
         for (HomeDirectories::iterator i = pathes.begin(); i != pathes.end(); ++ i) {
-            *o_path = *i + _T("\\") + name;
+            *o_path = to_UTF_8(*i) + "\\" + name;
             if (isReadable(*o_path, i_debugLevel))
                 return true;
         }
@@ -1623,18 +1631,18 @@ bool SettingLoader::initialize(Setting *i_setting)
    If called by "include", 'filename' describes filename.
    Otherwise the 'filename' is empty.
  */
-bool SettingLoader::load(Setting *i_setting, const tstringi &i_filename)
+bool SettingLoader::load(Setting *i_setting, const std::string &i_filename)
 {
     initialize(i_setting);
 
-    tstringi path;
+    std::string path;
     if (!getFilename(i_filename, &path)) {
         if (i_filename.empty()) {
             Acquire a(m_soLog);
             getFilename(i_filename, &path, 0);    // show filenames
             return false;
         } else
-            throw ErrorMessage() << _T("`") << i_filename
+            throw ErrorMessage() << _T("`") << to_tstring(i_filename)
             << _T("': no such file or other error.");
     }
 
