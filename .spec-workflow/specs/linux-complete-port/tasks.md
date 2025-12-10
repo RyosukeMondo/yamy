@@ -593,7 +593,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add config editor integration - Add preference for editor command (default: xdg-open or system default), In Edit action: launch editor with QProcess or QDesktopServices::openUrl, On Windows use configured editor or notepad, On Linux use $EDITOR or xdg-open, Allow configuring editor in preferences, Show error if editor fails to launch | Restrictions: Handle editor launch failures, Support spaces in editor path, Use system defaults if not configured | Success: Edit action launches editor, Config file opened, Configurable editor works, System defaults used appropriately, Errors handled gracefully | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.2.4 Add config validation feedback in GUI
+- [x] 2.2.4 Add config validation feedback in GUI
   - File: src/ui/qt/config_manager_dialog.cpp
   - Show validation status for each config
   - Display errors inline with line numbers
