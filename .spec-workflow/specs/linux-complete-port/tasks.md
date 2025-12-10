@@ -423,7 +423,7 @@
   - _Requirements: NF-4 Reliability_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with X11 expertise | Task: Add error handling for X11 failures - Step 1: Check XOpenDisplay return value, throw exception if null, Step 2: Add try-catch in factory functions to catch X11 errors, Step 3: Display user-friendly error message suggesting DISPLAY env check, Step 4: Add XSetErrorHandler to catch X11 protocol errors, Step 5: Log X11 errors for debugging | Restrictions: Don't crash on X11 errors, Provide actionable error messages, Log errors for troubleshooting | Success: X11 connection failures handled gracefully, User-friendly errors displayed, No crashes on X11 errors, Errors logged appropriately | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.3.2 Add error handling for XTest/XRecord unavailable
+- [x] 1.3.2 Add error handling for XTest/XRecord unavailable
   - Files: src/platform/linux/input_injector_linux.cpp, src/platform/linux/input_hook_linux.cpp
   - Check for XTest and XRecord extensions
   - Fail gracefully if extensions missing
