@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-linux-stub:
+    name: Linux Stub Build & Verification
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++ make
+
+    - name: Configure CMake
+      run: cmake -B build -DBUILD_LINUX_STUB=ON
+
+    - name: Build
+      run: cmake --build build --parallel
+
+    - name: Run Static Analysis
+      run: ./scripts/ci_static_analysis.sh
+
+  build-windows-mingw:
+    name: Windows MinGW Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install MinGW
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mingw-w64 cmake
+
+    - name: Configure CMake
+      run: cmake -B build_mingw -DCMAKE_TOOLCHAIN_FILE=scripts/mingw_toolchain.cmake
+
+    - name: Build
+      run: cmake --build build_mingw --parallel

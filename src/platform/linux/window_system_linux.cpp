@@ -33,6 +33,21 @@ public:
         return "StubClass";
     }
 
+    std::string getTitleName(WindowHandle hwnd) override {
+        std::cerr << "[STUB] getTitleName()" << std::endl;
+        return "Stub Title";
+    }
+
+    uint32_t getWindowThreadId(WindowHandle hwnd) override {
+        std::cerr << "[STUB] getWindowThreadId()" << std::endl;
+        return 0;
+    }
+
+    uint32_t getWindowProcessId(WindowHandle hwnd) override {
+        std::cerr << "[STUB] getWindowProcessId()" << std::endl;
+        return 0;
+    }
+
     bool setForegroundWindow(WindowHandle hwnd) override {
         std::cerr << "[STUB] setForegroundWindow()" << std::endl;
         return false;
@@ -51,6 +66,31 @@ public:
 
     bool closeWindow(WindowHandle hwnd) override {
         std::cerr << "[STUB] closeWindow()" << std::endl;
+        return false;
+    }
+
+    WindowHandle getParent(WindowHandle window) override {
+        std::cerr << "[STUB] getParent()" << std::endl;
+        return nullptr;
+    }
+
+    bool isMDIChild(WindowHandle window) override {
+        std::cerr << "[STUB] isMDIChild()" << std::endl;
+        return false;
+    }
+
+    bool isChild(WindowHandle window) override {
+        std::cerr << "[STUB] isChild()" << std::endl;
+        return false;
+    }
+
+    WindowShowCmd getShowCommand(WindowHandle window) override {
+        std::cerr << "[STUB] getShowCommand()" << std::endl;
+        return WindowShowCmd::Normal; // Default
+    }
+
+    bool isConsoleWindow(WindowHandle window) override {
+        std::cerr << "[STUB] isConsoleWindow()" << std::endl;
         return false;
     }
 
@@ -76,6 +116,174 @@ public:
         if (rect) {
             *rect = Rect(0, 0, 1920, 1080);
         }
+        return false;
+    }
+
+    bool getMonitorWorkArea(int monitorIndex, Rect* rect) override {
+        std::cerr << "[STUB] getMonitorWorkArea(" << monitorIndex << ")" << std::endl;
+        if (rect) {
+            *rect = Rect(0, 0, 1920, 1080);
+        }
+        return false;
+    }
+
+    int getMonitorIndex(WindowHandle window) override {
+        std::cerr << "[STUB] getMonitorIndex()" << std::endl;
+        return 0;
+    }
+
+    int getSystemMetrics(SystemMetric metric) override {
+        std::cerr << "[STUB] getSystemMetrics()" << std::endl;
+        return 0;
+    }
+
+    bool getWorkArea(Rect* outRect) override {
+        std::cerr << "[STUB] getWorkArea()" << std::endl;
+        if (outRect) {
+            *outRect = Rect(0, 0, 1920, 1080);
+        }
+        return false;
+    }
+
+    std::string getClipboardText() override {
+        std::cerr << "[STUB] getClipboardText()" << std::endl;
+        return "";
+    }
+
+    bool setClipboardText(const std::string& text) override {
+        std::cerr << "[STUB] setClipboardText()" << std::endl;
+        return false;
+    }
+
+    bool getClientRect(WindowHandle window, Rect* outRect) override {
+        std::cerr << "[STUB] getClientRect()" << std::endl;
+        if (outRect) {
+            *outRect = Rect(0, 0, 800, 600);
+        }
+        return false;
+    }
+
+    bool getChildWindowRect(WindowHandle window, Rect* outRect) override {
+        std::cerr << "[STUB] getChildWindowRect()" << std::endl;
+        if (outRect) {
+            *outRect = Rect(0, 0, 800, 600);
+        }
+        return false;
+    }
+
+    unsigned int mapVirtualKey(unsigned int vkey) override {
+        std::cerr << "[STUB] mapVirtualKey(" << vkey << ")" << std::endl;
+        return 0;
+    }
+
+    bool postMessage(WindowHandle window, unsigned int message, uintptr_t wParam, intptr_t lParam) override {
+        std::cerr << "[STUB] postMessage(" << message << ")" << std::endl;
+        return false;
+    }
+
+    unsigned int registerWindowMessage(const std::string& name) override {
+        std::cerr << "[STUB] registerWindowMessage(" << name << ")" << std::endl;
+        return 0;
+    }
+
+    bool sendMessageTimeout(WindowHandle window, unsigned int msg, uintptr_t wParam, intptr_t lParam, unsigned int flags, unsigned int timeout, uintptr_t* result) override {
+        std::cerr << "[STUB] sendMessageTimeout(" << msg << ")" << std::endl;
+        if (result) *result = 0;
+        return false;
+    }
+
+    bool setWindowZOrder(WindowHandle window, ZOrder order) override {
+        std::cerr << "[STUB] setWindowZOrder()" << std::endl;
+        return false;
+    }
+
+    bool isWindowTopMost(WindowHandle window) override {
+        std::cerr << "[STUB] isWindowTopMost()" << std::endl;
+        return false;
+    }
+
+    bool isWindowLayered(WindowHandle window) override {
+        std::cerr << "[STUB] isWindowLayered()" << std::endl;
+        return false;
+    }
+
+    bool setWindowLayered(WindowHandle window, bool enable) override {
+        std::cerr << "[STUB] setWindowLayered()" << std::endl;
+        return false;
+    }
+
+    bool setLayeredWindowAttributes(WindowHandle window, unsigned long crKey, unsigned char bAlpha, unsigned long dwFlags) override {
+        std::cerr << "[STUB] setLayeredWindowAttributes()" << std::endl;
+        return false;
+    }
+
+    bool redrawWindow(WindowHandle window) override {
+        std::cerr << "[STUB] redrawWindow()" << std::endl;
+        return false;
+    }
+
+    bool enumerateWindows(WindowEnumCallback callback) override {
+        std::cerr << "[STUB] enumerateWindows()" << std::endl;
+        return false;
+    }
+
+    int shellExecute(const std::string& operation, const std::string& file, const std::string& parameters, const std::string& directory, int showCmd) override {
+        std::cerr << "[STUB] shellExecute(" << operation << ", " << file << ")" << std::endl;
+        return 33; // Success > 32
+    }
+
+    bool disconnectNamedPipe(void* handle) override {
+        std::cerr << "[STUB] disconnectNamedPipe()" << std::endl;
+        return false;
+    }
+
+    bool connectNamedPipe(void* handle, void* overlapped) override {
+        std::cerr << "[STUB] connectNamedPipe()" << std::endl;
+        return false;
+    }
+
+    bool writeFile(void* handle, const void* buffer, unsigned int bytesToWrite, unsigned int* bytesWritten, void* overlapped) override {
+        std::cerr << "[STUB] writeFile()" << std::endl;
+        if (bytesWritten) *bytesWritten = 0;
+        return false;
+    }
+
+    void* openMutex(const std::string& name) override {
+        std::cerr << "[STUB] openMutex(" << name << ")" << std::endl;
+        return nullptr;
+    }
+
+    void* openFileMapping(const std::string& name) override {
+        std::cerr << "[STUB] openFileMapping(" << name << ")" << std::endl;
+        return nullptr;
+    }
+
+    void* mapViewOfFile(void* handle) override {
+        std::cerr << "[STUB] mapViewOfFile()" << std::endl;
+        return nullptr;
+    }
+
+    bool unmapViewOfFile(void* address) override {
+        std::cerr << "[STUB] unmapViewOfFile()" << std::endl;
+        return false;
+    }
+
+    void closeHandle(void* handle) override {
+        std::cerr << "[STUB] closeHandle()" << std::endl;
+    }
+
+    void* loadLibrary(const std::string& path) override {
+        std::cerr << "[STUB] loadLibrary(" << path << ")" << std::endl;
+        return nullptr;
+    }
+
+    void* getProcAddress(void* module, const std::string& procName) override {
+        std::cerr << "[STUB] getProcAddress(" << procName << ")" << std::endl;
+        return nullptr;
+    }
+
+    bool freeLibrary(void* module) override {
+        std::cerr << "[STUB] freeLibrary()" << std::endl;
         return false;
     }
 };
