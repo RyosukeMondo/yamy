@@ -569,7 +569,7 @@
 
 ### Batch 2: Configuration GUI (7 tasks - PARALLEL within batch, SEQUENTIAL after Batch 1)
 
-- [ ] 2.2.1 Create configuration menu in system tray
+- [x] 2.2.1 Create configuration menu in system tray
   - File: src/ui/qt/system_tray.cpp
   - Add "Configurations" submenu to tray icon
   - List available configs with checkmark on active
