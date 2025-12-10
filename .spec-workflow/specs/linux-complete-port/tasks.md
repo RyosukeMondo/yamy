@@ -155,15 +155,15 @@
   - _Requirements: FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with X11 and XRecord expertise | Task: Implement IInputHook for Linux - Step 1: Create InputHookLinux class implementing IInputHook, Step 2: Use XRecordCreateContext to capture KeyPress/KeyRelease events, Step 3: Run XRecordEnableContext in separate thread for event loop, Step 4: In callback convert XRecordInterceptData to KeyEvent and invoke user callback, Step 5: Use XRecordDisableContext to consume events when callback returns true | Restrictions: Use XRecord extension correctly, Handle threading properly (XRecord runs in separate thread), Ensure proper synchronization with main thread | Success: Hook captures events, Callbacks work correctly, Event consumption works, Key remapping functional, Thread-safe implementation | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.19 Create ShowCommand enum
-  - File: src/platform/types.h
+- [x] 1.1.19 Create ShowCommand enum (already done as WindowShowCmd)
+  - File: src/core/platform/types.h (actual location)
   - Define platform-agnostic show command enum
   - Replace SW_HIDE, SW_SHOW, SW_MINIMIZE, etc.
   - _Leverage: design.md Section 1.5_
   - _Requirements: FR-1.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Create platform-agnostic ShowCommand enum - Step 1: Define enum class ShowCommand with values Hide, Show, ShowNormal, ShowMinimized, ShowMaximized, Restore, Step 2: Add utility function toShowCommand(int win32Code) for Windows conversion, Step 3: Document each enum value | Restrictions: Must cover all used SW_* constants, Ensure enum is type-safe, Keep mapping straightforward | Success: Enum defined, All SW_* constants covered, Conversion function works, Compiles on both platforms | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.20 Replace SW_HIDE in window management code
+- [x] 1.1.20 Replace SW_HIDE in window management code (N/A - no SW_* used)
   - Files: src/core/window_manager.cpp, src/ui/qt/main_window.cpp
   - Replace SW_HIDE with ShowCommand::Hide
   - Update showWindow calls
@@ -171,7 +171,7 @@
   - _Requirements: FR-1.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Replace SW_HIDE with ShowCommand::Hide - Step 1: Search for all SW_HIDE usages with grep, Step 2: Replace with ShowCommand::Hide, Step 3: Update function calls from showWindow(hwnd, SW_HIDE) to windowSystem->showWindow(handle, ShowCommand::Hide), Step 4: Verify build on both platforms | Restrictions: Maintain window hiding behavior, Do not break other window operations, Ensure Linux implementation handles Hide correctly | Success: No SW_HIDE references remain, Windows hiding works on both platforms, Builds successfully | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.21 Replace SW_SHOW and SW_SHOWNORMAL
+- [x] 1.1.21 Replace SW_SHOW and SW_SHOWNORMAL (N/A - no SW_* used)
   - Files: src/core/window_manager.cpp, src/ui/qt/main_window.cpp
   - Replace with ShowCommand::Show and ShowCommand::ShowNormal
   - Update window display logic
@@ -179,7 +179,7 @@
   - _Requirements: FR-1.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Replace SW_SHOW and SW_SHOWNORMAL - Step 1: Search for SW_SHOW and SW_SHOWNORMAL with grep, Step 2: Replace with ShowCommand::Show and ShowCommand::ShowNormal, Step 3: Update showWindow calls, Step 4: Verify window showing works on both platforms | Restrictions: Maintain window showing behavior exactly, Handle differences between Show and ShowNormal correctly, Ensure Linux XMapWindow works | Success: No SW_SHOW/SW_SHOWNORMAL references, Window showing works on both platforms, Builds successfully | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.22 Replace SW_MINIMIZE and SW_MAXIMIZE
+- [x] 1.1.22 Replace SW_MINIMIZE and SW_MAXIMIZE (N/A - no SW_* used)
   - Files: src/core/window_manager.cpp
   - Replace with ShowCommand::ShowMinimized and ShowCommand::ShowMaximized
   - Update window state management
@@ -187,8 +187,8 @@
   - _Requirements: FR-1.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Replace SW_MINIMIZE and SW_MAXIMIZE - Step 1: Search for SW_MINIMIZE and SW_MAXIMIZE with grep, Step 2: Replace with ShowCommand::ShowMinimized and ShowCommand::ShowMaximized, Step 3: Update showWindow calls, Step 4: Verify window state changes work on Linux using _NET_WM_STATE | Restrictions: Maintain window state behavior, Ensure Linux implementation uses EWMH _NET_WM_STATE_MAXIMIZED_VERT/_HORZ correctly | Success: No SW_MINIMIZE/SW_MAXIMIZE references, Window state changes work on both platforms, EWMH properties set correctly | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.23 Create IIPCChannel interface
-  - File: src/platform/ipc_channel.h
+- [x] 1.1.23 Create IIPCChannel interface (done via IWindowSystem::sendCopyData)
+  - File: src/core/platform/ipc.h and window_system_interface.h (actual location)
   - Define abstract interface for IPC communication
   - Support message passing between instances
   - _Leverage: design.md Section 1.6_
