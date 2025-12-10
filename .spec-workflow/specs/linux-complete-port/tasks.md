@@ -381,7 +381,7 @@
   - _Requirements: FR-1.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with X11 and input system expertise | Task: Create unit tests for InputInjectorLinux - Step 1: Create test fixture with mock X11 display, Step 2: Test injectKeyDown/injectKeyUp generate correct XTest events, Step 3: Test keycode mapping from Windows scancodes to X11 keycodes, Step 4: Test mouse button and motion injection, Step 5: Test modifier key injection, Step 6: Verify XFlush called after injection | Restrictions: Mock XTest functions or use test environment, Ensure tests reliable, Test keycode mapping for common keys | Success: All InputInjectorLinux methods tested, XTest usage verified, Keycode mapping tested for 50+ keys, Mouse injection tested, Tests pass reliably | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.15 Create unit tests for InputHookLinux
+- [x] 1.2.15 Create unit tests for InputHookLinux
   - File: tests/platform/input_hook_linux_test.cpp
   - Test XRecord event capture
   - Verify callback invocation and event consumption
