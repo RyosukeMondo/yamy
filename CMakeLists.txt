@@ -242,6 +242,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/platform/linux/input_hook_linux.cpp
         src/platform/linux/input_driver_linux.cpp
         src/platform/linux/thread_linux.cpp
+        src/platform/linux/hook_data_linux.cpp
     )
     add_executable(yamy_stub ${STUB_SOURCES})
     target_link_libraries(yamy_stub PRIVATE pthread)
