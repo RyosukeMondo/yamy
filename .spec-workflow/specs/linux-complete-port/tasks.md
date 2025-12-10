@@ -62,7 +62,7 @@
 
 ### Batch 1: Foundation (32 tasks - ALL PARALLEL)
 
-- [ ] 1.1.1 Remove tstring from stringtool.h ⚠️ **INCOMPLETE - CODE REVIEW FOUND ISSUE**
+- [x] 1.1.1 Remove tstring from stringtool.h ⚠️ **INCOMPLETE - CODE REVIEW FOUND ISSUE** -> Completed by Session A
   - File: src/utils/stringtool.h
   - Remove Windows-specific tstring typedef and _T() macros
   - Convert all function signatures to use std::string
@@ -84,7 +84,7 @@
   - _Requirements: FR-1.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Update stringtool.cpp implementation to match stringtool.h changes - Step 1: Remove all tstring usages in function implementations, Step 2: Convert wstring operations to UTF-8 std::string, Step 3: Update string conversions by removing toWide/toNarrow functions and adding UTF-8 conversion utilities if needed for Windows bridge, Step 4: Update all string literals from _T("foo") to "foo", Verify with grep commands and unit tests | Restrictions: Maintain UTF-8 encoding, Do not break Windows build (add UTF-8/UTF-16 bridge if needed), Preserve all function semantics | Success: No tstring references, All string literals are plain UTF-8, Unit tests pass on both Linux and Windows | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.3 Clean up config_store.h tstring overloads ⚠️ **INCOMPLETE - CODE REVIEW FOUND ISSUE**
+- [x] 1.1.3 Clean up config_store.h tstring overloads ⚠️ **INCOMPLETE - CODE REVIEW FOUND ISSUE** -> Completed by Session A
   - File: src/utils/config_store.h (actual location)
   - Remove duplicate tstring overloads causing link errors
   - Keep only std::string API versions
@@ -207,7 +207,7 @@
   - _Requirements: FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Implement IInputHook for Windows - Step 1: Create InputHookWin32 class implementing IInputHook, Step 2: Use SetWindowsHookEx with WH_KEYBOARD_LL, Step 3: In hook procedure convert KBDLLHOOKSTRUCT to KeyEvent and invoke callback, Step 4: Return 1 if callback returns true (consume), otherwise CallNextHookEx, Step 5: Implement install/uninstall managing hook handle | Restrictions: Maintain existing Windows hook behavior, Ensure thread-safety in callback invocation, Handle hook errors gracefully | Success: Hook installs correctly, Callbacks invoked properly, Event consumption works, Key remapping functional, No crashes or hangs | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.18 Create InputHookLinux implementation (already done) ⚠️ **INCOMPLETE - CODE REVIEW FOUND ISSUE**
+- [x] 1.1.18 Create InputHookLinux implementation (already done) ⚠️ **INCOMPLETE - CODE REVIEW FOUND ISSUE** -> Completed by Session A
   - File: src/platform/linux/input_hook_linux.h/.cpp (actual location)
   - Implement IInputHook for Linux using XRecord extension
   - Handle asynchronous event callbacks
@@ -727,7 +727,7 @@
   - _Requirements: FR-3.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer with Linux system expertise | Task: Add getProcessName and getProcessPath methods - Step 1: Implement getProcessName reading /proc/{pid}/comm file, Step 2: Implement getProcessPath using readlink on /proc/{pid}/exe, Step 3: Extract PID from WindowHandle (on Linux windows have associated PID via _NET_WM_PID property), Step 4: Update updateWindowInfo to call these methods and display in UI, Step 5: Handle errors when process info unavailable | Restrictions: Check file existence before reading, Handle readlink errors, Work with root-owned processes (limited info), Parse PID from window properties correctly | Success: Process name displays correctly, Process path shows full executable path, Handles missing process info gracefully, Works with various applications, No crashes on permission errors | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [-] 3.5 Implement keymap status query
+- [x] 3.5 Implement keymap status query -> Completed by Session B
   - File: src/ui/qt/dialog_investigate_qt.cpp, src/core/engine.cpp
   - Send IPC request to engine for keymap status
   - Display matched keymap and active window regex
@@ -735,7 +735,7 @@
   - _Requirements: FR-3.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with IPC expertise | Task: Implement keymap status query - Step 1: In InvestigateDialog add IIPCChannel member, Step 2: In updateWindowInfo send CmdInvestigate message with WindowHandle, Step 3: In Engine add handleInvestigateRequest method finding matching keymap for window, Step 4: Engine sends response with keymap name, matched regex, active modifiers, Step 5: InvestigateDialog receives response and updates KeymapStatusPanel labels | Restrictions: Use IPC channel for communication, Don't block UI waiting for response, Handle engine not responding, Format keymap info clearly | Success: IPC request sent correctly, Engine finds matching keymap, Response received in dialog, Keymap info displays: name, regex pattern, modifiers, No keymap shown when using default | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.6 Add live log panel integration
+- [x] 3.6 Add live log panel integration -> Completed by Session B
   - File: src/ui/qt/dialog_investigate_qt.cpp, src/core/engine.cpp
   - Stream key events from engine to dialog when active
   - Display real-time key events in LiveLogPanel
@@ -743,7 +743,7 @@
   - _Requirements: FR-3.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer with real-time data streaming | Task: Implement live logging - Step 1: Add m_investigateMode boolean to Engine, Step 2: When InvestigateDialog opens send EnableInvestigateMode IPC message, Step 3: In Engine processKey method if m_investigateMode is true send LogMessage with formatted key event, Step 4: Format includes timestamp, DOWN/UP, keycode, modifiers, HANDLED/PASSED status, Step 5: InvestigateDialog receives messages and appends to QTextEdit, auto-scrolls to bottom | Restrictions: Don't overwhelm UI with too many messages (limit rate if needed), Use QMetaObject::invokeMethod for thread-safe UI updates, Disable investigate mode when dialog closes, Keep message format readable | Success: Key events stream to dialog in real-time, Format shows all relevant info, Auto-scrolls to latest, No UI lag with rapid keypresses, Mode disables when dialog closed | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.7 Add copy-to-clipboard functionality
+- [x] 3.7 Add copy-to-clipboard functionality -> Completed by Session B
   - File: src/ui/qt/dialog_investigate_qt.cpp
   - Copy window info and keymap status to clipboard
   - Format as human-readable text
@@ -751,7 +751,7 @@
   - _Requirements: FR-3.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add copy functionality - Step 1: Add Copy to Clipboard button to dialog, Step 2: Implement onCopyClicked slot gathering all window info, keymap status, and recent log entries, Step 3: Format as text with sections: Window Information, Process Information, Keymap Status, Recent Events (last 20 lines from log), Step 4: Use QApplication::clipboard()->setText(formattedText), Step 5: Show brief notification "Copied to clipboard" | Restrictions: Format text clearly with headers, Include all visible information, Handle empty fields gracefully, Don't copy if no window selected | Success: Button copies all info to clipboard, Text formatted clearly with sections, Paste works in other applications, Notification confirms copy, Button disabled when no window selected | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.8 Implement window condition generator
+- [x] 3.8 Implement window condition generator -> Completed by Session B
   - File: src/ui/qt/dialog_investigate_qt.cpp
   - Generate .mayu window condition syntax from current window
   - Provide multiple pattern options (exact, prefix, regex)
@@ -759,7 +759,7 @@
   - _Requirements: FR-3.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer with YAMY configuration expertise | Task: Add condition generator - Step 1: Add Generate Condition button, Step 2: Implement onGenerateCondition slot creating dialog with options: Match by Title (Exact/Contains/Regex), Match by Class (Exact/Regex), Combine Title and Class, Step 3: Generate .mayu syntax based on selection: "window title /regex/" or "window class /regex/" or both, Step 4: Show generated condition in QTextEdit with syntax highlighting, Step 5: Add Copy button to copy condition | Restrictions: Escape regex special characters in exact match mode, Provide examples for each option, Generate valid .mayu syntax, Offer helpful patterns like ".*Visual Studio Code.*" | Success: Generator creates valid .mayu conditions, Multiple pattern types available, Exact match escapes special chars, Regex patterns work correctly, Copy button functional, Examples helpful | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.9 Add visual window highlighting
+- [x] 3.9 Add visual window highlighting -> Completed by Session B
   - File: src/ui/qt/crosshair_widget_qt.cpp
   - Draw border around window under cursor during selection
   - Use semi-transparent colored overlay
@@ -767,7 +767,7 @@
   - _Requirements: FR-3.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer with X11 graphics | Task: Add window highlighting - Step 1: In CrosshairWidget mouseMoveEvent get window under cursor, Step 2: Get window rect using IWindowSystem, Step 3: In paintEvent draw semi-transparent colored rectangle (rgba 0, 255, 0, 100) around window rect, Step 4: Update on every mouse move, Step 5: Handle multiple monitors correctly | Restrictions: Use efficient drawing (don't flicker), Draw in screen coordinates, Handle window rect correctly across monitors, Don't interfere with crosshair drawing, Keep overlay responsive | Success: Window under cursor highlighted with green semi-transparent border, Highlight updates smoothly as cursor moves, Works across multiple monitors, No flicker, Doesn't obscure crosshair | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.10 Create comprehensive tests for investigate dialog
+- [x] 3.10 Create comprehensive tests for investigate dialog -> Completed by Session B
   - File: tests/ui/dialog_investigate_test.cpp
   - Test crosshair widget, window info retrieval, keymap query
   - Verify IPC communication and UI updates
@@ -781,7 +781,7 @@
 
 **Purpose**: Feature parity with Windows log viewer (FR-4)
 
-- [ ] 4.1 Create LogEntry structure and Logger class
+- [x] 4.1 Create LogEntry structure and Logger class -> Completed by Session C
   - File: src/core/logging/log_entry.h, src/core/logging/logger.h, src/core/logging/logger.cpp
   - Define structured logging with levels and categories
   - Implement singleton Logger with listener pattern
@@ -789,7 +789,7 @@
   - _Requirements: FR-4.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Create structured logging system - Step 1: Define LogLevel enum (Trace, Info, Warning, Error), Step 2: Define LogEntry struct with fields: timestamp, level, category, message, format() method, Step 3: Create Logger singleton class with methods: log(level, category, msg), setMinLevel, addListener, Step 4: Use std::vector for listeners, std::mutex for thread-safety, Step 5: Implement log method filtering by level and invoking all listeners | Restrictions: Thread-safe implementation, Efficient listener invocation, Don't block logging calls, Support multiple listeners, Use structured format | Success: Logger singleton accessible, Log levels filterable, Listeners receive all matching logs, Thread-safe operation, Format method produces readable output | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.2 Integrate Logger into Engine
+- [x] 4.2 Integrate Logger into Engine -> Completed by Session C
   - File: src/core/engine.cpp, src/core/parser/parser.cpp, src/core/input/keyboard.cpp
   - Replace printf/cout with Logger calls
   - Add logging at key points: startup, config load, key events, errors
@@ -883,7 +883,7 @@
 
 **Purpose**: Real-time engine status updates to GUI (FR-5)
 
-- [ ] 5.1 Extend MessageType enum with notification types
+- [x] 5.1 Extend MessageType enum with notification types -> Completed by Session D
   - File: src/platform/ipc.h
   - Add engine lifecycle, config, runtime, performance message types
   - Document each message type
@@ -891,7 +891,7 @@
   - _Requirements: FR-5.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Extend MessageType enum - Step 1: Add engine lifecycle types: EngineStarting, EngineStarted, EngineStopping, EngineStopped, EngineError, Step 2: Add config types: ConfigLoading, ConfigLoaded, ConfigError, ConfigValidating, Step 3: Add runtime types: KeymapSwitched, FocusChanged, ModifierChanged, Step 4: Add performance types: LatencyReport, CpuUsageReport, Step 5: Document purpose of each type in comments | Restrictions: Use explicit hex values (0x1007, etc), Don't conflict with existing message types, Keep names descriptive, Document data field usage for each type | Success: All notification types defined, Hex values unique and sequential, Types well documented, Covers all engine states and events, Enum extensible for future types | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.2 Implement EngineState enum and state machine
+- [x] 5.2 Implement EngineState enum and state machine -> Completed by Session D
   - File: src/core/engine_state.h, src/core/engine.cpp
   - Define engine states: Stopped, Loading, Running, Error
   - Implement state transitions in Engine class
@@ -899,7 +899,7 @@
   - _Requirements: FR-5.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Implement engine state machine - Step 1: Define EngineState enum with Stopped, Loading, Running, Error, Step 2: Add EngineState m_state member to Engine, Step 3: Add setState method updating state and logging transition, Step 4: Implement state transitions: Stopped->Loading on start(), Loading->Running after successful init, any->Error on failure, Running->Stopped on stop(), Step 5: Add getState() accessor | Restrictions: Validate state transitions (don't allow invalid), Log all state changes, Thread-safe state access, Initialize to Stopped, Don't allow Running->Loading directly | Success: State machine implemented, Valid transitions only, All state changes logged, Thread-safe access, getState returns current state, State persists correctly across operations | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.3 Add notifyGUI method to Engine
+- [x] 5.3 Add notifyGUI method to Engine -> Completed by Session D
   - File: src/core/engine.cpp
   - Send notification messages via IPC channel
   - Include state and relevant data in notifications
@@ -907,7 +907,7 @@
   - _Requirements: FR-5.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Implement notifyGUI method - Step 1: Add void notifyGUI(MessageType type, const std::string& data = "") method, Step 2: Create Message with type, wparam = current state, data = provided string, Step 3: Send via m_ipc->send(msg), Step 4: Handle IPC send failures gracefully (log but don't crash), Step 5: Call notifyGUI at appropriate points in engine lifecycle | Restrictions: Don't block on IPC send, Handle null IPC channel, Include relevant data in message, Log notification send, Don't send too frequently (debounce if needed) | Success: notifyGUI method sends IPC messages, State included in wparam, Data field used appropriately, Failures handled gracefully, Notifications sent at right times, No performance impact from notification sending | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.4 Add engine start/stop notifications
+- [x] 5.4 Add engine start/stop notifications -> Completed by Session D
   - File: src/core/engine.cpp
   - Send EngineStarting, EngineStarted, EngineStopped notifications
   - Include error details in EngineError notifications
@@ -915,7 +915,7 @@
   - _Requirements: FR-5.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Add lifecycle notifications - Step 1: In Engine::start() call notifyGUI(EngineStarting) before loading config, Step 2: After successful initialization call notifyGUI(EngineStarted), Step 3: On error catch exception and call notifyGUI(EngineError) with error message in data field, Step 4: In Engine::stop() call notifyGUI(EngineStopping) before cleanup, then notifyGUI(EngineStopped) after, Step 5: Ensure state changes before notifications sent | Restrictions: Send notifications in correct order, Include error details in EngineError, Don't send duplicate notifications, Ensure notifications sent even if subsequent operations fail | Success: Notifications sent at correct lifecycle points, EngineStarting sent before loading, EngineStarted after success, EngineError on failures with details, EngineStopping/Stopped on stop, Order consistent | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.5 Add configuration notifications
+- [x] 5.5 Add configuration notifications -> Completed by Session D
   - File: src/core/engine.cpp, src/core/parser/parser.cpp
   - Send ConfigLoading, ConfigLoaded, ConfigError notifications
   - Include config file name in notifications
@@ -923,7 +923,7 @@
   - _Requirements: FR-5.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Add config notifications - Step 1: In loadConfiguration method call notifyGUI(ConfigLoading) with config path in data, Step 2: After successful parse call notifyGUI(ConfigLoaded) with config name, Step 3: On parse errors call notifyGUI(ConfigError) with error message and line number, Step 4: In switchConfiguration send ConfigLoading/ConfigLoaded sequence, Step 5: Add ConfigValidating notification when validation starts | Restrictions: Include config file name not full path in ConfigLoaded, Format error messages clearly with line numbers, Don't overwhelm with notifications during rapid config switches, Send even if config unchanged | Success: ConfigLoading sent when loading starts, ConfigLoaded after successful load with name, ConfigError on failures with details, Config switches send full sequence, Validation notifications sent, Config name displayed to user | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.6 Add runtime event notifications
+- [x] 5.6 Add runtime event notifications -> Completed by Session D
   - File: src/core/engine.cpp
   - Send KeymapSwitched, FocusChanged, ModifierChanged notifications
   - Debounce frequent events
@@ -931,7 +931,7 @@
   - _Requirements: FR-5.6_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Add runtime notifications - Step 1: When active keymap changes call notifyGUI(KeymapSwitched) with keymap name, Step 2: When window focus changes call notifyGUI(FocusChanged) with window title, Step 3: When modifier state changes significantly call notifyGUI(ModifierChanged) with modifier string, Step 4: Debounce FocusChanged (don't send more than once per 100ms), Step 5: Only send ModifierChanged on major changes (not every key) | Restrictions: Debounce appropriately to avoid spam, Include relevant context in data field, Don't impact key processing performance, Send only significant changes not every event | Success: KeymapSwitched sent when keymap changes, FocusChanged debounced and includes window title, ModifierChanged on significant changes only, No performance impact, Notifications useful for user feedback | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.7 Implement performance metrics notifications
+- [x] 5.7 Implement performance metrics notifications -> Completed by Session D
   - File: src/core/engine.cpp, src/utils/metrics.cpp
   - Collect and report latency and CPU usage metrics
   - Send periodic LatencyReport and CpuUsageReport
