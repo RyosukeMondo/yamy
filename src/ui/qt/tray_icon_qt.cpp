@@ -2,8 +2,10 @@
 #include "dialog_settings_qt.h"
 #include "dialog_log_qt.h"
 #include "dialog_about_qt.h"
+#include "../../core/settings/config_manager.h"
 #include <QApplication>
 #include <QMessageBox>
+#include <QSignalMapper>
 
 // Stub Engine class definition (matches stub in main_qt.cpp)
 // This will be replaced once core YAMY is refactored for Linux
@@ -21,6 +23,8 @@ TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)
     , m_engine(engine)
     , m_menu(nullptr)
+    , m_configMenu(nullptr)
+    , m_configActionGroup(nullptr)
     , m_actionEnable(nullptr)
     , m_actionReload(nullptr)
     , m_actionSettings(nullptr)
@@ -202,7 +206,16 @@ void TrayIconQt::createMenu()
     m_actionReload = m_menu->addAction("Reload");
     connect(m_actionReload, &QAction::triggered, this, &TrayIconQt::onReload);
 
-    // TODO: Keymap submenu will be added in Phase 4
+    // Configurations submenu
+    m_configMenu = m_menu->addMenu("Configurations");
+    m_configActionGroup = new QActionGroup(this);
+    m_configActionGroup->setExclusive(true);
+
+    // Populate the config menu
+    populateConfigMenu();
+
+    // Connect the config menu's aboutToShow signal to refresh the list
+    connect(m_configMenu, &QMenu::aboutToShow, this, &TrayIconQt::populateConfigMenu);
 
     m_menu->addSeparator();
 
@@ -253,4 +266,113 @@ void TrayIconQt::updateMenuState()
     bool engineEnabled = m_engine->getIsEnabled();
     m_actionEnable->setChecked(engineEnabled);
     m_enabled = engineEnabled;
+}
+
+void TrayIconQt::populateConfigMenu()
+{
+    if (!m_configMenu) {
+        return;
+    }
+
+    // Clear existing actions from the action group and menu
+    for (QAction* action : m_configActionGroup->actions()) {
+        m_configActionGroup->removeAction(action);
+    }
+    m_configMenu->clear();
+
+    // Get configurations from ConfigManager
+    ConfigManager& configMgr = ConfigManager::instance();
+    std::vector<ConfigEntry> configs = configMgr.listConfigs();
+    int activeIndex = configMgr.getActiveIndex();
+
+    // Add configuration entries
+    if (configs.empty()) {
+        QAction* noConfigAction = m_configMenu->addAction("(No configurations)");
+        noConfigAction->setEnabled(false);
+    } else {
+        // Limit displayed configs to prevent menu overflow
+        constexpr int MAX_DISPLAYED_CONFIGS = 20;
+        int displayCount = std::min(static_cast<int>(configs.size()), MAX_DISPLAYED_CONFIGS);
+
+        for (int i = 0; i < displayCount; ++i) {
+            const ConfigEntry& config = configs[i];
+            QString displayName = QString::fromStdString(config.name);
+
+            // Show path for duplicate names or truncate long names
+            if (displayName.length() > 30) {
+                displayName = displayName.left(27) + "...";
+            }
+
+            QAction* action = m_configMenu->addAction(displayName);
+            action->setCheckable(true);
+            action->setChecked(i == activeIndex);
+            action->setData(i);  // Store index for switching
+            action->setEnabled(config.exists);  // Disable if file doesn't exist
+
+            // Add tooltip with full path
+            action->setToolTip(QString::fromStdString(config.path));
+
+            m_configActionGroup->addAction(action);
+
+            // Connect using lambda to capture index
+            connect(action, &QAction::triggered, this, [this, i]() {
+                onSwitchConfig(i);
+            });
+        }
+
+        // Show indicator if more configs exist
+        if (static_cast<int>(configs.size()) > MAX_DISPLAYED_CONFIGS) {
+            m_configMenu->addSeparator();
+            QAction* moreAction = m_configMenu->addAction(
+                QString("... and %1 more").arg(configs.size() - MAX_DISPLAYED_CONFIGS));
+            moreAction->setEnabled(false);
+        }
+    }
+
+    // Add separator and "Manage Configurations..." action
+    m_configMenu->addSeparator();
+    QAction* manageAction = m_configMenu->addAction("Manage Configurations...");
+    connect(manageAction, &QAction::triggered, this, &TrayIconQt::onManageConfigs);
+}
+
+void TrayIconQt::onSwitchConfig(int index)
+{
+    ConfigManager& configMgr = ConfigManager::instance();
+
+    if (configMgr.setActiveConfig(index)) {
+        std::vector<ConfigEntry> configs = configMgr.listConfigs();
+        if (index >= 0 && index < static_cast<int>(configs.size())) {
+            QString configName = QString::fromStdString(configs[index].name);
+
+            // Show notification
+            showNotification(
+                "YAMY",
+                QString("Switched to configuration: %1").arg(configName),
+                QSystemTrayIcon::Information
+            );
+
+            // Update tooltip
+            updateTooltip(QString("YAMY - %1").arg(configName));
+        }
+    } else {
+        showNotification(
+            "YAMY",
+            "Failed to switch configuration",
+            QSystemTrayIcon::Warning
+        );
+    }
+}
+
+void TrayIconQt::onManageConfigs()
+{
+    // ConfigManagerDialog will be implemented in task 2.2.2
+    // For now, show a placeholder message
+    QMessageBox::information(
+        nullptr,
+        "Manage Configurations",
+        "Configuration manager dialog will be available soon.\n\n"
+        "For now, you can:\n"
+        "- Edit .mayu files directly in ~/.yamy/\n"
+        "- Use the Configurations submenu to switch between configs"
+    );
 }

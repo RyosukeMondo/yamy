@@ -5,10 +5,12 @@
 #include <QIcon>
 #include <QObject>
 #include <QCheckBox>
+#include <QActionGroup>
 #include <memory>
 
 // Forward declaration
 class Engine;
+class ConfigManager;
 
 /**
  * @brief Qt-based system tray icon for Linux
@@ -102,6 +104,17 @@ private slots:
      */
     void onExit();
 
+    /**
+     * @brief Switch to a configuration by index
+     * @param index Index of the configuration to switch to
+     */
+    void onSwitchConfig(int index);
+
+    /**
+     * @brief Open configuration manager dialog
+     */
+    void onManageConfigs();
+
 private:
     /**
      * @brief Create and setup context menu
@@ -118,11 +131,20 @@ private:
      */
     void updateMenuState();
 
+    /**
+     * @brief Populate the configurations submenu with available configs
+     */
+    void populateConfigMenu();
+
     // Engine instance (not owned)
     Engine* m_engine;
 
     // Context menu
     QMenu* m_menu;
+
+    // Configurations submenu
+    QMenu* m_configMenu;
+    QActionGroup* m_configActionGroup;
 
     // Menu actions
     QAction* m_actionEnable;
