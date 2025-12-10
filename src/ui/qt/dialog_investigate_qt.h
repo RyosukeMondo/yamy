@@ -12,6 +12,9 @@
 
 #include <memory>
 
+#include "core/ipc_messages.h"
+#include "core/platform/ipc_channel_interface.h"
+
 class CrosshairWidget;
 class Engine;
 
@@ -43,6 +46,18 @@ public:
     void setEngine(Engine* engine);
 
     /**
+     * @brief Set the window system for testing
+     * @param ws Window system instance
+     */
+    void setWindowSystem(std::unique_ptr<yamy::platform::IWindowSystem> ws) { m_windowSystem = std::move(ws); }
+
+    /**
+     * @brief Set the IPC channel for testing
+     * @param ipc IPC channel instance
+     */
+    void setIpcChannel(std::unique_ptr<yamy::platform::IIPCChannel> ipc) { m_ipcChannel = std::move(ipc); }
+
+    /**
      * @brief Destructor
      */
     ~DialogInvestigateQt() override;
@@ -70,6 +85,16 @@ private slots:
      * @brief Handle selection cancelled (Escape pressed)
      */
     void onSelectionCancelled();
+
+    /**
+     * @brief Handle IPC messages from the engine
+     * @param message The received message
+     */
+    void onIpcMessageReceived(const yamy::ipc::Message& message);
+
+protected:
+    void showEvent(QShowEvent* event) override;
+    void hideEvent(QHideEvent* event) override;
 
 private:
     /**
@@ -144,8 +169,15 @@ private:
                             const std::string& className,
                             const std::string& titleName);
 
+namespace yamy::ipc {
+    struct Message;
+}
+
     // Engine instance (not owned)
     Engine* m_engine;
+
+    // IPC channel for communicating with the engine
+    std::unique_ptr<yamy::platform::IIPCChannel> m_ipcChannel;
 
     // Window system interface for platform abstraction
     std::unique_ptr<yamy::platform::IWindowSystem> m_windowSystem;
@@ -172,6 +204,8 @@ private:
 
     // Buttons
     QPushButton* m_btnSelectWindow;
+    QPushButton* m_btnCopyToClipboard;
+    QPushButton* m_btnGenerateCondition;
     QPushButton* m_btnClose;
 
     // Currently selected window

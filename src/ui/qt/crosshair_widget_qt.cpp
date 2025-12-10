@@ -1,4 +1,5 @@
 #include "crosshair_widget_qt.h"
+#include "core/platform/window_system_factory.h"
 
 #include <QPainter>
 #include <QMouseEvent>
@@ -14,6 +15,7 @@ CrosshairWidget::CrosshairWidget(QWidget* parent)
     : QWidget(parent)
     , m_active(false)
     , m_updateTimer(nullptr)
+    , m_windowSystem(yamy::platform::createWindowSystem())
 {
     setupOverlay();
 }
@@ -150,10 +152,17 @@ void CrosshairWidget::paintEvent(QPaintEvent* /*event*/)
     QRect topRect(0, 10, width(), 30);
     painter.setPen(Qt::white);
     painter.drawText(topRect, Qt::AlignHCenter, instructionText);
+
+    // Draw highlight rect
+    if (m_highlightRect.isValid()) {
+        QColor highlightColor(0, 255, 0, 100);
+        painter.fillRect(m_highlightRect.left, m_highlightRect.top, m_highlightRect.width(), m_highlightRect.height(), highlightColor);
+    }
 }
 
 void CrosshairWidget::mousePressEvent(QMouseEvent* event)
 {
+    m_highlightRect = yamy::platform::Rect();
     if (event->button() == Qt::LeftButton) {
         // Get window under cursor
         yamy::platform::WindowHandle hwnd = getWindowAtCursor();
@@ -168,13 +177,41 @@ void CrosshairWidget::mousePressEvent(QMouseEvent* event)
 
 void CrosshairWidget::mouseMoveEvent(QMouseEvent* /*event*/)
 {
-    // Update is handled by timer for smoother rendering
-    // Just trigger immediate update if needed
+    // Simplified getWindowAtCursor logic that doesn't hide the overlay
+    Display* display = QX11Info::display();
+    yamy::platform::WindowHandle hwnd = nullptr;
+    if (display) {
+        Window root = DefaultRootWindow(display);
+        Window child = None;
+        int root_x, root_y, win_x, win_y;
+        unsigned int mask;
+        Window returnRoot = None;
+        XQueryPointer(display, root, &returnRoot, &child, &root_x, &root_y, &win_x, &win_y, &mask);
+        
+        if (child != None) {
+            Window target = child;
+            while (child != None) {
+                target = child;
+                XQueryPointer(display, target, &returnRoot, &child, &root_x, &root_y, &win_x, &win_y, &mask);
+            }
+            hwnd = reinterpret_cast<yamy::platform::WindowHandle>(target);
+        }
+    }
+
+    if (hwnd && hwnd != reinterpret_cast<yamy::platform::WindowHandle>(winId())) {
+        // Store the window rect in screen coordinates
+        m_windowSystem->getWindowRect(hwnd, &m_highlightRect);
+    } else {
+        // Clear rect if no window or it's our own
+        m_highlightRect = yamy::platform::Rect();
+    }
+    
     update();
 }
 
 void CrosshairWidget::keyPressEvent(QKeyEvent* event)
 {
+    m_highlightRect = yamy::platform::Rect();
     if (event->key() == Qt::Key_Escape) {
         deactivate();
         emit selectionCancelled();

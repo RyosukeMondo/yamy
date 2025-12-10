@@ -2,7 +2,8 @@
 
 #include <QWidget>
 #include <QTimer>
-#include "types.h"
+#include "core/platform/window_system_interface.h"
+#include <memory>
 
 /**
  * @brief Crosshair widget for window selection
@@ -98,4 +99,6 @@ private:
 
     bool m_active{false};
     QTimer* m_updateTimer{nullptr};
+    std::unique_ptr<yamy::platform::IWindowSystem> m_windowSystem;
+    yamy::platform::Rect m_highlightRect;
 };

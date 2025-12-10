@@ -1,6 +1,9 @@
 #include "dialog_investigate_qt.h"
 #include "crosshair_widget_qt.h"
+#include "dialog_condition_generator_qt.h"
 #include "../../core/engine/engine.h"
+#include "../../core/platform/ipc_channel_factory.h"
+#include "../../core/ipc_messages.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -10,6 +13,8 @@
 #include <QFile>
 #include <QTextStream>
 #include <QFileInfo>
+#include <QClipboard>
+#include <QApplication>
 
 #include <unistd.h>
 #include <limits.h>
@@ -42,6 +47,14 @@ DialogInvestigateQt::DialogInvestigateQt(Engine* engine, QWidget* parent)
     setModal(false);
 
     setupUI();
+
+    // Setup IPC channel
+    m_ipcChannel = yamy::platform::createIPCChannel("yamy-investigate");
+    if (m_ipcChannel) {
+        connect(m_ipcChannel.get(), &yamy::platform::IIPCChannel::messageReceived,
+                this, &DialogInvestigateQt::onIpcMessageReceived);
+        m_ipcChannel->connect("yamy-engine");
+    }
 }
 
 DialogInvestigateQt::~DialogInvestigateQt()
@@ -95,6 +108,14 @@ void DialogInvestigateQt::setupUI()
     // Dialog buttons
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch();
+
+    m_btnCopyToClipboard = new QPushButton("Copy to Clipboard");
+    connect(m_btnCopyToClipboard, &QPushButton::clicked, this, &DialogInvestigateQt::onCopyToClipboard);
+    buttonLayout->addWidget(m_btnCopyToClipboard);
+
+    m_btnGenerateCondition = new QPushButton("Generate Condition");
+    connect(m_btnGenerateCondition, &QPushButton::clicked, this, &DialogInvestigateQt::onGenerateCondition);
+    buttonLayout->addWidget(m_btnGenerateCondition);
 
     m_btnClose = new QPushButton("Close");
     connect(m_btnClose, &QPushButton::clicked, this, &QDialog::close);
@@ -434,43 +455,113 @@ void DialogInvestigateQt::updateKeymapStatus(
     const std::string& className,
     const std::string& titleName)
 {
-    if (!m_engine) {
-        // No engine available - show placeholder
-        m_labelKeymapName->setText("(engine not available)");
-        m_labelMatchedRegex->setText("-");
-        m_labelModifiers->setText("-");
+    if (!m_ipcChannel || !m_ipcChannel->isConnected()) {
+        m_labelKeymapName->setText("(IPC not connected)");
         return;
     }
 
-    // Query the engine for keymap status
-    Engine::KeymapStatus status = m_engine->queryKeymapForWindow(
-        hwnd, className, titleName);
+    yamy::ipc::InvestigateWindowRequest request;
+    request.hwnd = hwnd;
 
-    // Update keymap name
-    m_labelKeymapName->setText(QString::fromStdString(status.keymapName));
+    yamy::ipc::Message message;
+    message.type = yamy::ipc::CmdInvestigateWindow;
+    message.data = &request;
+    message.size = sizeof(request);
 
-    // Update matched regex - combine class and title if both present
-    QString regexText;
-    if (!status.matchedClassRegex.empty() && status.matchedClassRegex != ".*") {
-        regexText = QString("Class: /%1/").arg(
-            QString::fromStdString(status.matchedClassRegex));
-    }
-    if (!status.matchedTitleRegex.empty() && status.matchedTitleRegex != ".*") {
-        if (!regexText.isEmpty()) {
-            regexText += "\n";
+    m_ipcChannel->send(message);
+}
+
+void DialogInvestigateQt::onIpcMessageReceived(const yamy::ipc::Message& message)
+{
+    if (message.type == yamy::ipc::RspInvestigateWindow) {
+        if (message.size >= sizeof(yamy::ipc::InvestigateWindowResponse)) {
+            const auto* response = static_cast<const yamy::ipc::InvestigateWindowResponse*>(message.data);
+
+            m_labelKeymapName->setText(QString::fromUtf8(response->keymapName));
+            m_labelModifiers->setText(QString::fromUtf8(response->activeModifiers));
+
+            QString regexText;
+            if (response->matchedClassRegex[0] != '\0' && strcmp(response->matchedClassRegex, ".*") != 0) {
+                regexText = QString("Class: /%1/").arg(QString::fromUtf8(response->matchedClassRegex));
+            }
+            if (response->matchedTitleRegex[0] != '\0' && strcmp(response->matchedTitleRegex, ".*") != 0) {
+                if (!regexText.isEmpty()) {
+                    regexText += "\n";
+                }
+                regexText += QString("Title: /%1/").arg(QString::fromUtf8(response->matchedTitleRegex));
+            }
+
+            if (regexText.isEmpty()) {
+                if (response->isDefault) {
+                    regexText = "(global keymap)";
+                } else {
+                    regexText = "(no pattern)";
+                }
+            }
+            m_labelMatchedRegex->setText(regexText);
         }
-        regexText += QString("Title: /%1/").arg(
-            QString::fromStdString(status.matchedTitleRegex));
-    }
-    if (regexText.isEmpty()) {
-        if (status.isDefault) {
-            regexText = "(global keymap)";
-        } else {
-            regexText = "(no pattern)";
+    } else if (message.type == yamy::ipc::NtfKeyEvent) {
+        if (message.size >= sizeof(yamy::ipc::KeyEventNotification)) {
+            const auto* notification = static_cast<const yamy::ipc::KeyEventNotification*>(message.data);
+            m_liveLog->append(QString::fromUtf8(notification->keyEvent));
         }
     }
-    m_labelMatchedRegex->setText(regexText);
+}
 
-    // Update modifiers
-    m_labelModifiers->setText(QString::fromStdString(status.activeModifiers));
+void DialogInvestigateQt::showEvent(QShowEvent* event)
+{
+    QDialog::showEvent(event);
+    if (m_ipcChannel && m_ipcChannel->isConnected()) {
+        yamy::ipc::Message message;
+        message.type = yamy::ipc::CmdEnableInvestigateMode;
+        m_ipcChannel->send(message);
+    }
+}
+
+void DialogInvestigateQt::hideEvent(QHideEvent* event)
+{
+    QDialog::hideEvent(event);
+    if (m_ipcChannel && m_ipcChannel->isConnected()) {
+        yamy::ipc::Message message;
+        message.type = yamy::ipc::CmdDisableInvestigateMode;
+        m_ipcChannel->send(message);
+    }
+}
+
+#include <QClipboard>
+#include <QApplication>
+
+void DialogInvestigateQt::onCopyToClipboard()
+{
+    QString textToCopy;
+    textToCopy += "Window Information\n";
+    textToCopy += "------------------\n";
+    textToCopy += "Handle: " + m_labelHandle->text() + "\n";
+    textToCopy += "Title: " + m_labelTitle->text() + "\n";
+    textToCopy += "Class: " + m_labelClass->text() + "\n";
+    textToCopy += "Process: " + m_labelProcess->text() + "\n";
+    textToCopy += "Path: " + m_labelProcessPath->text() + "\n";
+    textToCopy += "Geometry: " + m_labelGeometry->text() + "\n";
+    textToCopy += "State: " + m_labelState->text() + "\n";
+    textToCopy += "\n";
+    textToCopy += "Keymap Status\n";
+    textToCopy += "-------------\n";
+    textToCopy += "Keymap: " + m_labelKeymapName->text() + "\n";
+    textToCopy += "Matched Regex: " + m_labelMatchedRegex->text() + "\n";
+    textToCopy += "Modifiers: " + m_labelModifiers->text() + "\n";
+    textToCopy += "\n";
+    textToCopy += "Live Key Events\n";
+    textToCopy += "---------------\n";
+    textToCopy += m_liveLog->toPlainText();
+
+    QClipboard* clipboard = QApplication::clipboard();
+    clipboard->setText(textToCopy);
+}
+
+void DialogInvestigateQt::onGenerateCondition()
+{
+    if (m_selectedWindow) {
+        DialogConditionGeneratorQt dialog(m_labelTitle->text(), m_labelClass->text(), this);
+        dialog.exec();
+    }
 }
