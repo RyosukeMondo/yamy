@@ -35,8 +35,8 @@
   - _Requirements: FR-1.2, FR-1.6_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: ConfigStore has duplicate overloads for tstring and std::string causing link errors on Linux, Remove tstring versions - Step 1: Remove overloads bool read(const tstring& key, tstring* value), bool write(const tstring& key, const tstring& value), bool exists(const tstring& key), Step 2: Keep only std::string versions, Step 3: Update internal storage to use std::string keys | Restrictions: Do not break existing callers, Maintain API compatibility where possible, Ensure no ambiguity errors during compilation | Success: No tstring overloads remain, Only std::string API exists, No compilation errors, File compiles on Linux | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.4 Update config_store.cpp implementation
-  - File: src/core/settings/config_store.cpp
+- [x] 1.1.4 Update config_store.cpp implementation
+  - File: src/core/settings/config_store.cpp (actual: src/platform/windows/registry.cpp)
   - Update implementation to use std::string
   - Add UTF-8 to UTF-16 bridge for Windows registry calls
   - _Leverage: src/core/settings/config_store.h_
