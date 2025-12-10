@@ -24,8 +24,8 @@ void LayoutManager::restrictSmallestSize(Restrict i_restrict, yamy::platform::Si
     if (i_size)
         m_smallestSize = *i_size;
     else {
-        RECT rc;
-        GetWindowRect(static_cast<HWND>(m_hwnd), &rc);
+        yamy::platform::Rect rc;
+        GetWindowRect(static_cast<HWND>(m_hwnd), reinterpret_cast<RECT*>(&rc));
         m_smallestSize.cx = rc.right - rc.left;
         m_smallestSize.cy = rc.bottom - rc.top;
     }
@@ -40,8 +40,8 @@ void LayoutManager::restrictLargestSize(Restrict i_restrict, yamy::platform::Siz
     if (i_size)
         m_largestSize = *i_size;
     else {
-        RECT rc;
-        GetWindowRect(static_cast<HWND>(m_hwnd), &rc);
+        yamy::platform::Rect rc;
+        GetWindowRect(static_cast<HWND>(m_hwnd), reinterpret_cast<RECT*>(&rc));
         m_largestSize.cx = rc.right - rc.left;
         m_largestSize.cy = rc.bottom - rc.top;
     }
@@ -56,19 +56,18 @@ bool LayoutManager::addItem(yamy::platform::WindowHandle i_hwnd, Origin i_origin
     if (!i_hwnd)
         return false;
     item.m_hwnd = i_hwnd;
-    HWND hwnd = static_cast<HWND>(i_hwnd);
 #ifdef MAYU64
-    if (!(GetWindowLongPtr(hwnd, GWL_STYLE) & WS_CHILD))
+    if (!(GetWindowLongPtr(static_cast<HWND>(i_hwnd), GWL_STYLE) & WS_CHILD))
 #else
-    if (!(GetWindowLong(hwnd, GWL_STYLE) & WS_CHILD))
+    if (!(GetWindowLong(static_cast<HWND>(i_hwnd), GWL_STYLE) & WS_CHILD))
 #endif
         return false;
-    item.m_hwndParent = (yamy::platform::WindowHandle)GetParent(hwnd);
+    item.m_hwndParent = (yamy::platform::WindowHandle)GetParent(static_cast<HWND>(i_hwnd));
     if (!item.m_hwndParent)
         return false;
 
     RECT rc;
-    getChildWindowRect(hwnd, &rc);
+    getChildWindowRect(static_cast<HWND>(i_hwnd), &rc);
     item.m_rc.left = rc.left; item.m_rc.top = rc.top; item.m_rc.right = rc.right; item.m_rc.bottom = rc.bottom;
 
     RECT rcParent;
@@ -122,10 +121,8 @@ yamy::platform::Rect LayoutManager::calculateRect(const yamy::platform::Rect& or
 void LayoutManager::adjust() const
 {
     for (Items::const_iterator i = m_items.begin(); i != m_items.end(); ++ i) {
-        RECT rc;
-        GetWindowRect(static_cast<HWND>(i->m_hwndParent), &rc);
         yamy::platform::Rect parentRect;
-        parentRect.left = rc.left; parentRect.top = rc.top; parentRect.right = rc.right; parentRect.bottom = rc.bottom;
+        GetWindowRect(static_cast<HWND>(i->m_hwndParent), reinterpret_cast<RECT*>(&parentRect));
 
         yamy::platform::Rect newChildRect = calculateRect(i->m_rcParent, i->m_rc, parentRect, i->m_origin);
         
@@ -140,14 +137,13 @@ void LayoutManager::adjust() const
 bool LayoutManager::wmPaint()
 {
     PAINTSTRUCT ps;
-    HWND hwnd = static_cast<HWND>(m_hwnd);
-    HDC hdc = BeginPaint(hwnd, &ps);
+    HDC hdc = BeginPaint(static_cast<HWND>(m_hwnd), &ps);
     RECT rc;
-    GetClientRect(hwnd, &rc);
+    GetClientRect(static_cast<HWND>(m_hwnd), &rc);
     rc.left = rc.right - GetSystemMetrics(SM_CXHTHUMB);
     rc.top = rc.bottom - GetSystemMetrics(SM_CYVTHUMB);
     DrawFrameControl(hdc, &rc, DFC_SCROLL, DFCS_SCROLLSIZEGRIP);
-    EndPaint(hwnd, &ps);
+    EndPaint(static_cast<HWND>(m_hwnd), &ps);
     return true;
 }
 
@@ -211,17 +207,12 @@ bool LayoutManager::wmSizing(int i_edge, yamy::platform::Rect *io_rc)
 bool LayoutManager::wmNcHitTest(int i_x, int i_y)
 {
     POINT p = { i_x, i_y };
-    HWND hwnd = static_cast<HWND>(m_hwnd);
-    ScreenToClient(hwnd, &p);
+    ScreenToClient(static_cast<HWND>(m_hwnd), &p);
     RECT rc;
-    GetClientRect(hwnd, &rc);
+    GetClientRect(static_cast<HWND>(m_hwnd), &rc);
     if (rc.right - GetSystemMetrics(SM_CXHTHUMB) <= p.x &&
             rc.bottom - GetSystemMetrics(SM_CYVTHUMB) <= p.y) {
-#ifdef MAYU64
-        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, HTBOTTOMRIGHT);
-#else
-        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, HTBOTTOMRIGHT);
-#endif
+        SetWindowLongPtr(static_cast<HWND>(m_hwnd), DWLP_MSGRESULT, HTBOTTOMRIGHT);
         return true;
     }
     return false;
@@ -251,7 +242,8 @@ bool LayoutManager::defaultWMHandler(uint32_t i_message,
     case WM_SIZING:
         return wmSizing((int)i_wParam, reinterpret_cast<yamy::platform::Rect *>(i_lParam));
     case WM_NCHITTEST:
-        return wmNcHitTest(GET_X_LPARAM(i_lParam), GET_Y_LPARAM(i_lParam));
+        return wmNcHitTest(static_cast<int>(static_cast<int16_t>(i_lParam & 0xFFFF)),
+                          static_cast<int>(static_cast<int16_t>((i_lParam >> 16) & 0xFFFF)));
     }
     return false;
 }

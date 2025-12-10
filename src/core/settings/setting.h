@@ -30,7 +30,7 @@ public:
     bool m_sts4mayu;                ///
     bool m_cts4mayu;                ///
     bool m_mouseEvent;                ///
-    LONG m_dragThreshold;            ///
+    int32_t m_dragThreshold;            ///
     unsigned int m_oneShotRepeatableDelay;    ///
 
 public:

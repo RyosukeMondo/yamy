@@ -46,7 +46,7 @@ restart:
                         FocusOfThread *fot = &((*j).second);
                         Acquire a(&m_log, 1);
                         m_log << "RemoveThread" << std::endl;
-                        m_log << "\tHWND:\t" << std::hex << (ULONG_PTR)fot->m_hwndFocus
+                        m_log << "\tHWND:\t" << std::hex << reinterpret_cast<uintptr_t>(fot->m_hwndFocus)
                         << std::dec << std::endl;
                         m_log << "\tTHREADID:" << fot->m_threadId << std::endl;
                         m_log << "\tCLASS:\t" << fot->m_className << std::endl;
@@ -73,7 +73,7 @@ restart:
                     Acquire a(&m_log, 1);
                     m_log << "FocusChanged" << std::endl;
                     m_log << "\tHWND:\t"
-                    << std::hex << (ULONG_PTR)m_currentFocusOfThread->m_hwndFocus
+                    << std::hex << reinterpret_cast<uintptr_t>(m_currentFocusOfThread->m_hwndFocus)
                     << std::dec << std::endl;
                     m_log << "\tTHREADID:"
                     << m_currentFocusOfThread->m_threadId << std::endl;
@@ -93,7 +93,7 @@ restart:
 
             setFocus(hwndFore, threadId, className, titleName, true);
             Acquire a(&m_log, 1);
-            m_log << "HWND:\t" << std::hex << reinterpret_cast<ULONG_PTR>(hwndFore)
+            m_log << "HWND:\t" << std::hex << reinterpret_cast<uintptr_t>(hwndFore)
             << std::dec << std::endl;
             m_log << "THREADID:" << threadId << std::endl;
             m_log << "CLASS:\t" << className << std::endl;

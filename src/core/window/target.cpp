@@ -19,8 +19,7 @@ class Target
 
     ///
     static void invertFrame(yamy::platform::WindowHandle i_hwnd) {
-        HWND hwnd = static_cast<HWND>(i_hwnd);
-        HDC hdc = GetWindowDC(hwnd);
+        HDC hdc = GetWindowDC(static_cast<HWND>(i_hwnd));
         ASSERT(hdc);
         int rop2 = SetROP2(hdc, R2_XORPEN);
         if (rop2) {
@@ -39,7 +38,7 @@ class Target
             // no need to DeleteObject StockObject
             SetROP2(hdc, rop2);
         }
-        CHECK_TRUE( ReleaseDC(hwnd, hdc) );
+        CHECK_TRUE( ReleaseDC(static_cast<HWND>(i_hwnd), hdc) );
     }
 
     ///
@@ -50,7 +49,7 @@ class Target
     }
 
     /// WM_CREATE
-    int wmCreate(CREATESTRUCT * /* i_cs */) {
+    int wmCreate(void * /* i_cs */) {
         CHECK_TRUE( m_hCursor =
                         LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_CURSOR_target)) );
         return 0;
@@ -59,20 +58,19 @@ class Target
     /// WM_PAINT
     int wmPaint() {
         PAINTSTRUCT ps;
-        HWND hwnd = static_cast<HWND>(m_hwnd);
-        HDC hdc = BeginPaint(hwnd, &ps);
+        HDC hdc = BeginPaint(static_cast<HWND>(m_hwnd), &ps);
         ASSERT(hdc);
 
-        if (GetCapture() != hwnd) {
+        if (GetCapture() != static_cast<HWND>(m_hwnd)) {
             RECT rc;
-            CHECK_TRUE( GetClientRect(hwnd, &rc) );
+            CHECK_TRUE( GetClientRect(static_cast<HWND>(m_hwnd), &rc) );
             CHECK_TRUE(
                 DrawIcon(hdc, (rcWidth(&rc) - GetSystemMetrics(SM_CXICON)) / 2,
                          (rcHeight(&rc) - GetSystemMetrics(SM_CYICON)) / 2,
                          m_hCursor) );
         }
 
-        EndPaint(hwnd, &ps);
+        EndPaint(static_cast<HWND>(m_hwnd), &ps);
         return 0;
     }
 
@@ -85,11 +83,10 @@ class Target
 
     ///
     static int CALLBACK childWindowFromPoint(yamy::platform::WindowHandle i_hwnd, intptr_t i_lParam) {
-        HWND hwnd = static_cast<HWND>(i_hwnd);
-        if (IsWindowVisible(hwnd)) {
+        if (IsWindowVisible(static_cast<HWND>(i_hwnd))) {
             PointWindow &pw = *(PointWindow *)i_lParam;
             RECT rc;
-            CHECK_TRUE( GetWindowRect(hwnd, &rc) );
+            CHECK_TRUE( GetWindowRect(static_cast<HWND>(i_hwnd), &rc) );
             POINT pt = { pw.m_p.x, pw.m_p.y };
             if (PtInRect(&rc, pt)) {
                 RECT rcPw = { pw.m_rc.left, pw.m_rc.top, pw.m_rc.right, pw.m_rc.bottom };
@@ -104,11 +101,10 @@ class Target
 
     ///
     static int CALLBACK windowFromPoint(yamy::platform::WindowHandle i_hwnd, intptr_t i_lParam) {
-        HWND hwnd = static_cast<HWND>(i_hwnd);
-        if (IsWindowVisible(hwnd)) {
+        if (IsWindowVisible(static_cast<HWND>(i_hwnd))) {
             PointWindow &pw = *(PointWindow *)i_lParam;
             RECT rc;
-            CHECK_TRUE( GetWindowRect(hwnd, &rc) );
+            CHECK_TRUE( GetWindowRect(static_cast<HWND>(i_hwnd), &rc) );
             POINT pt = { pw.m_p.x, pw.m_p.y };
             if (PtInRect(&rc, pt)) {
                 pw.m_hwnd = i_hwnd;
@@ -121,8 +117,7 @@ class Target
 
     /// WM_MOUSEMOVE
     int wmMouseMove(uint16_t /* i_keys */, int /* i_x */, int /* i_y */) {
-        HWND hwnd = static_cast<HWND>(m_hwnd);
-        if (GetCapture() == hwnd) {
+        if (GetCapture() == static_cast<HWND>(m_hwnd)) {
             PointWindow pw;
             POINT pt;
             CHECK_TRUE( GetCursorPos(&pt) );
@@ -132,10 +127,10 @@ class Target
             CHECK_TRUE( GetWindowRect(GetDesktopWindow(), &rc) );
             pw.m_rc.left = rc.left; pw.m_rc.top = rc.top; pw.m_rc.right = rc.right; pw.m_rc.bottom = rc.bottom;
 
-            EnumWindows(reinterpret_cast<WNDENUMPROC>(windowFromPoint), (LPARAM)&pw);
+            EnumWindows(reinterpret_cast<WNDENUMPROC>(windowFromPoint), reinterpret_cast<intptr_t>(&pw));
             while (1) {
                 yamy::platform::WindowHandle hwndParent = pw.m_hwnd;
-                if (!EnumChildWindows(static_cast<HWND>(pw.m_hwnd), reinterpret_cast<WNDENUMPROC>(childWindowFromPoint), (LPARAM)&pw))
+                if (!EnumChildWindows(static_cast<HWND>(pw.m_hwnd), reinterpret_cast<WNDENUMPROC>(childWindowFromPoint), reinterpret_cast<intptr_t>(&pw)))
                     break;
                 if (hwndParent == pw.m_hwnd)
                     break;
@@ -145,8 +140,8 @@ class Target
                     invertFrame(m_preHwnd);
                 m_preHwnd = pw.m_hwnd;
                 invertFrame(m_preHwnd);
-                SendMessage(GetParent(hwnd), WM_APP_targetNotify, 0,
-                            (LPARAM)m_preHwnd);
+                SendMessage(GetParent(static_cast<HWND>(m_hwnd)), WM_APP_targetNotify, 0,
+                            (intptr_t)m_preHwnd);
             }
             SetCursor(m_hCursor);
         }
@@ -155,37 +150,35 @@ class Target
 
     /// WM_LBUTTONDOWN
     int wmLButtonDown(uint16_t /* i_keys */, int /* i_x */, int /* i_y */) {
-        HWND hwnd = static_cast<HWND>(m_hwnd);
-        SetCapture(hwnd);
+        SetCapture(static_cast<HWND>(m_hwnd));
         SetCursor(m_hCursor);
-        CHECK_TRUE( InvalidateRect(hwnd, nullptr, TRUE) );
-        CHECK_TRUE( UpdateWindow(hwnd) );
+        CHECK_TRUE( InvalidateRect(static_cast<HWND>(m_hwnd), nullptr, TRUE) );
+        CHECK_TRUE( UpdateWindow(static_cast<HWND>(m_hwnd)) );
         return 0;
     }
 
     /// WM_LBUTTONUP
     int wmLButtonUp(uint16_t /* i_keys */, int /* i_x */, int /* i_y */) {
-        HWND hwnd = static_cast<HWND>(m_hwnd);
         if (m_preHwnd)
             invertFrame(m_preHwnd);
         m_preHwnd = nullptr;
         ReleaseCapture();
-        CHECK_TRUE( InvalidateRect(hwnd, nullptr, TRUE) );
-        CHECK_TRUE( UpdateWindow(hwnd) );
+        CHECK_TRUE( InvalidateRect(static_cast<HWND>(m_hwnd), nullptr, TRUE) );
+        CHECK_TRUE( UpdateWindow(static_cast<HWND>(m_hwnd)) );
         return 0;
     }
 
 public:
     ///
     static LRESULT CALLBACK WndProc(HWND i_hwnd, UINT i_message,
-                                    WPARAM i_wParam, LPARAM i_lParam) {
+                                    uintptr_t i_wParam, intptr_t i_lParam) {
         Target *wc;
         getUserData(i_hwnd, &wc);
         if (!wc)
             switch (i_message) {
             case WM_CREATE:
                 wc = setUserData(i_hwnd, new Target(static_cast<yamy::platform::WindowHandle>(i_hwnd)));
-                return wc->wmCreate((CREATESTRUCT *)i_lParam);
+                return wc->wmCreate(reinterpret_cast<void *>(i_lParam));
             }
         else
             switch (i_message) {

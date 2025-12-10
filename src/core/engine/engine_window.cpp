@@ -21,6 +21,7 @@ void Engine::checkShow(yamy::platform::WindowHandle i_hwnd) {
     // this update should be done in hook DLL, but to
     // avoid update-loss for some applications(such as
     // cmd.exe), we update here.
+#ifdef _WIN32
     HWND hwnd = static_cast<HWND>(i_hwnd);
     bool isMaximized = false;
     bool isMinimized = false;
@@ -28,9 +29,9 @@ void Engine::checkShow(yamy::platform::WindowHandle i_hwnd) {
     bool isMDIMinimized = false;
     while (hwnd) {
 #ifdef MAYU64
-        LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+        intptr_t exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 #else
-        LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+        int32_t exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
 #endif
         if (exStyle & WS_EX_MDICHILD) {
             WINDOWPLACEMENT placement;
@@ -51,9 +52,9 @@ void Engine::checkShow(yamy::platform::WindowHandle i_hwnd) {
         }
 
 #ifdef MAYU64
-        LONG_PTR style = GetWindowLongPtr(hwnd, GWL_STYLE);
+        intptr_t style = GetWindowLongPtr(hwnd, GWL_STYLE);
 #else
-        LONG style = GetWindowLong(hwnd, GWL_STYLE);
+        int32_t style = GetWindowLong(hwnd, GWL_STYLE);
 #endif
         if ((style & WS_CHILD) == 0) {
             WINDOWPLACEMENT placement;
@@ -76,6 +77,7 @@ void Engine::checkShow(yamy::platform::WindowHandle i_hwnd) {
     }
     setShow(isMDIMaximized, isMDIMinimized, true);
     setShow(isMaximized, isMinimized, false);
+#endif
 }
 
 

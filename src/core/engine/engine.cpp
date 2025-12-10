@@ -30,8 +30,10 @@ void Engine::keyboardHandler()
     while (1) {
         KEYBOARD_INPUT_DATA kid;
 
+#ifdef _WIN32
         WaitForSingleObject(m_queueMutex, INFINITE);
         while (SignalObjectAndWait(m_queueMutex, m_readEvent, INFINITE, true) == WAIT_OBJECT_0) {
+#endif
             if (m_inputQueue == nullptr) {
                 ReleaseMutex(m_queueMutex);
                 return;
@@ -52,9 +54,11 @@ void Engine::keyboardHandler()
 
 #if 0
             case WAIT_OBJECT_0 + NUMBER_OF(handles): {
+#ifdef _WIN32
                 MSG message;
 
                 while (PeekMessage(&message, nullptr, 0, 0, PM_REMOVE)) {
+#endif
                     switch (message.message) {
                     case WM_APP + 201: {
                         if (message.wParam) {
@@ -73,11 +77,15 @@ void Engine::keyboardHandler()
                         break;
                     }
                 }
+#ifdef _WIN32
                 goto rewait;
+#endif
             }
 #endif
         }
+#ifdef _WIN32
         ReleaseMutex(m_queueMutex);
+#endif
 
         checkFocusWindow();
 

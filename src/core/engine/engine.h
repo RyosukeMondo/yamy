@@ -108,7 +108,7 @@ private:
 
     private:
         ///
-        HGLOBAL makeNewKillLineBuf(const char *i_data, int *i_retval);
+        void* makeNewKillLineBuf(const char *i_data, int *i_retval);
 
     public:
         ///
@@ -170,22 +170,22 @@ private:
     yamy::platform::IInputDriver *m_inputDriver;            /// input driver abstraction
 
     // engine thread state
-    HANDLE m_threadHandle;
+    yamy::platform::ThreadHandle m_threadHandle;
     unsigned m_threadId;
     std::deque<KEYBOARD_INPUT_DATA> *m_inputQueue;
-    HANDLE m_queueMutex;
+    yamy::platform::MutexHandle m_queueMutex;
 
-    HANDLE m_readEvent;                /** reading from mayu device
+    yamy::platform::EventHandle m_readEvent;                /** reading from mayu device
                                                     has been completed */
-    OVERLAPPED m_ol;                /** for async read/write of
+    yamy::platform::OverlappedHandle m_ol;                /** for async read/write of
                             mayu device */
-    HANDLE m_hookPipe;                /// named pipe for &SetImeString
-    HMODULE m_sts4mayu;                /// DLL module for ThumbSense
-    HMODULE m_cts4mayu;                /// DLL module for ThumbSense
+    yamy::platform::EventHandle m_hookPipe;                /// named pipe for &SetImeString
+    yamy::platform::ModuleHandle m_sts4mayu;                /// DLL module for ThumbSense
+    yamy::platform::ModuleHandle m_cts4mayu;                /// DLL module for ThumbSense
     bool volatile m_isLogMode;            /// is logging mode ?
     bool volatile m_isEnabled;            /// is enabled  ?
     bool volatile m_isSynchronizing;        /// is synchronizing ?
-    HANDLE m_eSync;                /// event for synchronization
+    yamy::platform::EventHandle m_eSync;                /// event for synchronization
     int m_generateKeyboardEventsRecursionGuard;    /** guard against too many
                                                     recursion */
 
@@ -416,9 +416,9 @@ public:
     void getHelpMessages(std::string *o_helpMessage, std::string *o_helpTitle);
 
     /// command notify
-    template <typename WPARAM_T, typename LPARAM_T>
-    void commandNotify(yamy::platform::WindowHandle i_hwnd, unsigned int i_message, WPARAM_T i_wParam,
-                       LPARAM_T i_lParam)
+    template <typename WParamT, typename LParamT>
+    void commandNotify(yamy::platform::WindowHandle i_hwnd, unsigned int i_message, WParamT i_wParam,
+                       LParamT i_lParam)
     {
         // ... (body same as previous thought)
         Acquire b(&m_log, 0);

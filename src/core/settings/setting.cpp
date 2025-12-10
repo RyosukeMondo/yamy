@@ -85,7 +85,7 @@ void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
         o_pathes->push_back(userprofile);
 
     char buf[GANA_MAX_PATH];
-    DWORD len = GetCurrentDirectory(NUMBER_OF(buf), buf);
+    uint32_t len = GetCurrentDirectory(NUMBER_OF(buf), buf);
     if (0 < len && len < NUMBER_OF(buf))
         o_pathes->push_back(buf);
 #else //USE_INI

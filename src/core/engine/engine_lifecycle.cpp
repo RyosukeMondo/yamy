@@ -44,12 +44,17 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_afShellExecute(nullptr),
         m_variable(0),
         m_log(i_log) {
-    BOOL (WINAPI *pChangeWindowMessageFilter)(UINT, DWORD) =
-        reinterpret_cast<BOOL (WINAPI*)(UINT, DWORD)>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "ChangeWindowMessageFilter"));
+#ifdef _WIN32
+    // Enable receiving WM_COPYDATA from lower integrity processes
+    // This is Windows Vista+ specific functionality
+    using ChangeWindowMessageFilterFunc = int (WINAPI *)(unsigned int, uint32_t);
+    ChangeWindowMessageFilterFunc pChangeWindowMessageFilter =
+        reinterpret_cast<ChangeWindowMessageFilterFunc>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "ChangeWindowMessageFilter"));
 
     if(pChangeWindowMessageFilter != nullptr) {
         pChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
     }
+#endif
 
     for (size_t i = 0; i < NUMBER_OF(m_lastPressedKey); ++ i)
         m_lastPressedKey[i] = nullptr;
@@ -61,17 +66,22 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_currentLock.release(static_cast<Modifier::Type>(i));
 
     // create event for sync
+#ifdef _WIN32
     CHECK_TRUE( m_eSync = CreateEvent(nullptr, FALSE, FALSE, nullptr) );
+#endif
     // create named pipe for &SetImeString
+#ifdef _WIN32
     m_hookPipe = CreateNamedPipe(addSessionId(HOOK_PIPE_NAME).c_str(),
                                  PIPE_ACCESS_OUTBOUND,
                                  PIPE_TYPE_BYTE, 1,
                                  0, 0, 0, nullptr);
+#endif
     StrExprArg::setSystem(this);
 }
 
 
 Engine::~Engine() {
+#ifdef _WIN32
     CHECK_TRUE( CloseHandle(m_eSync) );
 
     // destroy named pipe for &SetImeString
@@ -79,6 +89,7 @@ Engine::~Engine() {
         DisconnectNamedPipe(m_hookPipe);
         CHECK_TRUE( CloseHandle(m_hookPipe) );
     }
+#endif
 }
 
 
@@ -104,15 +115,22 @@ void Engine::start() {
     );
 
     CHECK_TRUE( m_inputQueue = new std::deque<KEYBOARD_INPUT_DATA> );
+#ifdef _WIN32
     CHECK_TRUE( m_queueMutex = CreateMutex(nullptr, FALSE, nullptr) );
     CHECK_TRUE( m_readEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr) );
-    m_ol.Offset = 0;
-    m_ol.OffsetHigh = 0;
-    m_ol.hEvent = m_readEvent;
+#endif
+#ifdef _WIN32
+    OVERLAPPED* pOl = reinterpret_cast<OVERLAPPED*>(m_ol);
+    pOl->Offset = 0;
+    pOl->OffsetHigh = 0;
+    pOl->hEvent = m_readEvent;
+#endif
 
     m_inputDriver->open(m_readEvent);
 
-    CHECK_TRUE( m_threadHandle = (HANDLE)_beginthreadex(nullptr, 0, keyboardHandler, this, 0, &m_threadId) );
+#ifdef _WIN32
+    CHECK_TRUE( m_threadHandle = reinterpret_cast<yamy::platform::ThreadHandle>(_beginthreadex(nullptr, 0, keyboardHandler, this, 0, &m_threadId)) );
+#endif
 }
 
 
@@ -121,6 +139,7 @@ void Engine::stop() {
     m_inputHook->uninstall();
     m_inputDriver->close();
 
+#ifdef _WIN32
     WaitForSingleObject(m_queueMutex, INFINITE);
     delete m_inputQueue;
     m_inputQueue = nullptr;
@@ -133,6 +152,7 @@ void Engine::stop() {
 
     CHECK_TRUE( CloseHandle(m_readEvent) );
     m_readEvent = nullptr;
+#endif
 
     for (ThreadIds::iterator i = m_attachedThreadIds.begin();
          i != m_attachedThreadIds.end(); i++) {
@@ -156,7 +176,9 @@ bool Engine::syncNotify() {
     Acquire a(&m_cs);
     if (!m_isSynchronizing)
         return false;
+#ifdef _WIN32
     CHECK_TRUE( SetEvent(m_eSync) );
+#endif
     return true;
 }
 
@@ -184,10 +206,12 @@ void Engine::setCurrentKeymap(const Keymap *i_keymap, bool i_doesAddToHistory)
 
 void Engine::pushInputEvent(const KEYBOARD_INPUT_DATA &kid)
 {
+#ifdef _WIN32
     WaitForSingleObject(m_queueMutex, INFINITE);
     if (m_inputQueue) {
         m_inputQueue->push_back(kid);
         SetEvent(m_readEvent);
     }
     ReleaseMutex(m_queueMutex);
+#endif
 }

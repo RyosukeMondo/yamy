@@ -9,7 +9,7 @@
 
 ///
 static LRESULT CALLBACK WndProc(
-    HWND i_hwnd, UINT i_message, WPARAM i_wParam, LPARAM i_lParam)
+    HWND i_hwnd, UINT i_message, uintptr_t i_wParam, intptr_t i_lParam)
 {
     switch (i_message) {
     case WM_KEYDOWN:
@@ -50,7 +50,7 @@ static LRESULT CALLBACK WndProc(
 }
 
 
-ATOM Register_focus()
+uint16_t Register_focus()
 {
     WNDCLASS wc;
     wc.style         = CS_HREDRAW | CS_VREDRAW;

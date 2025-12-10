@@ -7,10 +7,11 @@
 #  define _FOCUS_H
 
 #  include <windows.h>
+#  include <cstdint>
 
 
 ///
-extern ATOM Register_focus();
+extern uint16_t Register_focus();
 
 enum {
     WM_APP_notifyFocus = WM_APP + 103,

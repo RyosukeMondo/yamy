@@ -108,4 +108,11 @@ using MessageId = uint32_t;
 using MessageWParam = uintptr_t;
 using MessageLParam = intptr_t;
 
+// Platform-agnostic threading types
+using ThreadHandle = void*;
+using MutexHandle = void*;
+using EventHandle = void*;
+using ModuleHandle = void*;
+using OverlappedHandle = void*;
+
 } // namespace yamy::platform
