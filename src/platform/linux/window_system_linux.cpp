@@ -28,14 +28,14 @@ public:
         return "Stub Window";
     }
 
-    std::string getClassName(WindowHandle hwnd) override {
-        std::cerr << "[STUB] getClassName()" << std::endl;
-        return "StubClass";
-    }
-
     std::string getTitleName(WindowHandle hwnd) override {
         std::cerr << "[STUB] getTitleName()" << std::endl;
         return "Stub Title";
+    }
+
+    std::string getClassName(WindowHandle hwnd) override {
+        std::cerr << "[STUB] getClassName()" << std::endl;
+        return "StubClass";
     }
 
     uint32_t getWindowThreadId(WindowHandle hwnd) override {

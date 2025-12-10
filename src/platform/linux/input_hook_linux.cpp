@@ -10,10 +10,12 @@ class InputHookLinux : public IInputHook {
     }
 
     void uninstall() override {
-        std::cerr << "[STUB] InputHook::uninstall() - not supported on Linux" << std::endl;
+        std::cerr << "[STUB] InputHook::uninstall()" << std::endl;
     }
 
-    bool isInstalled() const override { return false; }
+    bool isInstalled() const override {
+        return false;
+    }
 };
 
 IInputHook* createInputHook() {

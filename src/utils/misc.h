@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // misc.h
 
@@ -12,6 +12,43 @@
 #  else
 #    include <cstddef>
 #    include <cstring>
+#    include <cstdint>
+     // Shim for Win32 types on Linux/non-Windows
+     typedef uint32_t DWORD;
+     typedef uint16_t WORD;
+     typedef uint8_t BYTE;
+     typedef int32_t LONG;
+     typedef int32_t BOOL;
+     typedef void* HWND;
+     typedef void* HGLOBAL;
+     typedef void* HANDLE;
+     typedef void* HMODULE;
+     typedef void* HINSTANCE;
+     typedef int64_t __int64;
+     typedef uint64_t __uint64;
+     typedef uint32_t UINT;
+     typedef intptr_t LPARAM;
+     typedef uintptr_t WPARAM;
+     typedef long LRESULT;
+     typedef struct tagPOINT {
+         LONG x;
+         LONG y;
+     } POINT;
+     typedef struct _OVERLAPPED {
+         uintptr_t Internal;
+         uintptr_t InternalHigh;
+         union {
+             struct {
+                 DWORD Offset;
+                 DWORD OffsetHigh;
+             } DUMMYSTRUCTNAME;
+             void* Pointer;
+         } DUMMYUNIONNAME;
+         HANDLE hEvent;
+     } OVERLAPPED;
+     #define MAX_PATH 260
+     #define WINAPI
+     #define CALLBACK
 #  endif
 #  include <cassert>
 
