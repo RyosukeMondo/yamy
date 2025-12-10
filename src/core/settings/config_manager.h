@@ -10,6 +10,7 @@
 #include "../utils/config_store.h"
 #include <string>
 #include <vector>
+#include <set>
 #include <functional>
 
 /// Configuration file entry with path and optional metadata
@@ -112,6 +113,51 @@ public:
     /// Maximum number of backups to keep per configuration
     static constexpr int MAX_BACKUPS_PER_CONFIG = 10;
 
+    // ==================== Import/Export ====================
+
+    /// Result of an import or export operation
+    struct ImportExportResult {
+        bool success;
+        std::string errorMessage;
+        std::vector<std::string> filesProcessed;
+
+        ImportExportResult() : success(false) {}
+        ImportExportResult(bool s) : success(s) {}
+        ImportExportResult(bool s, const std::string& err) : success(s), errorMessage(err) {}
+    };
+
+    /// Export a configuration and all its dependencies to an archive
+    /// @param configPath Path to the main configuration file
+    /// @param archivePath Path where the archive will be created
+    /// @return Result with success status and list of exported files
+    ImportExportResult exportConfig(const std::string& configPath,
+                                    const std::string& archivePath);
+
+    /// Import a configuration from an archive
+    /// @param archivePath Path to the archive file
+    /// @param targetDir Directory where the config will be extracted
+    /// @param overwrite If true, overwrite existing files without confirmation
+    /// @return Result with success status and list of imported files
+    ImportExportResult importConfig(const std::string& archivePath,
+                                    const std::string& targetDir,
+                                    bool overwrite = false);
+
+    /// List contents of an archive without extracting
+    /// @param archivePath Path to the archive file
+    /// @return Vector of file paths contained in the archive
+    std::vector<std::string> listArchiveContents(const std::string& archivePath) const;
+
+    /// Validate an archive before importing
+    /// @param archivePath Path to the archive file
+    /// @return true if archive is valid and can be imported
+    bool validateArchive(const std::string& archivePath) const;
+
+    /// Get the default export directory
+    static std::string getExportDir();
+
+    /// Archive file extension
+    static constexpr const char* ARCHIVE_EXTENSION = ".yamy-pkg";
+
 private:
     ConfigManager();
     ~ConfigManager();
@@ -137,6 +183,50 @@ private:
 
     /// Generate timestamp string for backup filenames
     static std::string generateTimestamp();
+
+    /// Recursively find all include dependencies of a config file
+    /// @param configPath Path to the config file
+    /// @param basePath Base path for resolving relative includes
+    /// @param dependencies Output set of all dependency paths
+    /// @param visited Set of already visited files (to avoid cycles)
+    static void findDependencies(const std::string& configPath,
+                                 const std::string& basePath,
+                                 std::set<std::string>& dependencies,
+                                 std::set<std::string>& visited);
+
+    /// Parse a config file and extract include directives
+    /// @param configPath Path to the config file
+    /// @return Vector of include paths (as written in the file)
+    static std::vector<std::string> parseIncludes(const std::string& configPath);
+
+    /// Resolve an include path relative to a base path
+    /// @param includePath The include path as written in the file
+    /// @param basePath The base path (directory of the including file)
+    /// @return Resolved absolute path, or empty string if not found
+    static std::string resolveIncludePath(const std::string& includePath,
+                                          const std::string& basePath);
+
+    /// Write archive header
+    static bool writeArchiveHeader(std::ofstream& out, uint32_t fileCount);
+
+    /// Write a file entry to the archive
+    static bool writeArchiveEntry(std::ofstream& out,
+                                  const std::string& relativePath,
+                                  const std::string& absolutePath);
+
+    /// Read archive header
+    static bool readArchiveHeader(std::ifstream& in, uint32_t& fileCount);
+
+    /// Read a file entry from the archive
+    static bool readArchiveEntry(std::ifstream& in,
+                                 std::string& relativePath,
+                                 std::vector<char>& content);
+
+    /// Archive magic number for validation
+    static constexpr uint32_t ARCHIVE_MAGIC = 0x59414D59;  // "YAMY"
+
+    /// Archive version
+    static constexpr uint32_t ARCHIVE_VERSION = 1;
 
     mutable CriticalSection m_cs;       /// Thread synchronization
     ConfigStore* m_configStore;         /// Persistent storage (not owned)

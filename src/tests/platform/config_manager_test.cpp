@@ -434,3 +434,263 @@ TEST_F(ConfigManagerTest, GetBackupDirReturnsCorrectPath) {
     fs::path expected = testDir / ".backups";
     EXPECT_EQ(backupDir, expected.string());
 }
+
+// ==================== Import/Export Tests ====================
+
+TEST_F(ConfigManagerTest, ExportConfigSucceeds) {
+    createTestConfig("main.mayu");
+    std::string configPath = (testDir / "main.mayu").string();
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+
+    auto result = ConfigManager::instance().exportConfig(configPath, archivePath);
+    EXPECT_TRUE(result.success) << result.errorMessage;
+    EXPECT_TRUE(fs::exists(archivePath));
+    EXPECT_FALSE(result.filesProcessed.empty());
+}
+
+TEST_F(ConfigManagerTest, ExportConfigWithIncludes) {
+    // Create main config with include
+    {
+        std::ofstream ofs(testDir / "main.mayu");
+        ofs << "# Main config" << std::endl;
+        ofs << "include \"common.mayu\"" << std::endl;
+        ofs << "keymap Global" << std::endl;
+    }
+
+    // Create included config
+    {
+        std::ofstream ofs(testDir / "common.mayu");
+        ofs << "# Common definitions" << std::endl;
+        ofs << "def key MyKey = 0x10" << std::endl;
+    }
+
+    std::string configPath = (testDir / "main.mayu").string();
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+
+    auto result = ConfigManager::instance().exportConfig(configPath, archivePath);
+    EXPECT_TRUE(result.success) << result.errorMessage;
+    EXPECT_EQ(result.filesProcessed.size(), 2u);
+
+    // Verify archive contains both files
+    auto contents = ConfigManager::instance().listArchiveContents(archivePath);
+    EXPECT_EQ(contents.size(), 2u);
+
+    bool foundMain = false, foundCommon = false;
+    for (const auto& file : contents) {
+        if (file == "main.mayu") foundMain = true;
+        if (file == "common.mayu") foundCommon = true;
+    }
+    EXPECT_TRUE(foundMain);
+    EXPECT_TRUE(foundCommon);
+}
+
+TEST_F(ConfigManagerTest, ExportNonexistentConfigFails) {
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+    auto result = ConfigManager::instance().exportConfig("/nonexistent/config.mayu", archivePath);
+    EXPECT_FALSE(result.success);
+    EXPECT_FALSE(result.errorMessage.empty());
+}
+
+TEST_F(ConfigManagerTest, ImportConfigSucceeds) {
+    // Create and export a config
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+
+    auto exportResult = ConfigManager::instance().exportConfig(configPath, archivePath);
+    ASSERT_TRUE(exportResult.success) << exportResult.errorMessage;
+
+    // Create import directory
+    fs::path importDir = testDir / "imported";
+    fs::create_directories(importDir);
+
+    auto importResult = ConfigManager::instance().importConfig(archivePath, importDir.string());
+    EXPECT_TRUE(importResult.success) << importResult.errorMessage;
+    EXPECT_FALSE(importResult.filesProcessed.empty());
+
+    // Verify imported file exists
+    EXPECT_TRUE(fs::exists(importDir / "test.mayu"));
+}
+
+TEST_F(ConfigManagerTest, ImportConfigWithIncludes) {
+    // Create main config with include
+    {
+        std::ofstream ofs(testDir / "main.mayu");
+        ofs << "# Main config" << std::endl;
+        ofs << "include \"common.mayu\"" << std::endl;
+    }
+
+    // Create included config
+    {
+        std::ofstream ofs(testDir / "common.mayu");
+        ofs << "# Common definitions" << std::endl;
+    }
+
+    std::string configPath = (testDir / "main.mayu").string();
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+
+    auto exportResult = ConfigManager::instance().exportConfig(configPath, archivePath);
+    ASSERT_TRUE(exportResult.success) << exportResult.errorMessage;
+
+    // Import to new directory
+    fs::path importDir = testDir / "imported";
+    auto importResult = ConfigManager::instance().importConfig(archivePath, importDir.string());
+    EXPECT_TRUE(importResult.success) << importResult.errorMessage;
+    EXPECT_EQ(importResult.filesProcessed.size(), 2u);
+
+    // Verify both files exist
+    EXPECT_TRUE(fs::exists(importDir / "main.mayu"));
+    EXPECT_TRUE(fs::exists(importDir / "common.mayu"));
+}
+
+TEST_F(ConfigManagerTest, ImportConfigNoOverwriteFailsOnExisting) {
+    // Create and export a config
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+
+    auto exportResult = ConfigManager::instance().exportConfig(configPath, archivePath);
+    ASSERT_TRUE(exportResult.success);
+
+    // Create import directory with existing file
+    fs::path importDir = testDir / "imported";
+    fs::create_directories(importDir);
+    {
+        std::ofstream ofs(importDir / "test.mayu");
+        ofs << "# Existing file" << std::endl;
+    }
+
+    // Import without overwrite should fail
+    auto importResult = ConfigManager::instance().importConfig(archivePath, importDir.string(), false);
+    EXPECT_FALSE(importResult.success);
+    EXPECT_TRUE(importResult.errorMessage.find("already exists") != std::string::npos);
+}
+
+TEST_F(ConfigManagerTest, ImportConfigWithOverwrite) {
+    // Create and export a config
+    {
+        std::ofstream ofs(testDir / "test.mayu");
+        ofs << "# Original content" << std::endl;
+    }
+    std::string configPath = (testDir / "test.mayu").string();
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+
+    auto exportResult = ConfigManager::instance().exportConfig(configPath, archivePath);
+    ASSERT_TRUE(exportResult.success);
+
+    // Create import directory with existing file
+    fs::path importDir = testDir / "imported";
+    fs::create_directories(importDir);
+    {
+        std::ofstream ofs(importDir / "test.mayu");
+        ofs << "# Different content" << std::endl;
+    }
+
+    // Import with overwrite should succeed
+    auto importResult = ConfigManager::instance().importConfig(archivePath, importDir.string(), true);
+    EXPECT_TRUE(importResult.success) << importResult.errorMessage;
+
+    // Verify content was overwritten
+    std::ifstream ifs(importDir / "test.mayu");
+    std::string content((std::istreambuf_iterator<char>(ifs)),
+                         std::istreambuf_iterator<char>());
+    EXPECT_TRUE(content.find("Original content") != std::string::npos);
+}
+
+TEST_F(ConfigManagerTest, ImportNonexistentArchiveFails) {
+    fs::path importDir = testDir / "imported";
+    auto result = ConfigManager::instance().importConfig("/nonexistent/archive.yamy-pkg", importDir.string());
+    EXPECT_FALSE(result.success);
+    EXPECT_FALSE(result.errorMessage.empty());
+}
+
+TEST_F(ConfigManagerTest, ValidateArchiveSucceeds) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+
+    auto exportResult = ConfigManager::instance().exportConfig(configPath, archivePath);
+    ASSERT_TRUE(exportResult.success);
+
+    bool valid = ConfigManager::instance().validateArchive(archivePath);
+    EXPECT_TRUE(valid);
+}
+
+TEST_F(ConfigManagerTest, ValidateInvalidArchiveFails) {
+    // Create an invalid archive file
+    std::string archivePath = (testDir / "invalid.yamy-pkg").string();
+    {
+        std::ofstream ofs(archivePath, std::ios::binary);
+        ofs << "This is not a valid archive";
+    }
+
+    bool valid = ConfigManager::instance().validateArchive(archivePath);
+    EXPECT_FALSE(valid);
+}
+
+TEST_F(ConfigManagerTest, ListArchiveContents) {
+    // Create configs
+    createTestConfig("config1.mayu");
+    createTestConfig("config2.mayu");
+
+    // Create main config that includes config2
+    {
+        std::ofstream ofs(testDir / "main.mayu");
+        ofs << "include \"config2.mayu\"" << std::endl;
+    }
+
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+    auto exportResult = ConfigManager::instance().exportConfig((testDir / "main.mayu").string(), archivePath);
+    ASSERT_TRUE(exportResult.success);
+
+    auto contents = ConfigManager::instance().listArchiveContents(archivePath);
+    EXPECT_EQ(contents.size(), 2u);
+}
+
+TEST_F(ConfigManagerTest, ExportCreatesDirectoryIfNeeded) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    // Archive path in non-existent directory
+    fs::path newDir = testDir / "newdir" / "subdir";
+    std::string archivePath = (newDir / "export.yamy-pkg").string();
+
+    EXPECT_FALSE(fs::exists(newDir));
+
+    auto result = ConfigManager::instance().exportConfig(configPath, archivePath);
+    EXPECT_TRUE(result.success) << result.errorMessage;
+    EXPECT_TRUE(fs::exists(archivePath));
+}
+
+TEST_F(ConfigManagerTest, ImportAddsConfigToManager) {
+    // Create and export a config
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+    std::string archivePath = (testDir / "export.yamy-pkg").string();
+
+    auto exportResult = ConfigManager::instance().exportConfig(configPath, archivePath);
+    ASSERT_TRUE(exportResult.success);
+
+    // Import to new directory
+    fs::path importDir = testDir / "imported";
+    auto importResult = ConfigManager::instance().importConfig(archivePath, importDir.string());
+    ASSERT_TRUE(importResult.success);
+
+    // Verify the imported config was added to the manager
+    auto configs = ConfigManager::instance().listConfigs();
+    bool found = false;
+    for (const auto& entry : configs) {
+        if (entry.path.find("imported") != std::string::npos &&
+            entry.path.find("test.mayu") != std::string::npos) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST_F(ConfigManagerTest, GetExportDir) {
+    std::string exportDir = ConfigManager::getExportDir();
+    EXPECT_FALSE(exportDir.empty());
+    EXPECT_TRUE(exportDir.find("exports") != std::string::npos);
+}

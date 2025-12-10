@@ -543,7 +543,7 @@
   - _Requirements: FR-2.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Implement config backup - Add methods to ConfigManager: createBackup(configPath) copies to .bak file with timestamp, listBackups(configPath) returns vector of backup paths, restoreBackup(backupPath) copies back to original, deleteBackup(backupPath), Keep max 10 backups per config, Auto-backup before any modification | Restrictions: Use filesystem copy, Handle copy errors, Limit backup count, Use safe file operations | Success: Backup creates .bak file with timestamp, Restore works correctly, Old backups deleted automatically, Backup limit enforced, File operations safe | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.1.6 Add config import/export
+- [-] 2.1.6 Add config import/export
   - File: src/core/settings/config_manager.cpp
   - Export config with dependencies to archive
   - Import config from archive
