@@ -397,7 +397,7 @@
   - _Requirements: FR-1.8_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with Unix IPC expertise | Task: Create unit tests for IPCChannelLinux - Step 1: Create test fixture with temp socket paths, Step 2: Test connect creates and binds socket, Step 3: Test send delivers message to remote socket, Step 4: Test MessageHandler callback invoked on message receipt, Step 5: Test disconnect cleans up socket file, Step 6: Test error handling for connection failures | Restrictions: Use temporary socket paths for testing, Clean up sockets after tests, Test thread-safety, Verify file permissions | Success: All IPCChannelLinux methods tested, Socket communication verified, Callback behavior tested, Cleanup confirmed, Error handling tested, Tests pass reliably | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.17 Add integration test for full key remapping flow
+- [x] 1.2.17 Add integration test for full key remapping flow
   - File: tests/integration/key_remapping_integration_test.cpp
   - Test end-to-end key remapping on Linux
   - Verify hook → engine → injection flow
