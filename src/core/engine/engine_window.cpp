@@ -134,20 +134,10 @@ std::string Engine::getClipboardText() const
 
 std::string Engine::getStrExprWindowClassName() const
 {
-    // Convert tstringi to std::string
-#ifdef _UNICODE
-    return yamy::platform::wstring_to_utf8(m_currentFocusOfThread->m_className);
-#else
-    return std::string(m_currentFocusOfThread->m_className);
-#endif
+    return m_currentFocusOfThread->m_className;
 }
 
 std::string Engine::getStrExprWindowTitleName() const
 {
-    // Convert tstringi to std::string
-#ifdef _UNICODE
-    return yamy::platform::wstring_to_utf8(m_currentFocusOfThread->m_titleName);
-#else
-    return std::string(m_currentFocusOfThread->m_titleName);
-#endif
+    return m_currentFocusOfThread->m_titleName;
 }

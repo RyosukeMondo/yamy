@@ -183,7 +183,7 @@ public:
 
     unsigned int registerWindowMessage(const std::string& name) override {
         std::cerr << "[STUB] registerWindowMessage(" << name << ")" << std::endl;
-        return 0;
+        return 0xC000;
     }
 
     bool sendMessageTimeout(WindowHandle window, unsigned int msg, uintptr_t wParam, intptr_t lParam, unsigned int flags, unsigned int timeout, uintptr_t* result) override {

@@ -30,7 +30,7 @@ void Command_LoadSetting::exec(Engine *i_engine, FunctionParam *i_param) const
             tsmatch what;
             if (std::regex_match(dot_mayu, what, split) &&
                     what.str(1) == to_tstring(i_name.eval())) {
-                i_engine->m_configStore->write(_T(".mayuIndex"), (DWORD)i);
+                i_engine->m_configStore->write(_T(".mayuIndex"), (uint32_t)i);
                 goto success;
             }
         }
@@ -44,6 +44,6 @@ void Command_LoadSetting::exec(Engine *i_engine, FunctionParam *i_param) const
 success:
         ;
     }
-    i_engine->getWindowSystem()->postMessage(i_engine->m_hwndAssocWindow,
+    i_engine->getWindowSystem()->postMessage(i_engine->getAssociatedWndow(),
                 WM_APP_engineNotify, EngineNotify_loadSetting, 0);
 }
