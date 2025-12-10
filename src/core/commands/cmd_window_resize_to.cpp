@@ -1,7 +1,6 @@
 #include "cmd_window_resize_to.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
-#include "../../platform/windows/windowstool.h" // For asyncResize
 
 void Command_WindowResizeTo::load(SettingLoader *i_sl)
 {
@@ -25,7 +24,9 @@ void Command_WindowResizeTo::exec(Engine *i_engine, FunctionParam *i_param) cons
     TargetWindowType twt = m_twt;
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt, &rc, &rcd))
         return;
-    asyncResize(hwnd, m_width, m_height);
+
+    yamy::platform::Rect newRect(rc.left, rc.top, rc.left + m_width, rc.top + m_height);
+    i_engine->getWindowSystem()->moveWindow(hwnd, newRect);
 }
 
 tostream &Command_WindowResizeTo::outputArgs(tostream &i_ost) const

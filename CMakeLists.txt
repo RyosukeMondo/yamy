@@ -211,6 +211,8 @@ if(WIN32)
         src/platform/windows/input_injector_win32.cpp
         src/platform/windows/input_hook_win32.cpp
         src/platform/windows/thread_win32.cpp
+        src/platform/windows/sync.cpp
+        src/platform/windows/hook_data.cpp
     )
 
     add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})

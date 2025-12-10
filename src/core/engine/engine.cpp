@@ -9,6 +9,7 @@
 #include "hook.h"
 #include "mayurc.h"
 #include "windowstool.h"
+#include "../platform/sync.h"
 
 #include <iomanip>
 #ifdef _WIN32
@@ -31,7 +32,7 @@ void Engine::keyboardHandler()
         KEYBOARD_INPUT_DATA kid;
 
 #ifdef _WIN32
-        WaitForSingleObject(m_queueMutex, INFINITE);
+        yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
         while (SignalObjectAndWait(m_queueMutex, m_readEvent, INFINITE, true) == WAIT_OBJECT_0) {
 #endif
             if (m_inputQueue == nullptr) {

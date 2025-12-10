@@ -505,6 +505,61 @@ bool WindowSystemWin32::freeLibrary(void* module) {
     return FreeLibrary((HMODULE)module) != 0;
 }
 
+bool WindowSystemWin32::sendCopyData(WindowHandle sender,
+                                     WindowHandle target,
+                                     const CopyData& data,
+                                     uint32_t flags,
+                                     uint32_t timeout_ms,
+                                     uintptr_t* result) {
+#ifdef _WIN32
+    COPYDATASTRUCT cd;
+    cd.dwData = data.id;
+    cd.cbData = data.size;
+    cd.lpData = const_cast<void*>(data.data);
+
+    return sendMessageTimeout(target, WM_COPYDATA,
+                             reinterpret_cast<uintptr_t>(sender),
+                             reinterpret_cast<intptr_t>(&cd),
+                             flags, timeout_ms, result);
+#else
+    // Linux stub
+    if (result) *result = 0;
+    return false;
+#endif
+}
+
+WindowHandle WindowSystemWin32::getToplevelWindow(WindowHandle hwnd, bool* isMDI) {
+#ifdef _WIN32
+    return ::getToplevelWindow(hwnd, isMDI);
+#else
+    if (isMDI) *isMDI = false;
+    return hwnd;
+#endif
+}
+
+bool WindowSystemWin32::changeMessageFilter(uint32_t message, uint32_t action) {
+#ifdef _WIN32
+    typedef BOOL (WINAPI *ChangeWindowMessageFilter_t)(UINT, DWORD);
+
+    HMODULE hUser32 = GetModuleHandleW(L"user32.dll");
+    if (!hUser32) {
+        return false;
+    }
+
+    auto pChangeWindowMessageFilter =
+        reinterpret_cast<ChangeWindowMessageFilter_t>(
+            GetProcAddress(hUser32, "ChangeWindowMessageFilter"));
+
+    if (!pChangeWindowMessageFilter) {
+        return false;
+    }
+
+    return pChangeWindowMessageFilter(message, action) != FALSE;
+#else
+    return false;
+#endif
+}
+
 // Factory implementation
 IWindowSystem* createWindowSystem() {
     return new WindowSystemWin32();

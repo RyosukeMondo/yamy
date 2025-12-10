@@ -1,7 +1,6 @@
 #include "cmd_set_foreground_window.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
-#include "../../platform/windows/windowstool.h" // For setForegroundWindow
 
 // Helper to find window
 struct FindWindowData {
@@ -64,7 +63,7 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
     });
 
     if (data.found) {
-        setForegroundWindow(data.found);
+        i_engine->getWindowSystem()->setForegroundWindow(data.found);
     } else {
         // log warning
         Acquire a(&i_engine->m_log, 0);

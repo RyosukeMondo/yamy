@@ -28,6 +28,14 @@ struct Rect {
 
     int32_t width() const { return right - left; }
     int32_t height() const { return bottom - top; }
+
+    /// Check if this rectangle is completely contained within another rectangle
+    bool isContainedIn(const Rect& outer) const {
+        return (outer.left <= left &&
+                right <= outer.right &&
+                outer.top <= top &&
+                bottom <= outer.bottom);
+    }
 };
 
 // Platform-agnostic size

@@ -4,6 +4,8 @@
 #include "../../platform/windows/windowstool.h" // For loadString
 #include "../../ui/mayurc.h" // For IDS_mayu
 #include "../../utils/stringtool.h" // For strcasecmp_utf8
+#include "../platform/message_constants.h"
+#include "../platform/ipc.h"
 #include <map>
 #include <cstring>
 #include <cstdio>
@@ -155,22 +157,19 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
             i = servers.begin(); i != servers.end(); ++ i) {
         std::smatch what;
         if (std::regex_match(i->second.m_name, what, m_name)) {
-            // Use local definition or rely on Win32 include but abstract it.
-            // Since we are eliminating Win32 types, we use generic types.
-            // But we must construct COPYDATASTRUCT for Windows message.
-            // We'll rely on COPYDATASTRUCT from windows.h since this is a platform specific message.
-            // But we cast it to intptr_t for the call.
-            COPYDATASTRUCT cd;
-            cd.dwData = 9801;
-            cd.cbData = (uint32_t)request_UTF_8.size();
-            cd.lpData = (void *)request_UTF_8.c_str();
+            yamy::platform::CopyData cd{
+                9801,
+                static_cast<uint32_t>(request_UTF_8.size()),
+                request_UTF_8.c_str()
+            };
             uintptr_t result;
-            // 0x004A is WM_COPYDATA
-            i_engine->getWindowSystem()->sendMessageTimeout(i->second.m_hwnd, 0x004A,
-                               reinterpret_cast<uintptr_t>(i_engine->m_hwndAssocWindow),
-                               reinterpret_cast<intptr_t>(&cd),
-                               0x0002 | 0x0001, // SMTO_ABORTIFHUNG | SMTO_BLOCK
-                               5000, &result);
+            i_engine->getWindowSystem()->sendCopyData(
+                i_engine->m_hwndAssocWindow,
+                i->second.m_hwnd,
+                cd,
+                yamy::platform::SendMessageFlags::NORMAL,
+                5000,
+                &result);
         }
     }
 

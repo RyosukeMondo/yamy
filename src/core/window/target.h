@@ -7,6 +7,7 @@
 #  define _TARGET_H
 
 #  include <cstdint>
+#  include "../platform/message_constants.h"
 
 ///
 extern uint16_t Register_target();
@@ -14,7 +15,7 @@ extern uint16_t Register_target();
 ///
 enum {
     ///
-    WM_APP_targetNotify = 0x8000 + 102,
+    WM_APP_targetNotify = yamy::platform::MSG_APP_TARGET_NOTIFY,
 };
 
 

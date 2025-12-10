@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include "ipc.h"
 #include <string>
 #include <functional>
 
@@ -58,6 +59,21 @@ public:
     virtual unsigned int registerWindowMessage(const std::string& name) = 0;
     virtual bool sendMessageTimeout(WindowHandle window, unsigned int msg, uintptr_t wParam, intptr_t lParam, unsigned int flags, unsigned int timeout, uintptr_t* result) = 0;
 
+    /// Send copy data to another window
+    /// @param sender Sender window handle
+    /// @param target Target window handle
+    /// @param data Copy data structure
+    /// @param flags Send message flags
+    /// @param timeout_ms Timeout in milliseconds
+    /// @param result Pointer to store result (can be nullptr)
+    /// @return true if message was sent successfully
+    virtual bool sendCopyData(WindowHandle sender,
+                             WindowHandle target,
+                             const CopyData& data,
+                             uint32_t flags,
+                             uint32_t timeout_ms,
+                             uintptr_t* result) = 0;
+
     // Styling/Layering
     virtual bool setWindowZOrder(WindowHandle window, ZOrder order) = 0;
     virtual bool isWindowTopMost(WindowHandle window) = 0;
@@ -89,6 +105,20 @@ public:
     virtual void* loadLibrary(const std::string& path) = 0;
     virtual void* getProcAddress(void* module, const std::string& procName) = 0;
     virtual bool freeLibrary(void* module) = 0;
+
+    // Window hierarchy
+    /// Get the top-level window for a given window handle
+    /// @param hwnd Window handle
+    /// @param isMDI Pointer to bool to receive MDI status (can be nullptr)
+    /// @return Top-level window handle
+    virtual WindowHandle getToplevelWindow(WindowHandle hwnd, bool* isMDI) = 0;
+
+    // Message filtering
+    /// Change message filter for UIPI (User Interface Privilege Isolation)
+    /// @param message Message to filter
+    /// @param action Filter action (MSGFLT_ADD or MSGFLT_REMOVE)
+    /// @return true if successful
+    virtual bool changeMessageFilter(uint32_t message, uint32_t action) = 0;
 };
 
 // Factory function

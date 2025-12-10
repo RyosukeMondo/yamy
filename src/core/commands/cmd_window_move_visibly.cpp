@@ -1,7 +1,6 @@
 #include "cmd_window_move_visibly.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
-#include "../../platform/windows/windowstool.h" // For asyncMoveWindow
 
 void Command_WindowMoveVisibly::load(SettingLoader *i_sl)
 {
@@ -30,7 +29,7 @@ void Command_WindowMoveVisibly::exec(Engine *i_engine, FunctionParam *i_param) c
         i_engine->getWindowSystem()->getMonitorWorkArea(monitorIndex, &monitorWorkArea);
     }
 
-    if (isRectInRect(&rc, &monitorWorkArea))
+    if (rc.isContainedIn(monitorWorkArea))
         return;
 
     int w = rc.width();
@@ -57,7 +56,8 @@ void Command_WindowMoveVisibly::exec(Engine *i_engine, FunctionParam *i_param) c
     else
         y = rc.top;
 
-    asyncMoveWindow(hwnd, x, y);
+    yamy::platform::Rect newRect(x, y, x + w, y + h);
+    i_engine->getWindowSystem()->moveWindow(hwnd, newRect);
 }
 
 tostream &Command_WindowMoveVisibly::outputArgs(tostream &i_ost) const

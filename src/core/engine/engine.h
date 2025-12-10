@@ -18,14 +18,11 @@
 #  include <queue>
 #  include "../functions/function.h"
 #  include "../input/input_event.h" // Needed for KEYBOARD_INPUT_DATA
-
-#ifndef WM_APP
-#define WM_APP 0x8000
-#endif
+#  include "../platform/message_constants.h"
 
 enum {
     ///
-    WM_APP_engineNotify = WM_APP + 110,
+    WM_APP_engineNotify = yamy::platform::MSG_APP_ENGINE_NOTIFY,
 };
 
 

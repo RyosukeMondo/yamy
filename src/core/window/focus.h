@@ -6,16 +6,16 @@
 #ifndef _FOCUS_H
 #  define _FOCUS_H
 
-#  include <windows.h>
 #  include <cstdint>
+#  include "../platform/message_constants.h"
 
 
 ///
 extern uint16_t Register_focus();
 
 enum {
-    WM_APP_notifyFocus = WM_APP + 103,
-    WM_APP_notifyVKey  = WM_APP + 104,
+    WM_APP_notifyFocus = yamy::platform::MSG_APP_NOTIFY_FOCUS,
+    WM_APP_notifyVKey  = yamy::platform::MSG_APP_NOTIFY_VKEY,
 };
 
 

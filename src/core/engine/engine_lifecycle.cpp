@@ -9,6 +9,8 @@
 #include "hook.h"
 #include "mayurc.h"
 #include "windowstool.h"
+#include "../platform/message_constants.h"
+#include "../platform/sync.h"
 
 #include <iomanip>
 #include <process.h>
@@ -44,17 +46,9 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_afShellExecute(nullptr),
         m_variable(0),
         m_log(i_log) {
-#ifdef _WIN32
     // Enable receiving WM_COPYDATA from lower integrity processes
-    // This is Windows Vista+ specific functionality
-    using ChangeWindowMessageFilterFunc = int (WINAPI *)(unsigned int, uint32_t);
-    ChangeWindowMessageFilterFunc pChangeWindowMessageFilter =
-        reinterpret_cast<ChangeWindowMessageFilterFunc>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "ChangeWindowMessageFilter"));
-
-    if(pChangeWindowMessageFilter != nullptr) {
-        pChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
-    }
-#endif
+    m_windowSystem->changeMessageFilter(yamy::platform::MSG_COPYDATA,
+                                       yamy::platform::MSGFLT_ADD);
 
     for (size_t i = 0; i < NUMBER_OF(m_lastPressedKey); ++ i)
         m_lastPressedKey[i] = nullptr;
@@ -140,13 +134,13 @@ void Engine::stop() {
     m_inputDriver->close();
 
 #ifdef _WIN32
-    WaitForSingleObject(m_queueMutex, INFINITE);
+    yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
     delete m_inputQueue;
     m_inputQueue = nullptr;
     SetEvent(m_readEvent);
     ReleaseMutex(m_queueMutex);
 
-    WaitForSingleObject(m_threadHandle, 2000);
+    yamy::platform::waitForObject(m_threadHandle, 2000);
     CHECK_TRUE( CloseHandle(m_threadHandle) );
     m_threadHandle = nullptr;
 
@@ -207,7 +201,7 @@ void Engine::setCurrentKeymap(const Keymap *i_keymap, bool i_doesAddToHistory)
 void Engine::pushInputEvent(const KEYBOARD_INPUT_DATA &kid)
 {
 #ifdef _WIN32
-    WaitForSingleObject(m_queueMutex, INFINITE);
+    yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
     if (m_inputQueue) {
         m_inputQueue->push_back(kid);
         SetEvent(m_readEvent);

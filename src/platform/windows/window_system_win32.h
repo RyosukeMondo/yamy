@@ -72,6 +72,16 @@ public:
     void* loadLibrary(const std::string& path) override;
     void* getProcAddress(void* module, const std::string& procName) override;
     bool freeLibrary(void* module) override;
+
+    bool sendCopyData(WindowHandle sender,
+                     WindowHandle target,
+                     const CopyData& data,
+                     uint32_t flags,
+                     uint32_t timeout_ms,
+                     uintptr_t* result) override;
+
+    WindowHandle getToplevelWindow(WindowHandle hwnd, bool* isMDI) override;
+    bool changeMessageFilter(uint32_t message, uint32_t action) override;
 };
 
 } // namespace yamy::platform

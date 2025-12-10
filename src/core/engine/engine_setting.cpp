@@ -6,7 +6,7 @@
 
 #include "engine.h"
 #include "errormessage.h"
-#include "hook.h"
+#include "../platform/hook_interface.h"
 #include "mayurc.h"
 #include "windowstool.h"
 
@@ -51,7 +51,8 @@ bool Engine::setSetting(Setting *i_setting) {
     m_inputDriver->manageExtension("cts4mayu.dll", "TouchPad.dll",
                   m_setting->m_cts4mayu, (void**)&m_cts4mayu);
 
-    g_hookData->m_correctKanaLockHandling = m_setting->m_correctKanaLockHandling;
+    auto* hookData = yamy::platform::getHookData();
+    hookData->m_correctKanaLockHandling = m_setting->m_correctKanaLockHandling;
     if (m_currentFocusOfThread) {
         for (FocusOfThreads::iterator i = m_focusOfThreads.begin();
                 i != m_focusOfThreads.end(); i ++) {

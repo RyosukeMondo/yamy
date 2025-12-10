@@ -1,7 +1,7 @@
 ﻿#include "cmd_vk.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
-#include "../../platform/windows/driver.h" // For KEYBOARD_INPUT_DATA
+#include "../input/input_event.h" // For KEYBOARD_INPUT_DATA
 #include "../input/input_injector.h" // For InjectionContext
 
 void Command_VK::exec(Engine *i_engine, FunctionParam *i_param) const

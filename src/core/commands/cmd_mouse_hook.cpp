@@ -2,8 +2,7 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../window/window_system.h" // For WindowPoint
-#include "../../platform/windows/hook.h" // For g_hookData
-#include "../../platform/windows/windowstool.h" // For getToplevelWindow
+#include "../platform/hook_interface.h" // For platform hook data interface
 
 void Command_MouseHook::load(SettingLoader *i_sl)
 {
@@ -18,17 +17,19 @@ void Command_MouseHook::load(SettingLoader *i_sl)
 
 void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
 {
+    auto* hookData = yamy::platform::getHookData();
+
     yamy::platform::Point wp;
     i_engine->getWindowSystem()->getCursorPos(&wp);
-    g_hookData->m_mousePos.x = wp.x;
-    g_hookData->m_mousePos.y = wp.y;
+    hookData->m_mousePos.x = wp.x;
+    hookData->m_mousePos.y = wp.y;
 
-    g_hookData->m_mouseHookType = m_hookType;
-    g_hookData->m_mouseHookParam = m_hookParam;
+    hookData->m_mouseHookType = static_cast<yamy::platform::MouseHookType>(m_hookType);
+    hookData->m_mouseHookParam = m_hookParam;
 
     switch (m_hookType) {
     case MouseHookType_WindowMove: {
-        // For this type, g_hookData->m_mouseHookParam means
+        // For this type, hookData->m_mouseHookParam means
         // target window type to move.
         yamy::platform::WindowHandle target;
         bool isMDI;
@@ -46,12 +47,12 @@ void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
         else
             target = i_param->m_hwnd;
 
-        g_hookData->m_hwndMouseHookTarget =
-            (uint32_t)((uintptr_t)getToplevelWindow(target, &isMDI));
+        hookData->m_hwndMouseHookTarget =
+            (uint32_t)((uintptr_t)i_engine->getWindowSystem()->getToplevelWindow(target, &isMDI));
         break;
     }
     default:
-        g_hookData->m_hwndMouseHookTarget = 0;
+        hookData->m_hwndMouseHookTarget = 0;
         break;
     }
 }

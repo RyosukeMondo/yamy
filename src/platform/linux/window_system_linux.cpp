@@ -286,6 +286,28 @@ public:
         std::cerr << "[STUB] freeLibrary()" << std::endl;
         return false;
     }
+
+    bool sendCopyData(WindowHandle sender,
+                     WindowHandle target,
+                     const CopyData& data,
+                     uint32_t flags,
+                     uint32_t timeout_ms,
+                     uintptr_t* result) override {
+        std::cerr << "[STUB] sendCopyData()" << std::endl;
+        if (result) *result = 0;
+        return false;
+    }
+
+    WindowHandle getToplevelWindow(WindowHandle hwnd, bool* isMDI) override {
+        std::cerr << "[STUB] getToplevelWindow()" << std::endl;
+        if (isMDI) *isMDI = false;
+        return hwnd;
+    }
+
+    bool changeMessageFilter(uint32_t message, uint32_t action) override {
+        std::cerr << "[STUB] changeMessageFilter(" << message << ", " << action << ")" << std::endl;
+        return true;
+    }
 };
 
 // Factory implementation

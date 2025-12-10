@@ -1,7 +1,6 @@
 #include "cmd_window_move.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
-#include "../../platform/windows/windowstool.h" // For asyncMoveWindow
 
 Command_WindowMove::Command_WindowMove()
 {
@@ -30,7 +29,10 @@ void Command_WindowMove::exec(Engine *i_engine, FunctionParam *i_param) const
     TargetWindowType twt = m_twt;
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt, &rc, &rcd))
         return;
-    asyncMoveWindow(hwnd, rc.left + m_dx, rc.top + m_dy);
+
+    yamy::platform::Rect newRect(rc.left + m_dx, rc.top + m_dy,
+                                  rc.right + m_dx, rc.bottom + m_dy);
+    i_engine->getWindowSystem()->moveWindow(hwnd, newRect);
 }
 
 tostream &Command_WindowMove::outputArgs(tostream &i_ost) const
