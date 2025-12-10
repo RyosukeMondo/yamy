@@ -15,6 +15,7 @@
 #include <QMap>
 #include <QSet>
 #include <QMutex>
+#include <QMenu>
 #include <memory>
 
 class ConfigManager;
@@ -100,6 +101,17 @@ private slots:
      * @param item The double-clicked item
      */
     void onItemDoubleClicked(QListWidgetItem* item);
+
+    /**
+     * @brief Show context menu for config item
+     * @param pos Position where context menu was requested
+     */
+    void onContextMenuRequested(const QPoint& pos);
+
+    /**
+     * @brief Edit metadata for the selected configuration
+     */
+    void onEditMetadata();
 
     /**
      * @brief Refresh the configuration list
@@ -218,6 +230,7 @@ private:
     QPushButton* m_btnDelete;
     QPushButton* m_btnRename;
     QPushButton* m_btnEdit;
+    QPushButton* m_btnMetadata;
     QPushButton* m_btnImport;
     QPushButton* m_btnExport;
     QPushButton* m_btnSetActive;

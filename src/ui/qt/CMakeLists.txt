@@ -24,6 +24,7 @@ set(QT_GUI_SOURCES
     dialog_log_qt.cpp
     dialog_about_qt.cpp
     config_manager_dialog.cpp
+    config_metadata_dialog.cpp
     global_hotkey.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
 )
@@ -35,6 +36,7 @@ set(QT_GUI_HEADERS
     dialog_log_qt.h
     dialog_about_qt.h
     config_manager_dialog.h
+    config_metadata_dialog.h
     global_hotkey.h
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
 )

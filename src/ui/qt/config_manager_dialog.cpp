@@ -1,6 +1,8 @@
 #include "config_manager_dialog.h"
+#include "config_metadata_dialog.h"
 #include "../../core/settings/config_manager.h"
 #include "../../core/settings/config_validator.h"
+#include "../../core/settings/config_metadata.h"
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -26,6 +28,7 @@ ConfigManagerDialog::ConfigManagerDialog(QWidget* parent)
     , m_btnDelete(nullptr)
     , m_btnRename(nullptr)
     , m_btnEdit(nullptr)
+    , m_btnMetadata(nullptr)
     , m_btnImport(nullptr)
     , m_btnExport(nullptr)
     , m_btnSetActive(nullptr)
@@ -92,10 +95,13 @@ void ConfigManagerDialog::setupUI()
 
     m_configList = new QListWidget();
     m_configList->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_configList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_configList, &QListWidget::itemSelectionChanged,
             this, &ConfigManagerDialog::onSelectionChanged);
     connect(m_configList, &QListWidget::itemDoubleClicked,
             this, &ConfigManagerDialog::onItemDoubleClicked);
+    connect(m_configList, &QWidget::customContextMenuRequested,
+            this, &ConfigManagerDialog::onContextMenuRequested);
     listLayout->addWidget(m_configList);
 
     // Path label below list
@@ -153,6 +159,12 @@ void ConfigManagerDialog::setupUI()
     m_btnEdit->setEnabled(false);
     connect(m_btnEdit, &QPushButton::clicked, this, &ConfigManagerDialog::onEdit);
     btnLayout1->addWidget(m_btnEdit);
+
+    m_btnMetadata = new QPushButton("Metadata...");
+    m_btnMetadata->setToolTip("Edit configuration metadata (name, description, tags)");
+    m_btnMetadata->setEnabled(false);
+    connect(m_btnMetadata, &QPushButton::clicked, this, &ConfigManagerDialog::onEditMetadata);
+    btnLayout1->addWidget(m_btnMetadata);
 
     btnLayout1->addStretch();
     mainLayout->addLayout(btnLayout1);
@@ -329,6 +341,7 @@ void ConfigManagerDialog::updateButtonStates()
     m_btnDelete->setEnabled(hasSelection && !isActive);  // Can't delete active config
     m_btnRename->setEnabled(fileExists && !isActive);    // Can't rename active config
     m_btnEdit->setEnabled(fileExists);
+    m_btnMetadata->setEnabled(fileExists);
     m_btnExport->setEnabled(fileExists);
     m_btnSetActive->setEnabled(fileExists && !isActive);
 }
@@ -1066,6 +1079,85 @@ void ConfigManagerDialog::updateItemValidationStatus(const QString& configPath,
             }
             break;
         }
+    }
+}
+
+void ConfigManagerDialog::onContextMenuRequested(const QPoint& pos)
+{
+    QListWidgetItem* item = m_configList->itemAt(pos);
+    if (!item) {
+        return;
+    }
+
+    QString path = item->data(Qt::UserRole).toString();
+    bool fileExists = QFileInfo::exists(path);
+
+    QMenu contextMenu(this);
+
+    // Edit metadata action
+    QAction* metadataAction = contextMenu.addAction("Edit Metadata...");
+    metadataAction->setEnabled(fileExists);
+    connect(metadataAction, &QAction::triggered, this, &ConfigManagerDialog::onEditMetadata);
+
+    contextMenu.addSeparator();
+
+    // Edit in editor action
+    QAction* editAction = contextMenu.addAction("Edit in Editor...");
+    editAction->setEnabled(fileExists);
+    connect(editAction, &QAction::triggered, this, &ConfigManagerDialog::onEdit);
+
+    // Duplicate action
+    QAction* duplicateAction = contextMenu.addAction("Duplicate");
+    duplicateAction->setEnabled(fileExists);
+    connect(duplicateAction, &QAction::triggered, this, &ConfigManagerDialog::onDuplicate);
+
+    // Rename action
+    ConfigManager& configMgr = ConfigManager::instance();
+    int activeIndex = configMgr.getActiveIndex();
+    int selectedIndex = item->data(Qt::UserRole + 1).toInt();
+    bool isActive = (selectedIndex == activeIndex);
+
+    QAction* renameAction = contextMenu.addAction("Rename...");
+    renameAction->setEnabled(fileExists && !isActive);
+    connect(renameAction, &QAction::triggered, this, &ConfigManagerDialog::onRename);
+
+    contextMenu.addSeparator();
+
+    // Export action
+    QAction* exportAction = contextMenu.addAction("Export...");
+    exportAction->setEnabled(fileExists);
+    connect(exportAction, &QAction::triggered, this, &ConfigManagerDialog::onExport);
+
+    contextMenu.addSeparator();
+
+    // Set active action
+    QAction* setActiveAction = contextMenu.addAction("Set as Active");
+    setActiveAction->setEnabled(fileExists && !isActive);
+    connect(setActiveAction, &QAction::triggered, this, &ConfigManagerDialog::onSetActive);
+
+    contextMenu.addSeparator();
+
+    // Delete action
+    QAction* deleteAction = contextMenu.addAction("Delete");
+    deleteAction->setEnabled(!isActive);
+    connect(deleteAction, &QAction::triggered, this, &ConfigManagerDialog::onDelete);
+
+    contextMenu.exec(m_configList->mapToGlobal(pos));
+}
+
+void ConfigManagerDialog::onEditMetadata()
+{
+    QString path = getSelectedConfigPath();
+    if (path.isEmpty() || !QFileInfo::exists(path)) {
+        return;
+    }
+
+    ConfigMetadataDialog dialog(path, this);
+    if (dialog.exec() == QDialog::Accepted && dialog.wasSaved()) {
+        // Refresh the list to show updated metadata
+        // For now, the metadata is stored separately, so no list refresh needed
+        // unless we want to show metadata info in the list
+        m_labelStatus->setText("Metadata updated successfully");
     }
 }
 
