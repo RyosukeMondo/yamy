@@ -631,7 +631,7 @@
 
 **Purpose**: Full window inspector with crosshair selection (FR-3)
 
-- [ ] 3.1 Create CrosshairWidget for window selection
+- [x] 3.1 Create CrosshairWidget for window selection
   - File: src/ui/qt/crosshair_widget_qt.h, src/ui/qt/crosshair_widget_qt.cpp
   - Implement transparent overlay with crosshair cursor
   - Handle mouse events for window selection under cursor
