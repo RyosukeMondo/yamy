@@ -17,7 +17,8 @@
 #  include <set>
 #  include <queue>
 #  include "../functions/function.h"
-#  include "../input/input_event.h" // Needed for KEYBOARD_INPUT_DATA
+#  include "../input/input_event.h" // For KEYBOARD_INPUT_DATA (legacy)
+#  include "../platform/types.h" // For KeyEvent
 #  include "../platform/message_constants.h"
 
 enum {
@@ -169,7 +170,7 @@ private:
     // engine thread state
     yamy::platform::ThreadHandle m_threadHandle;
     unsigned m_threadId;
-    std::deque<KEYBOARD_INPUT_DATA> *m_inputQueue;
+    std::deque<yamy::platform::KeyEvent> *m_inputQueue;
     yamy::platform::MutexHandle m_queueMutex;
 
     yamy::platform::EventHandle m_readEvent;                /** reading from mayu device
@@ -240,7 +241,10 @@ public:
                                                     dialog's edit) */
 
     /// Push input event to the queue (Thread Safe)
-    void pushInputEvent(const KEYBOARD_INPUT_DATA &kid);
+    void pushInputEvent(const yamy::platform::KeyEvent &event);
+
+    /// Convert KeyEvent to KEYBOARD_INPUT_DATA (for legacy code)
+    static KEYBOARD_INPUT_DATA keyEventToKID(const yamy::platform::KeyEvent &event);
 
     /// Get current setting (Thread Safe - check for nullptr)
     const Setting *getSetting() const { return m_setting; }

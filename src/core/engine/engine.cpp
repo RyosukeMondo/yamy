@@ -29,7 +29,7 @@ void Engine::keyboardHandler()
     // loop
     Key key;
     while (1) {
-        KEYBOARD_INPUT_DATA kid;
+        yamy::platform::KeyEvent event;
 
 #ifdef _WIN32
         yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
@@ -45,59 +45,34 @@ void Engine::keyboardHandler()
                 continue;
             }
 
-            kid = m_inputQueue->front();
+            event = m_inputQueue->front();
             m_inputQueue->pop_front();
             if (m_inputQueue->empty()) {
                 ResetEvent(m_readEvent);
             }
 
             break;
-
-#if 0
-            case WAIT_OBJECT_0 + NUMBER_OF(handles): {
-#ifdef _WIN32
-                MSG message;
-
-                while (PeekMessage(&message, nullptr, 0, 0, PM_REMOVE)) {
-#endif
-                    switch (message.message) {
-                    case WM_APP + 201: {
-                        if (message.wParam) {
-                            m_currentLock.on(Modifier::Type_Touchpad);
-                            m_currentLock.on(Modifier::Type_TouchpadSticky);
-                        } else
-                            m_currentLock.off(Modifier::Type_Touchpad);
-                        Acquire a(&m_log, 1);
-                        m_log << "touchpad: " << message.wParam
-                        << "." << (message.lParam & 0xffff)
-                        << "." << (message.lParam >> 16 & 0xffff)
-                        << std::endl;
-                        break;
-                    }
-                    default:
-                        break;
-                    }
-                }
-#ifdef _WIN32
-                goto rewait;
-#endif
-            }
-#endif
         }
 #ifdef _WIN32
         ReleaseMutex(m_queueMutex);
 #endif
+
+        // Convert KeyEvent to KEYBOARD_INPUT_DATA for legacy code paths
+        KEYBOARD_INPUT_DATA kid = keyEventToKID(event);
+
+        // Use KeyEvent fields directly for key state
+        bool isPhysicallyPressed = event.isKeyDown;
 
         checkFocusWindow();
 
         if (!m_setting ||    // m_setting has not been loaded
                 !m_isEnabled) {    // disabled
             if (m_isLogMode) {
-                Key key;
-                key.addScanCode(ScanCode(kid.MakeCode, kid.Flags));
-                outputToLog(&key, ModifiedKey(), 0);
+                Key logKey;
+                logKey.addScanCode(ScanCode(kid.MakeCode, kid.Flags));
+                outputToLog(&logKey, ModifiedKey(), 0);
+                // Mouse events use E1 flag - pass through
                 if (kid.Flags & KEYBOARD_INPUT_DATA::E1) {
-                    // through mouse event even if log mode
                     injectInput(&kid, nullptr);
                 }
             } else {
@@ -112,7 +87,7 @@ void Engine::keyboardHandler()
         if (!m_currentFocusOfThread ||
                 !m_currentKeymap) {
             injectInput(&kid, nullptr);
-            Acquire a(&m_log, 0);
+            Acquire b(&m_log, 0);
             if (!m_currentFocusOfThread)
                 m_log << "internal error: m_currentFocusOfThread == nullptr"
                 << std::endl;
@@ -127,11 +102,14 @@ void Engine::keyboardHandler()
         c.m_keymap = m_currentKeymap;
         c.m_i = m_currentFocusOfThread->m_keymaps.begin();
 
-        // search key
+        // Detect mouse events via special extraInfo marker
+        const uint32_t MOUSE_EVENT_MARKER = 0x59414D59; // "YAMY" in hex
+        bool isMouseEvent = (event.extraInfo == MOUSE_EVENT_MARKER);
+
+        // search key - add scan code to appropriate Key object
         Key mouseKey;
         Key *pProcessingKey = &key;
-        bool isMouseEvent = (kid.ExtraInformation == 0x59414D59);
-        
+
         if (isMouseEvent) {
             mouseKey.addScanCode(ScanCode(kid.MakeCode, kid.Flags));
             pProcessingKey = &mouseKey;
@@ -148,9 +126,7 @@ void Engine::keyboardHandler()
             }
         }
 
-        // press the key and update counter
-        bool isPhysicallyPressed
-        = !(pProcessingKey->getScanCodes()[0].m_flags & ScanCode::BREAK);
+        // press the key and update counter using KeyEvent's isKeyDown directly
         if (c.m_mkey.m_key) {
             if (!c.m_mkey.m_key->m_isPressed && isPhysicallyPressed)
                 ++ m_currentKeyPressCount;
@@ -182,14 +158,14 @@ void Engine::keyboardHandler()
             }
         } else if (am == Keymap::AM_true) {
             {
-                Acquire a(&m_log, 1);
+                Acquire b(&m_log, 1);
                 m_log << "* true modifier" << std::endl;
             }
             // true modifier doesn't generate scan code
             outputToLog(pProcessingKey, c.m_mkey, 1);
         } else if (am == Keymap::AM_oneShot || am == Keymap::AM_oneShotRepeatable) {
             {
-                Acquire a(&m_log, 1);
+                Acquire b(&m_log, 1);
                 if (am == Keymap::AM_oneShot)
                     m_log << "* one shot modifier" << std::endl;
                 else
@@ -246,7 +222,7 @@ void Engine::keyboardHandler()
         // if counter is zero, reset modifiers and keys on win32
         if (m_currentKeyPressCount <= 0) {
             {
-                Acquire a(&m_log, 1);
+                Acquire b(&m_log, 1);
                 m_log << "* No key is pressed" << std::endl;
             }
             generateModifierEvents(Modifier());

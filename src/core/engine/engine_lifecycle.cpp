@@ -90,16 +90,9 @@ Engine::~Engine() {
 // start keyboard handler thread
 void Engine::start() {
     m_inputHook->install(
-        [this](const yamy::platform::KeyEvent& e) {
-            KEYBOARD_INPUT_DATA kid;
-            kid.UnitId = 0;
-            kid.MakeCode = (USHORT)e.scanCode;
-            kid.Flags = 0;
-            if (!e.isKeyDown) kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
-            if (e.isExtended) kid.Flags |= KEYBOARD_INPUT_DATA::E0;
-            kid.Reserved = 0;
-            kid.ExtraInformation = 0;
-            this->pushInputEvent(kid);
+        [this](const yamy::platform::KeyEvent& event) {
+            // Pass KeyEvent directly to the queue
+            this->pushInputEvent(event);
             return true;
         },
         [this](const yamy::platform::MouseEvent& e) {
@@ -108,7 +101,7 @@ void Engine::start() {
         }
     );
 
-    CHECK_TRUE( m_inputQueue = new std::deque<KEYBOARD_INPUT_DATA> );
+    CHECK_TRUE( m_inputQueue = new std::deque<yamy::platform::KeyEvent> );
 #ifdef _WIN32
     CHECK_TRUE( m_queueMutex = CreateMutex(nullptr, FALSE, nullptr) );
     CHECK_TRUE( m_readEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr) );
@@ -198,14 +191,28 @@ void Engine::setCurrentKeymap(const Keymap *i_keymap, bool i_doesAddToHistory)
 }
 
 
-void Engine::pushInputEvent(const KEYBOARD_INPUT_DATA &kid)
+void Engine::pushInputEvent(const yamy::platform::KeyEvent &event)
 {
 #ifdef _WIN32
     yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
     if (m_inputQueue) {
-        m_inputQueue->push_back(kid);
+        m_inputQueue->push_back(event);
         SetEvent(m_readEvent);
     }
     ReleaseMutex(m_queueMutex);
 #endif
+}
+
+// Convert KeyEvent to KEYBOARD_INPUT_DATA for legacy code paths
+KEYBOARD_INPUT_DATA Engine::keyEventToKID(const yamy::platform::KeyEvent &event)
+{
+    KEYBOARD_INPUT_DATA kid;
+    kid.UnitId = 0;
+    kid.MakeCode = static_cast<unsigned short>(event.scanCode);
+    kid.Flags = 0;
+    if (!event.isKeyDown) kid.Flags |= KEYBOARD_INPUT_DATA::BREAK;
+    if (event.isExtended) kid.Flags |= KEYBOARD_INPUT_DATA::E0;
+    kid.Reserved = 0;
+    kid.ExtraInformation = static_cast<unsigned long>(event.extraInfo);
+    return kid;
 }
