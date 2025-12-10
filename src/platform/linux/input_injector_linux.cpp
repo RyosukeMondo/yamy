@@ -1,4 +1,5 @@
 #include "core/platform/input_injector_interface.h"
+#include "core/input/input_event.h"
 #include "keycode_mapping.h"
 #include <linux/uinput.h>
 #include <fcntl.h>
@@ -77,10 +78,65 @@ public:
     }
 
     void inject(const KEYBOARD_INPUT_DATA *data, const InjectionContext &ctx, const void *rawData = 0) override {
-        // Legacy inject method.
-        (void)data;
-        (void)ctx;
         (void)rawData;
+        (void)ctx;
+
+        if (!data || m_fd < 0) return;
+
+        // Check for mouse events (E1 flag indicates mouse event)
+        if (data->Flags & KEYBOARD_INPUT_DATA::E1) {
+            bool isKeyUp = data->Flags & KEYBOARD_INPUT_DATA::BREAK;
+
+            switch (data->MakeCode) {
+                case 1: // Left button
+                    mouseButton(MouseButton::Left, !isKeyUp);
+                    break;
+                case 2: // Right button
+                    mouseButton(MouseButton::Right, !isKeyUp);
+                    break;
+                case 3: // Middle button
+                    mouseButton(MouseButton::Middle, !isKeyUp);
+                    break;
+                case 4: // Wheel up
+                    if (!isKeyUp) mouseWheel(120);
+                    break;
+                case 5: // Wheel down
+                    if (!isKeyUp) mouseWheel(-120);
+                    break;
+                case 6: // X1 button
+                    mouseButton(MouseButton::X1, !isKeyUp);
+                    break;
+                case 7: // X2 button
+                    mouseButton(MouseButton::X2, !isKeyUp);
+                    break;
+                case 8: // HWheel right (treat as vertical wheel for now)
+                    if (!isKeyUp) mouseWheel(120);
+                    break;
+                case 9: // HWheel left
+                    if (!isKeyUp) mouseWheel(-120);
+                    break;
+                case 10: // Generic wheel with delta in ExtraInformation
+                    if (!isKeyUp) mouseWheel(static_cast<int32_t>(data->ExtraInformation));
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            // Keyboard event
+            // MakeCode contains VK code (YAMY key code) on Linux path
+            uint16_t evdevCode = yamyToEvdevKeyCode(data->MakeCode);
+
+            if (evdevCode == 0 && data->MakeCode != 0) {
+                // Unknown key code, skip
+                return;
+            }
+
+            bool isKeyUp = data->Flags & KEYBOARD_INPUT_DATA::BREAK;
+            int value = isKeyUp ? 0 : 1;
+
+            writeEvent(EV_KEY, evdevCode, value);
+            writeEvent(EV_SYN, SYN_REPORT, 0);
+        }
     }
 
 private:
