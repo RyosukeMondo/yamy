@@ -4,11 +4,11 @@
 #include "input_hook_linux.h"
 #include "keycode_mapping.h"
 #include "core/platform/platform_exception.h"
+#include "../../utils/platform_logger.h"
 #include <linux/input.h>
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
-#include <iostream>
 #include <dirent.h>
 #include <sys/stat.h>
 
@@ -39,7 +39,7 @@ bool EventReaderThread::start()
 
     m_stopRequested = false;
     if (pthread_create(&m_thread, nullptr, threadFunc, this) != 0) {
-        std::cerr << "[EventReader] Failed to create thread for " << m_devNode << std::endl;
+        PLATFORM_LOG_ERROR("input", "Failed to create thread for %s", m_devNode.c_str());
         return false;
     }
 
@@ -67,7 +67,7 @@ void* EventReaderThread::threadFunc(void* arg)
 
 void EventReaderThread::run()
 {
-    std::cout << "[EventReader] Started reading from " << m_devNode << std::endl;
+    PLATFORM_LOG_INFO("input", "Started reading from %s", m_devNode.c_str());
 
     struct input_event ev;
 
@@ -82,12 +82,11 @@ void EventReaderThread::run()
             }
             if (errno == ENODEV) {
                 // Device disconnected
-                std::cerr << "[EventReader] Device " << m_devNode << " disconnected" << std::endl;
+                PLATFORM_LOG_WARN("input", "Device %s disconnected", m_devNode.c_str());
                 break;
             }
             // Other error
-            std::cerr << "[EventReader] Read error on " << m_devNode << ": "
-                      << strerror(errno) << std::endl;
+            PLATFORM_LOG_ERROR("input", "Read error on %s: %s", m_devNode.c_str(), strerror(errno));
             break;
         }
 
@@ -129,17 +128,21 @@ void EventReaderThread::run()
         }
         event.extraInfo = 0;
 
+        // Log key event (scancode only, no sensitive info)
+        PLATFORM_LOG_DEBUG("input", "Key event: scancode=0x%04x %s",
+                           yamyCode, event.isKeyDown ? "DOWN" : "UP");
+
         // Call callback
         if (m_callback) {
             try {
                 m_callback(event);
             } catch (const std::exception& e) {
-                std::cerr << "[EventReader] Callback exception: " << e.what() << std::endl;
+                PLATFORM_LOG_ERROR("input", "Callback exception: %s", e.what());
             }
         }
     }
 
-    std::cout << "[EventReader] Stopped reading from " << m_devNode << std::endl;
+    PLATFORM_LOG_INFO("input", "Stopped reading from %s", m_devNode.c_str());
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -159,16 +162,16 @@ InputHookLinux::~InputHookLinux()
 bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallback)
 {
     if (m_isInstalled) {
-        std::cerr << "[InputHook] Already installed" << std::endl;
+        PLATFORM_LOG_WARN("input", "Input hook already installed");
         return true;
     }
 
-    std::cout << "[InputHook] Installing input hook..." << std::endl;
+    PLATFORM_LOG_INFO("input", "Installing input hook...");
 
     // First check if /dev/input directory exists
     struct stat st;
     if (stat("/dev/input", &st) != 0 || !S_ISDIR(st.st_mode)) {
-        std::cerr << "[InputHook] /dev/input directory not found" << std::endl;
+        PLATFORM_LOG_ERROR("input", "/dev/input directory not found");
         throw EvdevUnavailableException("/dev/input directory not found");
     }
 
@@ -176,7 +179,7 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     DIR* dir = opendir("/dev/input");
     if (!dir) {
         int err = errno;
-        std::cerr << "[InputHook] Cannot open /dev/input: " << std::strerror(err) << std::endl;
+        PLATFORM_LOG_ERROR("input", "Cannot open /dev/input: %s", std::strerror(err));
         throw EvdevUnavailableException("Cannot open /dev/input: " + std::string(std::strerror(err)));
     }
 
@@ -191,7 +194,7 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     closedir(dir);
 
     if (!hasEventDevices) {
-        std::cerr << "[InputHook] No event devices found in /dev/input" << std::endl;
+        PLATFORM_LOG_ERROR("input", "No event devices found in /dev/input");
         throw EvdevUnavailableException("No event devices found in /dev/input");
     }
 
@@ -202,12 +205,12 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     std::vector<InputDeviceInfo> keyboards = m_deviceManager.enumerateKeyboards();
 
     if (keyboards.empty()) {
-        std::cerr << "[InputHook] No keyboard devices found!" << std::endl;
-        std::cerr << "[InputHook] Event devices exist but none have keyboard capabilities." << std::endl;
+        PLATFORM_LOG_ERROR("input", "No keyboard devices found");
+        PLATFORM_LOG_ERROR("input", "Event devices exist but none have keyboard capabilities");
         throw EvdevUnavailableException("Event devices exist but no keyboards found. Check permissions (input group)");
     }
 
-    std::cout << "[InputHook] Found " << keyboards.size() << " keyboard device(s)" << std::endl;
+    PLATFORM_LOG_INFO("input", "Found %zu keyboard device(s)", keyboards.size());
 
     // Track grab failures for better error reporting
     int openFailures = 0;
@@ -216,12 +219,12 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
 
     // Open and grab each keyboard
     for (const auto& kbInfo : keyboards) {
-        std::cout << "[InputHook]   Opening: " << kbInfo.devNode << " (" << kbInfo.name << ")" << std::endl;
+        PLATFORM_LOG_INFO("input", "Opening: %s (%s)", kbInfo.devNode.c_str(), kbInfo.name.c_str());
 
         // Open device
         int fd = DeviceManager::openDevice(kbInfo.devNode, false); // Blocking mode for read
         if (fd < 0) {
-            std::cerr << "[InputHook]   Failed to open " << kbInfo.devNode << std::endl;
+            PLATFORM_LOG_WARN("input", "Failed to open %s", kbInfo.devNode.c_str());
             openFailures++;
             continue;
         }
@@ -229,7 +232,7 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
         // Grab device
         if (!DeviceManager::grabDevice(fd, true)) {
             int err = errno;
-            std::cerr << "[InputHook]   Failed to grab " << kbInfo.devNode << ": " << std::strerror(err) << std::endl;
+            PLATFORM_LOG_WARN("input", "Failed to grab %s: %s", kbInfo.devNode.c_str(), std::strerror(err));
             lastGrabError = std::strerror(err);
             DeviceManager::closeDevice(fd);
             grabFailures++;
@@ -247,17 +250,17 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
         // Create reader thread
         EventReaderThread* reader = new EventReaderThread(fd, kbInfo.devNode, m_keyCallback);
         if (!reader->start()) {
-            std::cerr << "[InputHook]   Failed to start reader thread" << std::endl;
+            PLATFORM_LOG_WARN("input", "Failed to start reader thread for %s", kbInfo.devNode.c_str());
             delete reader;
             continue;
         }
 
         m_readerThreads.push_back(reader);
-        std::cout << "[InputHook]   Successfully hooked " << kbInfo.devNode << std::endl;
+        PLATFORM_LOG_INFO("input", "Successfully hooked %s", kbInfo.devNode.c_str());
     }
 
     if (m_readerThreads.empty()) {
-        std::cerr << "[InputHook] Failed to hook any keyboard devices!" << std::endl;
+        PLATFORM_LOG_ERROR("input", "Failed to hook any keyboard devices");
         cleanup();
 
         // Provide specific error based on failure type
@@ -272,8 +275,7 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     }
 
     m_isInstalled = true;
-    std::cout << "[InputHook] Input hook installed successfully ("
-              << m_readerThreads.size() << " device(s) active)" << std::endl;
+    PLATFORM_LOG_INFO("input", "Input hook installed successfully (%zu device(s) active)", m_readerThreads.size());
 
     return true;
 }
@@ -282,7 +284,7 @@ void InputHookLinux::uninstall()
 {
     if (!m_isInstalled) return;
 
-    std::cout << "[InputHook] Uninstalling input hook..." << std::endl;
+    PLATFORM_LOG_INFO("input", "Uninstalling input hook...");
 
     cleanup();
 
@@ -290,7 +292,7 @@ void InputHookLinux::uninstall()
     m_mouseCallback = nullptr;
     m_isInstalled = false;
 
-    std::cout << "[InputHook] Input hook uninstalled" << std::endl;
+    PLATFORM_LOG_INFO("input", "Input hook uninstalled");
 }
 
 void InputHookLinux::cleanup()
@@ -304,7 +306,7 @@ void InputHookLinux::cleanup()
 
     // Close all devices
     for (const OpenDevice& dev : m_openDevices) {
-        std::cout << "[InputHook]   Closing " << dev.devNode << std::endl;
+        PLATFORM_LOG_DEBUG("input", "Closing %s", dev.devNode.c_str());
         DeviceManager::closeDevice(dev.fd);
     }
     m_openDevices.clear();

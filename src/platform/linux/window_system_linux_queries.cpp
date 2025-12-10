@@ -1,5 +1,6 @@
 #include "window_system_linux_queries.h"
 #include "x11_connection.h"
+#include "../../utils/platform_logger.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -39,8 +40,9 @@ WindowSystemLinuxQueries::WindowSystemLinuxQueries() {
     // X11 connection is managed by X11Connection singleton
     // Check connection at construction time to fail early
     if (!X11Connection::instance().isConnected()) {
-        // Log warning but don't throw - allow graceful degradation
-        // Individual methods will handle null display
+        PLATFORM_LOG_WARN("window", "X11 connection not available during WindowSystemLinuxQueries init");
+    } else {
+        PLATFORM_LOG_DEBUG("window", "WindowSystemLinuxQueries initialized");
     }
 }
 
@@ -50,7 +52,10 @@ WindowSystemLinuxQueries::~WindowSystemLinuxQueries() {
 
 WindowHandle WindowSystemLinuxQueries::getForegroundWindow() {
     Display* display = getDisplay();
-    if (!display) return nullptr;
+    if (!display) {
+        PLATFORM_LOG_DEBUG("window", "getForegroundWindow: no display");
+        return nullptr;
+    }
 
     // Method 1: Try _NET_ACTIVE_WINDOW
     Atom netActiveWindow = getAtom("_NET_ACTIVE_WINDOW");
@@ -65,6 +70,7 @@ WindowHandle WindowSystemLinuxQueries::getForegroundWindow() {
         Window* active = reinterpret_cast<Window*>(data);
         Window result = *active;
         XFree(data);
+        PLATFORM_LOG_DEBUG("window", "getForegroundWindow: 0x%lx (via _NET_ACTIVE_WINDOW)", result);
         return reinterpret_cast<WindowHandle>(result);
     }
 
@@ -73,12 +79,16 @@ WindowHandle WindowSystemLinuxQueries::getForegroundWindow() {
     int revert_to;
     XGetInputFocus(display, &focus, &revert_to);
 
+    PLATFORM_LOG_DEBUG("window", "getForegroundWindow: 0x%lx (via XGetInputFocus fallback)", focus);
     return reinterpret_cast<WindowHandle>(focus);
 }
 
 WindowHandle WindowSystemLinuxQueries::windowFromPoint(const Point& pt) {
     Display* display = getDisplay();
-    if (!display) return nullptr;
+    if (!display) {
+        PLATFORM_LOG_DEBUG("window", "windowFromPoint(%d,%d): no display", pt.x, pt.y);
+        return nullptr;
+    }
 
     Window root = DefaultRootWindow(display);
     Window child = root;
@@ -98,14 +108,19 @@ WindowHandle WindowSystemLinuxQueries::windowFromPoint(const Point& pt) {
             child = temp_child;
         }
 
+        PLATFORM_LOG_DEBUG("window", "windowFromPoint(%d,%d): 0x%lx", pt.x, pt.y, child);
         return reinterpret_cast<WindowHandle>(child);
     }
 
+    PLATFORM_LOG_DEBUG("window", "windowFromPoint(%d,%d): not found", pt.x, pt.y);
     return nullptr;
 }
 
 std::string WindowSystemLinuxQueries::getWindowText(WindowHandle hwnd) {
-    if (!hwnd) return "";
+    if (!hwnd) {
+        PLATFORM_LOG_DEBUG("window", "getWindowText: null handle");
+        return "";
+    }
 
     Display* display = getDisplay();
     Window window = reinterpret_cast<Window>(hwnd);
@@ -119,6 +134,7 @@ std::string WindowSystemLinuxQueries::getWindowText(WindowHandle hwnd) {
     if (getWindowProperty(hwnd, netWmName, utf8String, &data, &items)) {
         std::string result(reinterpret_cast<char*>(data));
         XFree(data);
+        PLATFORM_LOG_DEBUG("window", "getWindowText(0x%lx): '%s' (via _NET_WM_NAME)", window, result.c_str());
         return result;
     }
 
@@ -127,9 +143,11 @@ std::string WindowSystemLinuxQueries::getWindowText(WindowHandle hwnd) {
     if (XFetchName(display, window, &name)) {
         std::string result(name);
         XFree(name);
+        PLATFORM_LOG_DEBUG("window", "getWindowText(0x%lx): '%s' (via WM_NAME)", window, result.c_str());
         return result;
     }
 
+    PLATFORM_LOG_DEBUG("window", "getWindowText(0x%lx): empty", window);
     return "";
 }
 
@@ -138,7 +156,10 @@ std::string WindowSystemLinuxQueries::getTitleName(WindowHandle hwnd) {
 }
 
 std::string WindowSystemLinuxQueries::getClassName(WindowHandle hwnd) {
-    if (!hwnd) return "";
+    if (!hwnd) {
+        PLATFORM_LOG_DEBUG("window", "getClassName: null handle");
+        return "";
+    }
 
     Display* display = getDisplay();
     Window window = reinterpret_cast<Window>(hwnd);
@@ -155,9 +176,11 @@ std::string WindowSystemLinuxQueries::getClassName(WindowHandle hwnd) {
         if (class_hint.res_name) XFree(class_hint.res_name);
         if (class_hint.res_class) XFree(class_hint.res_class);
 
+        PLATFORM_LOG_DEBUG("window", "getClassName(0x%lx): '%s'", window, result.c_str());
         return result;
     }
 
+    PLATFORM_LOG_DEBUG("window", "getClassName(0x%lx): empty", window);
     return "";
 }
 
@@ -184,13 +207,17 @@ uint32_t WindowSystemLinuxQueries::getWindowProcessId(WindowHandle hwnd) {
 }
 
 bool WindowSystemLinuxQueries::getWindowRect(WindowHandle hwnd, Rect* rect) {
-    if (!hwnd || !rect) return false;
+    if (!hwnd || !rect) {
+        PLATFORM_LOG_DEBUG("window", "getWindowRect: invalid params");
+        return false;
+    }
 
     Display* display = getDisplay();
     Window window = reinterpret_cast<Window>(hwnd);
 
     XWindowAttributes attrs;
     if (!XGetWindowAttributes(display, window, &attrs)) {
+        PLATFORM_LOG_DEBUG("window", "getWindowRect(0x%lx): XGetWindowAttributes failed", window);
         return false;
     }
 
@@ -205,6 +232,8 @@ bool WindowSystemLinuxQueries::getWindowRect(WindowHandle hwnd, Rect* rect) {
     rect->right = x + attrs.width;
     rect->bottom = y + attrs.height;
 
+    PLATFORM_LOG_DEBUG("window", "getWindowRect(0x%lx): (%d,%d,%d,%d)", window,
+                       rect->left, rect->top, rect->right, rect->bottom);
     return true;
 }
 

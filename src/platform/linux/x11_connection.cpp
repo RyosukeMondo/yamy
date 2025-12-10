@@ -3,9 +3,9 @@
 
 #include "x11_connection.h"
 #include "../../core/platform/platform_exception.h"
+#include "../../utils/platform_logger.h"
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 
 namespace yamy::platform {
 
@@ -54,15 +54,14 @@ bool X11Connection::initialize() {
         } else {
             m_lastError += " for display: " + m_displayName;
         }
-        std::cerr << "[X11] " << m_lastError << std::endl;
+        PLATFORM_LOG_ERROR("x11", "%s", m_lastError.c_str());
         m_connected = false;
         return false;
     }
 
     m_connected = true;
-    std::cerr << "[X11] Connected to display: "
-              << (m_displayName.empty() ? "(default)" : m_displayName)
-              << std::endl;
+    PLATFORM_LOG_INFO("x11", "Connected to display: %s",
+                      m_displayName.empty() ? "(default)" : m_displayName.c_str());
 
     return true;
 }
@@ -80,11 +79,10 @@ int X11Connection::handleX11Error(Display* display, XErrorEvent* event) {
     XGetErrorText(display, event->error_code, s_lastErrorText, sizeof(s_lastErrorText));
 
     // Log the error
-    std::cerr << "[X11] Protocol error: " << s_lastErrorText
-              << " (code: " << event->error_code
-              << ", request: " << static_cast<int>(event->request_code)
-              << ", minor: " << static_cast<int>(event->minor_code)
-              << ")" << std::endl;
+    PLATFORM_LOG_WARN("x11", "Protocol error: %s (code: %d, request: %d, minor: %d)",
+                      s_lastErrorText, event->error_code,
+                      static_cast<int>(event->request_code),
+                      static_cast<int>(event->minor_code));
 
     // If an error guard is active, notify it
     if (X11ErrorGuard::s_currentGuard) {
@@ -96,7 +94,8 @@ int X11Connection::handleX11Error(Display* display, XErrorEvent* event) {
 }
 
 int X11Connection::handleX11IOError(Display* display) {
-    std::cerr << "[X11] Fatal I/O error - connection to X server lost" << std::endl;
+    (void)display;
+    PLATFORM_LOG_ERROR("x11", "Fatal I/O error - connection to X server lost");
     X11Connection::instance().m_connected = false;
     X11Connection::instance().m_lastError = "X server connection lost";
 
@@ -145,7 +144,7 @@ void X11Connection::close() {
         XCloseDisplay(m_display);
         m_display = nullptr;
         m_connected = false;
-        std::cerr << "[X11] Display connection closed" << std::endl;
+        PLATFORM_LOG_INFO("x11", "Display connection closed");
     }
 }
 
@@ -206,8 +205,7 @@ int X11ErrorGuard::errorHandler(Display* display, XErrorEvent* event) {
     // Get error text for logging
     char errorText[256];
     XGetErrorText(display, event->error_code, errorText, sizeof(errorText));
-    std::cerr << "[X11] Error (guarded): " << errorText
-              << " (code: " << event->error_code << ")" << std::endl;
+    PLATFORM_LOG_WARN("x11", "Error (guarded): %s (code: %d)", errorText, event->error_code);
 
     return 0;
 }

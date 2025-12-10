@@ -2,12 +2,12 @@
 #include "core/platform/platform_exception.h"
 #include "core/input/input_event.h"
 #include "keycode_mapping.h"
+#include "../../utils/platform_logger.h"
 #include <linux/uinput.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <cstring>
-#include <iostream>
 #include <vector>
 #include <cerrno>
 
@@ -24,7 +24,7 @@ public:
         if (m_fd >= 0) {
             ioctl(m_fd, UI_DEV_DESTROY);
             close(m_fd);
-            std::cerr << "[Linux] Destroyed uinput virtual device" << std::endl;
+            PLATFORM_LOG_INFO("injector", "Destroyed uinput virtual device");
         }
     }
 
@@ -166,21 +166,21 @@ private:
         struct stat st;
         if (stat("/dev/uinput", &st) != 0) {
             int err = errno;
-            std::cerr << "[Linux] /dev/uinput not found: " << std::strerror(err) << std::endl;
+            PLATFORM_LOG_ERROR("injector", "/dev/uinput not found: %s", std::strerror(err));
             throw UinputUnavailableException(err, std::strerror(err));
         }
 
         m_fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
         if (m_fd < 0) {
             int err = errno;
-            std::cerr << "[Linux] Failed to open /dev/uinput: " << std::strerror(err) << std::endl;
+            PLATFORM_LOG_ERROR("injector", "Failed to open /dev/uinput: %s", std::strerror(err));
             throw UinputUnavailableException(err, std::strerror(err));
         }
 
         // Enable Key Events
         if (ioctl(m_fd, UI_SET_EVBIT, EV_KEY) < 0) {
             int err = errno;
-            std::cerr << "[Linux] Failed to set EV_KEY: " << std::strerror(err) << std::endl;
+            PLATFORM_LOG_ERROR("injector", "Failed to set EV_KEY: %s", std::strerror(err));
             close(m_fd);
             m_fd = -1;
             throw UinputUnavailableException(err, "ioctl UI_SET_EVBIT failed: " + std::string(std::strerror(err)));
@@ -221,7 +221,7 @@ private:
 
         if (write(m_fd, &uidev, sizeof(uidev)) < 0) {
             int err = errno;
-            std::cerr << "[Linux] Failed to write uinput device config: " << std::strerror(err) << std::endl;
+            PLATFORM_LOG_ERROR("injector", "Failed to write uinput device config: %s", std::strerror(err));
             close(m_fd);
             m_fd = -1;
             throw UinputUnavailableException(err, "Failed to write uinput device config: " + std::string(std::strerror(err)));
@@ -229,13 +229,13 @@ private:
 
         if (ioctl(m_fd, UI_DEV_CREATE) < 0) {
             int err = errno;
-            std::cerr << "[Linux] Failed to create uinput device: " << std::strerror(err) << std::endl;
+            PLATFORM_LOG_ERROR("injector", "Failed to create uinput device: %s", std::strerror(err));
             close(m_fd);
             m_fd = -1;
             throw UinputUnavailableException(err, "Failed to create uinput device: " + std::string(std::strerror(err)));
         }
 
-        std::cerr << "[Linux] Virtual input device created successfully" << std::endl;
+        PLATFORM_LOG_INFO("injector", "Virtual input device created successfully");
     }
 
     void sendKeyEvent(KeyCode key, int value) {
@@ -261,7 +261,8 @@ private:
 
         if (write(m_fd, &ev, sizeof(ev)) < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK) {
-                 std::cerr << "[Linux] Failed to write event: " << std::strerror(errno) << std::endl;
+                PLATFORM_LOG_ERROR("injector", "Failed to write event (type=%d code=%d): %s",
+                                   type, code, std::strerror(errno));
             }
         }
     }
