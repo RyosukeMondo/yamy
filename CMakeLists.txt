@@ -531,7 +531,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         set(LINUX_TEST_SOURCES
             src/tests/platform/test_main_linux.cpp
             src/tests/platform/window_system_linux_test.cpp
+            src/tests/platform/input_injector_linux_test.cpp
             src/platform/linux/window_system_linux_queries.cpp
+            src/platform/linux/keycode_mapping.cpp
         )
 
         add_executable(yamy_linux_test
@@ -543,7 +545,10 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             ${GTEST_DIR}/include
             ${GTEST_DIR}
             src
+            src/core
             src/core/platform
+            src/core/input
+            src/utils
             src/platform/linux
         )
 
