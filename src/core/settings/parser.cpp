@@ -101,7 +101,7 @@ void Token::add(const std::string &i_str)
 }
 
 // stream output
-tostream &operator<<(tostream &i_ost, const Token &i_token)
+std::ostream &operator<<(std::ostream &i_ost, const Token &i_token)
 {
     switch (i_token.m_type) {
     case Token::Type_string:

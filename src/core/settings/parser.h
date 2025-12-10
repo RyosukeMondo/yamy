@@ -123,7 +123,7 @@ public:
     void add(const std::string &i_str);
 
     /// stream output
-    friend tostream &operator<<(tostream &i_ost, const Token &i_token);
+    friend std::ostream &operator<<(std::ostream &i_ost, const Token &i_token);
 };
 
 

@@ -59,8 +59,8 @@
   - _Requirements: FR-1.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Keyboard class uses tstring for key name storage, Convert to std::string - Step 1: Update key name map from std::map<tstring, KeyCode> to std::map<std::string, KeyCode>, Step 2: Update function KeyCode parseKeyName(const tstring& name) to KeyCode parseKeyName(const std::string& name), Step 3: Update string literals in key name table by removing _T() macros, Step 4: Update case-insensitive comparisons to use UTF-8 aware functions if needed | Restrictions: Maintain key name parsing behavior, Ensure all existing key names still work, Do not break .mayu file parsing | Success: No tstring references, Key name map uses std::string, Key name parsing tests pass, All 60+ key names recognized | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.7 Update parser string handling
-  - File: src/core/parser/parser.cpp
+- [x] 1.1.7 Update parser string handling
+  - File: src/core/settings/parser.cpp (actual location)
   - Convert parser string handling to std::string
   - Update token storage and string comparisons
   - _Leverage: src/core/parser/parser.h_
