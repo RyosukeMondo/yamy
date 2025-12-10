@@ -601,7 +601,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add validation feedback - Run ConfigValidator on each config in list, Show icon indicating status (valid, invalid, warning), On selection show validation errors in detail view below list, Format errors with line numbers: "Line 42: Unknown key 'Foobar'", Use red icon for errors, yellow for warnings, green for valid | Restrictions: Validate in background thread, Don't block UI, Update validation when file changes, Limit validation frequency | Success: Validation status shown, Errors displayed with line numbers, Icons indicate status, Validation doesn't block UI, Status updates on file change | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.2.5 Add config quick-switch hotkey
+- [x] 2.2.5 Add config quick-switch hotkey
   - File: src/core/engine.cpp, src/ui/qt/system_tray.cpp
   - Assign global hotkey to cycle through configs
   - Show notification on config switch
