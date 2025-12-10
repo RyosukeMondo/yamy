@@ -585,7 +585,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create ConfigManagerDialog - Create QDialog with QListWidget showing configs, Add buttons: New, Duplicate, Delete, Rename, Edit, Import, Export, Set as Active, Each config item shows name and path, Double-click or Edit button opens config in default editor, Connect buttons to ConfigManager methods, Update list when configs change | Restrictions: Confirm before deleting, Validate names, Disable buttons when no selection, Update list dynamically | Success: Dialog displays config list, All buttons functional, Deletion requires confirmation, Names validated, Edit opens editor, List updates correctly | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.2.3 Add config editor integration
+- [x] 2.2.3 Add config editor integration
   - File: src/ui/qt/config_manager_dialog.cpp
   - Open config in external or internal editor
   - Support for syntax-aware editors
