@@ -333,7 +333,7 @@
   - _Requirements: FR-1.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with Linux system expertise | Task: Test window-context keymaps - Step 1: Create .mayu config with window-specific keymaps using window class/title conditions, Step 2: Start YAMY, Step 3: Switch between applications and verify correct keymap activates, Step 4: Test window title patterns with regex, Step 5: Test window class matching, Step 6: Document any window detection issues | Restrictions: Test with real applications (Firefox, Gnome Terminal, etc), Verify X11 window properties retrieved correctly, Test focus change detection | Success: Window contexts detected correctly, Keymaps switch properly between windows, Title and class patterns match, Focus changes handled, No keymap activation delays | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.9 Test IPC between multiple instances on Linux
+- [x] 1.2.9 Test IPC between multiple instances on Linux
   - Test environment: Linux system
   - Verify single instance detection works
   - Test reload and exit commands via IPC
