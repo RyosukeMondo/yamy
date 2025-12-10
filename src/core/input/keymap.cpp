@@ -64,7 +64,7 @@ Action *ActionKeySeq::clone() const
 // stream output
 tostream &ActionKeySeq::output(tostream &i_ost) const
 {
-    return i_ost << _T("$") << to_tstring(m_keySeq->getName());
+    return i_ost << "$" << m_keySeq->getName();
 }
 
 //
@@ -190,7 +190,7 @@ tostream &operator<<(tostream &i_ost, const KeySeq &i_ks)
 {
     for (KeySeq::Actions::const_iterator
             i = i_ks.m_actions.begin(); i != i_ks.m_actions.end(); ++ i)
-        i_ost << **i << _T(" ");
+        i_ost << **i << " ";
     return i_ost;
 }
 
@@ -401,25 +401,25 @@ void Keymap::describe(tostream &i_ost, DescribeParam *i_dp) const
 
     switch (m_type) {
     case Type_keymap:
-        i_ost << _T("keymap ") << to_tstring(m_name);
+        i_ost << "keymap " << m_name;
         break;
     case Type_windowAnd:
-        i_ost << _T("window ") << to_tstring(m_name) << _T(" ");
+        i_ost << "window " << m_name << " ";
         if (m_windowTitleStr == ".*")
-            i_ost << _T("/") << to_tstring(m_windowClassStr) << _T("/");
+            i_ost << "/" << m_windowClassStr << "/";
         else
-            i_ost << _T("( /") << to_tstring(m_windowClassStr) << _T("/ && /")
-            << to_tstring(m_windowTitleStr) << _T("/ )");
+            i_ost << "( /" << m_windowClassStr << "/ && /"
+            << m_windowTitleStr << "/ )";
         break;
     case Type_windowOr:
-        i_ost << _T("window ") << to_tstring(m_name) << _T(" ( /")
-        << to_tstring(m_windowClassStr) << _T("/ || /") << to_tstring(m_windowTitleStr)
-        << _T("/ )");
+        i_ost << "window " << m_name << " ( /"
+        << m_windowClassStr << "/ || /" << m_windowTitleStr
+        << "/ )";
         break;
     }
     if (m_parentKeymap)
-        i_ost << _T(" : ") << to_tstring(m_parentKeymap->m_name);
-    i_ost << _T(" = ") << *m_defaultKeySeq << std::endl;
+        i_ost << " : " << m_parentKeymap->m_name;
+    i_ost << " = " << *m_defaultKeySeq << std::endl;
 
     // describe modifiers
     if (i_dp->m_doesDescribeModifiers) {
@@ -427,23 +427,23 @@ void Keymap::describe(tostream &i_ost, DescribeParam *i_dp) const
             Modifier::Type type = static_cast<Modifier::Type>(t);
             const Keymap::ModAssignments &ma = getModAssignments(type);
             if (ma.size()) {
-                i_ost << _T(" mod ") << type << _T("\t= ");
+                i_ost << " mod " << type << "\t= ";
                 for (Keymap::ModAssignments::const_iterator
                         j = ma.begin(); j != ma.end(); ++ j) {
                     switch (j->m_assignMode) {
                     case Keymap::AM_true:
-                        i_ost << _T("!");
+                        i_ost << "!";
                         break;
                     case Keymap::AM_oneShot:
-                        i_ost << _T("!!");
+                        i_ost << "!!";
                         break;
                     case Keymap::AM_oneShotRepeatable:
-                        i_ost << _T("!!!");
+                        i_ost << "!!!";
                         break;
                     default:
                         break;
                     }
-                    i_ost << *j->m_key << _T(" ");
+                    i_ost << *j->m_key << " ";
                 }
                 i_ost << std::endl;
             }
@@ -472,10 +472,10 @@ void Keymap::describe(tostream &i_ost, DescribeParam *i_dp) const
             if (i->m_modifiedKey.m_key == *e)
                 break;
         if (*e)
-            i_ost << _T(" event ") << *i->m_modifiedKey.m_key;
+            i_ost << " event " << *i->m_modifiedKey.m_key;
         else
-            i_ost << _T(" key ") << i->m_modifiedKey;
-        i_ost << _T("\t= ") << *i->m_keySeq << std::endl;
+            i_ost << " key " << i->m_modifiedKey;
+        i_ost << "\t= " << *i->m_keySeq << std::endl;
         i_dp->m_dk.push_back(i->m_modifiedKey);
     }
 
@@ -498,7 +498,7 @@ bool Keymap::setIfNotYet(KeySeq *i_keySeq, Keymap *i_parentKeymap)
 // stream output
 extern tostream &operator<<(tostream &i_ost, const Keymap *i_keymap)
 {
-    return i_ost << to_tstring(i_keymap->getName());
+    return i_ost << i_keymap->getName();
 }
 
 
@@ -517,7 +517,7 @@ Keymap *Keymaps::searchByName(const std::string &i_name)
     for (KeymapList::iterator
             i = m_keymapList.begin(); i != m_keymapList.end(); ++ i)
         // Perform case-insensitive comparison
-        if (tstringi(to_tstring(i_name)) == to_tstring((*i).getName()))
+        if (strcasecmp_utf8(i_name.c_str(), (*i).getName().c_str()) == 0)
             return &*i;
     return nullptr;
 }
@@ -578,7 +578,7 @@ KeySeq *KeySeqs::searchByName(const std::string &i_name)
     for (KeySeqList::iterator
             i = m_keySeqList.begin(); i != m_keySeqList.end(); ++ i)
         // Perform case-insensitive comparison
-        if (tstringi(to_tstring(i_name)) == to_tstring((*i).getName()))
+        if (strcasecmp_utf8(i_name.c_str(), (*i).getName().c_str()) == 0)
             return &*i;
     return nullptr;
 }

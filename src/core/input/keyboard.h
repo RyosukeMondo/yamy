@@ -60,7 +60,7 @@ public:
 
 private:
     ///
-    typedef std::vector<tstringi> Names;
+    typedef std::vector<std::string> Names;
 
 public:
     /// if this key pressed physically
@@ -84,7 +84,7 @@ public:
             m_isPressedByAssign(false) { }
 
     /// for Event::* only
-    Key(const tstringi &i_name)
+    Key(const std::string &i_name)
             : m_isPressed(false),
             m_isPressedOnWin32(false),
             m_isPressedByAssign(false) {
@@ -93,7 +93,7 @@ public:
     }
 
     /// get key name (first name)
-    const tstringi &getName() const {
+    const std::string &getName() const {
         return m_names.front();
     }
 
@@ -107,7 +107,7 @@ public:
     }
 
     /// add a name of key
-    void addName(const tstringi &i_name);
+    void addName(const std::string &i_name);
 
     /// add a scan code
     void addScanCode(const ScanCode &i_sc);
@@ -116,9 +116,9 @@ public:
     Key &initialize();
 
     /// equation by name
-    bool operator==(const tstringi &i_name) const;
+    bool operator==(const std::string &i_name) const;
     ///
-    bool operator!=(const tstringi &i_name) const {
+    bool operator!=(const std::string &i_name) const {
         return !(*this == i_name);
     }
 
@@ -355,7 +355,15 @@ private:
         HASHED_KEYS_SIZE = 128,            ///
     };
     typedef std::list<Key> Keys;            ///
-    typedef std::map<tstringi, Key *> Aliases;    /// key name aliases
+    // Use std::less<> for default case-sensitive comparison (std::string)
+    // or a custom comparator if case-insensitive logic is required.
+    // Based on legacy `tstringi`, this map likely needs case-insensitive behavior.
+    struct CaseInsensitiveCompare {
+        bool operator()(const std::string& a, const std::string& b) const {
+             return strcasecmp_utf8(a.c_str(), b.c_str()) < 0;
+        }
+    };
+    typedef std::map<std::string, Key *, CaseInsensitiveCompare> Aliases;    /// key name aliases
     ///
     class Substitute
     {
@@ -414,7 +422,7 @@ public:
     void addKey(const Key &i_key);
 
     /// add a key name alias
-    void addAlias(const tstringi &i_aliasName, Key *i_key);
+    void addAlias(const std::string &i_aliasName, Key *i_key);
 
     /// add substitute
     void addSubstitute(const ModifiedKey &i_mkeyFrom,
@@ -435,10 +443,10 @@ public:
     Key *searchPrefixKey(const Key &i_key);
 
     /// search a key by name
-    Key *searchKey(const tstringi &i_name);
+    Key *searchKey(const std::string &i_name);
 
     /// search a key by non-alias name
-    Key *searchKeyByNonAliasName(const tstringi &i_name);
+    Key *searchKeyByNonAliasName(const std::string &i_name);
 
     /// search a substitute
     ModifiedKey searchSubstitute(const ModifiedKey &i_mkey);

@@ -131,8 +131,6 @@ private:
 public:
     ///
     KeySeq(const std::string &i_name);
-    // TODO: Remove after migration (Branch 4)
-    KeySeq(const tstringi &i_name);
     ///
     KeySeq(const KeySeq &i_ks);
     ///
@@ -292,13 +290,6 @@ public:
            KeySeq *i_defaultKeySeq,
            Keymap *i_parentKeymap);
 
-    // TODO: Remove after migration (Branch 4)
-    Keymap(Type i_type,
-           const tstringi &i_name,
-           const tstringi &i_windowClass,
-           const tstringi &i_windowTitle,
-           KeySeq *i_defaultKeySeq,
-           Keymap *i_parentKeymap);
 
     /// add a key assignment;
     void addAssignment(const ModifiedKey &i_mk, KeySeq *i_keySeq);
@@ -326,9 +317,6 @@ public:
     /// does same window
     bool doesSameWindow(const std::string &i_className,
                         const std::string &i_titleName);
-    // TODO: Remove after migration (Branch 4)
-    bool doesSameWindow(const tstringi &i_className,
-                        const tstringi &i_titleName);
 
     /// adjust modifier
     void adjustModifier(Keyboard &i_keyboard);
@@ -369,17 +357,11 @@ public:
 
     /// search by name
     Keymap *searchByName(const std::string &i_name);
-    // TODO: Remove after migration (Branch 4)
-    Keymap *searchByName(const tstringi &i_name);
 
     /// search window
     void searchWindow(KeymapPtrList *o_keymapPtrList,
                       const std::string &i_className,
                       const std::string &i_titleName);
-    // TODO: Remove after migration (Branch 4)
-    void searchWindow(KeymapPtrList *o_keymapPtrList,
-                      const tstringi &i_className,
-                      const tstringi &i_titleName);
 
     /// add keymap
     Keymap *add(const Keymap &i_keymap);
@@ -404,8 +386,6 @@ public:
 
     /// search by name
     KeySeq *searchByName(const std::string &i_name);
-    // TODO: Remove after migration (Branch 4)
-    KeySeq *searchByName(const tstringi &i_name);
 };
 
 

@@ -12,7 +12,7 @@
 
 
 // add a name or an alias of key
-void Key::addName(const tstringi &i_name)
+void Key::addName(const std::string &i_name)
 {
     m_names.push_back(i_name);
 }
@@ -38,7 +38,7 @@ Key &Key::initialize()
 
 
 // equation by name
-bool Key::operator==(const tstringi &i_name) const
+bool Key::operator==(const std::string &i_name) const
 {
     return std::find(m_names.begin(), m_names.end(), i_name) != m_names.end();
 }
@@ -113,42 +113,42 @@ tostream &operator<<(tostream &i_ost, const Modifier &i_m)
 {
     struct Mods {
         Modifier::Type m_mt;
-        const _TCHAR *m_symbol;
+        const char *m_symbol;
     };
 
     const static Mods mods[] = {
-        { Modifier::Type_Up, _T("U-") }, { Modifier::Type_Down, _T("D-") },
-        { Modifier::Type_Shift, _T("S-") }, { Modifier::Type_Alt, _T("A-") },
-        { Modifier::Type_Control, _T("C-") }, { Modifier::Type_Windows, _T("W-") },
-        { Modifier::Type_Repeat, _T("R-") },
-        { Modifier::Type_ImeLock, _T("IL-") },
-        { Modifier::Type_ImeComp, _T("IC-") },
-        { Modifier::Type_ImeComp, _T("I-") },
-        { Modifier::Type_NumLock, _T("NL-") },
-        { Modifier::Type_CapsLock, _T("CL-") },
-        { Modifier::Type_ScrollLock, _T("SL-") },
-        { Modifier::Type_KanaLock, _T("KL-") },
-        { Modifier::Type_Maximized, _T("MAX-") },
-        { Modifier::Type_Minimized, _T("MIN-") },
-        { Modifier::Type_MdiMaximized, _T("MMAX-") },
-        { Modifier::Type_MdiMinimized, _T("MMIN-") },
-        { Modifier::Type_Touchpad, _T("T-") },
-        { Modifier::Type_TouchpadSticky, _T("TS-") },
-        { Modifier::Type_Mod0, _T("M0-") }, { Modifier::Type_Mod1, _T("M1-") },
-        { Modifier::Type_Mod2, _T("M2-") }, { Modifier::Type_Mod3, _T("M3-") },
-        { Modifier::Type_Mod4, _T("M4-") }, { Modifier::Type_Mod5, _T("M5-") },
-        { Modifier::Type_Mod6, _T("M6-") }, { Modifier::Type_Mod7, _T("M7-") },
-        { Modifier::Type_Mod8, _T("M8-") }, { Modifier::Type_Mod9, _T("M9-") },
-        { Modifier::Type_Mod10, _T("M10-") }, { Modifier::Type_Mod11, _T("M11-") },
-        { Modifier::Type_Mod12, _T("M12-") }, { Modifier::Type_Mod13, _T("M13-") },
-        { Modifier::Type_Mod14, _T("M14-") }, { Modifier::Type_Mod15, _T("M15-") },
-        { Modifier::Type_Mod16, _T("M16-") }, { Modifier::Type_Mod17, _T("M17-") },
-        { Modifier::Type_Mod18, _T("M18-") }, { Modifier::Type_Mod19, _T("M19-") },
-        { Modifier::Type_Lock0, _T("L0-") }, { Modifier::Type_Lock1, _T("L1-") },
-        { Modifier::Type_Lock2, _T("L2-") }, { Modifier::Type_Lock3, _T("L3-") },
-        { Modifier::Type_Lock4, _T("L4-") }, { Modifier::Type_Lock5, _T("L5-") },
-        { Modifier::Type_Lock6, _T("L6-") }, { Modifier::Type_Lock7, _T("L7-") },
-        { Modifier::Type_Lock8, _T("L8-") }, { Modifier::Type_Lock9, _T("L9-") },
+        { Modifier::Type_Up, "U-" }, { Modifier::Type_Down, "D-" },
+        { Modifier::Type_Shift, "S-" }, { Modifier::Type_Alt, "A-" },
+        { Modifier::Type_Control, "C-" }, { Modifier::Type_Windows, "W-" },
+        { Modifier::Type_Repeat, "R-" },
+        { Modifier::Type_ImeLock, "IL-" },
+        { Modifier::Type_ImeComp, "IC-" },
+        { Modifier::Type_ImeComp, "I-" },
+        { Modifier::Type_NumLock, "NL-" },
+        { Modifier::Type_CapsLock, "CL-" },
+        { Modifier::Type_ScrollLock, "SL-" },
+        { Modifier::Type_KanaLock, "KL-" },
+        { Modifier::Type_Maximized, "MAX-" },
+        { Modifier::Type_Minimized, "MIN-" },
+        { Modifier::Type_MdiMaximized, "MMAX-" },
+        { Modifier::Type_MdiMinimized, "MMIN-" },
+        { Modifier::Type_Touchpad, "T-" },
+        { Modifier::Type_TouchpadSticky, "TS-" },
+        { Modifier::Type_Mod0, "M0-" }, { Modifier::Type_Mod1, "M1-" },
+        { Modifier::Type_Mod2, "M2-" }, { Modifier::Type_Mod3, "M3-" },
+        { Modifier::Type_Mod4, "M4-" }, { Modifier::Type_Mod5, "M5-" },
+        { Modifier::Type_Mod6, "M6-" }, { Modifier::Type_Mod7, "M7-" },
+        { Modifier::Type_Mod8, "M8-" }, { Modifier::Type_Mod9, "M9-" },
+        { Modifier::Type_Mod10, "M10-" }, { Modifier::Type_Mod11, "M11-" },
+        { Modifier::Type_Mod12, "M12-" }, { Modifier::Type_Mod13, "M13-" },
+        { Modifier::Type_Mod14, "M14-" }, { Modifier::Type_Mod15, "M15-" },
+        { Modifier::Type_Mod16, "M16-" }, { Modifier::Type_Mod17, "M17-" },
+        { Modifier::Type_Mod18, "M18-" }, { Modifier::Type_Mod19, "M19-" },
+        { Modifier::Type_Lock0, "L0-" }, { Modifier::Type_Lock1, "L1-" },
+        { Modifier::Type_Lock2, "L2-" }, { Modifier::Type_Lock3, "L3-" },
+        { Modifier::Type_Lock4, "L4-" }, { Modifier::Type_Lock5, "L5-" },
+        { Modifier::Type_Lock6, "L6-" }, { Modifier::Type_Lock7, "L7-" },
+        { Modifier::Type_Lock8, "L8-" }, { Modifier::Type_Lock9, "L9-" },
     };
 
     for (size_t i = 0; i < NUMBER_OF(mods); ++ i)
@@ -156,9 +156,9 @@ tostream &operator<<(tostream &i_ost, const Modifier &i_m)
             i_ost << mods[i].m_symbol;
 #if 0
         else if (!i_m.isDontcare(mods[i].m_mt) && i_m.isPressed(mods[i].m_mt))
-            i_ost << _T("~") << mods[i].m_symbol;
+            i_ost << "~" << mods[i].m_symbol;
         else
-            i_ost << _T("*") << mods[i].m_symbol;
+            i_ost << "*" << mods[i].m_symbol;
 #endif
 
     return i_ost;
@@ -168,56 +168,56 @@ tostream &operator<<(tostream &i_ost, const Modifier &i_m)
 /// stream output
 tostream &operator<<(tostream &i_ost, Modifier::Type i_type)
 {
-    const _TCHAR *modNames[] = {
-        _T("Shift"),
-        _T("Alt"),
-        _T("Control"),
-        _T("Windows"),
-        _T("Up"),
-        _T("Down"),
-        _T("Repeat"),
-        _T("ImeLock"),
-        _T("ImeComp"),
-        _T("NumLock"),
-        _T("CapsLock"),
-        _T("ScrollLock"),
-        _T("KanaLock"),
-        _T("Maximized"),
-        _T("Minimized"),
-        _T("MdiMaximized"),
-        _T("MdiMinimized"),
-        _T("Touchpad"),
-        _T("TouchpadSticky"),
-        _T("Mod0"),
-        _T("Mod1"),
-        _T("Mod2"),
-        _T("Mod3"),
-        _T("Mod4"),
-        _T("Mod5"),
-        _T("Mod6"),
-        _T("Mod7"),
-        _T("Mod8"),
-        _T("Mod9"),
-        _T("Mod10"),
-        _T("Mod11"),
-        _T("Mod12"),
-        _T("Mod13"),
-        _T("Mod14"),
-        _T("Mod15"),
-        _T("Mod16"),
-        _T("Mod17"),
-        _T("Mod18"),
-        _T("Mod19"),
-        _T("Lock0"),
-        _T("Lock1"),
-        _T("Lock2"),
-        _T("Lock3"),
-        _T("Lock4"),
-        _T("Lock5"),
-        _T("Lock6"),
-        _T("Lock7"),
-        _T("Lock8"),
-        _T("Lock9"),
+    const char *modNames[] = {
+        "Shift",
+        "Alt",
+        "Control",
+        "Windows",
+        "Up",
+        "Down",
+        "Repeat",
+        "ImeLock",
+        "ImeComp",
+        "NumLock",
+        "CapsLock",
+        "ScrollLock",
+        "KanaLock",
+        "Maximized",
+        "Minimized",
+        "MdiMaximized",
+        "MdiMinimized",
+        "Touchpad",
+        "TouchpadSticky",
+        "Mod0",
+        "Mod1",
+        "Mod2",
+        "Mod3",
+        "Mod4",
+        "Mod5",
+        "Mod6",
+        "Mod7",
+        "Mod8",
+        "Mod9",
+        "Mod10",
+        "Mod11",
+        "Mod12",
+        "Mod13",
+        "Mod14",
+        "Mod15",
+        "Mod16",
+        "Mod17",
+        "Mod18",
+        "Mod19",
+        "Lock0",
+        "Lock1",
+        "Lock2",
+        "Lock3",
+        "Lock4",
+        "Lock5",
+        "Lock6",
+        "Lock7",
+        "Lock8",
+        "Lock9",
     };
 
     int i = static_cast<int>(i_type);
@@ -304,7 +304,7 @@ void Keyboard::addKey(const Key &i_key)
 
 
 // add a key name alias
-void Keyboard::addAlias(const tstringi &i_aliasName, Key *i_key)
+void Keyboard::addAlias(const std::string &i_aliasName, Key *i_key)
 {
     m_aliases.insert(Aliases::value_type(i_aliasName, i_key));
 }
@@ -351,7 +351,7 @@ Key *Keyboard::searchPrefixKey(const Key &i_key)
 
 
 // search a key by name
-Key *Keyboard::searchKey(const tstringi &i_name)
+Key *Keyboard::searchKey(const std::string &i_name)
 {
     Aliases::iterator i = m_aliases.find(i_name);
     if (i != m_aliases.end())
@@ -361,7 +361,7 @@ Key *Keyboard::searchKey(const tstringi &i_name)
 
 
 // search a key by non-alias name
-Key *Keyboard::searchKeyByNonAliasName(const tstringi &i_name)
+Key *Keyboard::searchKeyByNonAliasName(const std::string &i_name)
 {
     for (int j = 0; j < HASHED_KEYS_SIZE; ++ j) {
         Keys &keys = m_hashedKeys[j];
