@@ -1,4 +1,4 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // target.cpp
 
 
@@ -7,23 +7,25 @@
 #include "mayurc.h"
 #include "target.h"
 #include "windowstool.h"
+#include "../platform/types.h"
 
 
 ///
 class Target
 {
-    HWND m_hwnd;                    ///
-    HWND m_preHwnd;                ///
+    yamy::platform::WindowHandle m_hwnd;                    ///
+    yamy::platform::WindowHandle m_preHwnd;                ///
     HICON m_hCursor;                ///
 
     ///
-    static void invertFrame(HWND i_hwnd) {
-        HDC hdc = GetWindowDC(i_hwnd);
+    static void invertFrame(yamy::platform::WindowHandle i_hwnd) {
+        HWND hwnd = static_cast<HWND>(i_hwnd);
+        HDC hdc = GetWindowDC(hwnd);
         ASSERT(hdc);
         int rop2 = SetROP2(hdc, R2_XORPEN);
         if (rop2) {
             RECT rc;
-            CHECK_TRUE( GetWindowRect(i_hwnd, &rc) );
+            CHECK_TRUE( GetWindowRect(hwnd, &rc) );
             int width = rcWidth(&rc);
             int height = rcHeight(&rc);
 
@@ -37,11 +39,11 @@ class Target
             // no need to DeleteObject StockObject
             SetROP2(hdc, rop2);
         }
-        CHECK_TRUE( ReleaseDC(i_hwnd, hdc) );
+        CHECK_TRUE( ReleaseDC(hwnd, hdc) );
     }
 
     ///
-    Target(HWND i_hwnd)
+    Target(yamy::platform::WindowHandle i_hwnd)
             : m_hwnd(i_hwnd),
             m_preHwnd(nullptr),
             m_hCursor(nullptr) {
@@ -57,70 +59,83 @@ class Target
     /// WM_PAINT
     int wmPaint() {
         PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(m_hwnd, &ps);
+        HWND hwnd = static_cast<HWND>(m_hwnd);
+        HDC hdc = BeginPaint(hwnd, &ps);
         ASSERT(hdc);
 
-        if (GetCapture() != m_hwnd) {
+        if (GetCapture() != hwnd) {
             RECT rc;
-            CHECK_TRUE( GetClientRect(m_hwnd, &rc) );
+            CHECK_TRUE( GetClientRect(hwnd, &rc) );
             CHECK_TRUE(
                 DrawIcon(hdc, (rcWidth(&rc) - GetSystemMetrics(SM_CXICON)) / 2,
                          (rcHeight(&rc) - GetSystemMetrics(SM_CYICON)) / 2,
                          m_hCursor) );
         }
 
-        EndPaint(m_hwnd, &ps);
+        EndPaint(hwnd, &ps);
         return 0;
     }
 
     ///
     struct PointWindow {
-        POINT m_p;                    ///
-        HWND m_hwnd;                ///
-        RECT m_rc;                    ///
+        yamy::platform::Point m_p;                    ///
+        yamy::platform::WindowHandle m_hwnd;                ///
+        yamy::platform::Rect m_rc;                    ///
     };
 
     ///
-    static BOOL CALLBACK childWindowFromPoint(HWND i_hwnd, LPARAM i_lParam) {
-        if (IsWindowVisible(i_hwnd)) {
+    static int CALLBACK childWindowFromPoint(yamy::platform::WindowHandle i_hwnd, intptr_t i_lParam) {
+        HWND hwnd = static_cast<HWND>(i_hwnd);
+        if (IsWindowVisible(hwnd)) {
             PointWindow &pw = *(PointWindow *)i_lParam;
             RECT rc;
-            CHECK_TRUE( GetWindowRect(i_hwnd, &rc) );
-            if (PtInRect(&rc, pw.m_p))
-                if (isRectInRect(&rc, &pw.m_rc)) {
+            CHECK_TRUE( GetWindowRect(hwnd, &rc) );
+            POINT pt = { pw.m_p.x, pw.m_p.y };
+            if (PtInRect(&rc, pt)) {
+                RECT rcPw = { pw.m_rc.left, pw.m_rc.top, pw.m_rc.right, pw.m_rc.bottom };
+                if (isRectInRect(&rc, &rcPw)) {
                     pw.m_hwnd = i_hwnd;
-                    pw.m_rc = rc;
+                    pw.m_rc.left = rc.left; pw.m_rc.top = rc.top; pw.m_rc.right = rc.right; pw.m_rc.bottom = rc.bottom;
                 }
+            }
         }
-        return TRUE;
+        return true;
     }
 
     ///
-    static BOOL CALLBACK windowFromPoint(HWND i_hwnd, LPARAM i_lParam) {
-        if (IsWindowVisible(i_hwnd)) {
+    static int CALLBACK windowFromPoint(yamy::platform::WindowHandle i_hwnd, intptr_t i_lParam) {
+        HWND hwnd = static_cast<HWND>(i_hwnd);
+        if (IsWindowVisible(hwnd)) {
             PointWindow &pw = *(PointWindow *)i_lParam;
             RECT rc;
-            CHECK_TRUE( GetWindowRect(i_hwnd, &rc) );
-            if (PtInRect(&rc, pw.m_p)) {
+            CHECK_TRUE( GetWindowRect(hwnd, &rc) );
+            POINT pt = { pw.m_p.x, pw.m_p.y };
+            if (PtInRect(&rc, pt)) {
                 pw.m_hwnd = i_hwnd;
-                pw.m_rc = rc;
-                return FALSE;
+                pw.m_rc.left = rc.left; pw.m_rc.top = rc.top; pw.m_rc.right = rc.right; pw.m_rc.bottom = rc.bottom;
+                return false;
             }
         }
-        return TRUE;
+        return true;
     }
 
     /// WM_MOUSEMOVE
-    int wmMouseMove(WORD /* i_keys */, int /* i_x */, int /* i_y */) {
-        if (GetCapture() == m_hwnd) {
+    int wmMouseMove(uint16_t /* i_keys */, int /* i_x */, int /* i_y */) {
+        HWND hwnd = static_cast<HWND>(m_hwnd);
+        if (GetCapture() == hwnd) {
             PointWindow pw;
-            CHECK_TRUE( GetCursorPos(&pw.m_p) );
+            POINT pt;
+            CHECK_TRUE( GetCursorPos(&pt) );
+            pw.m_p.x = pt.x; pw.m_p.y = pt.y;
             pw.m_hwnd = 0;
-            CHECK_TRUE( GetWindowRect(GetDesktopWindow(), &pw.m_rc) );
-            EnumWindows(windowFromPoint, (LPARAM)&pw);
+            RECT rc;
+            CHECK_TRUE( GetWindowRect(GetDesktopWindow(), &rc) );
+            pw.m_rc.left = rc.left; pw.m_rc.top = rc.top; pw.m_rc.right = rc.right; pw.m_rc.bottom = rc.bottom;
+
+            EnumWindows(reinterpret_cast<WNDENUMPROC>(windowFromPoint), (LPARAM)&pw);
             while (1) {
-                HWND hwndParent = pw.m_hwnd;
-                if (!EnumChildWindows(pw.m_hwnd, childWindowFromPoint, (LPARAM)&pw))
+                yamy::platform::WindowHandle hwndParent = pw.m_hwnd;
+                if (!EnumChildWindows(static_cast<HWND>(pw.m_hwnd), reinterpret_cast<WNDENUMPROC>(childWindowFromPoint), (LPARAM)&pw))
                     break;
                 if (hwndParent == pw.m_hwnd)
                     break;
@@ -130,7 +145,7 @@ class Target
                     invertFrame(m_preHwnd);
                 m_preHwnd = pw.m_hwnd;
                 invertFrame(m_preHwnd);
-                SendMessage(GetParent(m_hwnd), WM_APP_targetNotify, 0,
+                SendMessage(GetParent(hwnd), WM_APP_targetNotify, 0,
                             (LPARAM)m_preHwnd);
             }
             SetCursor(m_hCursor);
@@ -139,22 +154,24 @@ class Target
     }
 
     /// WM_LBUTTONDOWN
-    int wmLButtonDown(WORD /* i_keys */, int /* i_x */, int /* i_y */) {
-        SetCapture(m_hwnd);
+    int wmLButtonDown(uint16_t /* i_keys */, int /* i_x */, int /* i_y */) {
+        HWND hwnd = static_cast<HWND>(m_hwnd);
+        SetCapture(hwnd);
         SetCursor(m_hCursor);
-        CHECK_TRUE( InvalidateRect(m_hwnd, nullptr, TRUE) );
-        CHECK_TRUE( UpdateWindow(m_hwnd) );
+        CHECK_TRUE( InvalidateRect(hwnd, nullptr, TRUE) );
+        CHECK_TRUE( UpdateWindow(hwnd) );
         return 0;
     }
 
     /// WM_LBUTTONUP
-    int wmLButtonUp(WORD /* i_keys */, int /* i_x */, int /* i_y */) {
+    int wmLButtonUp(uint16_t /* i_keys */, int /* i_x */, int /* i_y */) {
+        HWND hwnd = static_cast<HWND>(m_hwnd);
         if (m_preHwnd)
             invertFrame(m_preHwnd);
         m_preHwnd = nullptr;
         ReleaseCapture();
-        CHECK_TRUE( InvalidateRect(m_hwnd, nullptr, TRUE) );
-        CHECK_TRUE( UpdateWindow(m_hwnd) );
+        CHECK_TRUE( InvalidateRect(hwnd, nullptr, TRUE) );
+        CHECK_TRUE( UpdateWindow(hwnd) );
         return 0;
     }
 
@@ -167,7 +184,7 @@ public:
         if (!wc)
             switch (i_message) {
             case WM_CREATE:
-                wc = setUserData(i_hwnd, new Target(i_hwnd));
+                wc = setUserData(i_hwnd, new Target(static_cast<yamy::platform::WindowHandle>(i_hwnd)));
                 return wc->wmCreate((CREATESTRUCT *)i_lParam);
             }
         else
@@ -175,13 +192,13 @@ public:
             case WM_PAINT:
                 return wc->wmPaint();
             case WM_LBUTTONDOWN:
-                return wc->wmLButtonDown((WORD)i_wParam, (short)LOWORD(i_lParam),
+                return wc->wmLButtonDown((uint16_t)i_wParam, (short)LOWORD(i_lParam),
                                          (short)HIWORD(i_lParam));
             case WM_LBUTTONUP:
-                return wc->wmLButtonUp((WORD)i_wParam, (short)LOWORD(i_lParam),
+                return wc->wmLButtonUp((uint16_t)i_wParam, (short)LOWORD(i_lParam),
                                        (short)HIWORD(i_lParam));
             case WM_MOUSEMOVE:
-                return wc->wmMouseMove((WORD)i_wParam, (short)LOWORD(i_lParam),
+                return wc->wmMouseMove((uint16_t)i_wParam, (short)LOWORD(i_lParam),
                                        (short)HIWORD(i_lParam));
             case WM_NCDESTROY:
                 delete wc;
@@ -193,7 +210,7 @@ public:
 
 
 //
-ATOM Register_target()
+uint16_t Register_target()
 {
     WNDCLASS wc;
     wc.style         = CS_HREDRAW | CS_VREDRAW;

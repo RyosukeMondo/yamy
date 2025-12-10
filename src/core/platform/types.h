@@ -30,6 +30,15 @@ struct Rect {
     int32_t height() const { return bottom - top; }
 };
 
+// Platform-agnostic size
+struct Size {
+    int32_t cx;
+    int32_t cy;
+
+    Size() : cx(0), cy(0) {}
+    Size(int32_t cx, int32_t cy) : cx(cx), cy(cy) {}
+};
+
 // Key codes (abstracted from Windows VK_*)
 enum class KeyCode : uint32_t {
     Unknown = 0,

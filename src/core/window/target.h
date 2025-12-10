@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // target.h
 
@@ -6,16 +6,15 @@
 #ifndef _TARGET_H
 #  define _TARGET_H
 
-#  include <windows.h>
-
+#  include <cstdint>
 
 ///
-extern ATOM Register_target();
+extern uint16_t Register_target();
 
 ///
 enum {
     ///
-    WM_APP_targetNotify = WM_APP + 102,
+    WM_APP_targetNotify = 0x8000 + 102,
 };
 
 
