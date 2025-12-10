@@ -1,44 +1,183 @@
 #include "core/platform/input_injector_interface.h"
+#include "keycode_mapping.h"
+#include <linux/uinput.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cstring>
 #include <iostream>
+#include <vector>
+#include <cerrno>
 
 namespace yamy::platform {
 
 class InputInjectorLinux : public IInputInjector {
 public:
-    InputInjectorLinux(IWindowSystem* windowSystem) : m_windowSystem(windowSystem) {}
+    InputInjectorLinux(IWindowSystem* windowSystem)
+        : m_windowSystem(windowSystem), m_fd(-1), m_wheelAccumulator(0) {
+        initializeUinput();
+    }
+
+    ~InputInjectorLinux() override {
+        if (m_fd >= 0) {
+            ioctl(m_fd, UI_DEV_DESTROY);
+            close(m_fd);
+            std::cerr << "[Linux] Destroyed uinput virtual device" << std::endl;
+        }
+    }
 
     // Keyboard
     void keyDown(KeyCode key) override {
-        std::cerr << "[STUB] keyDown(" << static_cast<uint32_t>(key) << ")" << std::endl;
+        sendKeyEvent(key, 1);
     }
 
     void keyUp(KeyCode key) override {
-        std::cerr << "[STUB] keyUp(" << static_cast<uint32_t>(key) << ")" << std::endl;
+        sendKeyEvent(key, 0);
     }
 
     // Mouse
     void mouseMove(int32_t dx, int32_t dy) override {
-        std::cerr << "[STUB] mouseMove(" << dx << ", " << dy << ")" << std::endl;
+        if (m_fd < 0) return;
+
+        if (dx != 0) writeEvent(EV_REL, REL_X, dx);
+        if (dy != 0) writeEvent(EV_REL, REL_Y, dy);
+        if (dx != 0 || dy != 0) writeEvent(EV_SYN, SYN_REPORT, 0);
     }
 
     void mouseButton(MouseButton button, bool down) override {
-        std::cerr << "[STUB] mouseButton(" << static_cast<int>(button) << ", " << (down ? "down" : "up") << ")" << std::endl;
+        if (m_fd < 0) return;
+
+        uint16_t btnCode = 0;
+        switch (button) {
+            case MouseButton::Left:   btnCode = BTN_LEFT; break;
+            case MouseButton::Right:  btnCode = BTN_RIGHT; break;
+            case MouseButton::Middle: btnCode = BTN_MIDDLE; break;
+            case MouseButton::X1:     btnCode = BTN_SIDE; break;
+            case MouseButton::X2:     btnCode = BTN_EXTRA; break;
+            default: return;
+        }
+
+        writeEvent(EV_KEY, btnCode, down ? 1 : 0);
+        writeEvent(EV_SYN, SYN_REPORT, 0);
     }
 
     void mouseWheel(int32_t delta) override {
-        std::cerr << "[STUB] mouseWheel(" << delta << ")" << std::endl;
+        if (m_fd < 0) return;
+
+        // Windows uses 120 per notch. Linux uses 1.
+        m_wheelAccumulator += delta;
+
+        int32_t steps = m_wheelAccumulator / 120;
+        if (steps != 0) {
+            writeEvent(EV_REL, REL_WHEEL, steps);
+            writeEvent(EV_SYN, SYN_REPORT, 0);
+
+            // Keep the remainder for future accumulation
+            m_wheelAccumulator %= 120;
+        }
     }
 
     void inject(const KEYBOARD_INPUT_DATA *data, const InjectionContext &ctx, const void *rawData = 0) override {
-        std::cerr << "[STUB] inject()" << std::endl;
+        // Legacy inject method.
+        (void)data;
+        (void)ctx;
+        (void)rawData;
     }
 
 private:
     IWindowSystem* m_windowSystem;
+    int m_fd;
+    int32_t m_wheelAccumulator;
+
+    void initializeUinput() {
+        m_fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+        if (m_fd < 0) {
+            std::cerr << "[Linux] Failed to open /dev/uinput: " << std::strerror(errno) << std::endl;
+            return;
+        }
+
+        // Enable Key Events
+        ioctl(m_fd, UI_SET_EVBIT, EV_KEY);
+
+        // Enable mapped keys
+        // We enable a standard range covering common keys and extended keys
+        for (int i = 0; i < 256; ++i) {
+             ioctl(m_fd, UI_SET_KEYBIT, i);
+        }
+        for (int i = 0x100; i < 0x200; ++i) { // Extended keys
+             ioctl(m_fd, UI_SET_KEYBIT, i);
+        }
+        // Mouse buttons
+        ioctl(m_fd, UI_SET_KEYBIT, BTN_LEFT);
+        ioctl(m_fd, UI_SET_KEYBIT, BTN_RIGHT);
+        ioctl(m_fd, UI_SET_KEYBIT, BTN_MIDDLE);
+        ioctl(m_fd, UI_SET_KEYBIT, BTN_SIDE);
+        ioctl(m_fd, UI_SET_KEYBIT, BTN_EXTRA);
+
+        // Enable Relative Events (Mouse)
+        ioctl(m_fd, UI_SET_EVBIT, EV_REL);
+        ioctl(m_fd, UI_SET_RELBIT, REL_X);
+        ioctl(m_fd, UI_SET_RELBIT, REL_Y);
+        ioctl(m_fd, UI_SET_RELBIT, REL_WHEEL);
+
+        // Enable Sync Events
+        ioctl(m_fd, UI_SET_EVBIT, EV_SYN);
+
+        struct uinput_user_dev uidev;
+        memset(&uidev, 0, sizeof(uidev));
+
+        snprintf(uidev.name, UINPUT_MAX_NAME_SIZE, "Yamy Virtual Input Device");
+        uidev.id.bustype = BUS_USB;
+        uidev.id.vendor  = 0x1;
+        uidev.id.product = 0x1;
+        uidev.id.version = 1;
+
+        if (write(m_fd, &uidev, sizeof(uidev)) < 0) {
+             std::cerr << "[Linux] Failed to write uinput device config: " << std::strerror(errno) << std::endl;
+             close(m_fd);
+             m_fd = -1;
+             return;
+        }
+
+        if (ioctl(m_fd, UI_DEV_CREATE) < 0) {
+             std::cerr << "[Linux] Failed to create uinput device: " << std::strerror(errno) << std::endl;
+             close(m_fd);
+             m_fd = -1;
+             return;
+        }
+
+        std::cerr << "[Linux] Virtual input device created successfully" << std::endl;
+    }
+
+    void sendKeyEvent(KeyCode key, int value) {
+        if (m_fd < 0) return;
+
+        // Convert Yamy KeyCode to Linux Evdev code
+        uint16_t evdevCode = yamyToEvdevKeyCode(static_cast<uint16_t>(key));
+
+        if (evdevCode == 0 && static_cast<uint32_t>(key) != 0) {
+            return;
+        }
+
+        writeEvent(EV_KEY, evdevCode, value);
+        writeEvent(EV_SYN, SYN_REPORT, 0);
+    }
+
+    void writeEvent(uint16_t type, uint16_t code, int32_t value) {
+        struct input_event ev;
+        memset(&ev, 0, sizeof(ev));
+        ev.type = type;
+        ev.code = code;
+        ev.value = value;
+
+        if (write(m_fd, &ev, sizeof(ev)) < 0) {
+            if (errno != EAGAIN && errno != EWOULDBLOCK) {
+                 std::cerr << "[Linux] Failed to write event: " << std::strerror(errno) << std::endl;
+            }
+        }
+    }
 };
 
 IInputInjector* createInputInjector(IWindowSystem* windowSystem) {
-    std::cerr << "[Linux] Creating stub InputInjector" << std::endl;
     return new InputInjectorLinux(windowSystem);
 }
 

@@ -43,7 +43,7 @@ set(LINUX_PLATFORM_SOURCES
     # device_manager_linux.cpp
 
     # Track 10: uinput Injection
-    # input_injector_linux.cpp
+    input_injector_linux.cpp
 
     # Track 11: Key Code Mapping
     # keycode_mapping.cpp
