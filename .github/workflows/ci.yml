@@ -7,6 +7,73 @@ on:
     branches: [ master, main ]
 
 jobs:
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install clang tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format clang-tidy
+
+    - name: Check code formatting
+      run: |
+        echo "## Code Formatting Check" >> $GITHUB_STEP_SUMMARY
+        # Find all C++ source files in src/ (excluding third-party/external code)
+        FILES=$(find src -name '*.cpp' -o -name '*.h' | grep -v '/third_party/' | grep -v '/external/')
+
+        # Check formatting and report differences
+        UNFORMATTED=""
+        for FILE in $FILES; do
+          if ! clang-format --dry-run --Werror "$FILE" 2>/dev/null; then
+            UNFORMATTED="$UNFORMATTED $FILE"
+          fi
+        done
+
+        if [ -n "$UNFORMATTED" ]; then
+          echo "The following files need formatting:" >> $GITHUB_STEP_SUMMARY
+          for FILE in $UNFORMATTED; do
+            echo "- $FILE" >> $GITHUB_STEP_SUMMARY
+          done
+          echo ""
+          echo "Run 'clang-format -i <file>' or './scripts/format-code.sh' to fix."
+          # Report but don't fail initially (set exit 1 to enforce)
+          echo "::warning::Code formatting issues found in $(echo $UNFORMATTED | wc -w) files"
+        else
+          echo "All files are properly formatted." >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Run clang-tidy on platform code
+      run: |
+        echo "## Clang-Tidy Analysis" >> $GITHUB_STEP_SUMMARY
+        # Focus on platform/linux code for now (new code should be clean)
+        PLATFORM_FILES=$(find src/platform/linux -name '*.cpp' -o -name '*.h' 2>/dev/null || true)
+
+        if [ -n "$PLATFORM_FILES" ]; then
+          echo "Analyzing platform/linux code..." >> $GITHUB_STEP_SUMMARY
+
+          # Run clang-tidy and capture output
+          TIDY_OUTPUT=""
+          for FILE in $PLATFORM_FILES; do
+            OUTPUT=$(clang-tidy "$FILE" -- -std=c++17 -I src 2>&1 || true)
+            if echo "$OUTPUT" | grep -q "warning:"; then
+              TIDY_OUTPUT="$TIDY_OUTPUT\n$OUTPUT"
+            fi
+          done
+
+          if [ -n "$TIDY_OUTPUT" ]; then
+            echo "Clang-tidy found some issues (informational):" >> $GITHUB_STEP_SUMMARY
+            echo "::warning::Clang-tidy found potential issues in platform code"
+          else
+            echo "No issues found in platform/linux code." >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo "No platform/linux files to analyze." >> $GITHUB_STEP_SUMMARY
+        fi
+
   build-linux-stub:
     name: Linux Stub Build & Verification
     runs-on: ubuntu-latest
