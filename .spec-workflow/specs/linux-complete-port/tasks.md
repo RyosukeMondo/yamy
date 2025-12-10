@@ -431,7 +431,7 @@
   - _Requirements: NF-4 Reliability_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with X11 expertise | Task: Add error handling for missing extensions - Step 1: Call XTestQueryExtension and XRecordQueryVersion to check availability, Step 2: Throw exception with clear message if extension missing, Step 3: Suggest installing xserver-xorg-input-all or similar package, Step 4: Add extension check to factory functions | Restrictions: Check extensions early in initialization, Provide helpful installation instructions, Don't proceed without required extensions | Success: Missing extensions detected, User-friendly error with install instructions, No crashes, Application fails safely | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.3.3 Add logging for platform operations
+- [x] 1.3.3 Add logging for platform operations
   - Files: src/platform/linux/*.cpp, src/platform/win32/*.cpp
   - Add debug logging for window operations, input events, IPC
   - Use consistent logging format
