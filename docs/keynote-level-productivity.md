@@ -99,7 +99,7 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
 
 ### Phase 3: String Unification (Cognitive Load Reduction) 🚧 **IN PROGRESS**
 **Goal:** `std::string` (UTF-8) everywhere.
-**Status:** Command names migrated, ~669 legacy string usages remain.
+**Status:** Command names migrated, **971 legacy string usages remain** (tstring: 214, _T(): 596, _TCHAR: 80, tstringi: 81).
 
 -   [x] **Command Names to UTF-8:** All command names now use `const char*` (compatible with `std::string`).
 -   [ ] **Internal Standard:** Adopt `std::string` as the internal string type across the codebase.
@@ -125,7 +125,7 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
     - [ ] Ensure all Windows API string conversions happen in `src/platform/windows/`
     </details>
 
--   [ ] **Remove `TCHAR`:** Eliminate `_T()`, `tstring`, and `tregex`. (~669 usages to remove)
+-   [ ] **Remove `TCHAR`:** Eliminate `_T()`, `tstring`, and `tregex`. (**971 usages to remove**)
     <details>
     <summary>Detailed Tasks</summary>
 
@@ -139,7 +139,7 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
 
 ### Phase 4: Platform Abstraction Layer (PAL) Completion 🚧 **IN PROGRESS**
 **Goal:** Zero `#include <windows.h>` in `src/core`.
-**Status:** 8 PAL implementations exist, only 1 windows.h include remains in core.
+**Status:** 8 PAL implementations exist, **ZERO windows.h includes in core** ✅, but **21 files still leak Win32 types** (HWND, DWORD, MSG, etc.).
 
 -   [x] **Initial PAL Structure:** Created `src/platform/windows/` with 8 platform-specific implementations.
 -   [ ] **Audit Core:** Ensure no Win32 types (`HWND`, `DWORD`, `MSG`) leak into `src/core`.
@@ -150,8 +150,8 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
     - [x] Create `InputInjector` abstraction (input_injector_win32.cpp exists)
     - [x] Create `InputHook` abstraction (input_hook_win32.cpp exists)
     - [x] Create `InputDriver` abstraction (input_driver_win32.cpp exists)
-    - [ ] Remove `#include <windows.h>` from `src/core/commands/cmd_wait.cpp` (use PAL sleep function)
-    - [ ] Audit all `src/core/` files for Win32 types leaking from headers
+    - [x] Remove `#include <windows.h>` from all src/core files ✅
+    - [ ] Remove Win32 type leakage from 21 remaining files (HWND, DWORD, MSG, WPARAM, LPARAM, RECT*)
     - [ ] Create platform-agnostic type aliases (e.g., `WindowHandle` instead of `HWND`)
     - [ ] Move remaining Windows-specific code from `src/core/engine/` to PAL
     </details>
@@ -168,16 +168,16 @@ To transform the Yamy codebase from a legacy Win32-centric application into a mo
     - [ ] Remove direct Win32 API calls from commands
     </details>
 
--   [ ] **Linux Stub:** Implement a "Headless" or "Stub" Linux backend to verify architectural decoupling in CI.
+-   [x] **Linux Stub:** Implement a "Headless" or "Stub" Linux backend to verify architectural decoupling in CI. ✅ **COMPLETE**
     <details>
     <summary>Detailed Tasks</summary>
 
-    - [ ] Create `src/platform/linux/` directory structure
-    - [ ] Implement stub `window_system_linux.cpp`
-    - [ ] Implement stub `input_injector_linux.cpp`
-    - [ ] Implement stub `input_hook_linux.cpp`
-    - [ ] Add Linux build configuration to CMake
-    - [ ] Set up CI to build Linux stub (verify no Windows dependencies leak)
+    - [x] Create `src/platform/linux/` directory structure
+    - [x] Implement stub `window_system_linux.cpp`
+    - [x] Implement stub `input_injector_linux.cpp`
+    - [x] Implement stub `input_hook_linux.cpp`
+    - [x] Add Linux build configuration to CMake
+    - [x] Set up CI to build Linux stub (verify no Windows dependencies leak)
     - [ ] Consider X11/Wayland integration for future actual Linux support
     </details>
 
@@ -217,4 +217,14 @@ When refactoring or adding new files/targets:
 ### 2. Header Include Discipline
 -   **Verify Relative Paths:** When moving files (e.g., from `src/core/functions` to `src/core/commands`), relative paths like `../driver/driver.h` may break. Always verify the new relative path (e.g., `../../platform/windows/driver.h`) or consider adding include directories to CMake to use cleaner paths.
 -   **Locate Headers Correctly:** Don't assume file locations. Use `dir` or `find` to confirm where a header lives before guessing its path.
+
+### 3. Progress Tracking & Metrics
+-   **Use the Tracking Script:** Run `bash scripts/track_legacy_strings.sh` to get current metrics on legacy string usage and Win32 type leakage.
+-   **Automated Metrics:** The tracking script provides:
+    - Legacy string usage counts (tstring, _T(), _TCHAR, tstringi)
+    - Win32 type leakage counts and affected files
+    - windows.h include verification
+    - Progress summary with status indicators
+-   **Track Progress:** Compare metrics before and after each migration task to measure improvement.
+-   **CI Integration:** The tracking script can be integrated into CI to prevent regressions.
 

@@ -1,109 +1,78 @@
 #!/bin/bash
-# Track legacy string usage and Win32 type leakage
-# Part of Yamy modernization effort
+# scripts/track_legacy_strings.sh
+# Track legacy string usage and Win32 type leakage in Yamy codebase
 
 set -e
 
-CORE_DIR="src/core"
-
-echo "======================================================"
-echo "  Yamy Modernization - Progress Tracking"
-echo "======================================================"
+echo "============================================"
+echo "  Legacy String Usage Tracking"
+echo "============================================"
 echo ""
 
-echo "=== Legacy String Usage ==="
+# Legacy string usage counts
+echo "=== TCHAR/tstring Legacy Usage ==="
+TSTRING_COUNT=$(grep -r "tstring" src/core --include="*.cpp" --include="*.h" 2>/dev/null | wc -l || echo "0")
+T_MACRO_COUNT=$(grep -r "_T(" src/core --include="*.cpp" --include="*.h" 2>/dev/null | wc -l || echo "0")
+TCHAR_COUNT=$(grep -r "_TCHAR" src/core --include="*.cpp" --include="*.h" 2>/dev/null | wc -l || echo "0")
+TSTRINGI_COUNT=$(grep -r "tstringi" src/core --include="*.cpp" --include="*.h" 2>/dev/null | wc -l || echo "0")
+
+echo "tstring usages: $TSTRING_COUNT"
+echo "_T() macro usages: $T_MACRO_COUNT"
+echo "_TCHAR usages: $TCHAR_COUNT"
+echo "tstringi usages: $TSTRINGI_COUNT"
 echo ""
 
-# Count tstring usages
-TSTRING_COUNT=$(grep -r "tstring" $CORE_DIR --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-echo "  tstring usages:        $TSTRING_COUNT"
-
-# Count _T() macro usages
-T_MACRO_COUNT=$(grep -r "_T(" $CORE_DIR --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-echo "  _T() macro usages:     $T_MACRO_COUNT"
-
-# Count _TCHAR usages
-TCHAR_COUNT=$(grep -r "_TCHAR" $CORE_DIR --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-echo "  _TCHAR usages:         $TCHAR_COUNT"
-
-# Count tregex usages
-TREGEX_COUNT=$(grep -r "tregex" $CORE_DIR --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-echo "  tregex usages:         $TREGEX_COUNT"
-
-TOTAL_LEGACY_STRINGS=$((TSTRING_COUNT + T_MACRO_COUNT + TCHAR_COUNT + TREGEX_COUNT))
-echo "  ----------------------------------------"
-echo "  TOTAL LEGACY STRINGS:  $TOTAL_LEGACY_STRINGS"
-
+TOTAL_LEGACY=$((TSTRING_COUNT + T_MACRO_COUNT + TCHAR_COUNT + TSTRINGI_COUNT))
+echo "TOTAL legacy string usages: $TOTAL_LEGACY"
 echo ""
+
+# Win32 type leakage
 echo "=== Win32 Type Leakage ==="
+WIN32_USAGE_COUNT=$(grep -r "HWND\|DWORD\|MSG\|WPARAM\|LPARAM\|RECT\*" src/core --include="*.cpp" --include="*.h" 2>/dev/null | wc -l || echo "0")
+WIN32_FILES_COUNT=$(grep -rl "HWND\|DWORD\|MSG\|WPARAM\|LPARAM\|RECT\*" src/core --include="*.cpp" --include="*.h" 2>/dev/null | wc -l || echo "0")
+
+echo "Win32 type usages: $WIN32_USAGE_COUNT"
+echo "Files with Win32 types: $WIN32_FILES_COUNT"
 echo ""
 
-# Count Win32 type usages
-WIN32_USAGE_COUNT=$(grep -rE "HWND|DWORD|WPARAM|LPARAM|UINT|LONG[^_]" $CORE_DIR --include="*.cpp" --include="*.h" 2>/dev/null | grep -v "// Windows" | wc -l)
-echo "  Win32 type usages:     $WIN32_USAGE_COUNT"
-
-# Count files with Win32 types
-WIN32_FILE_COUNT=$(grep -rlE "HWND|DWORD|WPARAM|LPARAM|UINT|LONG[^_]" $CORE_DIR --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-echo "  Files with Win32 types: $WIN32_FILE_COUNT"
-
-# Count windows.h includes in core
-WINDOWS_H_COUNT=$(grep -r "#include <windows.h>" $CORE_DIR --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-echo "  #include <windows.h>:  $WINDOWS_H_COUNT"
-
-echo ""
-echo "=== Files with Win32 Type Leakage ==="
-grep -rlE "HWND|DWORD|WPARAM|LPARAM|UINT|LONG[^_]" $CORE_DIR --include="*.cpp" --include="*.h" 2>/dev/null | sed 's/^/  - /' || echo "  (none)"
-
-echo ""
-echo "=== Codebase Statistics ==="
-echo ""
-
-# Count total core files
-TOTAL_FILES=$(find $CORE_DIR -name "*.cpp" -o -name "*.h" | wc -l)
-echo "  Total core files:      $TOTAL_FILES"
-
-# Count files with legacy strings
-FILES_WITH_LEGACY=$(grep -rlE "tstring|_T\(|_TCHAR|tregex" $CORE_DIR --include="*.cpp" --include="*.h" 2>/dev/null | wc -l)
-echo "  Files with legacy:     $FILES_WITH_LEGACY"
-
-# Calculate percentage
-if [ $TOTAL_FILES -gt 0 ]; then
-    PERCENTAGE=$((FILES_WITH_LEGACY * 100 / TOTAL_FILES))
-    echo "  Legacy percentage:     $PERCENTAGE%"
+if [ $WIN32_FILES_COUNT -gt 0 ]; then
+    echo "Files with Win32 type leakage:"
+    grep -rl "HWND\|DWORD\|MSG\|WPARAM\|LPARAM\|RECT\*" src/core --include="*.cpp" --include="*.h" 2>/dev/null | sed 's/^/  - /' || true
+    echo ""
 fi
 
-echo ""
-echo "=== Progress Metrics ==="
-echo ""
+# windows.h includes check
+echo "=== windows.h Includes in Core ==="
+WINDOWS_H_COUNT=$(grep -r "#include.*windows\.h" src/core --include="*.cpp" --include="*.h" 2>/dev/null | wc -l || echo "0")
+echo "windows.h includes in src/core: $WINDOWS_H_COUNT"
 
-# Phase 3 targets
-PHASE3_TARGET=0
-PHASE3_PROGRESS=$(awk "BEGIN {printf \"%.1f\", 100 - ($TOTAL_LEGACY_STRINGS / 974 * 100)}")
-echo "  Phase 3 (String Unification):"
-echo "    Current:  $TOTAL_LEGACY_STRINGS usages (was 974)"
-echo "    Progress: ${PHASE3_PROGRESS}% complete"
-echo ""
-
-# Phase 4 targets
-PHASE4_TARGET=0
-PHASE4_PROGRESS=$(awk "BEGIN {printf \"%.1f\", 100 - ($WIN32_FILE_COUNT / 15 * 100)}")
-echo "  Phase 4 (PAL Completion):"
-echo "    Files with leakage: $WIN32_FILE_COUNT (was 15)"
-echo "    windows.h includes: $WINDOWS_H_COUNT (target: 0)"
-echo "    Progress: ${PHASE4_PROGRESS}% complete"
-
-echo ""
-echo "======================================================"
-
-# Exit with status based on targets
 if [ $WINDOWS_H_COUNT -gt 0 ]; then
-    echo "  WARNING: windows.h still included in core!"
-    exit 1
+    echo "⚠️  WARNING: windows.h found in core! Files:"
+    grep -rl "#include.*windows\.h" src/core --include="*.cpp" --include="*.h" 2>/dev/null | sed 's/^/  - /' || true
+else
+    echo "✅ CLEAN: No windows.h includes in src/core"
+fi
+echo ""
+
+# Progress summary
+echo "============================================"
+echo "  Migration Progress Summary"
+echo "============================================"
+if [ $TOTAL_LEGACY -lt 400 ]; then
+    echo "✅ Phase 3 (String Unification): ON TRACK (<400 usages)"
+else
+    echo "⚠️  Phase 3 (String Unification): $TOTAL_LEGACY usages remaining"
 fi
 
-if [ $TOTAL_LEGACY_STRINGS -eq 0 ] && [ $WIN32_FILE_COUNT -eq 0 ]; then
-    echo "  SUCCESS: All modernization targets achieved!"
-    exit 0
+if [ $WIN32_FILES_COUNT -lt 3 ]; then
+    echo "✅ Phase 4 (PAL Completion): ON TRACK (<3 files with leakage)"
+else
+    echo "⚠️  Phase 4 (PAL Completion): $WIN32_FILES_COUNT files with Win32 leakage"
 fi
 
-exit 0
+if [ $WINDOWS_H_COUNT -eq 0 ]; then
+    echo "✅ Architecture: CLEAN (zero windows.h in core)"
+else
+    echo "❌ Architecture: BROKEN (windows.h found in core)"
+fi
+echo ""

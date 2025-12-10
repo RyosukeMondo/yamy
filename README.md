@@ -19,17 +19,18 @@ The project structure has been reorganized for better clarity and maintainabilit
 
 - **`src/`**: Core source code.
   - **`core/`**: Main engine logic (key mapping, parser, settings).
+  - **`platform/`**: Platform abstraction layer (Windows, Linux stubs).
   - **`ui/`**: User interface (dialogs, resources).
   - **`system/`**: Low-level system hooks, registry, and driver interaction.
   - **`utils/`**: General purpose utilities and helper classes.
   - **`app/`**: Application entry points (`yamy.cpp`, `mayu.cpp`).
-- **`proj/`**: Visual Studio project and solution files (`.sln`, `.vcxproj`).
+- **`proj/`**: External library dependencies.
 - **`driver/`**: Device driver source code and related files (formerly `d/`).
 - **`keymaps/`**: Default and contributed keymap files (`.mayu`).
 - **`resources/`**: Icons, cursors, and other resource files (formerly `r/`).
-- **`scripts/`**: Build and utility scripts.
+- **`scripts/`**: Build, utility, and tracking scripts.
 - **`setup/`**: Installer and setup related files (formerly `s/`).
-- **`docs/`**: Documentation files (`.html`, `.txt`).
+- **`docs/`**: Documentation files (`.html`, `.txt`, `.md`).
 
 ## Building
 
@@ -67,6 +68,29 @@ scripts/mingw_package.ps1
 
 The script automatically detects if the 32-bit toolchain is installed (e.g., at `C:\tools\msys64\mingw32`). If found, it will build the 32-bit binaries (`yamy32.exe`, `yamy32.dll`, `yamyd32.exe`) and include them in the final zip package. If not found, only 64-bit binaries will be built.
 
+## Development & Progress Tracking
+
+### Tracking Legacy Code Migration
+
+To track the progress of modernization efforts (legacy string usage, Win32 type leakage), run:
+
+```bash
+bash scripts/track_legacy_strings.sh
+```
+
+This script provides metrics on:
+- Legacy string usage (tstring, _T(), _TCHAR, tstringi)
+- Win32 type leakage in core code
+- windows.h include verification
+- Progress summary with status indicators
+
+### Continuous Integration
+
+The project uses GitHub Actions for automated builds and verification:
+- **Linux Build**: Verifies architectural decoupling with Linux stub implementations
+- **Windows Build**: Tests both MinGW and MSVC builds
+- **Static Analysis**: Ensures no Windows dependencies leak into `src/core`
+
 ## License and Copyright
 
 ### Yamy
@@ -81,14 +105,10 @@ Redistribution and use in source and binary forms, with or without modification,
 (See full license text in [docs/readme.txt](docs/readme.txt))
 
 ### Mado tsukai no Yuutsu (Mayu)
-**Copyright (C) 1999-2005, TAGA Nayuta <nayuta@users.sourceforge.net>**  
+**Copyright (C) 1999-2005, TAGA Nayuta <nayuta@users.sourceforge.net>**
 All rights reserved.
 
 (See full license text in [docs/readme.txt](docs/readme.txt))
-
-### Boost C++ Libraries
-This software uses Boost C++ Libraries.
-**Boost Software License - Version 1.0**
 
 ## Acknowledgments
 
