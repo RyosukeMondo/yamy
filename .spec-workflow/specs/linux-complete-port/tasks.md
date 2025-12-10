@@ -11,7 +11,7 @@
 
 ### Batch 1: Foundation (32 tasks - ALL PARALLEL)
 
-- [-] 1.1.1 Remove tstring from stringtool.h
+- [x] 1.1.1 Remove tstring from stringtool.h
   - File: src/utils/stringtool.h
   - Remove Windows-specific tstring typedef and _T() macros
   - Convert all function signatures to use std::string
