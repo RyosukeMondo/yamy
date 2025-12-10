@@ -479,7 +479,7 @@
   - _Requirements: NF-4 Reliability_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with CI/CD expertise | Task: Add regression tests - Step 1: Create regression test suite aggregating all unit tests, Step 2: Add integration tests to suite, Step 3: Configure CMake to build test suite, Step 4: Add CI job running test suite on every commit, Step 5: Ensure tests run without X11 server (use Xvfb), Step 6: Report test results and coverage | Restrictions: Tests must run in CI environment, Use Xvfb for X11 tests, Ensure tests don't interfere with each other, Require 80% coverage | Success: Regression suite runs in CI, All tests pass, Coverage ≥80%, Tests reliable, No flaky tests, CI reports results clearly | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.3.9 Add code quality checks to CI
+- [x] 1.3.9 Add code quality checks to CI
   - File: .github/workflows/ci.yml or similar
   - Add linter (cpplint, clang-tidy), formatter (clang-format) checks
   - Enforce code quality standards
