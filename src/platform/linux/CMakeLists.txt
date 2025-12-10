@@ -21,7 +21,7 @@ set(LINUX_PLATFORM_SOURCES
     # window_system_linux_manipulation.cpp
 
     # Track 3: Window Hierarchy
-    # window_system_linux_hierarchy.cpp
+    window_system_linux_hierarchy.cpp
 
     # Track 4: Mouse & Cursor
     # window_system_linux_mouse.cpp
