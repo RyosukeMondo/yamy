@@ -58,6 +58,17 @@ target_link_libraries(yamy_qt_gui PUBLIC
 target_include_directories(yamy_qt_gui PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/core/engine
+    ${CMAKE_SOURCE_DIR}/src/core/settings
+    ${CMAKE_SOURCE_DIR}/src/core/input
+    ${CMAKE_SOURCE_DIR}/src/core/window
+    ${CMAKE_SOURCE_DIR}/src/core/functions
+    ${CMAKE_SOURCE_DIR}/src/core/commands
+    ${CMAKE_SOURCE_DIR}/src/core/platform
+    ${CMAKE_SOURCE_DIR}/src/platform/linux
+    ${CMAKE_SOURCE_DIR}/src/utils
+    ${CMAKE_SOURCE_DIR}/src/app
 )
 
 # Export for parent CMakeLists

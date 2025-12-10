@@ -2,9 +2,20 @@
 #include "dialog_settings_qt.h"
 #include "dialog_log_qt.h"
 #include "dialog_about_qt.h"
-#include "../core/engine/engine.h"
 #include <QApplication>
 #include <QMessageBox>
+
+// Stub Engine class definition (matches stub in main_qt.cpp)
+// This will be replaced once core YAMY is refactored for Linux
+class Engine {
+public:
+    virtual ~Engine() = default;
+    bool getIsEnabled() const { return m_enabled; }
+    void enable() { m_enabled = true; }
+    void disable() { m_enabled = false; }
+private:
+    mutable bool m_enabled = true;
+};
 
 TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)

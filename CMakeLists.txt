@@ -287,9 +287,15 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
 
     target_include_directories(yamy_stub PRIVATE
         src
+        src/ui
+        src/ui/qt
         src/core/platform
+        src/core/engine
+        src/core/settings
+        src/core/input
         src/platform/linux
         src/utils
+        src/app
     )
 
     # Note: Full engine build (yamy_engine_new) is disabled on Linux until Core Refactoring

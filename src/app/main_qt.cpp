@@ -1,21 +1,25 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <iostream>
-#include <sstream>
-#include "../ui/qt/tray_icon_qt.h"
-#include "../core/engine/engine.h"
-#include "../core/settings/setting.h"
-#include "../core/engine/msgstream.h"
-#include "../platform/linux/window_system_linux.h"
-#include "../platform/linux/input_injector_linux.h"
-#include "../platform/linux/input_hook_linux.h"
-#include "../platform/linux/input_driver_linux.h"
-#include "../utils/config_store.h"
+#include "ui/qt/tray_icon_qt.h"
+
+// Stub Engine class for Qt GUI (until core refactoring is complete)
+class Engine {
+public:
+    bool getIsEnabled() const { return m_enabled; }
+    void enable() { m_enabled = true; }
+    void disable() { m_enabled = false; }
+private:
+    bool m_enabled = true;
+};
 
 /**
  * @brief Qt GUI entry point for Linux
  *
- * Phase 6: Full engine integration
+ * Phase 7: Standalone Qt GUI build (engine integration pending core refactoring)
+ *
+ * NOTE: Full engine integration requires core YAMY refactoring to remove
+ * Windows-specific dependencies (HWND, PostMessage, SW_*, etc.)
  */
 int main(int argc, char* argv[])
 {
@@ -41,58 +45,10 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Starting YAMY on Linux (Qt GUI)" << std::endl;
+    std::cout << "Note: Using stub engine (full integration pending core refactoring)" << std::endl;
 
-    // Initialize log stream
-    std::ostringstream logBuffer;
-    tomsgstream log(logBuffer);
-
-    // Initialize platform interfaces
-    std::cout << "Initializing Window System..." << std::endl;
-    yamy::platform::IWindowSystem* windowSystem = yamy::platform::createWindowSystem();
-    if (!windowSystem) {
-        QMessageBox::critical(nullptr, "YAMY", "Failed to initialize Window System");
-        return 1;
-    }
-
-    std::cout << "Initializing Input Injector..." << std::endl;
-    yamy::platform::IInputInjector* inputInjector = yamy::platform::createInputInjector(windowSystem);
-    if (!inputInjector) {
-        QMessageBox::critical(nullptr, "YAMY", "Failed to initialize Input Injector");
-        delete windowSystem;
-        return 1;
-    }
-
-    std::cout << "Initializing Input Hook..." << std::endl;
-    yamy::platform::IInputHook* inputHook = yamy::platform::createInputHook();
-    if (!inputHook) {
-        QMessageBox::critical(nullptr, "YAMY", "Failed to initialize Input Hook");
-        delete inputInjector;
-        delete windowSystem;
-        return 1;
-    }
-
-    std::cout << "Initializing Input Driver..." << std::endl;
-    yamy::platform::IInputDriver* inputDriver = yamy::platform::createInputDriver();
-    if (!inputDriver) {
-        QMessageBox::critical(nullptr, "YAMY", "Failed to initialize Input Driver");
-        delete inputHook;
-        delete inputInjector;
-        delete windowSystem;
-        return 1;
-    }
-
-    // Initialize config store
-    std::cout << "Initializing Config Store..." << std::endl;
-    ConfigStore* configStore = new ConfigStore();
-
-    // Create engine instance
-    std::cout << "Creating Engine..." << std::endl;
-    Engine* engine = new Engine(log, windowSystem, configStore, inputInjector, inputHook, inputDriver);
-
-    // Start engine
-    std::cout << "Starting Engine..." << std::endl;
-    engine->start();
-    engine->enable(true); // Enable by default
+    // Create stub engine instance
+    Engine* engine = new Engine();
 
     // Create and show tray icon
     TrayIconQt trayIcon(engine);
@@ -101,7 +57,7 @@ int main(int argc, char* argv[])
     // Show startup notification
     trayIcon.showNotification(
         "YAMY",
-        "YAMY started successfully",
+        "YAMY Qt GUI started (demo mode)",
         QSystemTrayIcon::Information
     );
 
@@ -112,13 +68,7 @@ int main(int argc, char* argv[])
 
     // Cleanup
     std::cout << "Shutting down YAMY..." << std::endl;
-    engine->stop();
     delete engine;
-    delete configStore;
-    delete inputDriver;
-    delete inputHook;
-    delete inputInjector;
-    delete windowSystem;
 
     std::cout << "YAMY exited successfully." << std::endl;
     return result;
