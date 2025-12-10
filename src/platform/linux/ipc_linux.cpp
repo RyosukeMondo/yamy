@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <errno.h>
 
 namespace yamy::platform {
 
@@ -20,6 +21,9 @@ static bool sendAll(int sock, const void* buffer, size_t length) {
         // Use MSG_NOSIGNAL to prevent SIGPIPE on closed connection
         ssize_t sent = send(sock, ptr, remaining, MSG_NOSIGNAL);
         if (sent <= 0) {
+            if (sent < 0 && errno == EINTR) {
+                continue; // Retry on interruption
+            }
             // Error or connection closed
             return false;
         }
