@@ -19,7 +19,7 @@
   - _Requirements: FR-1.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Remove all Windows-specific string types from stringtool.h - Step 1: Remove typedef std::basic_string<TCHAR> tstring, Step 2: Remove all _T() macro usages, Step 3: Keep only std::string versions of functions, Step 4: Remove any #ifdef UNICODE blocks, Step 5: Ensure all function signatures use std::string, Verify with grep tstring and grep _T( commands | Restrictions: Do not modify function behavior, Maintain UTF-8 encoding throughout, Ensure file compiles on Linux without windows.h, Do not break existing callers | Success: No tstring references remain, No _T() macros remain, All functions use std::string, File compiles on Linux without windows.h, All unit tests pass | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.2 Remove tstring from stringtool.cpp
+- [x] 1.1.2 Remove tstring from stringtool.cpp
   - File: src/utils/stringtool.cpp
   - Update implementation to match stringtool.h changes
   - Convert wstring operations to UTF-8 std::string
