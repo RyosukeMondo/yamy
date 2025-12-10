@@ -519,7 +519,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Add config switching to Engine - Add method bool switchConfiguration(const std::string& configPath), Unload current keymaps, Parse new config file, Rebuild keymap tree, Update ConfigManager active config, Emit notification to GUI, Return false on parse errors | Restrictions: Handle parse errors gracefully, Maintain engine state, Don't crash on invalid config, Rollback on failure | Success: Config switching works, Keymaps reloaded correctly, Errors handled gracefully, GUI notified, No crashes on invalid config | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.1.3 Add config file validation
+- [x] 2.1.3 Add config file validation
   - File: src/core/parser/config_validator.h, src/core/parser/config_validator.cpp
   - Validate .mayu syntax before loading
   - Report specific errors with line numbers
