@@ -277,7 +277,7 @@
   - _Requirements: FR-1.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Update window context tracking - Step 1: Change HWND m_focusedWindow to WindowHandle m_focusedWindow, Step 2: Update updateContext() to use windowSystem->getForegroundWindow(), Step 3: Update window class and title retrieval to use windowSystem methods, Step 4: Verify context-dependent keymapping works | Restrictions: Maintain window context behavior exactly, Ensure per-window keymaps work, Handle invalid windows gracefully | Success: Window context tracked correctly on both platforms, Per-window keymaps functional, Window focus changes detected, Context updates work reliably | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.2 Update keymap activation logic
+- [x] 1.2.2 Update keymap activation logic
   - File: src/core/keymap_layer.cpp
   - Update condition evaluation for window-based activation
   - Use platform abstractions for window matching
