@@ -537,6 +537,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/tests/platform/ipc_linux_test.cpp
             src/tests/platform/ipc_multi_instance_test.cpp
             src/platform/linux/window_system_linux_queries.cpp
+            src/platform/linux/x11_connection.cpp
             src/platform/linux/keycode_mapping.cpp
             src/platform/linux/input_hook_linux.cpp
             src/platform/linux/device_manager_linux.cpp
@@ -607,6 +608,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/window_system_linux_hierarchy.cpp
             src/platform/linux/window_system_linux_mouse.cpp
             src/platform/linux/window_system_linux_monitor.cpp
+            src/platform/linux/x11_connection.cpp
             src/platform/linux/input_injector_linux.cpp
             src/platform/linux/keycode_mapping.cpp
         )
