@@ -11,9 +11,10 @@
 #include "windowstool.h"
 
 #include <iomanip>
-#include <process.h>
 #include <string>
-#include "../../platform/windows/utf_conversion.h"
+#ifdef _WIN32
+#include <process.h>
+#endif
 
 
 // check focus window

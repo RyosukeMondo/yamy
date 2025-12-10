@@ -1,6 +1,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // layoutmanager.cpp
 
+#ifdef _WIN32
 
 #include "layoutmanager.h"
 #include "windowstool.h"
@@ -247,3 +248,5 @@ bool LayoutManager::defaultWMHandler(uint32_t i_message,
     }
     return false;
 }
+
+#endif // _WIN32

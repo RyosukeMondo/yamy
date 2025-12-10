@@ -1,6 +1,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // focus.cpp
 
+#ifdef _WIN32
 
 #include "focus.h"
 #include "windowstool.h"
@@ -65,3 +66,5 @@ uint16_t Register_focus()
     wc.lpszClassName = "mayuFocus";
     return RegisterClass(&wc);
 }
+
+#endif // _WIN32

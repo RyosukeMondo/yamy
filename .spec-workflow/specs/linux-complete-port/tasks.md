@@ -269,7 +269,7 @@
 
 ### Batch 2: Integration (18 tasks - PARALLEL within batch, SEQUENTIAL after Batch 1)
 
-- [ ] 1.2.1 Update window context tracking in Engine
+- [x] 1.2.1 Update window context tracking in Engine
   - File: src/core/engine.cpp
   - Replace HWND-based window context with WindowHandle
   - Update window focus tracking logic

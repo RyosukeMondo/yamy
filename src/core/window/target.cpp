@@ -1,6 +1,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // target.cpp
 
+#ifdef _WIN32
 
 #include "misc.h"
 
@@ -218,3 +219,5 @@ uint16_t Register_target()
     wc.lpszClassName = "mayuTarget";
     return RegisterClass(&wc);
 }
+
+#endif // _WIN32
