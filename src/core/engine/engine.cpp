@@ -13,6 +13,7 @@
 #endif
 #include "../platform/sync.h"
 #include "../../utils/metrics.h"
+#include "../platform/ipc.h"
 
 #include <iomanip>
 #ifdef _WIN32
