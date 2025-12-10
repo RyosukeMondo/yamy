@@ -253,8 +253,37 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/platform/linux/hook_data_linux.cpp
         src/platform/linux/ipc_linux.cpp
     )
-    add_executable(yamy_stub ${STUB_SOURCES})
-    target_link_libraries(yamy_stub PRIVATE pthread X11 Xrandr udev)
+
+    # Qt5 GUI for Linux (optional)
+    option(BUILD_QT_GUI "Build Qt5 GUI for Linux" ON)
+
+    if(BUILD_QT_GUI)
+        # Find Qt5 packages
+        find_package(Qt5 COMPONENTS Core Widgets Gui)
+
+        if(Qt5_FOUND)
+            message(STATUS "Qt5 found - building with GUI support")
+            add_subdirectory(src/ui/qt)
+
+            # Use Qt main instead of headless main
+            list(REMOVE_ITEM STUB_SOURCES src/app/main_linux.cpp)
+            list(APPEND STUB_SOURCES src/app/main_qt.cpp)
+
+            add_executable(yamy_stub ${STUB_SOURCES})
+            target_link_libraries(yamy_stub PRIVATE
+                pthread X11 Xrandr udev
+                yamy_qt_gui
+            )
+        else()
+            message(WARNING "Qt5 not found - building headless version")
+            add_executable(yamy_stub ${STUB_SOURCES})
+            target_link_libraries(yamy_stub PRIVATE pthread X11 Xrandr udev)
+        endif()
+    else()
+        message(STATUS "Building without Qt5 GUI (headless mode)")
+        add_executable(yamy_stub ${STUB_SOURCES})
+        target_link_libraries(yamy_stub PRIVATE pthread X11 Xrandr udev)
+    endif()
 
     target_include_directories(yamy_stub PRIVATE
         src
