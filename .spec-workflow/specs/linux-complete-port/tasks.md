@@ -325,7 +325,7 @@
   - _Requirements: FR-1.1, FR-1.3, FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with Linux system expertise | Task: Test basic key remapping on Linux - Step 1: Create test .mayu config with simple remaps (e.g. a to b), Step 2: Start YAMY on Linux, Step 3: Test basic key remapping in various applications, Step 4: Test modifier keys (Ctrl, Alt, Shift), Step 5: Test modifier combinations, Step 6: Document any issues found | Restrictions: Use real X11 environment (not Wayland), Test in multiple applications (terminal, browser, editor), Verify events not duplicated | Success: Basic remapping works, Modifier keys work correctly, Combinations functional, No event duplication, Key presses recognized reliably | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.8 Test window-context dependent keymaps on Linux
+- [x] 1.2.8 Test window-context dependent keymaps on Linux
   - Test environment: Linux with multiple applications
   - Verify window title/class matching works
   - Test keymap switching between windows
