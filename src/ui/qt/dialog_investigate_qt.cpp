@@ -6,6 +6,12 @@
 #include <QGridLayout>
 #include <QFont>
 #include <QDateTime>
+#include <QFile>
+#include <QTextStream>
+#include <QFileInfo>
+
+#include <unistd.h>
+#include <limits.h>
 
 DialogInvestigateQt::DialogInvestigateQt(QWidget* parent)
     : QDialog(parent)
@@ -333,5 +339,78 @@ void DialogInvestigateQt::updateWindowInfo(yamy::platform::WindowHandle hwnd)
     }
     m_labelState->setText(stateText);
 
-    // Note: Process info (m_labelProcess, m_labelProcessPath) is Task 3.4
+    // Get process information using PID
+    uint32_t pid = m_windowSystem->getWindowProcessId(hwnd);
+    if (pid > 0) {
+        QString processName = getProcessName(pid);
+        if (!processName.isEmpty()) {
+            m_labelProcess->setText(processName);
+        } else {
+            m_labelProcess->setText(QString("(PID: %1)").arg(pid));
+        }
+
+        QString processPath = getProcessPath(pid);
+        if (!processPath.isEmpty()) {
+            m_labelProcessPath->setText(processPath);
+        } else {
+            m_labelProcessPath->setText("(unavailable)");
+        }
+    } else {
+        m_labelProcess->setText("(unknown)");
+        m_labelProcessPath->setText("(unavailable)");
+    }
+}
+
+QString DialogInvestigateQt::getProcessName(uint32_t pid)
+{
+    if (pid == 0) {
+        return QString();
+    }
+
+    // Read process name from /proc/{pid}/comm
+    QString commPath = QString("/proc/%1/comm").arg(pid);
+    QFile commFile(commPath);
+
+    if (!commFile.exists()) {
+        return QString();
+    }
+
+    if (!commFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return QString();
+    }
+
+    QTextStream stream(&commFile);
+    QString processName = stream.readLine().trimmed();
+    commFile.close();
+
+    return processName;
+}
+
+QString DialogInvestigateQt::getProcessPath(uint32_t pid)
+{
+    if (pid == 0) {
+        return QString();
+    }
+
+    // Read executable path from /proc/{pid}/exe using readlink
+    QString exePath = QString("/proc/%1/exe").arg(pid);
+
+    // Check if the symlink exists
+    QFileInfo fileInfo(exePath);
+    if (!fileInfo.exists()) {
+        return QString();
+    }
+
+    // Use readlink to resolve the symlink
+    char buffer[PATH_MAX];
+    std::string pathStr = exePath.toStdString();
+    ssize_t len = readlink(pathStr.c_str(), buffer, sizeof(buffer) - 1);
+
+    if (len == -1) {
+        // readlink failed (permission denied or other error)
+        return QString();
+    }
+
+    buffer[len] = '\0';
+    return QString::fromUtf8(buffer);
 }

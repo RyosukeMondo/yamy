@@ -101,9 +101,24 @@ private:
      * - Class name (getClassName)
      * - Geometry (getWindowRect)
      * - Visibility state (getShowCommand)
+     * - Process name and path (via /proc filesystem)
      * Handles invalid windows gracefully.
      */
     void updateWindowInfo(yamy::platform::WindowHandle hwnd);
+
+    /**
+     * @brief Get process name from PID by reading /proc/{pid}/comm
+     * @param pid Process ID
+     * @return Process name or empty string if unavailable
+     */
+    QString getProcessName(uint32_t pid);
+
+    /**
+     * @brief Get process executable path from PID by reading /proc/{pid}/exe
+     * @param pid Process ID
+     * @return Full path to executable or empty string if unavailable
+     */
+    QString getProcessPath(uint32_t pid);
 
     // Window system interface for platform abstraction
     std::unique_ptr<yamy::platform::IWindowSystem> m_windowSystem;
