@@ -317,7 +317,7 @@
   - _Requirements: FR-1.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with Qt expertise | Task: Update MainWindow to use IWindowSystem - Step 1: Add IWindowSystem* m_windowSystem member to MainWindow, Step 2: Accept IWindowSystem in constructor, Step 3: Replace ShowWindow calls with m_windowSystem->showWindow, Step 4: Update window enumeration in investigate dialog to use m_windowSystem->enumWindows | Restrictions: Maintain GUI behavior, Ensure dialogs display correctly, Handle window operations properly | Success: MainWindow uses IWindowSystem, Window operations work correctly, Dialogs display properly, Works on both platforms | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.7 Test basic key remapping on Linux
+- [x] 1.2.7 Test basic key remapping on Linux
   - Test environment: Linux system with X11
   - Verify basic key remapping works
   - Test modifier keys and combinations
