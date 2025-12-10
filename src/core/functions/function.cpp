@@ -541,8 +541,7 @@ void Engine::EmacsEditKillLine::func(IWindowSystem* ws)
 {
     if (!m_buf.empty()) {
         std::string text = ws->getClipboardText();
-        tstring textT = to_tstring(text);
-        if (m_buf != textT)
+        if (m_buf != text)
             reset();
     }
 
@@ -555,25 +554,24 @@ void Engine::EmacsEditKillLine::func(IWindowSystem* ws)
 int Engine::EmacsEditKillLine::pred(IWindowSystem* ws)
 {
     std::string text = ws->getClipboardText();
-    tstring textT = to_tstring(text);
 
     // Logic from makeNewKillLineBuf
     int retval = 0;
 
     // m_buf += text + ...
-    tstring dataNew = m_buf.empty() ? _T("") : m_buf;
+    std::string dataNew = m_buf.empty() ? "" : m_buf;
 
-    size_t len = textT.length();
-    if (3 <= len && textT[len-2] == _T('\r') && textT[len-1] == _T('\n')) {
-        dataNew += textT;
+    size_t len = text.length();
+    if (3 <= len && text[len-2] == '\r' && text[len-1] == '\n') {
+        dataNew += text;
         // chomp last 2
         dataNew = dataNew.substr(0, dataNew.length() - 2);
         retval = 2;
     } else if (len == 0) {
-        dataNew += _T("\r\n");
+        dataNew += "\r\n";
         retval = 1;
     } else {
-        dataNew += textT;
+        dataNew += text;
         retval = 0;
     }
 

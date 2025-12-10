@@ -58,8 +58,8 @@ private:
         uint32_t m_threadId;                /// thread id
         yamy::platform::WindowHandle m_hwndFocus;                /** window that has focus on
                                                     the thread */
-        tstringi m_className;            /// class name of hwndFocus
-        tstringi m_titleName;            /// title name of hwndFocus
+        std::string m_className;            /// class name of hwndFocus
+        std::string m_titleName;            /// title name of hwndFocus
         bool m_isConsole;                /// is hwndFocus console ?
         KeymapPtrList m_keymaps;            /// keymaps
 
@@ -101,7 +101,7 @@ private:
     ///
     class EmacsEditKillLine
     {
-        tstring m_buf;    /// previous kill-line contents
+        std::string m_buf;    /// previous kill-line contents
 
     public:
         bool m_doForceReset;    ///
@@ -233,8 +233,8 @@ private:
     WindowPositions m_windowPositions;        ///
     WindowsWithAlpha m_windowsWithAlpha;        ///
 
-    tstring m_helpMessage;            /// for &amp;HelpMessage
-    tstring m_helpTitle;                /// for &amp;HelpMessage
+    std::string m_helpMessage;            /// for &amp;HelpMessage
+    std::string m_helpTitle;                /// for &amp;HelpMessage
     int m_variable;                /// for &amp;Variable,
     ///  &amp;Repeat
 
@@ -388,8 +388,8 @@ public:
 
     /// focus
     bool setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threadId,
-                  const tstringi &i_className,
-                  const tstringi &i_titleName, bool i_isConsole);
+                  const std::string &i_className,
+                  const std::string &i_titleName, bool i_isConsole);
 
     /// lock state
     bool setLockState(bool i_isNumLockToggled, bool i_isCapsLockToggled,
@@ -413,7 +413,7 @@ public:
     void shellExecute();
 
     /// get help message
-    void getHelpMessages(tstring *o_helpMessage, tstring *o_helpTitle);
+    void getHelpMessages(std::string *o_helpMessage, std::string *o_helpTitle);
 
     /// command notify
     template <typename WPARAM_T, typename LPARAM_T>
@@ -430,12 +430,12 @@ public:
     }
 
     /// get current window class name
-    const tstringi &getCurrentWindowClassName() const {
+    const std::string &getCurrentWindowClassName() const {
         return m_currentFocusOfThread->m_className;
     }
 
     /// get current window title name
-    const tstringi &getCurrentWindowTitleName() const {
+    const std::string &getCurrentWindowTitleName() const {
         return m_currentFocusOfThread->m_titleName;
     }
 
