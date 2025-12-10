@@ -9,28 +9,88 @@
 
 ## Track 1: Core Refactoring (60 tasks)
 
+### Code Quality Review Summary (2025-12-11)
+
+**Completion Status**: 79/121 tasks marked complete
+**Overall Assessment**: PARTIAL PASS (67% Compliant)
+**Files Reviewed**: 30+ files, 4,150+ lines of code
+
+**Compliance Breakdown**:
+- ✅ **PASS**: 16/24 reviewed tasks (67%)
+- ⚠️ **PARTIAL**: 6/24 reviewed tasks (25%)
+- ❌ **FAIL**: 0/24 reviewed tasks (0%)
+- N/A: 2/24 reviewed tasks (8%)
+
+**CRITICAL Issues Requiring Fix** (8 hours estimated):
+1. **Task 1.1.1 INCOMPLETE** - `tstring` typedef still exists at src/utils/stringtool.h:31
+   - Current: `using tstring = std::string;` (backward compatibility alias)
+   - Required: Complete removal of tstring typedef
+   - Impact: 13 files still reference tstring
+
+2. **Task 1.1.3 INCOMPLETE** - Windows types in core interface at src/utils/config_store.h:46-51
+   - Current: `BYTE` and `DWORD` types used in ConfigStore
+   - Required: Replace with `uint8_t` and `uint32_t`
+   - Impact: Violates platform abstraction requirements
+
+3. **Task 1.1.18 INCOMPLETE** - Thread safety violation in src/platform/linux/input_hook_linux.cpp
+   - Current: No mutex protection for `m_readerThreads` vector access
+   - Required: Add `std::mutex` for thread-safe vector operations
+   - Impact: Race conditions possible in multi-threaded environment
+
+**Code Quality KPI Violations** (6 hours estimated):
+4. **File size violation** - src/utils/stringtool.cpp: 569 lines (exceeds 500-line limit)
+   - Required: Split into multiple files or refactor
+
+5. **Function length violation** - interpretMetaCharacters(): 152 lines (exceeds 50-line KPI)
+   - Location: src/utils/stringtool.cpp:266-417
+   - Required: Break into smaller functions
+
+6. **Memory management** - Raw pointers in src/platform/linux/input_hook_linux.cpp:259
+   - Required: Replace with `std::unique_ptr` or `std::shared_ptr`
+
+**Positive Highlights**:
+- ✅ Outstanding platform abstraction interfaces (IWindowSystem, IInputInjector, IInputHook)
+- ✅ Excellent factory pattern implementation
+- ✅ Linux implementations functional (evdev, uinput, X11/EWMH)
+- ✅ UTF-8 support comprehensive (100% compliant)
+- ✅ Error handling excellent (custom exception hierarchy with error codes)
+- ✅ Modular design (WindowSystemLinux split into 6 files, all under 500 lines)
+
+**Recommendation**: Address 3 critical issues + 2 code quality violations (total 14 hours) before proceeding to Track 2.
+
+---
+
 ### Batch 1: Foundation (32 tasks - ALL PARALLEL)
 
-- [x] 1.1.1 Remove tstring from stringtool.h
+- [x] 1.1.1 Remove tstring from stringtool.h ⚠️ **INCOMPLETE - CODE REVIEW FOUND ISSUE**
   - File: src/utils/stringtool.h
   - Remove Windows-specific tstring typedef and _T() macros
   - Convert all function signatures to use std::string
+  - **CODE REVIEW**: tstring typedef still exists at line 31: `using tstring = std::string;`
+  - **REQUIRED FIX**: Complete removal of tstring typedef, not just aliasing to std::string
+  - **IMPACT**: 13 files still reference tstring (grep shows residual usage)
   - _Leverage: src/utils/stringtool.cpp_
   - _Requirements: FR-1.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Remove all Windows-specific string types from stringtool.h - Step 1: Remove typedef std::basic_string<TCHAR> tstring, Step 2: Remove all _T() macro usages, Step 3: Keep only std::string versions of functions, Step 4: Remove any #ifdef UNICODE blocks, Step 5: Ensure all function signatures use std::string, Verify with grep tstring and grep _T( commands | Restrictions: Do not modify function behavior, Maintain UTF-8 encoding throughout, Ensure file compiles on Linux without windows.h, Do not break existing callers | Success: No tstring references remain, No _T() macros remain, All functions use std::string, File compiles on Linux without windows.h, All unit tests pass | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [x] 1.1.2 Remove tstring from stringtool.cpp
+- [x] 1.1.2 Remove tstring from stringtool.cpp ⚠️ **CODE QUALITY VIOLATIONS**
   - File: src/utils/stringtool.cpp
   - Update implementation to match stringtool.h changes
   - Convert wstring operations to UTF-8 std::string
+  - **CODE REVIEW - File Size**: 569 lines (EXCEEDS 500-line KPI limit by 69 lines)
+  - **CODE REVIEW - Function Length**: interpretMetaCharacters() is 152 lines (EXCEEDS 50-line KPI limit)
+  - **REQUIRED FIX**: Refactor interpretMetaCharacters() into smaller functions, consider splitting file
   - _Leverage: src/utils/stringtool.h_
   - _Requirements: FR-1.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Update stringtool.cpp implementation to match stringtool.h changes - Step 1: Remove all tstring usages in function implementations, Step 2: Convert wstring operations to UTF-8 std::string, Step 3: Update string conversions by removing toWide/toNarrow functions and adding UTF-8 conversion utilities if needed for Windows bridge, Step 4: Update all string literals from _T("foo") to "foo", Verify with grep commands and unit tests | Restrictions: Maintain UTF-8 encoding, Do not break Windows build (add UTF-8/UTF-16 bridge if needed), Preserve all function semantics | Success: No tstring references, All string literals are plain UTF-8, Unit tests pass on both Linux and Windows | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [x] 1.1.3 Clean up config_store.h tstring overloads
+- [x] 1.1.3 Clean up config_store.h tstring overloads ⚠️ **INCOMPLETE - CODE REVIEW FOUND ISSUE**
   - File: src/utils/config_store.h (actual location)
   - Remove duplicate tstring overloads causing link errors
   - Keep only std::string API versions
+  - **CODE REVIEW**: Windows types BYTE and DWORD still exist at lines 46-51
+  - **REQUIRED FIX**: Replace `BYTE` with `uint8_t`, replace `DWORD` with `uint32_t`
+  - **IMPACT**: Violates platform abstraction requirements - core interface should not contain Windows types
   - _Leverage: src/platform/windows/registry.h_
   - _Requirements: FR-1.2, FR-1.6_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: ConfigStore has duplicate overloads for tstring and std::string causing link errors on Linux, Remove tstring versions - Step 1: Remove overloads bool read(const tstring& key, tstring* value), bool write(const tstring& key, const tstring& value), bool exists(const tstring& key), Step 2: Keep only std::string versions, Step 3: Update internal storage to use std::string keys | Restrictions: Do not break existing callers, Maintain API compatibility where possible, Ensure no ambiguity errors during compilation | Success: No tstring overloads remain, Only std::string API exists, No compilation errors, File compiles on Linux | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
@@ -147,10 +207,14 @@
   - _Requirements: FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Implement IInputHook for Windows - Step 1: Create InputHookWin32 class implementing IInputHook, Step 2: Use SetWindowsHookEx with WH_KEYBOARD_LL, Step 3: In hook procedure convert KBDLLHOOKSTRUCT to KeyEvent and invoke callback, Step 4: Return 1 if callback returns true (consume), otherwise CallNextHookEx, Step 5: Implement install/uninstall managing hook handle | Restrictions: Maintain existing Windows hook behavior, Ensure thread-safety in callback invocation, Handle hook errors gracefully | Success: Hook installs correctly, Callbacks invoked properly, Event consumption works, Key remapping functional, No crashes or hangs | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [x] 1.1.18 Create InputHookLinux implementation (already done)
+- [x] 1.1.18 Create InputHookLinux implementation (already done) ⚠️ **INCOMPLETE - CODE REVIEW FOUND ISSUE**
   - File: src/platform/linux/input_hook_linux.h/.cpp (actual location)
   - Implement IInputHook for Linux using XRecord extension
   - Handle asynchronous event callbacks
+  - **CODE REVIEW - Thread Safety**: No mutex protection for `m_readerThreads` vector access
+  - **REQUIRED FIX**: Add `std::mutex m_readerThreadsMutex;` and protect all vector operations (push_back, iteration, clear)
+  - **IMPACT**: Race conditions possible when threads access vector concurrently
+  - **CODE REVIEW - Memory Management**: Raw pointers at line 259 should use `std::unique_ptr`
   - _Leverage: src/platform/input_hook.h_
   - _Requirements: FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with X11 and XRecord expertise | Task: Implement IInputHook for Linux - Step 1: Create InputHookLinux class implementing IInputHook, Step 2: Use XRecordCreateContext to capture KeyPress/KeyRelease events, Step 3: Run XRecordEnableContext in separate thread for event loop, Step 4: In callback convert XRecordInterceptData to KeyEvent and invoke user callback, Step 5: Use XRecordDisableContext to consume events when callback returns true | Restrictions: Use XRecord extension correctly, Handle threading properly (XRecord runs in separate thread), Ensure proper synchronization with main thread | Success: Hook captures events, Callbacks work correctly, Event consumption works, Key remapping functional, Thread-safe implementation | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
@@ -663,7 +727,7 @@
   - _Requirements: FR-3.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer with Linux system expertise | Task: Add getProcessName and getProcessPath methods - Step 1: Implement getProcessName reading /proc/{pid}/comm file, Step 2: Implement getProcessPath using readlink on /proc/{pid}/exe, Step 3: Extract PID from WindowHandle (on Linux windows have associated PID via _NET_WM_PID property), Step 4: Update updateWindowInfo to call these methods and display in UI, Step 5: Handle errors when process info unavailable | Restrictions: Check file existence before reading, Handle readlink errors, Work with root-owned processes (limited info), Parse PID from window properties correctly | Success: Process name displays correctly, Process path shows full executable path, Handles missing process info gracefully, Works with various applications, No crashes on permission errors | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.5 Implement keymap status query
+- [-] 3.5 Implement keymap status query
   - File: src/ui/qt/dialog_investigate_qt.cpp, src/core/engine.cpp
   - Send IPC request to engine for keymap status
   - Display matched keymap and active window regex

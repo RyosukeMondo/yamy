@@ -15,4 +15,7 @@ proj/*/x64/
 
 logs/
 build_mingw/
+build_linux/
+build_asan/
+build_regression/
 audit.log
