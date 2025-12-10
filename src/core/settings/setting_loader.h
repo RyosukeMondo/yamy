@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // setting_loader.h
 
@@ -28,13 +28,13 @@ public:
     class FunctionCreator
     {
     public:
-        const _TCHAR *m_name;            ///
+        const char *m_name;            ///
         FunctionData *m_creator;            ///
     };
 
 private:
     typedef std::vector<Token> Tokens;        ///
-    typedef std::vector<tstringi> Prefixes;    ///
+    typedef std::vector<std::string> Prefixes;    ///
     typedef std::vector<bool> CanReadStack;    ///
 
 private:
@@ -45,7 +45,7 @@ private:
     SyncObject *m_soLog;                /// guard log output stream
     tostream *m_log;                /// log output stream
 
-    tstringi m_currentFilename;            /// current filename
+    std::string m_currentFilename;            /// current filename
 
     Tokens m_tokens;                /// tokens for current line
     Tokens::iterator m_ti;            /// current processing token
@@ -66,16 +66,27 @@ private:
     bool isEOL();                    /// is there no more tokens ?
     Token *getToken();                /// get next token
     Token *lookToken();                /// look next token
-    bool getOpenParen(bool i_doesThrow, const _TCHAR *i_name); /// argument "("
-    bool getCloseParen(bool i_doesThrow, const _TCHAR *i_name); /// argument ")"
-    bool getComma(bool i_doesThrow, const _TCHAR *i_name); /// argument ","
+    bool getOpenParen(bool i_doesThrow, const char *i_name = nullptr); /// argument "("
+#ifdef _UNICODE
+    bool getOpenParen(bool i_doesThrow, const wchar_t *i_name);
+#endif
+
+    bool getCloseParen(bool i_doesThrow, const char *i_name = nullptr); /// argument ")"
+#ifdef _UNICODE
+    bool getCloseParen(bool i_doesThrow, const wchar_t *i_name);
+#endif
+
+    bool getComma(bool i_doesThrow, const char *i_name = nullptr); /// argument ","
+#ifdef _UNICODE
+    bool getComma(bool i_doesThrow, const wchar_t *i_name);
+#endif
 
     void load_LINE();                /// &lt;LINE&gt;
     void load_DEFINE();                /// &lt;DEFINE&gt;
     void load_IF();                /// &lt;IF&gt;
-    void load_ELSE(bool i_isElseIf, const tstringi &i_token);
+    void load_ELSE(bool i_isElseIf, const std::string &i_token);
     /// &lt;ELSE&gt; &lt;ELSEIF&gt;
-    bool load_ENDIF(const tstringi &i_token);    /// &lt;ENDIF&gt;
+    bool load_ENDIF(const std::string &i_token);    /// &lt;ENDIF&gt;
     void load_INCLUDE();                /// &lt;INCLUDE&gt;
     void load_SCAN_CODES(Key *o_key);        /// &lt;SCAN_CODES&gt;
     void load_DEFINE_KEY();            /// &lt;DEFINE_KEY&gt;
@@ -97,11 +108,8 @@ private:
     void load_ARGUMENT(long *o_arg);        /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(unsigned __int64 *o_arg);    /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(__int64 *o_arg);        /// &lt;ARGUMENT&gt;
-    void load_ARGUMENT(tstringq *o_arg);        /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(std::string *o_arg);    /// &lt;ARGUMENT&gt;
-    void load_ARGUMENT(std::list<tstringq> *o_arg); /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(std::list<std::string> *o_arg); /// &lt;ARGUMENT&gt;
-    void load_ARGUMENT(tregex *o_arg);        /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(Regex *o_arg);        /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(VKey *o_arg);        /// &lt;ARGUMENT_VK&gt;
     void load_ARGUMENT(ToWindowType *o_arg);    /// &lt;ARGUMENT_WINDOW&gt;
@@ -121,7 +129,7 @@ private:
     void load_ARGUMENT(StrExprArg *o_arg);    /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(WindowMonitorFromType *o_arg);    /// &lt;ARGUMENT&gt;
     KeySeq *load_KEY_SEQUENCE(
-        const tstringi &i_name = _T(""), bool i_isInParen = false,
+        const std::string &i_name = "", bool i_isInParen = false,
         Modifier::Type i_mode = Modifier::Type_KEYSEQ); /// &lt;KEY_SEQUENCE&gt;
     void load_KEY_ASSIGN();            /// &lt;KEY_ASSIGN&gt;
     void load_EVENT_ASSIGN();            /// &lt;EVENT_ASSIGN&gt;
@@ -130,27 +138,27 @@ private:
     void load_KEYSEQ_DEFINITION();        /// &lt;KEYSEQ_DEFINITION&gt;
 
     /// load
-    void load(const tstringi &i_filename);
+    void load(const std::string &i_filename);
 
     /// is the filename readable ?
-    bool isReadable(const tstringi &i_filename, int i_debugLevel = 1) const;
+    bool isReadable(const std::string &i_filename, int i_debugLevel = 1) const;
 
     /// get filename
-    bool getFilename(const tstringi &i_name,
-                     tstringi *o_path, int i_debugLevel = 1) const;
+    bool getFilename(const std::string &i_name,
+                     std::string *o_path, int i_debugLevel = 1) const;
 
 public:
     ///
     SettingLoader(SyncObject *i_soLog, tostream *i_log, const ConfigStore *i_config = nullptr);
 
     /// load setting
-    bool load(Setting *o_setting, const tstringi &i_filename = _T(""));
+    bool load(Setting *o_setting, const std::string &i_filename = "");
 
     /// initialize setting
     bool initialize(Setting *o_setting);
 
     /// load setting from data string
-    void loadFromData(const tstring &data);
+    void loadFromData(const std::string &data);
 };
 
 #endif // !_SETTING_LOADER_H

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // setting.h
 
@@ -12,13 +12,21 @@
 #  include "multithread.h"
 #  include "../utils/config_store.h"
 #  include <set>
+#  include <string>
 
 
 /// this class contains all of loaded settings
 class Setting
 {
 public:
-    typedef std::set<tstringi> Symbols;        ///
+    // Case-insensitive comparator for Symbols set
+    struct StringICaseLess {
+        bool operator()(const std::string& a, const std::string& b) const {
+            return strcasecmp_utf8(a.c_str(), b.c_str()) < 0;
+        }
+    };
+
+    typedef std::set<std::string, StringICaseLess> Symbols;        ///
     typedef std::list<Modifier> Modifiers;    ///
 
 public:
@@ -63,12 +71,12 @@ class SettingLoader;
 
 
 /// get home directory path
-typedef std::list<tstringi> HomeDirectories;
+typedef std::list<std::string> HomeDirectories;
 extern void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_path);
 
 /// get mayu filename from config
 extern bool getFilenameFromConfig(const ConfigStore &i_config,
-    tstringi *o_name, tstringi *o_filename, Setting::Symbols *o_symbols);
+    std::string *o_name, std::string *o_filename, Setting::Symbols *o_symbols);
 
 
 #endif // !_SETTING_H

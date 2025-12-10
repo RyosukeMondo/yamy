@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // parser.h
 
@@ -9,6 +9,7 @@
 #  include "misc.h"
 #  include "stringtool.h"
 #  include <vector>
+#  include <string>
 
 
 ///
@@ -29,16 +30,16 @@ private:
     u_char m_type;                ///
     bool m_isValueQuoted;                ///
     int m_numericValue;                ///
-    tstringi m_stringValue;            ///
+    std::string m_stringValue;            ///
     long m_data;                    ///
 
 public:
     ///
     Token(const Token &i_token);
     ///
-    Token(int i_value, const tstringi &i_display);
+    Token(int i_value, const std::string &i_display);
     ///
-    Token(const tstringi &i_value, bool i_isValueQuoted,
+    Token(const std::string &i_value, bool i_isValueQuoted,
           bool i_isRegexp = false);
     ///
     Token(Type i_type);
@@ -81,10 +82,10 @@ public:
     int getNumber() const;
 
     /// get string value
-    tstringi getString() const;
+    std::string getString() const;
 
     /// get regexp value
-    tstringi getRegexp() const;
+    std::string getRegexp() const;
 
     /// get data
     long getData() const {
@@ -96,31 +97,31 @@ public:
     }
 
     /// case insensitive equal
-    bool operator==(const tstringi &i_str) const {
+    bool operator==(const std::string &i_str) const {
         return *this == i_str.c_str();
     }
     ///
-    bool operator==(const _TCHAR *i_str) const;
+    bool operator==(const char *i_str) const;
     ///
-    bool operator!=(const tstringi &i_str) const {
+    bool operator!=(const std::string &i_str) const {
         return *this != i_str.c_str();
     }
     ///
-    bool operator!=(const _TCHAR *i_str) const {
+    bool operator!=(const char *i_str) const {
         return !(*this == i_str);
     }
 
     /** paren equal
         @param i_c '<code>(</code>' or '<code>)</code>' */
-    bool operator==(const _TCHAR i_c) const;
+    bool operator==(const char i_c) const;
     /** paren equal
         @param i_c '<code>(</code>' or '<code>)</code>' */
-    bool operator!=(const _TCHAR i_c) const {
+    bool operator!=(const char i_c) const {
         return !(*this == i_c);
     }
 
     /// add string
-    void add(const tstringi &i_str);
+    void add(const std::string &i_str);
 
     /// stream output
     friend tostream &operator<<(tostream &i_ost, const Token &i_token);
@@ -136,7 +137,7 @@ public:
 
 private:
     ///
-    typedef std::vector<tstringi> Prefixes;
+    typedef std::vector<std::string> Prefixes;
 
 private:
     size_t m_lineNumber;                /// current line number
@@ -144,16 +145,16 @@ private:
                                                     of a token */
 
     size_t m_internalLineNumber;            /// next line number
-    const _TCHAR *m_ptr;                /// read pointer
-    const _TCHAR *m_end;                /// end pointer
+    const char *m_ptr;                /// read pointer
+    const char *m_end;                /// end pointer
 
 private:
     /// get a line
-    bool getLine(tstringi *o_line);
+    bool getLine(std::string *o_line);
 
 public:
     ///
-    Parser(const _TCHAR *i_str, size_t i_length);
+    Parser(const char *i_str, size_t i_length);
 
     /** get a parsed line.  if no more lines exist, returns false */
     bool getLine(Tokens *o_tokens);

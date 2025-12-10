@@ -1,4 +1,4 @@
-﻿// setting.cpp
+// setting.cpp
 
 
 #include "misc.h"
@@ -6,14 +6,24 @@
 #include "stringtool.h"
 #include "windowstool.h"
 #include "setting.h"
+#include <regex>
+#include <string>
+#include <cstdio>
+#include <cstdlib>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 namespace Event
 {
-Key prefixed(_T("prefixed"));
-Key before_key_down(_T("before-key-down"));
-Key after_key_up(_T("after-key-up"));
+Key prefixed("prefixed");
+Key before_key_down("before-key-down");
+Key after_key_up("after-key-up");
 Key *events[] = {
     &prefixed,
     &before_key_down,
@@ -25,19 +35,19 @@ Key *events[] = {
 
 // get mayu filename
 bool getFilenameFromConfig(const ConfigStore &i_config,
-    tstringi *o_name, tstringi *o_filename, Setting::Symbols *o_symbols)
+    std::string *o_name, std::string *o_filename, Setting::Symbols *o_symbols)
 {
     int index;
-    i_config.read(_T(".mayuIndex"), &index, 0);
-    _TCHAR buf[100];
-    _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
+    i_config.read(".mayuIndex", &index, 0);
+    char buf[100];
+    snprintf(buf, sizeof(buf), ".mayu%d", index);
 
-    tstringi entry;
+    std::string entry;
     if (!i_config.read(buf, &entry))
         return false;
 
-    tregex getFilename(_T("^([^;]*);([^;]*);(.*)$"));
-    tsmatch getFilenameResult;
+    Regex getFilename("^([^;]*);([^;]*);(.*)$");
+    std::smatch getFilenameResult;
     if (!std::regex_match(entry, getFilenameResult, getFilename))
         return false;
 
@@ -46,9 +56,9 @@ bool getFilenameFromConfig(const ConfigStore &i_config,
     if (o_filename)
         *o_filename = getFilenameResult.str(2);
     if (o_symbols) {
-        tstringi symbols = getFilenameResult.str(3);
-        tregex symbol(_T("-D([^;]*)(.*)$"));
-        tsmatch symbolResult;
+        std::string symbols = getFilenameResult.str(3);
+        Regex symbol("-D([^;]*)(.*)$");
+        std::smatch symbolResult;
         while (std::regex_search(symbols, symbolResult, symbol)) {
             o_symbols->insert(symbolResult.str(1));
             symbols = symbolResult.str(2);
@@ -61,37 +71,62 @@ bool getFilenameFromConfig(const ConfigStore &i_config,
 // get home directory path
 void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
 {
-    tstringi filename;
+    std::string filename;
 #ifndef USE_INI
     if (i_config && getFilenameFromConfig(*i_config, nullptr, &filename, nullptr) &&
             !filename.empty()) {
-        tregex getPath(_T("^(.*[/\\\\])[^/\\\\]*$"));
-        tsmatch getPathResult;
+        Regex getPath("^(.*[/\\\\])[^/\\\\]*$");
+        std::smatch getPathResult;
         if (std::regex_match(filename, getPathResult, getPath))
             o_pathes->push_back(getPathResult.str(1));
     }
 
-    const _TCHAR *home = _tgetenv(_T("HOME"));
+#ifdef _WIN32
+    auto getenv_u = [](const wchar_t* name) -> std::string {
+        wchar_t* val = _wgetenv(name);
+        return val ? yamy::platform::wstring_to_utf8(val) : std::string();
+    };
+
+    std::string home = getenv_u(L"HOME");
+    if (!home.empty())
+        o_pathes->push_back(home);
+
+    std::string homedrive = getenv_u(L"HOMEDRIVE");
+    std::string homepath = getenv_u(L"HOMEPATH");
+    if (!homedrive.empty() && !homepath.empty())
+        o_pathes->push_back(homedrive + homepath);
+
+    std::string userprofile = getenv_u(L"USERPROFILE");
+    if (!userprofile.empty())
+        o_pathes->push_back(userprofile);
+
+    wchar_t wbuf[GANA_MAX_PATH];
+    DWORD len = GetCurrentDirectoryW(NUMBER_OF(wbuf), wbuf);
+    if (0 < len && len < NUMBER_OF(wbuf))
+        o_pathes->push_back(yamy::platform::wstring_to_utf8(wbuf));
+
+#else // Linux/Unix
+    const char *home = getenv("HOME");
     if (home)
         o_pathes->push_back(home);
 
-    const _TCHAR *homedrive = _tgetenv(_T("HOMEDRIVE"));
-    const _TCHAR *homepath = _tgetenv(_T("HOMEPATH"));
-    if (homedrive && homepath)
-        o_pathes->push_back(tstringi(homedrive) + homepath);
-
-    const _TCHAR *userprofile = _tgetenv(_T("USERPROFILE"));
-    if (userprofile)
-        o_pathes->push_back(userprofile);
-
-    _TCHAR buf[GANA_MAX_PATH];
-    DWORD len = GetCurrentDirectory(NUMBER_OF(buf), buf);
-    if (0 < len && len < NUMBER_OF(buf))
+    char buf[GANA_MAX_PATH];
+    if (getcwd(buf, sizeof(buf)))
         o_pathes->push_back(buf);
-#else //USE_INI
-    _TCHAR buf[GANA_MAX_PATH];
-#endif //USE_INI
+#endif
 
-    if (GetModuleFileName(GetModuleHandle(nullptr), buf, NUMBER_OF(buf)))
-        o_pathes->push_back(pathRemoveFileSpec(buf));
+#endif // !USE_INI
+
+#ifdef _WIN32
+    wchar_t wbuf2[GANA_MAX_PATH];
+    if (GetModuleFileNameW(GetModuleHandle(nullptr), wbuf2, NUMBER_OF(wbuf2)))
+        o_pathes->push_back(pathRemoveFileSpec(yamy::platform::wstring_to_utf8(wbuf2)));
+#else
+    char buf2[GANA_MAX_PATH];
+    ssize_t len = readlink("/proc/self/exe", buf2, sizeof(buf2)-1);
+    if (len != -1) {
+        buf2[len] = '\0';
+        o_pathes->push_back(pathRemoveFileSpec(buf2));
+    }
+#endif
 }
