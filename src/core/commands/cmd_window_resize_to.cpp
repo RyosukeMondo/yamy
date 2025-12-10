@@ -26,7 +26,7 @@ void Command_WindowResizeTo::exec(Engine *i_engine, FunctionParam *i_param) cons
     TargetWindowType twt = m_twt;
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt, &rc, &rcd))
         return;
-    asyncResize(static_cast<HWND>(hwnd), m_width, m_height);
+    asyncResize(hwnd, m_width, m_height);
 }
 
 tostream &Command_WindowResizeTo::outputArgs(tostream &i_ost) const

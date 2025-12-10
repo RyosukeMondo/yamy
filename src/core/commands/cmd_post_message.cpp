@@ -6,9 +6,9 @@ void Command_PostMessage::exec(Engine *i_engine, FunctionParam *i_param) const
 {
     // Logic reconstructed from Engine::funcPostMessage
     ToWindowType i_window = std::get<0>(m_args);
-    UINT i_message = std::get<1>(m_args);
-    WPARAM i_wParam = std::get<2>(m_args);
-    LPARAM i_lParam = std::get<3>(m_args);
+    yamy::platform::MessageId i_message = std::get<1>(m_args);
+    yamy::platform::MessageWParam i_wParam = std::get<2>(m_args);
+    yamy::platform::MessageLParam i_lParam = std::get<3>(m_args);
 
     if (!i_param->m_isPressed)
         return;

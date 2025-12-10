@@ -11,6 +11,7 @@
 #  include <windows.h>
 #  include <string>
 #  include "utf_conversion.h"
+#  include "../../core/platform/types.h"
 
 namespace yamy::windows {
 
@@ -113,16 +114,16 @@ extern void unsetSmallIcon(HWND i_hwnd);
 extern void unsetBigIcon(HWND i_hwnd);
 
 /// get toplevel (non-child) window
-extern HWND getToplevelWindow(HWND i_hwnd, bool *io_isMDI);
+extern yamy::platform::WindowHandle getToplevelWindow(yamy::platform::WindowHandle i_hwnd, bool *io_isMDI);
 
 /// move window asynchronously
-extern void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y);
+extern void asyncMoveWindow(yamy::platform::WindowHandle i_hwnd, int i_x, int i_y);
 
 /// move window asynchronously
-extern void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y, int i_w, int i_h);
+extern void asyncMoveWindow(yamy::platform::WindowHandle i_hwnd, int i_x, int i_y, int i_w, int i_h);
 
 /// resize asynchronously
-extern void asyncResize(HWND i_hwnd, int i_w, int i_h);
+extern void asyncResize(yamy::platform::WindowHandle i_hwnd, int i_w, int i_h);
 
 /// get dll version
 extern DWORD getDllVersion(const std::string &i_dllname);
@@ -133,7 +134,7 @@ inline DWORD getDllVersion(const tstring &i_dllname) {
 #define PACKVERSION(major, minor) MAKELONG(minor, major)
 
 // workaround of SetForegroundWindow
-extern bool setForegroundWindow(HWND i_hwnd);
+extern bool setForegroundWindow(yamy::platform::WindowHandle i_hwnd);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // dialog

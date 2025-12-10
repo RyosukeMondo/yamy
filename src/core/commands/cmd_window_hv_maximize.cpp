@@ -29,7 +29,7 @@ void Command_WindowHVMaximize::exec(Engine *i_engine, FunctionParam *i_param) co
         int monitorIndex = i_engine->getWindowSystem()->getMonitorIndex(hwnd);
         i_engine->getWindowSystem()->getMonitorWorkArea(monitorIndex, &monitorWorkArea);
     }
-    asyncMoveWindow(static_cast<HWND>(hwnd), monitorWorkArea.left, monitorWorkArea.top,
+    asyncMoveWindow(hwnd, monitorWorkArea.left, monitorWorkArea.top,
                     monitorWorkArea.width(), monitorWorkArea.height());
 }
 

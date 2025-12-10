@@ -31,7 +31,7 @@ void Command_WindowMove::exec(Engine *i_engine, FunctionParam *i_param) const
     TargetWindowType twt = m_twt;
     if (!Engine::getSuitableMdiWindow(i_engine->getWindowSystem(), i_param, &hwnd, &twt, &rc, &rcd))
         return;
-    asyncMoveWindow(static_cast<HWND>(hwnd), rc.left + m_dx, rc.top + m_dy);
+    asyncMoveWindow(hwnd, rc.left + m_dx, rc.top + m_dy);
 }
 
 tostream &Command_WindowMove::outputArgs(tostream &i_ost) const
