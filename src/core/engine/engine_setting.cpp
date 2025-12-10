@@ -8,10 +8,14 @@
 #include "errormessage.h"
 #include "../platform/hook_interface.h"
 #include "mayurc.h"
+#ifdef _WIN32
 #include "windowstool.h"
+#endif
 
 #include <iomanip>
+#ifdef _WIN32
 #include <process.h>
+#endif
 #include <string>
 
 

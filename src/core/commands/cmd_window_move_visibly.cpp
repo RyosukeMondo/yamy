@@ -2,6 +2,11 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 
+Command_WindowMoveVisibly::Command_WindowMoveVisibly()
+    : m_twt(TargetWindowType_overlapped)
+{
+}
+
 void Command_WindowMoveVisibly::load(SettingLoader *i_sl)
 {
     const char* tName = Name;

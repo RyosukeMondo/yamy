@@ -8,10 +8,14 @@
 #include "errormessage.h"
 #include "hook.h"
 #include "mayurc.h"
+#ifdef _WIN32
 #include "windowstool.h"
+#endif
 
 #include <iomanip>
+#ifdef _WIN32
 #include <process.h>
+#endif
 
 
 unsigned int Engine::injectInput(const KEYBOARD_INPUT_DATA *i_kid, const void *i_kidRaw)

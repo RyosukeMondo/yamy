@@ -4,7 +4,9 @@
 #include "misc.h"
 #include "mayu.h"
 #include "stringtool.h"
+#ifdef _WIN32
 #include "windowstool.h"
+#endif
 #include "setting.h"
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,13 +87,33 @@ void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
         o_pathes->push_back(userprofile);
 
     char buf[GANA_MAX_PATH];
+#ifdef _WIN32
     uint32_t len = GetCurrentDirectory(NUMBER_OF(buf), buf);
     if (0 < len && len < NUMBER_OF(buf))
         o_pathes->push_back(buf);
+#else
+    // Use POSIX getcwd on Linux
+    if (getcwd(buf, NUMBER_OF(buf)))
+        o_pathes->push_back(buf);
+#endif
 #else //USE_INI
     char buf[GANA_MAX_PATH];
 #endif //USE_INI
 
+#ifdef _WIN32
     if (GetModuleFileName(GetModuleHandle(nullptr), buf, NUMBER_OF(buf)))
         o_pathes->push_back(pathRemoveFileSpec(buf));
+#else
+    // On Linux, use /proc/self/exe to get executable path
+    ssize_t count = readlink("/proc/self/exe", buf, NUMBER_OF(buf) - 1);
+    if (count > 0) {
+        buf[count] = '\0';
+        // Remove filename to get directory
+        char *lastSlash = strrchr(buf, '/');
+        if (lastSlash) {
+            *lastSlash = '\0';
+            o_pathes->push_back(buf);
+        }
+    }
+#endif
 }

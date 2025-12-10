@@ -2,6 +2,12 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 
+Command_WindowHVMaximize::Command_WindowHVMaximize()
+    : m_isHorizontal(BooleanType_false)
+    , m_twt(TargetWindowType_overlapped)
+{
+}
+
 void Command_WindowHVMaximize::load(SettingLoader *i_sl)
 {
     const char* tName = Name;

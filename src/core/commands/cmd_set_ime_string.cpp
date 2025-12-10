@@ -2,6 +2,13 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 
+#ifndef WM_MAYU_MESSAGE_NAME
+#define WM_MAYU_MESSAGE_NAME "YAMY_MAYU_MESSAGE"
+#endif
+#ifndef MayuMessage_funcSetImeString
+#define MayuMessage_funcSetImeString 3
+#endif
+
 void Command_SetImeString::load(SettingLoader *i_sl)
 {
     const char* tName = Name;

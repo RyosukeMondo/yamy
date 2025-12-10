@@ -9,7 +9,9 @@ class Command_WindowIdentify : public Command<Command_WindowIdentify>
 public:
     static constexpr const char *Name = "WindowIdentify";
 
+    virtual void load(SettingLoader *i_sl) override;
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const override;
+    virtual tostream &outputArgs(tostream &i_ost) const override;
 };
 
 #endif // _CMD_WINDOW_IDENTIFY_H

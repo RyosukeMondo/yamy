@@ -3,7 +3,10 @@
 
 
 #include "vkeytable.h"
+#include "vk_constants.h"
+#ifdef _WIN32
 #include <ime.h>
+#endif
 
 
 // Vkey table (terminated by nullptr)
@@ -302,9 +305,9 @@ const VKeyTable g_vkeyTable[] = {
     VK(OEM_CLEAR),    // 0xFE
 
     /*
-     * from Ime.h
+     * from Ime.h - Windows IME keys (Windows-only)
      */
-
+#ifdef _WIN32
 #if !defined(VK_DBE_ALPHANUMERIC)
     VK(DBE_ALPHANUMERIC),            // 0x0f0
     VK(DBE_KATAKANA),            // 0x0f1
@@ -320,6 +323,7 @@ const VKeyTable g_vkeyTable[] = {
     VK(DBE_NOCODEINPUT),            // 0x0fb
     VK(DBE_DETERMINESTRING),        // 0x0fc
     VK(DBE_ENTERDLGCONVERSIONMODE),    // 0x0fd
+#endif
 #endif
 
     { 0, nullptr },

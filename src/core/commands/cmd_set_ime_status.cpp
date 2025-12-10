@@ -2,6 +2,13 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 
+#ifndef WM_MAYU_MESSAGE_NAME
+#define WM_MAYU_MESSAGE_NAME "YAMY_MAYU_MESSAGE"
+#endif
+#ifndef MayuMessage_funcSetImeStatus
+#define MayuMessage_funcSetImeStatus 2
+#endif
+
 Command_SetImeStatus::Command_SetImeStatus()
 {
     m_toggle = ToggleType_toggle;

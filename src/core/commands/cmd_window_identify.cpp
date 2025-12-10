@@ -1,7 +1,12 @@
 #include "cmd_window_identify.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#ifdef _WIN32
 #include "../../platform/windows/hook.h" // For WM_MAYU_MESSAGE_NAME
+#else
+// Define the message name for Linux
+#define WM_MAYU_MESSAGE_NAME "YAMY_MAYU_MESSAGE"
+#endif
 
 void Command_WindowIdentify::load(SettingLoader *i_sl)
 {

@@ -2,6 +2,11 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 
+Command_SetForegroundWindow::Command_SetForegroundWindow()
+    : m_logicalOp(LogicalOperatorType_and)
+{
+}
+
 // Helper to find window
 struct FindWindowData {
     yamy::platform::IWindowSystem* ws;

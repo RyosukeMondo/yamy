@@ -3,21 +3,25 @@
 
 #include "modifier_state.h"
 #include "input_event.h"
+#include "../../utils/misc.h"  // For VK_* constants
 
-// Windows virtual key codes for modifier detection
-// These match the VK_* constants from WinUser.h
+// Additional VK_* constants not in misc.h
 namespace {
-    constexpr uint16_t VK_LSHIFT    = 0xA0;
-    constexpr uint16_t VK_RSHIFT    = 0xA1;
-    constexpr uint16_t VK_LCONTROL  = 0xA2;
-    constexpr uint16_t VK_RCONTROL  = 0xA3;
-    constexpr uint16_t VK_LMENU     = 0xA4;  // Left Alt
-    constexpr uint16_t VK_RMENU     = 0xA5;  // Right Alt
+#ifndef VK_LWIN
     constexpr uint16_t VK_LWIN      = 0x5B;
+#endif
+#ifndef VK_RWIN
     constexpr uint16_t VK_RWIN      = 0x5C;
+#endif
+#ifndef VK_CAPITAL
     constexpr uint16_t VK_CAPITAL   = 0x14;  // Caps Lock
+#endif
+#ifndef VK_NUMLOCK
     constexpr uint16_t VK_NUMLOCK   = 0x90;
+#endif
+#ifndef VK_SCROLL
     constexpr uint16_t VK_SCROLL    = 0x91;  // Scroll Lock
+#endif
 
     // Windows scancodes for modifier keys
     // These are hardware scan codes from keyboard

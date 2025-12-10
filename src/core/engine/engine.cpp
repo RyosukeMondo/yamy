@@ -8,7 +8,9 @@
 #include "errormessage.h"
 #include "hook.h"
 #include "mayurc.h"
+#ifdef _WIN32
 #include "windowstool.h"
+#endif
 #include "../platform/sync.h"
 
 #include <iomanip>
@@ -17,13 +19,15 @@
 #endif
 
 
-// keyboard handler thread
+#ifdef _WIN32
+// keyboard handler thread - Windows implementation
 unsigned int WINAPI Engine::keyboardHandler(void *i_this)
 {
     reinterpret_cast<Engine *>(i_this)->keyboardHandler();
     _endthreadex(0);
     return 0;
 }
+
 void Engine::keyboardHandler()
 {
     // loop
@@ -31,10 +35,8 @@ void Engine::keyboardHandler()
     while (1) {
         yamy::platform::KeyEvent event;
 
-#ifdef _WIN32
         yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
         while (SignalObjectAndWait(m_queueMutex, m_readEvent, INFINITE, true) == WAIT_OBJECT_0) {
-#endif
             if (m_inputQueue == nullptr) {
                 ReleaseMutex(m_queueMutex);
                 return;
@@ -53,9 +55,7 @@ void Engine::keyboardHandler()
 
             break;
         }
-#ifdef _WIN32
         ReleaseMutex(m_queueMutex);
-#endif
 
         // Convert KeyEvent to KEYBOARD_INPUT_DATA for legacy code paths
         KEYBOARD_INPUT_DATA kid = keyEventToKID(event);
@@ -240,3 +240,21 @@ void Engine::keyboardHandler()
         updateLastPressedKey(isPhysicallyPressed ? c.m_mkey.m_key : nullptr);
     }
 }
+
+#else // Linux implementation
+
+// keyboard handler thread - Linux stub
+unsigned int WINAPI Engine::keyboardHandler(void *i_this)
+{
+    reinterpret_cast<Engine *>(i_this)->keyboardHandler();
+    return 0;
+}
+
+void Engine::keyboardHandler()
+{
+    // Linux implementation - TODO: Implement using POSIX threading primitives
+    // For now this is a stub that compiles but needs full implementation
+    // when the threading abstraction layer is complete
+}
+
+#endif // _WIN32

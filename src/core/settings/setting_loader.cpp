@@ -4,7 +4,9 @@
 
 #include "misc.h"
 #include "stringtool.h"
+#ifdef _WIN32
 #include "utf_conversion.h"
+#endif
 
 #include "dlgsetting.h"
 #include "errormessage.h"
@@ -12,15 +14,20 @@
 #include "mayurc.h"
 #include "setting.h"
 #include "setting_loader.h"
+#ifdef _WIN32
 #include "windowstool.h"
+#endif
 #include "vkeytable.h"
 #include "array.h"
 
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
+#include <climits>
 #include <sys/stat.h>
-#include <sys/stat.h>
+#ifndef _WIN32
+#include <cstdio>  // for fopen
+#endif
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // SettingLoader
@@ -617,6 +624,14 @@ void SettingLoader::load_ARGUMENT(long *o_arg)
 
 
 // &lt;ARGUMENT&gt;
+void SettingLoader::load_ARGUMENT(unsigned long *o_arg)
+{
+    *o_arg = getToken()->getNumber();
+}
+
+
+#ifdef _WIN32
+// &lt;ARGUMENT&gt; - Windows only (on Linux, long and __int64 are the same)
 void SettingLoader::load_ARGUMENT(unsigned __int64 *o_arg)
 {
     *o_arg = getToken()->getNumber();
@@ -628,6 +643,7 @@ void SettingLoader::load_ARGUMENT(__int64 *o_arg)
 {
     *o_arg = getToken()->getNumber();
 }
+#endif
 
 
 // &lt;ARGUMENT&gt;
@@ -684,19 +700,13 @@ void SettingLoader::load_ARGUMENT(std::list<std::string> *o_arg)
 }
 
 
-// &lt;ARGUMENT&gt;
-void SettingLoader::load_ARGUMENT(tregex *o_arg)
-{
-    *o_arg = getToken()->getRegexp();
-}
-
-
 // <ARGUMENT>
 void SettingLoader::load_ARGUMENT(Regex *o_arg)
 {
     std::string pattern = getToken()->getRegexp();
     *o_arg = Regex(pattern);
 }
+// Note: tregex is an alias for Regex, so no separate overload needed
 
 
 // &lt;ARGUMENT_VK&gt;
@@ -1243,6 +1253,7 @@ static bool prefixSortPred(const std::string &i_a, const std::string &i_b)
 */
 static bool readFile(std::string *o_data, const std::string &i_filename)
 {
+#ifdef _WIN32
 #ifdef _UNICODE
     std::wstring tFilename = yamy::platform::utf8_to_wstring(i_filename);
 #else
@@ -1268,6 +1279,13 @@ static bool readFile(std::string *o_data, const std::string &i_filename)
 
     // open
     FILE *fp = _tfopen(tFilename.c_str(), "rb");
+#else // Linux
+    const std::string &tFilename = i_filename;
+    struct stat sbuf;
+    if (stat(tFilename.c_str(), &sbuf) < 0 || sbuf.st_size == 0)
+        return false;
+    FILE *fp = fopen(tFilename.c_str(), "rb");
+#endif
     if (!fp)
         return false;
 
@@ -1576,14 +1594,26 @@ add_symbols:
 
         // check relative to current file
         if (!m_currentFilename.empty()) {
+#ifdef _WIN32
             std::string dir = pathRemoveFileSpec(m_currentFilename);
+#else
+            // Linux: extract directory from path
+            std::string dir;
+            size_t pos = m_currentFilename.rfind('/');
+            if (pos != std::string::npos)
+                dir = m_currentFilename.substr(0, pos);
+#endif
             if (!dir.empty())
                 pathes.push_back(dir);
         }
 
         getHomeDirectories(m_config, &pathes);
         for (HomeDirectories::iterator i = pathes.begin(); i != pathes.end(); ++ i) {
+#ifdef _WIN32
             *o_path = to_UTF_8(*i) + "\\" + name;
+#else
+            *o_path = to_UTF_8(*i) + "/" + name;
+#endif
             if (isReadable(*o_path, i_debugLevel))
                 return true;
         }
@@ -1591,9 +1621,14 @@ add_symbols:
         if (!i_name.empty())
             return false;                // called by 'include'
 
+#ifdef _WIN32
         if (!DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_setting),
                        nullptr, (DLGPROC)dlgSetting_dlgProc))
             return false;
+#else
+        // On Linux, no dialog - just return false
+        return false;
+#endif
     }
 }
 

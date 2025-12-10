@@ -1,7 +1,9 @@
 #include "cmd_plugin.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#ifdef _WIN32
 #include <process.h>
+#endif
 
 namespace shu
 {
@@ -138,12 +140,19 @@ void Command_PlugIn::exec(Engine *i_engine, FunctionParam *i_param) const
         return;
     }
     if (m_doesCreateThread) {
+#ifdef _WIN32
         if (_beginthread(shu::plugInThread, 0, plugin) == static_cast<uintptr_t>(-1)) {
             delete plugin;
             Acquire a(&i_engine->m_log);
             i_engine->m_log << std::endl;
             i_engine->m_log << "error: &PlugIn() failed to create thread.";
         }
+#else
+        // On Linux, just run synchronously for now
+        // TODO: Implement using pthread when plugin support is added
+        plugin->exec();
+        delete plugin;
+#endif
         return;
     } else
         plugin->exec();
