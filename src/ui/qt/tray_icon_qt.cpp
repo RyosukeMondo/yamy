@@ -1,4 +1,7 @@
 #include "tray_icon_qt.h"
+#include "dialog_settings_qt.h"
+#include "dialog_log_qt.h"
+#include "dialog_about_qt.h"
 #include <QApplication>
 #include <QMessageBox>
 
@@ -144,35 +147,23 @@ void TrayIconQt::onReload()
 
 void TrayIconQt::onSettings()
 {
-    // Will be implemented in Phase 5 (Dialogs)
-    showNotification(
-        "YAMY",
-        "Settings dialog - Coming in Phase 5",
-        QSystemTrayIcon::Information
-    );
+    DialogSettingsQt* dialog = new DialogSettingsQt();
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
 }
 
 void TrayIconQt::onShowLog()
 {
-    // Will be implemented in Phase 5 (Dialogs)
-    showNotification(
-        "YAMY",
-        "Log viewer - Coming in Phase 5",
-        QSystemTrayIcon::Information
-    );
+    DialogLogQt* dialog = new DialogLogQt();
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
 }
 
 void TrayIconQt::onAbout()
 {
-    // Will be implemented in Phase 5 (Dialogs)
-    QMessageBox::about(
-        nullptr,
-        "About YAMY",
-        "<h3>YAMY - Yet Another Mado tsukai no Yuutsu</h3>"
-        "<p>Version 0.04</p>"
-        "<p>Keyboard remapping utility for Windows and Linux</p>"
-        "<p>Qt GUI for Linux</p>"
-    );
+    DialogAboutQt* dialog = new DialogAboutQt();
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->exec(); // Modal dialog for About
 }
 
 void TrayIconQt::onExit()

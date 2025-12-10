@@ -1,0 +1,115 @@
+#pragma once
+
+#include <QDialog>
+#include <QListWidget>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QString>
+#include <QStringList>
+
+/**
+ * @brief Settings dialog for YAMY configuration
+ *
+ * Allows users to:
+ * - Manage keymap files (add, edit, remove)
+ * - Configure keymap search paths
+ * - Set application preferences
+ */
+class DialogSettingsQt : public QDialog {
+    Q_OBJECT
+
+public:
+    /**
+     * @brief Construct settings dialog
+     * @param parent Parent widget
+     */
+    explicit DialogSettingsQt(QWidget* parent = nullptr);
+
+    /**
+     * @brief Destructor
+     */
+    ~DialogSettingsQt() override;
+
+    /**
+     * @brief Get list of keymap files
+     * @return List of keymap file paths
+     */
+    QStringList getKeymapFiles() const;
+
+    /**
+     * @brief Set list of keymap files
+     * @param files List of keymap file paths
+     */
+    void setKeymapFiles(const QStringList& files);
+
+private slots:
+    /**
+     * @brief Add new keymap file
+     */
+    void onAddKeymap();
+
+    /**
+     * @brief Edit selected keymap file
+     */
+    void onEditKeymap();
+
+    /**
+     * @brief Remove selected keymap file
+     */
+    void onRemoveKeymap();
+
+    /**
+     * @brief Browse for keymap file
+     */
+    void onBrowseKeymap();
+
+    /**
+     * @brief Update button states based on selection
+     */
+    void onKeymapSelectionChanged();
+
+    /**
+     * @brief Save settings
+     */
+    void onSave();
+
+    /**
+     * @brief Cancel and close
+     */
+    void onCancel();
+
+private:
+    /**
+     * @brief Setup UI components
+     */
+    void setupUI();
+
+    /**
+     * @brief Load settings from configuration
+     */
+    void loadSettings();
+
+    /**
+     * @brief Save settings to configuration
+     */
+    void saveSettings();
+
+    // UI Components
+    QListWidget* m_keymapList;
+    QPushButton* m_btnAdd;
+    QPushButton* m_btnEdit;
+    QPushButton* m_btnRemove;
+    QPushButton* m_btnBrowse;
+    QPushButton* m_btnSave;
+    QPushButton* m_btnCancel;
+
+    QLineEdit* m_editKeymapPath;
+    QLabel* m_labelStatus;
+
+    // Data
+    QStringList m_keymapFiles;
+};
