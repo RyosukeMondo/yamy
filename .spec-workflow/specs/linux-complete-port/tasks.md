@@ -251,16 +251,16 @@
   - _Requirements: FR-1.1, FR-1.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Replace direct Win32 calls in Engine - Step 1: Search for GetForegroundWindow, GetWindowText, GetClassName calls with grep, Step 2: Replace with m_windowSystem->getForegroundWindow(), m_windowSystem->getWindowText(), etc, Step 3: Search for SendInput, keybd_event calls, Step 4: Replace with m_inputInjector->injectKeyDown/injectKeyUp, Step 5: Verify all Win32 API calls removed | Restrictions: Maintain exact engine behavior, Ensure key remapping still works correctly, Handle errors from platform interfaces | Success: No direct Win32 calls in Engine, Platform interfaces used throughout, Engine works on both platforms, Key remapping functional | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.31 Add Linux-specific build flags and dependencies
-  - File: CMakeLists.txt
+- [x] 1.1.31 Add Linux-specific build flags and dependencies (already done)
+  - File: CMakeLists.txt (lines 236-290 have Linux config)
   - Add X11, XTest, XRecord library dependencies for Linux
   - Add conditional compilation flags
   - _Leverage: CMakeLists.txt_
   - _Requirements: FR-1.1, FR-1.3, FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with CMake expertise | Task: Add Linux build dependencies - Step 1: Add find_package(X11 REQUIRED), find_package(XTest REQUIRED) for Linux, Step 2: Add target_link_libraries with X11, Xtst, Xrecord for Linux target, Step 3: Add platform-specific source files to build: src/platform/linux/*.cpp, Step 4: Add preprocessor defines for platform detection | Restrictions: Maintain Windows build compatibility, Use modern CMake patterns, Ensure all Linux libraries found correctly | Success: CMake finds all Linux dependencies, Linux build compiles successfully, Both platforms build without issues, Libraries linked correctly | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.32 Add platform-specific source files to build system
-  - File: CMakeLists.txt
+- [x] 1.1.32 Add platform-specific source files to build system (already done)
+  - File: CMakeLists.txt (Linux sources at lines 239-254)
   - Conditionally compile Win32 and Linux platform implementations
   - Organize platform code properly
   - _Leverage: CMakeLists.txt_
