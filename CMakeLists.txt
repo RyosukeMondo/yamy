@@ -132,6 +132,7 @@ set(ENGINE_SOURCES
     src/core/engine/engine_window.cpp
     src/core/engine/engine_setting.cpp
     src/core/engine/engine_log.cpp
+    src/core/logging/logger.cpp
     src/core/window/focus.cpp
     src/core/functions/function.cpp
     src/core/functions/function_creator.cpp
@@ -242,6 +243,7 @@ if(WIN32)
         src
         src/ui
         src/core/engine
+        src/core/logging
         src/core/functions
         src/core/input
         src/core/window
@@ -281,6 +283,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/engine/engine_window.cpp
         src/core/engine/engine_setting.cpp
         src/core/engine/engine_log.cpp
+        src/core/logging/logger.cpp
         src/core/window/focus.cpp
         src/core/functions/function.cpp
         src/core/functions/function_creator.cpp
@@ -429,6 +432,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/ui/qt
         src/core/platform
         src/core/engine
+        src/core/logging
         src/core/settings
         src/core/input
         src/core/window
@@ -603,6 +607,44 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_linux_test COMMAND yamy_linux_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_ui_test (UI Unit Tests)
+        # -----------------------------------------------------------------------------
+        set(UI_TEST_SOURCES
+            tests/ui/dialog_investigate_test.cpp
+            src/ui/qt/dialog_investigate_qt.cpp
+            src/ui/qt/crosshair_widget_qt.cpp
+        )
+
+        add_executable(yamy_ui_test
+            ${UI_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_ui_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/core/input
+            src/core/settings
+            src/utils
+            src/platform/linux
+            src/ui/qt
+        )
+
+        target_link_libraries(yamy_ui_test PRIVATE
+            pthread
+            ${X11_LIBRARIES}
+            Qt5::Core
+            Qt5::Widgets
+            Qt5::Gui
+            Qt5::X11Extras
+        )
+
+        add_test(NAME yamy_ui_test COMMAND yamy_ui_test)
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_keyremap_test (Key Remapping Integration Tests)
         # Tests the full key remapping flow including config loading and keymap resolution
         # This is a full integration test using the complete core module
@@ -633,6 +675,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/engine/engine_window.cpp
             src/core/engine/engine_setting.cpp
             src/core/engine/engine_log.cpp
+            src/core/logging/logger.cpp
             src/utils/stringtool.cpp
             src/utils/compiler_specific_func.cpp
             src/platform/linux/sync_linux.cpp

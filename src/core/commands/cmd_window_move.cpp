@@ -35,7 +35,7 @@ void Command_WindowMove::exec(Engine *i_engine, FunctionParam *i_param) const
     i_engine->getWindowSystem()->moveWindow(hwnd, newRect);
 }
 
-tostream &Command_WindowMove::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowMove::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_dx << ", ";
     i_ost << m_dy << ", ";

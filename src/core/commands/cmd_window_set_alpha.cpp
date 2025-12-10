@@ -53,7 +53,7 @@ void Command_WindowSetAlpha::exec(Engine *i_engine, FunctionParam *i_param) cons
     }
 }
 
-tostream &Command_WindowSetAlpha::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowSetAlpha::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_alpha;
     return i_ost;

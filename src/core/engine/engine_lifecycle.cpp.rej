@@ -1,0 +1,59 @@
+diff a/src/core/engine/engine_lifecycle.cpp b/src/core/engine/engine_lifecycle.cpp	(rejected hunks)
+@@ -14,12 +14,15 @@
+ #include "../platform/message_constants.h"
+ #include "../platform/sync.h"
+ #include "../../utils/metrics.h"
++#include "../platform/ipc_defs.h"
+ 
+ #include <iomanip>
+ #ifdef _WIN32
+ #include <process.h>
+ #endif
+ #include <string>
++#include <chrono>
++#include <thread>
+ 
+ 
+ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem, ConfigStore *i_configStore, yamy::platform::IInputInjector *i_inputInjector, yamy::platform::IInputHook *i_inputHook, yamy::platform::IInputDriver *i_inputDriver)
+@@ -95,6 +101,9 @@ Engine::~Engine() {
+ 
+ // start keyboard handler thread
+ void Engine::start() {
++    setState(yamy::EngineState::Loading);
++    notifyGUI(yamy::MessageType::EngineStarting);
++
+     // Start performance metrics collection with 60-second reporting interval
+     yamy::metrics::PerformanceMetrics::instance().startPeriodicLogging(60);
+ 
+@@ -126,15 +135,31 @@ void Engine::start() {
+ 
+ #ifdef _WIN32
+     CHECK_TRUE( m_threadHandle = reinterpret_cast<yamy::platform::ThreadHandle>(_beginthreadex(nullptr, 0, keyboardHandler, this, 0, &m_threadId)) );
++    m_isPerfThreadRunning = true;
++    CHECK_TRUE( m_perfThreadHandle = reinterpret_cast<yamy::platform::ThreadHandle>(_beginthreadex(nullptr, 0, perfMetricsHandler, this, 0, nullptr)) );
+ #endif
++
++    setState(yamy::EngineState::Running);
++    notifyGUI(yamy::MessageType::EngineStarted);
+ }
+ 
+ 
+ // stop keyboard handler thread
+ void Engine::stop() {
++    notifyGUI(yamy::MessageType::EngineStopping);
++
+     // Stop performance metrics collection
+     yamy::metrics::PerformanceMetrics::instance().stopPeriodicLogging();
+ 
++    m_isPerfThreadRunning = false;
++#ifdef _WIN32
++    if (m_perfThreadHandle) {
++        yamy::platform::waitForObject(m_perfThreadHandle, 2000);
++        CHECK_TRUE( CloseHandle(m_perfThreadHandle) );
++        m_perfThreadHandle = nullptr;
++    }
++#endif
++
+     m_inputHook->uninstall();
+     m_inputDriver->close();
+ 

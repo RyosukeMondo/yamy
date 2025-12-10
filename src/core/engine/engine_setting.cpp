@@ -87,6 +87,8 @@ bool Engine::setSetting(Setting *i_setting) {
 bool Engine::switchConfiguration(const std::string& configPath) {
     namespace fs = std::filesystem;
 
+    notifyGUI(yamy::MessageType::ConfigLoading, configPath);
+
     // Validate config path exists
     if (!fs::exists(configPath) || !fs::is_regular_file(configPath)) {
         Acquire a(&m_log, 0);
@@ -94,6 +96,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
         if (m_configSwitchCallback) {
             m_configSwitchCallback(false, configPath);
         }
+        notifyGUI(yamy::MessageType::ConfigError, "File not found");
         return false;
     }
 
@@ -109,10 +112,12 @@ bool Engine::switchConfiguration(const std::string& configPath) {
         Acquire a(&m_log, 0);
         m_log << "switchConfiguration: parse exception: " << e.what() << std::endl;
         parseSuccess = false;
+        notifyGUI(yamy::MessageType::ConfigError, e.what());
     } catch (...) {
         Acquire a(&m_log, 0);
         m_log << "switchConfiguration: unknown parse exception" << std::endl;
         parseSuccess = false;
+        notifyGUI(yamy::MessageType::ConfigError, "Unknown parsing error");
     }
 
     if (!parseSuccess) {
@@ -123,6 +128,8 @@ bool Engine::switchConfiguration(const std::string& configPath) {
         if (m_configSwitchCallback) {
             m_configSwitchCallback(false, configPath);
         }
+        // Assuming the loader logs the specific error, a generic message is sent.
+        notifyGUI(yamy::MessageType::ConfigError, "Failed to parse config");
         return false;
     }
 
@@ -152,6 +159,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
         if (m_configSwitchCallback) {
             m_configSwitchCallback(false, configPath);
         }
+        notifyGUI(yamy::MessageType::ConfigError, "Failed to apply setting (engine busy)");
         return false;
     }
 
@@ -172,5 +180,6 @@ bool Engine::switchConfiguration(const std::string& configPath) {
         m_configSwitchCallback(true, configPath);
     }
 
+    notifyGUI(yamy::MessageType::ConfigLoaded, configPath);
     return true;
 }

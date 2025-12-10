@@ -6,6 +6,7 @@
 
 #include "engine.h"
 #include "errormessage.h"
+#include "../platform/ipc_channel_factory.h"
 #include "hook.h"
 #include "mayurc.h"
 #ifdef _WIN32
@@ -13,6 +14,7 @@
 #endif
 #include "../platform/message_constants.h"
 #include "../platform/sync.h"
+#include "core/logging/logger.h"
 #include "../../utils/metrics.h"
 
 #include <iomanip>
@@ -20,6 +22,9 @@
 #include <process.h>
 #endif
 #include <string>
+#include <chrono>
+#include <thread>
+#include "../platform/ipc_defs.h"
 
 
 Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem, ConfigStore *i_configStore, yamy::platform::IInputInjector *i_inputInjector, yamy::platform::IInputHook *i_inputHook, yamy::platform::IInputDriver *i_inputDriver)
@@ -38,6 +43,7 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_cts4mayu(nullptr),
         m_isLogMode(false),
         m_isEnabled(true),
+        m_isInvestigateMode(false),
         m_isSynchronizing(false),
         m_eSync(nullptr),
         m_generateKeyboardEventsRecursionGuard(0),
@@ -51,10 +57,20 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_hwndFocus(nullptr),
         m_afShellExecute(nullptr),
         m_variable(0),
-        m_log(i_log) {
+        m_log(i_log),
+        m_perfThreadHandle(nullptr),
+        m_isPerfThreadRunning(false) {
+    m_state = yamy::EngineState::Stopped;
     // Enable receiving WM_COPYDATA from lower integrity processes
     m_windowSystem->changeMessageFilter(yamy::platform::MSG_COPYDATA,
                                        yamy::platform::MSGFLT_ADD);
+    
+    m_ipcChannel = yamy::platform::createIPCChannel("yamy-engine");
+    if (m_ipcChannel) {
+        // In a real implementation, we would connect to a signal from the IPC channel.
+        // For now, we will poll for messages in the main loop.
+        m_ipcChannel->listen();
+    }
 
     for (size_t i = 0; i < NUMBER_OF(m_lastPressedKey); ++ i)
         m_lastPressedKey[i] = nullptr;
@@ -95,6 +111,10 @@ Engine::~Engine() {
 
 // start keyboard handler thread
 void Engine::start() {
+    setState(yamy::EngineState::Loading);
+    notifyGUI(yamy::MessageType::EngineStarting);
+
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Starting engine...");
     // Start performance metrics collection with 60-second reporting interval
     yamy::metrics::PerformanceMetrics::instance().startPeriodicLogging(60);
 
@@ -126,14 +146,31 @@ void Engine::start() {
 
 #ifdef _WIN32
     CHECK_TRUE( m_threadHandle = reinterpret_cast<yamy::platform::ThreadHandle>(_beginthreadex(nullptr, 0, keyboardHandler, this, 0, &m_threadId)) );
+    m_isPerfThreadRunning = true;
+    CHECK_TRUE( m_perfThreadHandle = reinterpret_cast<yamy::platform::ThreadHandle>(_beginthreadex(nullptr, 0, perfMetricsHandler, this, 0, nullptr)) );
 #endif
+
+    setState(yamy::EngineState::Running);
+    notifyGUI(yamy::MessageType::EngineStarted);
 }
 
 
 // stop keyboard handler thread
 void Engine::stop() {
+    notifyGUI(yamy::MessageType::EngineStopping);
+
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Stopping engine...");
     // Stop performance metrics collection
     yamy::metrics::PerformanceMetrics::instance().stopPeriodicLogging();
+
+    m_isPerfThreadRunning = false;
+#ifdef _WIN32
+    if (m_perfThreadHandle) {
+        yamy::platform::waitForObject(m_perfThreadHandle, 2000);
+        CHECK_TRUE( CloseHandle(m_perfThreadHandle) );
+        m_perfThreadHandle = nullptr;
+    }
+#endif
 
     m_inputHook->uninstall();
     m_inputDriver->close();
@@ -157,6 +194,9 @@ void Engine::stop() {
          i != m_attachedThreadIds.end(); i++) {
          PostThreadMessage(*i, WM_NULL, 0, 0);
     }
+
+    setState(yamy::EngineState::Stopped);
+    notifyGUI(yamy::MessageType::EngineStopped);
 }
 
 
@@ -193,6 +233,14 @@ void Engine::updateLastPressedKey(Key *i_key)
 // set current keymap
 void Engine::setCurrentKeymap(const Keymap *i_keymap, bool i_doesAddToHistory)
 {
+    if (m_currentKeymap != i_keymap) {
+        if (i_keymap) {
+            notifyGUI(yamy::MessageType::KeymapSwitched, i_keymap->getName());
+        } else {
+            notifyGUI(yamy::MessageType::KeymapSwitched, "Default");
+        }
+    }
+
     if (i_doesAddToHistory) {
         m_keymapPrefixHistory.push_back(const_cast<Keymap *>(m_currentKeymap));
         if (MAX_KEYMAP_PREFIX_HISTORY < m_keymapPrefixHistory.size())
@@ -227,4 +275,48 @@ KEYBOARD_INPUT_DATA Engine::keyEventToKID(const yamy::platform::KeyEvent &event)
     kid.Reserved = 0;
     kid.ExtraInformation = static_cast<unsigned long>(event.extraInfo);
     return kid;
+}
+
+void Engine::setState(yamy::EngineState i_newState)
+{
+    if (m_state == i_newState)
+        return;
+
+    // TODO: Add logging for state transitions
+    m_state = i_newState;
+}
+
+void Engine::notifyGUI(yamy::MessageType i_type, const std::string &i_data)
+{
+    if (!m_windowSystem || !m_hwndAssocWindow)
+        return;
+
+    yamy::platform::CopyData cd;
+    cd.id = static_cast<uint32_t>(i_type);
+    cd.size = static_cast<uint32_t>(i_data.size());
+    cd.data = i_data.c_str();
+
+    m_windowSystem->sendCopyData(nullptr, m_hwndAssocWindow, cd, yamy::platform::SendMessageFlags::NORMAL, 100, nullptr);
+}
+
+unsigned int WINAPI Engine::perfMetricsHandler(void *i_this)
+{
+    reinterpret_cast<Engine *>(i_this)->perfMetricsHandler();
+    return 0;
+}
+
+void Engine::perfMetricsHandler()
+{
+    while (m_isPerfThreadRunning) {
+        std::this_thread::sleep_for(std::chrono::seconds(60));
+        if (!m_isPerfThreadRunning) break;
+
+        // Send latency report
+        // This is a placeholder for actual latency reporting
+        notifyGUI(yamy::MessageType::LatencyReport, "P95: 1.2ms");
+
+        // Send CPU usage report
+        // This is a placeholder for actual CPU usage reporting
+        notifyGUI(yamy::MessageType::CpuUsageReport, "CPU: 5%");
+    }
 }

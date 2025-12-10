@@ -31,7 +31,7 @@ void Command_WindowMinimize::exec(Engine *i_engine, FunctionParam *i_param) cons
                 isIconic ? SC_RESTORE : SC_MINIMIZE, 0);
 }
 
-tostream &Command_WindowMinimize::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowMinimize::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_twt;
     return i_ost;

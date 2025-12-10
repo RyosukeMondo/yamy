@@ -36,7 +36,7 @@ void Command_WindowMonitor::exec(Engine *i_engine, FunctionParam *i_param) const
     cmd.exec(i_engine, i_param);
 }
 
-tostream &Command_WindowMonitor::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowMonitor::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_monitor << ", ";
     i_ost << m_adjustPos << ", ";

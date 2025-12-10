@@ -12,6 +12,8 @@
 #include "windowstool.h"
 #endif
 #include "../platform/sync.h"
+#include "../platform/ipc.h"
+#include "core/logging/logger.h"
 #include "../../utils/metrics.h"
 
 #include <iomanip>
@@ -34,6 +36,10 @@ void Engine::keyboardHandler()
     // loop
     Key key;
     while (1) {
+        // Handle IPC messages
+        // TODO: This should be a non-blocking check.
+        // checkForIpcMessages();
+
         yamy::platform::KeyEvent event;
 
         yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
@@ -58,6 +64,10 @@ void Engine::keyboardHandler()
         }
         ReleaseMutex(m_queueMutex);
 
+        yamy::logging::Logger::getInstance().log(
+            yamy::logging::LogLevel::Trace, "Engine",
+            "Processing key event: scancode=" + std::to_string(event.scanCode) +
+                ", isKeyDown=" + std::to_string(event.isKeyDown));
         // Start timing key processing
         auto keyProcessingStart = std::chrono::high_resolution_clock::now();
 
@@ -269,3 +279,46 @@ void Engine::keyboardHandler()
 }
 
 #endif // _WIN32
+
+void Engine::handleIpcMessage(const yamy::ipc::Message& message)
+{
+    switch (message.type) {
+        case yamy::ipc::CmdEnableInvestigateMode:
+            m_isInvestigateMode = true;
+            break;
+        case yamy::ipc::CmdDisableInvestigateMode:
+            m_isInvestigateMode = false;
+            break;
+        case yamy::ipc::CmdInvestigateWindow:
+        {
+            if (message.size >= sizeof(yamy::ipc::InvestigateWindowRequest)) {
+                const auto* request = static_cast<const yamy::ipc::InvestigateWindowRequest*>(message.data);
+                
+                std::string className = m_windowSystem->getClassName(request->hwnd);
+                std::string titleName = m_windowSystem->getWindowText(request->hwnd);
+
+                KeymapStatus status = queryKeymapForWindow(request->hwnd, className, titleName);
+
+                yamy::ipc::InvestigateWindowResponse response;
+                strncpy(response.keymapName, status.keymapName.c_str(), sizeof(response.keymapName) - 1);
+                strncpy(response.matchedClassRegex, status.matchedClassRegex.c_str(), sizeof(response.matchedClassRegex) - 1);
+                strncpy(response.matchedTitleRegex, status.matchedTitleRegex.c_str(), sizeof(response.matchedTitleRegex) - 1);
+                strncpy(response.activeModifiers, status.activeModifiers.c_str(), sizeof(response.activeModifiers) - 1);
+                response.isDefault = status.isDefault;
+
+                yamy::ipc::Message responseMessage;
+                responseMessage.type = yamy::ipc::RspInvestigateWindow;
+                responseMessage.data = &response;
+                responseMessage.size = sizeof(response);
+                
+                // This is a simplification. A real implementation would need a way to send
+                // the response back to the correct IPC client. For now, we'll assume a
+                // single client and a simple send method on the engine's IPC channel.
+                // m_ipcChannel->send(responseMessage);
+            }
+            break;
+        }
+        default:
+            break;
+    }
+}

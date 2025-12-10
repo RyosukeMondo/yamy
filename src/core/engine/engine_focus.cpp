@@ -73,6 +73,13 @@ restart:
                     m_hwndFocus = m_currentFocusOfThread->m_hwndFocus;
                     checkShow(m_hwndFocus);
 
+                    // Debounce focus change notifications
+                    auto now = std::chrono::steady_clock::now();
+                    if (std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastFocusChangedTime).count() > 100) {
+                        notifyGUI(yamy::MessageType::FocusChanged, m_currentFocusOfThread->m_titleName);
+                        m_lastFocusChangedTime = now;
+                    }
+
                     Acquire a(&m_log, 1);
                     m_log << "FocusChanged" << std::endl;
                     m_log << "\tHWND:\t"

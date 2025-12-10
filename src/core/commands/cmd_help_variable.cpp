@@ -26,7 +26,7 @@ void Command_HelpVariable::exec(Engine *i_engine, FunctionParam *i_param) const
                 EngineNotify_helpMessage, true);
 }
 
-tostream &Command_HelpVariable::outputArgs(tostream &i_ost) const
+std::ostream &Command_HelpVariable::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_title;
     return i_ost;

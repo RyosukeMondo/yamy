@@ -30,7 +30,7 @@ void Command_WindowClingToTop::exec(Engine *i_engine, FunctionParam *i_param) co
     cmd.exec(i_engine, i_param);
 }
 
-tostream &Command_WindowClingToTop::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowClingToTop::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_twt;
     return i_ost;

@@ -30,7 +30,7 @@ void Command_WindowClingToLeft::exec(Engine *i_engine, FunctionParam *i_param) c
     cmd.exec(i_engine, i_param);
 }
 
-tostream &Command_WindowClingToLeft::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowClingToLeft::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_twt;
     return i_ost;

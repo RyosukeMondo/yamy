@@ -31,7 +31,7 @@ void Command_MouseWheel::exec(Engine *i_engine, FunctionParam *i_param) const
     }
 }
 
-tostream &Command_MouseWheel::outputArgs(tostream &i_ost) const
+std::ostream &Command_MouseWheel::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_delta;
     return i_ost;

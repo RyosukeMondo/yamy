@@ -1,0 +1,10 @@
+           ID                                    Description                                    Repo                Last active                Status         
+ 18040695854694537012    Prompt for Session D (Notification Backend):You are an exp窶ｦ   RyosukeMondo/yamy       14m17s ago              Completed      
+ 9557082149847942856     Prompt for Session B (Investigate Dialog):You are an exper窶ｦ   RyosukeMondo/yamy       35m39s ago              Awaiting User F
+ 15629318865867382704    Prompt for Session C (Log Backend):You are an expert C++ d窶ｦ   RyosukeMondo/yamy       40m14s ago              Completed      
+ 16016798059904698733    Prompt for Session A (Critical Fixes):You are an expert C+窶ｦ   RyosukeMondo/yamy       37s ago                 In Progress    
+ 15096685951658217675    Implement developer tools. flutter- Discovery. currently s窶ｦ   RyosukeMondo/keyrx      1h13m34s ago            Awaiting Plan A
+ 6876473628434503203     Implement developer tools. flutter- Debugger. currently no窶ｦ   RyosukeMondo/keyrx      1h18m56s ago            Awaiting Plan A
+ 5869535109488762018     Implement developer tools.- Simulator currently says Commi窶ｦ   RyosukeMondo/keyrx      1h22m48s ago            Awaiting Plan A
+ 17720775930082152448    I want to stabilize rust api and flutter connectivity incl窶ｦ   RyosukeMondo/keyrx      1h59m16s ago            Awaiting Plan A
+                                                                                                                                                      

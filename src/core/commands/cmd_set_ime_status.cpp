@@ -49,7 +49,7 @@ void Command_SetImeStatus::exec(Engine *i_engine, FunctionParam *i_param) const
     }
 }
 
-tostream &Command_SetImeStatus::outputArgs(tostream &i_ost) const
+std::ostream &Command_SetImeStatus::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_toggle;
     return i_ost;

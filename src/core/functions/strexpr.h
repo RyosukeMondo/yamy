@@ -75,7 +75,7 @@ public:
 
 
 /// stream output
-tostream &operator<<(tostream &i_ost, const StrExprArg &i_data);
+std::ostream &operator<<(std::ostream &i_ost, const StrExprArg &i_data);
 
 
 #endif // !_STREXPR_H

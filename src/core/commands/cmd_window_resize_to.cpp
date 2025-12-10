@@ -36,7 +36,7 @@ void Command_WindowResizeTo::exec(Engine *i_engine, FunctionParam *i_param) cons
     i_engine->getWindowSystem()->moveWindow(hwnd, newRect);
 }
 
-tostream &Command_WindowResizeTo::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowResizeTo::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_width << ", ";
     i_ost << m_height << ", ";

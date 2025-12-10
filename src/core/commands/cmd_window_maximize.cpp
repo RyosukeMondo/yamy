@@ -31,7 +31,7 @@ void Command_WindowMaximize::exec(Engine *i_engine, FunctionParam *i_param) cons
                 isZoomed ? SC_RESTORE : SC_MAXIMIZE, 0);
 }
 
-tostream &Command_WindowMaximize::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowMaximize::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_twt;
     return i_ost;

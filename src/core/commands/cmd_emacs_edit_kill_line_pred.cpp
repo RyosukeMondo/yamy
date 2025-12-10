@@ -31,7 +31,7 @@ void Command_EmacsEditKillLinePred::exec(Engine *i_engine, FunctionParam *i_para
     i_engine->generateKeySeqEvents(i_param->m_c, keySeq, Engine::Part_all);
 }
 
-tostream &Command_EmacsEditKillLinePred::outputArgs(tostream &i_ost) const
+std::ostream &Command_EmacsEditKillLinePred::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_keySeq1 << ", ";
     i_ost << m_keySeq2;

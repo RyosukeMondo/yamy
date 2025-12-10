@@ -158,7 +158,7 @@ void Command_PlugIn::exec(Engine *i_engine, FunctionParam *i_param) const
         plugin->exec();
 }
 
-tostream &Command_PlugIn::outputArgs(tostream &i_ost) const
+std::ostream &Command_PlugIn::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_dllName << ", ";
     i_ost << m_funcName << ", ";

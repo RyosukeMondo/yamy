@@ -99,7 +99,7 @@ public:
     }
 
     // 5. Output
-    virtual tostream &output(tostream &i_ost) const override
+    virtual std::ostream &output(std::ostream &i_ost) const override
     {
         // getName() returns std::string, output directly
         i_ost << "&" << getName();
@@ -123,7 +123,7 @@ public:
 protected:
     // Virtual method for custom output args - derived classes can override
     // For commands that manually load their members (not using template Args)
-    virtual tostream &outputArgs(tostream &i_ost) const
+    virtual std::ostream &outputArgs(std::ostream &i_ost) const
     {
         // Default: delegate to template-based output if Args exist
         if constexpr (sizeof...(Args) > 0) {
@@ -164,14 +164,14 @@ private:
 
     // --- Output Helpers ---
     template <size_t... Is>
-    void outputArgsInternal(tostream &i_ost, std::index_sequence<Is...>) const
+    void outputArgsInternal(std::ostream &i_ost, std::index_sequence<Is...>) const
     {
         int dummy[] = { 0, (outputOneArg<Is>(i_ost, Is < sizeof...(Args) - 1), 0)... };
         (void)dummy;
     }
 
     template <size_t I>
-    void outputOneArg(tostream &i_ost, bool hasMore) const
+    void outputOneArg(std::ostream &i_ost, bool hasMore) const
     {
         i_ost << std::get<I>(m_args);
         if (hasMore) {

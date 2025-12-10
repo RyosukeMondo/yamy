@@ -36,7 +36,7 @@ void Command_WindowHVMaximize::exec(Engine *i_engine, FunctionParam *i_param) co
     i_engine->getWindowSystem()->moveWindow(hwnd, monitorWorkArea);
 }
 
-tostream &Command_WindowHVMaximize::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowHVMaximize::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_twt;
     return i_ost;

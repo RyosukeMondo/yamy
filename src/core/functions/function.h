@@ -28,13 +28,13 @@ public:
     ///
     virtual std::string getName() const = 0;
     ///
-    virtual tostream &output(tostream &i_ost) const = 0;
+    virtual std::ostream &output(std::ostream &i_ost) const = 0;
     ///
     virtual FunctionData *clone() const = 0;
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, const FunctionData *i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, const FunctionData *i_data);
 
 
 // create function
@@ -48,7 +48,7 @@ enum VKey {
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, VKey i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, VKey i_data);
 
 
 ///
@@ -61,7 +61,7 @@ enum ToWindowType {
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, ToWindowType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, ToWindowType i_data);
 
 // get value of ToWindowType
 extern bool getTypeValue(ToWindowType *o_type, const std::string &i_name);
@@ -81,7 +81,7 @@ enum GravityType {
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, GravityType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, GravityType i_data);
 
 /// get value of GravityType
 extern bool getTypeValue(GravityType *o_type, const std::string &i_name);
@@ -90,7 +90,7 @@ extern bool getTypeValue(GravityType *o_type, const std::string &i_name);
 /// enum MouseHookType is defined in hook.h
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, MouseHookType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, MouseHookType i_data);
 
 /// get value of MouseHookType
 extern bool getTypeValue(MouseHookType *o_type, const std::string &i_name);
@@ -104,7 +104,7 @@ enum MayuDialogType {
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, MayuDialogType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, MayuDialogType i_data);
 
 // get value of MayuDialogType
 extern bool getTypeValue(MayuDialogType *o_type, const std::string &i_name);
@@ -132,14 +132,14 @@ enum ToggleType {
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, ToggleType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, ToggleType i_data);
 
 // get value of ShowCommandType
 extern bool getTypeValue(ToggleType *o_type, const std::string &i_name);
 
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, ModifierLockType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, ModifierLockType i_data);
 
 // get value of ModifierLockType
 extern bool getTypeValue(ModifierLockType *o_type, const std::string &i_name);
@@ -162,7 +162,7 @@ enum ShowCommandType {
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, ShowCommandType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, ShowCommandType i_data);
 
 // get value of ShowCommandType
 extern bool getTypeValue(ShowCommandType *o_type, const std::string &i_name);
@@ -175,7 +175,7 @@ enum TargetWindowType {
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, TargetWindowType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, TargetWindowType i_data);
 
 // get value of TargetWindowType
 extern bool getTypeValue(TargetWindowType *o_type, const std::string &i_name);
@@ -188,7 +188,7 @@ enum BooleanType {
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, BooleanType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, BooleanType i_data);
 
 // get value of BooleanType
 extern bool getTypeValue(BooleanType *o_type, const std::string &i_name);
@@ -201,7 +201,7 @@ enum LogicalOperatorType {
 };
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, LogicalOperatorType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, LogicalOperatorType i_data);
 
 // get value of LogicalOperatorType
 extern bool getTypeValue(LogicalOperatorType *o_type, const std::string &i_name);
@@ -214,18 +214,18 @@ enum WindowMonitorFromType {
 };
 
 // stream output
-extern tostream &operator<<(tostream &i_ost, WindowMonitorFromType i_data);
+extern std::ostream &operator<<(std::ostream &i_ost, WindowMonitorFromType i_data);
 
 // get value of WindowMonitorFromType
 extern bool getTypeValue(WindowMonitorFromType *o_type, const std::string &i_name);
 
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost,
-                                const std::list<tstringq> &i_data);
+extern std::ostream &operator<<(std::ostream &i_ost,
+                                const std::list<stringq> &i_data);
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost,
+extern std::ostream &operator<<(std::ostream &i_ost,
                                 const std::list<std::string> &i_data);
 
 #include "strexpr.h"

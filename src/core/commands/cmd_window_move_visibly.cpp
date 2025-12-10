@@ -65,7 +65,7 @@ void Command_WindowMoveVisibly::exec(Engine *i_engine, FunctionParam *i_param) c
     i_engine->getWindowSystem()->moveWindow(hwnd, newRect);
 }
 
-tostream &Command_WindowMoveVisibly::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowMoveVisibly::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_twt;
     return i_ost;

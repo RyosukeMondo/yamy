@@ -15,6 +15,7 @@
 #include "function_data.h"
 #include "../../platform/windows/utf_conversion.h" // For conversion if needed (but prefer std::string)
 #include <cstring>
+#include <ostream>
 
 #ifndef _WIN32
 #include <strings.h> // for strcasecmp
@@ -67,7 +68,7 @@ bool getTypeValue(T *o_type, const std::string &i_name,
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // VKey (Same as before)
-tostream &operator<<(tostream &i_ost, VKey i_data)
+std::ostream &operator<<(std::ostream &i_ost, VKey i_data)
 {
     if (i_data & VKey_extended)
         i_ost << "E-";
@@ -99,12 +100,12 @@ static const TypeTable_ToWindowType g_toWindowTypeTable[] = {
     { ToWindowType_toParentWindow,     "toParentWindow"     },
 };
 
-tostream &operator<<(tostream &i_ost, ToWindowType i_data)
+std::ostream &operator<<(std::ostream &i_ost, ToWindowType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data,
                     g_toWindowTypeTable, NUMBER_OF(g_toWindowTypeTable)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << static_cast<int>(i_data);
     return i_ost;
@@ -136,12 +137,12 @@ static const TypeTable_GravityType g_gravityTypeTable[] = {
     { GravityType_SE, "ES" },
 };
 
-tostream &operator<<(tostream &i_ost, GravityType i_data)
+std::ostream &operator<<(std::ostream &i_ost, GravityType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data,
                     g_gravityTypeTable, NUMBER_OF(g_gravityTypeTable)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(GravityType internal error)";
     return i_ost;
@@ -163,12 +164,12 @@ static const TypeTable_MouseHookType g_mouseHookTypeTable[] = {
     { MouseHookType_WindowMove,  "WindowMove"  },
 };
 
-tostream &operator<<(tostream &i_ost, MouseHookType i_data)
+std::ostream &operator<<(std::ostream &i_ost, MouseHookType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data,
                     g_mouseHookTypeTable, NUMBER_OF(g_mouseHookTypeTable)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(MouseHookType internal error)";
     return i_ost;
@@ -189,12 +190,12 @@ static const TypeTable_MayuDialogType g_mayuDialogTypeTable[] = {
     { MayuDialogType_log,         "log"          },
 };
 
-tostream &operator<<(tostream &i_ost, MayuDialogType i_data)
+std::ostream &operator<<(std::ostream &i_ost, MayuDialogType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data,
                     g_mayuDialogTypeTable, NUMBER_OF(g_mayuDialogTypeTable)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(MayuDialogType internal error)";
     return i_ost;
@@ -220,11 +221,11 @@ static const TypeTable_ToggleType g_toggleType[] = {
     { ToggleType_on,  "pressed"  },
 };
 
-tostream &operator<<(tostream &i_ost, ToggleType i_data)
+std::ostream &operator<<(std::ostream &i_ost, ToggleType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data, g_toggleType, NUMBER_OF(g_toggleType)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(ToggleType internal error)";
     return i_ost;
@@ -253,12 +254,12 @@ static const TypeTable_ModifierLockType g_modifierLockTypeTable[] = {
     { ModifierLockType_Lock9, "lock9" },
 };
 
-tostream &operator<<(tostream &i_ost, ModifierLockType i_data)
+std::ostream &operator<<(std::ostream &i_ost, ModifierLockType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data,
                     g_modifierLockTypeTable, NUMBER_OF(g_modifierLockTypeTable)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(ModifierLockType internal error)";
     return i_ost;
@@ -289,12 +290,12 @@ static const TypeTable_ShowCommandType g_showCommandTypeTable[] = {
     { ShowCommandType_showNormal,      "showNormal"      },
 };
 
-tostream &operator<<(tostream &i_ost, ShowCommandType i_data)
+std::ostream &operator<<(std::ostream &i_ost, ShowCommandType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data,
                     g_showCommandTypeTable, NUMBER_OF(g_showCommandTypeTable)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(ShowCommandType internal error)";
     return i_ost;
@@ -315,12 +316,12 @@ static const TypeTable_TargetWindowType g_targetWindowType[] = {
     { TargetWindowType_mdi,        "mdi"        },
 };
 
-tostream &operator<<(tostream &i_ost, TargetWindowType i_data)
+std::ostream &operator<<(std::ostream &i_ost, TargetWindowType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data,
                     g_targetWindowType, NUMBER_OF(g_targetWindowType)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(TargetWindowType internal error)";
     return i_ost;
@@ -341,11 +342,11 @@ static const TypeTable_BooleanType g_booleanType[] = {
     { BooleanType_true,  "true"  },
 };
 
-tostream &operator<<(tostream &i_ost, BooleanType i_data)
+std::ostream &operator<<(std::ostream &i_ost, BooleanType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data, g_booleanType, NUMBER_OF(g_booleanType)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(BooleanType internal error)";
     return i_ost;
@@ -366,12 +367,12 @@ static const TypeTable_LogicalOperatorType g_logicalOperatorType[] = {
     { LogicalOperatorType_and,  "&&"  },
 };
 
-tostream &operator<<(tostream &i_ost, LogicalOperatorType i_data)
+std::ostream &operator<<(std::ostream &i_ost, LogicalOperatorType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data, g_logicalOperatorType,
                     NUMBER_OF(g_logicalOperatorType)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(LogicalOperatorType internal error)";
     return i_ost;
@@ -392,12 +393,12 @@ static const TypeTable_WindowMonitorFromType g_windowMonitorFromType[] = {
     { WindowMonitorFromType_current, "current" },
 };
 
-tostream &operator<<(tostream &i_ost, WindowMonitorFromType i_data)
+std::ostream &operator<<(std::ostream &i_ost, WindowMonitorFromType i_data)
 {
     std::string name;
     if (getTypeName(&name, i_data, g_windowMonitorFromType,
                     NUMBER_OF(g_windowMonitorFromType)))
-        i_ost << to_tstring(name);
+        i_ost << name;
     else
         i_ost << "(WindowMonitorFromType internal error)";
     return i_ost;
@@ -411,21 +412,21 @@ bool getTypeValue(WindowMonitorFromType *o_type, const std::string &i_name)
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// std::list<tstringq> (Same as before)
-tostream &operator<<(tostream &i_ost, const std::list<tstringq> &i_data)
+// std::list<stringq> (Same as before)
+std::ostream &operator<<(std::ostream &i_ost, const std::list<stringq> &i_data)
 {
-    for (std::list<tstringq>::const_iterator
+    for (std::list<stringq>::const_iterator
             i = i_data.begin(); i != i_data.end(); ++ i) {
         i_ost << *i << ", ";
     }
     return i_ost;
 }
 
-tostream &operator<<(tostream &i_ost, const std::list<std::string> &i_data)
+std::ostream &operator<<(std::ostream &i_ost, const std::list<std::string> &i_data)
 {
     for (std::list<std::string>::const_iterator
             i = i_data.begin(); i != i_data.end(); ++ i) {
-        i_ost << to_tstring(*i) << ", ";
+        i_ost << *i << ", ";
     }
     return i_ost;
 }
@@ -437,7 +438,7 @@ FunctionData::~FunctionData()
 {
 }
 
-tostream &operator<<(tostream &i_ost, const FunctionData *i_data)
+std::ostream &operator<<(std::ostream &i_ost, const FunctionData *i_data)
 {
     return i_data->output(i_ost);
 }

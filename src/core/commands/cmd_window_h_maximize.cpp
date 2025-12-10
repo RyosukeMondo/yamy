@@ -28,7 +28,7 @@ void Command_WindowHMaximize::exec(Engine *i_engine, FunctionParam *i_param) con
     cmd.exec(i_engine, i_param);
 }
 
-tostream &Command_WindowHMaximize::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowHMaximize::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_twt;
     return i_ost;

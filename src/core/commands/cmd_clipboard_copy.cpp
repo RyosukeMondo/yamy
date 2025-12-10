@@ -19,7 +19,7 @@ void Command_ClipboardCopy::exec(Engine *i_engine, FunctionParam *i_param) const
     i_engine->getWindowSystem()->setClipboardText(m_text.eval());
 }
 
-tostream &Command_ClipboardCopy::outputArgs(tostream &i_ost) const
+std::ostream &Command_ClipboardCopy::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_text;
     return i_ost;

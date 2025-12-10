@@ -76,7 +76,7 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
     }
 }
 
-tostream &Command_SetForegroundWindow::outputArgs(tostream &i_ost) const
+std::ostream &Command_SetForegroundWindow::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_className << ", ";
     i_ost << m_titleName << ", ";

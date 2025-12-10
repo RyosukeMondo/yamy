@@ -102,7 +102,7 @@ void Command_WindowMonitorTo::exec(Engine *i_engine, FunctionParam *i_param) con
     }
 }
 
-tostream &Command_WindowMonitorTo::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowMonitorTo::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_fromType << ", ";
     i_ost << m_monitor << ", ";

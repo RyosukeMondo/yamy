@@ -28,7 +28,7 @@ void Command_WindowRaise::exec(Engine *i_engine, FunctionParam *i_param) const
     i_engine->getWindowSystem()->setWindowZOrder(hwnd, yamy::platform::ZOrder::Top);
 }
 
-tostream &Command_WindowRaise::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowRaise::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_twt;
     return i_ost;

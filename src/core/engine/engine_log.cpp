@@ -17,6 +17,7 @@
 #include <process.h>
 #endif
 #include <string>
+#include <sstream>
 
 
 // output to m_log
@@ -43,6 +44,23 @@ void Engine::outputToLog(const Key *i_key, const ModifiedKey &i_mkey,
     }
 
     m_log << "  " << i_mkey << std::endl;
+
+    if (m_isInvestigateMode && m_ipcChannel && m_ipcChannel->isConnected()) {
+        std::stringstream ss;
+        ss << i_mkey;
+        std::string logLine = ss.str();
+
+        yamy::ipc::KeyEventNotification notification;
+        strncpy(notification.keyEvent, logLine.c_str(), sizeof(notification.keyEvent) - 1);
+        notification.keyEvent[sizeof(notification.keyEvent) - 1] = '\0';
+
+        yamy::ipc::Message message;
+        message.type = yamy::ipc::NtfKeyEvent;
+        message.data = &notification;
+        message.size = sizeof(notification);
+
+        m_ipcChannel->send(message);
+    }
 }
 
 

@@ -35,11 +35,11 @@ public:
     /// create clone
     virtual Action *clone() const = 0;
     /// stream output
-    virtual tostream &output(tostream &i_ost) const = 0;
+    virtual std::ostream &output(std::ostream &i_ost) const = 0;
 };
 
 ///
-tostream &operator<<(tostream &i_ost, const Action &i_action);
+std::ostream &operator<<(std::ostream &i_ost, const Action &i_action);
 
 ///
 class ActionKey : public Action
@@ -59,7 +59,7 @@ public:
     /// create clone
     virtual Action *clone() const;
     /// stream output
-    virtual tostream &output(tostream &i_ost) const;
+    virtual std::ostream &output(std::ostream &i_ost) const;
 };
 
 
@@ -81,7 +81,7 @@ public:
     /// create clone
     virtual Action *clone() const;
     /// stream output
-    virtual tostream &output(tostream &i_ost) const;
+    virtual std::ostream &output(std::ostream &i_ost) const;
 };
 
 
@@ -106,7 +106,7 @@ public:
     /// create clone
     virtual Action *clone() const;
     /// stream output
-    virtual tostream &output(tostream &i_ost) const;
+    virtual std::ostream &output(std::ostream &i_ost) const;
 };
 
 
@@ -156,7 +156,7 @@ public:
     }
 
     /// stream output
-    friend tostream &operator<<(tostream &i_ost, const KeySeq &i_ks);
+    friend std::ostream &operator<<(std::ostream &i_ost, const KeySeq &i_ks);
 
     ///
     bool isCorrectMode(Modifier::Type i_mode) {
@@ -342,7 +342,7 @@ public:
     }
 
     /// describe
-    void describe(tostream &i_ost, DescribeParam *i_dp) const;
+    void describe(std::ostream &i_ost, DescribeParam *i_dp) const;
 
     /// set default keySeq and parent keymap if default keySeq has not been set
     bool setIfNotYet(KeySeq *i_keySeq, Keymap *i_parentKeymap);
@@ -350,7 +350,7 @@ public:
 
 
 /// stream output
-extern tostream &operator<<(tostream &i_ost, const Keymap *i_keymap);
+extern std::ostream &operator<<(std::ostream &i_ost, const Keymap *i_keymap);
 
 
 ///

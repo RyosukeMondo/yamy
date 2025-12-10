@@ -35,7 +35,7 @@ void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) cons
     }
 }
 
-tostream &Command_WindowIdentify::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowIdentify::outputArgs(std::ostream &i_ost) const
 {
     return i_ost;
 }

@@ -36,7 +36,7 @@ void Command_HelpMessage::exec(Engine *i_engine, FunctionParam *i_param) const
                 EngineNotify_helpMessage, doesShow);
 }
 
-tostream &Command_HelpMessage::outputArgs(tostream &i_ost) const
+std::ostream &Command_HelpMessage::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_title << ", ";
     i_ost << m_message;

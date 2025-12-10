@@ -22,7 +22,7 @@ void Command_MayuDialog::exec(Engine *i_engine, FunctionParam *i_param) const
                 static_cast<intptr_t>(m_showCommand));
 }
 
-tostream &Command_MayuDialog::outputArgs(tostream &i_ost) const
+std::ostream &Command_MayuDialog::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_dialog << ", ";
     i_ost << m_showCommand;

@@ -35,7 +35,7 @@ void Command_ClipboardChangeCase::exec(Engine *i_engine, FunctionParam *i_param)
     i_engine->getWindowSystem()->setClipboardText(text);
 }
 
-tostream &Command_ClipboardChangeCase::outputArgs(tostream &i_ost) const
+std::ostream &Command_ClipboardChangeCase::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_doesConvertToUpperCase;
     return i_ost;

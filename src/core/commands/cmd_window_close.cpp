@@ -28,7 +28,7 @@ void Command_WindowClose::exec(Engine *i_engine, FunctionParam *i_param) const
     i_engine->getWindowSystem()->postMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
 }
 
-tostream &Command_WindowClose::outputArgs(tostream &i_ost) const
+std::ostream &Command_WindowClose::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_twt;
     return i_ost;

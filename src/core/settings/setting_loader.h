@@ -9,6 +9,7 @@
 #  include "setting.h"
 #  include "parser.h"
 #  include "../utils/config_store.h"
+#  include <iostream>
 
 ///
 ///
@@ -43,7 +44,7 @@ private:
     bool m_isThereAnyError;            /// is there any error ?
 
     SyncObject *m_soLog;                /// guard log output stream
-    tostream *m_log;                /// log output stream
+    std::ostream *m_log;                /// log output stream
 
     std::string m_currentFilename;            /// current filename
 
@@ -101,9 +102,9 @@ private:
     void load_ARGUMENT(unsigned __int64 *o_arg);    /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(__int64 *o_arg);        /// &lt;ARGUMENT&gt;
 #endif
-    void load_ARGUMENT(tstringq *o_arg);        /// &lt;ARGUMENT&gt;
+    void load_ARGUMENT(stringq *o_arg);        /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(std::string *o_arg);    /// &lt;ARGUMENT&gt;
-    void load_ARGUMENT(std::list<tstringq> *o_arg); /// &lt;ARGUMENT&gt;
+    void load_ARGUMENT(std::list<stringq> *o_arg); /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(std::list<std::string> *o_arg); /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(Regex *o_arg);        /// &lt;ARGUMENT&gt;
     // Note: tregex is an alias for Regex, so no separate overload needed
@@ -145,7 +146,7 @@ private:
 
 public:
     ///
-    SettingLoader(SyncObject *i_soLog, tostream *i_log, const ConfigStore *i_config = nullptr);
+    SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config = nullptr);
 
     /// load setting
     bool load(Setting *o_setting, const std::string &i_filename = "");

@@ -15,6 +15,9 @@
 #  include "../platform/input_driver_interface.h"
 #  include "../utils/config_store.h"
 #  include "../settings/config_manager.h"
+#  include "../ipc_messages.h"
+#  include "engine_state.h"
+#  include "../platform/ipc_defs.h"
 #  include <set>
 #  include <queue>
 #  include "../functions/function.h"
@@ -172,6 +175,7 @@ private:
     yamy::platform::IInputInjector *m_inputInjector;            /// input injector abstraction
     yamy::platform::IInputHook *m_inputHook;                /// input hook abstraction
     yamy::platform::IInputDriver *m_inputDriver;            /// input driver abstraction
+    std::unique_ptr<yamy::platform::IIPCChannel> m_ipcChannel; /// IPC channel for UI communication
 
     // engine thread state
     yamy::platform::ThreadHandle m_threadHandle;
@@ -188,10 +192,12 @@ private:
     yamy::platform::ModuleHandle m_cts4mayu;                /// DLL module for ThumbSense
     bool volatile m_isLogMode;            /// is logging mode ?
     bool volatile m_isEnabled;            /// is enabled  ?
+    bool volatile m_isInvestigateMode;    /// is investigate mode enabled?
     bool volatile m_isSynchronizing;        /// is synchronizing ?
     yamy::platform::EventHandle m_eSync;                /// event for synchronization
     int m_generateKeyboardEventsRecursionGuard;    /** guard against too many
                                                     recursion */
+    yamy::EngineState m_state;              /// current engine state
 
     // current key state
     Modifier m_currentLock;            /// current lock key's state
@@ -240,7 +246,11 @@ private:
     std::string m_helpMessage;            /// for &amp;HelpMessage
     std::string m_helpTitle;                /// for &amp;HelpMessage
     int m_variable;                /// for &amp;Variable,
+    std::chrono::steady_clock::time_point m_lastFocusChangedTime; /// for debouncing focus change notifications
     ///  &amp;Repeat
+    
+    yamy::platform::ThreadHandle m_perfThreadHandle; /// thread for performance metrics
+    bool volatile m_isPerfThreadRunning;     /// flag to control performance thread
 
 public:
     tomsgstream &m_log;                /** log stream (output to log
@@ -272,6 +282,11 @@ private:
     ///
     void keyboardHandler();
 
+    /// performance metrics thread
+    static unsigned int WINAPI perfMetricsHandler(void *i_this);
+    ///
+    void perfMetricsHandler();
+
     /// check focus window
     void checkFocusWindow();
     /// is modifier pressed ?
@@ -301,6 +316,12 @@ private:
     void generateKeyboardEvents(const Current &i_c);
     ///
     void beginGeneratingKeyboardEvents(const Current &i_c, bool i_isModifier);
+
+    /// Set the current engine state and log the transition
+    void setState(yamy::EngineState i_newState);
+
+    /// Send a notification message to the GUI via the IPC channel
+    void notifyGUI(yamy::MessageType i_type, const std::string &i_data = "");
 
     /// pop all pressed key on win32
     void keyboardResetOnWin32();
@@ -455,6 +476,14 @@ public:
     const std::string &getCurrentWindowTitleName() const {
         return m_currentFocusOfThread->m_titleName;
     }
+
+    /// Get the current engine state
+    yamy::EngineState getState() const {
+        return m_state;
+    }
+
+    /// Handle incoming IPC messages
+    void handleIpcMessage(const yamy::ipc::Message& message);
 
     // StrExprSystem overrides
     std::string getClipboardText() const override;

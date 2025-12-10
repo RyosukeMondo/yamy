@@ -25,7 +25,7 @@ void Command_MouseMove::exec(Engine *i_engine, FunctionParam *i_param) const
     i_engine->getWindowSystem()->setCursorPos(newPt);
 }
 
-tostream &Command_MouseMove::outputArgs(tostream &i_ost) const
+std::ostream &Command_MouseMove::outputArgs(std::ostream &i_ost) const
 {
     i_ost << m_dx << ", ";
     i_ost << m_dy;

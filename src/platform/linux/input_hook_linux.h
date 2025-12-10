@@ -5,8 +5,10 @@
 #include "../../core/platform/input_hook_interface.h"
 #include "device_manager_linux.h"
 #include <vector>
-#include <pthread.h>
+#include <thread>
+#include <mutex>
 #include <atomic>
+#include <memory>
 
 namespace yamy::platform {
 
@@ -23,13 +25,12 @@ public:
     const std::string& getDevNode() const { return m_devNode; }
 
 private:
-    static void* threadFunc(void* arg);
     void run();
 
     int m_fd;
     std::string m_devNode;
     KeyCallback m_callback;
-    pthread_t m_thread;
+    std::thread m_thread;
     std::atomic<bool> m_running;
     std::atomic<bool> m_stopRequested;
 };
@@ -53,7 +54,8 @@ private:
 
     DeviceManager m_deviceManager;
     std::vector<OpenDevice> m_openDevices;
-    std::vector<EventReaderThread*> m_readerThreads;
+    std::vector<std::unique_ptr<EventReaderThread>> m_readerThreads;
+    std::mutex m_readerThreadsMutex;
 };
 
 } // namespace yamy::platform
