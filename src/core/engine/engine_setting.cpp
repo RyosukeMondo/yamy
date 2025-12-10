@@ -57,7 +57,7 @@ bool Engine::setSetting(Setting *i_setting) {
                 i != m_focusOfThreads.end(); i ++) {
             FocusOfThread *fot = &(*i).second;
             m_setting->m_keymaps.searchWindow(&fot->m_keymaps,
-                                              to_UTF_8(fot->m_className), to_UTF_8(fot->m_titleName));
+                                              fot->m_className, fot->m_titleName);
         }
     }
     m_setting->m_keymaps.searchWindow(&m_globalFocus.m_keymaps, "", "");

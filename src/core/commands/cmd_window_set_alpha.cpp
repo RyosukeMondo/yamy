@@ -5,8 +5,7 @@
 
 void Command_WindowSetAlpha::load(SettingLoader *i_sl)
 {
-    tstring tsName = to_tstring(Name);
-    const _TCHAR* tName = tsName.c_str();
+    const char* tName = Name;
 
     i_sl->getOpenParen(true, tName); // throw ...
     i_sl->load_ARGUMENT(&m_alpha);

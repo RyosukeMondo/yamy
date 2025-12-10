@@ -220,12 +220,14 @@ inline std::string to_string(const tstring &i_str) {
 // convert wstring to UTF-8
 std::string to_UTF_8(const std::wstring &i_str);
 
-#ifndef _UNICODE
-// convert string (MBCS) to UTF-8
+// convert string (MBCS/UTF-8) to UTF-8
 inline std::string to_UTF_8(const std::string &i_str) {
+#ifdef _UNICODE
+    return i_str; // Assume already UTF-8
+#else
     return to_UTF_8(to_wstring(i_str));
-}
 #endif
+}
 
 /// internal string type (UTF-8)
 typedef std::string ustring;

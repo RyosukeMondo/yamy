@@ -3,15 +3,16 @@
 #define _CMD_SET_FOREGROUND_WINDOW_H
 
 #include "command_base.h"
+#include "../functions/strexpr.h"
 
 class Command_SetForegroundWindow : public Command<Command_SetForegroundWindow>
 {
 public:
     static constexpr const char *Name = "SetForegroundWindow";
 
-    tregex m_windowClassName;
+    StrExprArg m_className;
+    StrExprArg m_titleName;
     LogicalOperatorType m_logicalOp;
-    tregex m_windowTitleName;
 
     Command_SetForegroundWindow();
     virtual void load(SettingLoader *i_sl) override;
