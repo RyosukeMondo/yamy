@@ -23,6 +23,7 @@ set(QT_GUI_SOURCES
     dialog_settings_qt.cpp
     dialog_log_qt.cpp
     dialog_about_qt.cpp
+    dialog_investigate_qt.cpp
     config_manager_dialog.cpp
     config_metadata_dialog.cpp
     crosshair_widget_qt.cpp
@@ -36,6 +37,7 @@ set(QT_GUI_HEADERS
     dialog_settings_qt.h
     dialog_log_qt.h
     dialog_about_qt.h
+    dialog_investigate_qt.h
     config_manager_dialog.h
     config_metadata_dialog.h
     crosshair_widget_qt.h

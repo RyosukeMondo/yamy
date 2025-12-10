@@ -2,6 +2,7 @@
 #include "dialog_settings_qt.h"
 #include "dialog_log_qt.h"
 #include "dialog_about_qt.h"
+#include "dialog_investigate_qt.h"
 #include "config_manager_dialog.h"
 #include "global_hotkey.h"
 #include "../../core/settings/config_manager.h"
@@ -34,6 +35,7 @@ TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     , m_actionReload(nullptr)
     , m_actionSettings(nullptr)
     , m_actionLog(nullptr)
+    , m_actionInvestigate(nullptr)
     , m_actionAbout(nullptr)
     , m_actionExit(nullptr)
     , m_enabled(false)
@@ -185,6 +187,13 @@ void TrayIconQt::onShowLog()
     dialog->show();
 }
 
+void TrayIconQt::onInvestigate()
+{
+    DialogInvestigateQt* dialog = new DialogInvestigateQt();
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
+}
+
 void TrayIconQt::onAbout()
 {
     DialogAboutQt* dialog = new DialogAboutQt();
@@ -234,6 +243,10 @@ void TrayIconQt::createMenu()
     // Log
     m_actionLog = m_menu->addAction("Log...");
     connect(m_actionLog, &QAction::triggered, this, &TrayIconQt::onShowLog);
+
+    // Investigate
+    m_actionInvestigate = m_menu->addAction("Investigate...");
+    connect(m_actionInvestigate, &QAction::triggered, this, &TrayIconQt::onInvestigate);
 
     // About
     m_actionAbout = m_menu->addAction("About...");

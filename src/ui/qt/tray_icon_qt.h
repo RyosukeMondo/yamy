@@ -96,6 +96,11 @@ private slots:
     void onShowLog();
 
     /**
+     * @brief Show investigate dialog
+     */
+    void onInvestigate();
+
+    /**
      * @brief Show about dialog
      */
     void onAbout();
@@ -166,6 +171,7 @@ private:
     QAction* m_actionReload;
     QAction* m_actionSettings;
     QAction* m_actionLog;
+    QAction* m_actionInvestigate;
     QAction* m_actionAbout;
     QAction* m_actionExit;
 
