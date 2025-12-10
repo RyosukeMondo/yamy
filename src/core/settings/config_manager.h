@@ -82,6 +82,36 @@ public:
     /// Load state from persistent storage
     void load();
 
+    // ==================== Backup & Restore ====================
+
+    /// Create a backup of a configuration file
+    /// @param configPath Path to the configuration file to backup
+    /// @return Path to the created backup file, or empty string on failure
+    std::string createBackup(const std::string& configPath);
+
+    /// List all backups for a configuration file
+    /// @param configPath Path to the configuration file
+    /// @return Vector of backup file paths, sorted newest first
+    std::vector<std::string> listBackups(const std::string& configPath) const;
+
+    /// Restore a configuration from a backup
+    /// @param backupPath Path to the backup file
+    /// @return true if restore succeeded
+    bool restoreBackup(const std::string& backupPath);
+
+    /// Delete a backup file
+    /// @param backupPath Path to the backup file to delete
+    /// @return true if deletion succeeded
+    bool deleteBackup(const std::string& backupPath);
+
+    /// Get the backup directory for a config file
+    /// @param configPath Path to the configuration file
+    /// @return Path to the backup directory
+    static std::string getBackupDir(const std::string& configPath);
+
+    /// Maximum number of backups to keep per configuration
+    static constexpr int MAX_BACKUPS_PER_CONFIG = 10;
+
 private:
     ConfigManager();
     ~ConfigManager();
@@ -98,6 +128,15 @@ private:
 
     /// Find index of path in list (-1 if not found)
     int findConfig(const std::string& path) const;
+
+    /// Extract original config path from a backup path
+    static std::string extractOriginalPath(const std::string& backupPath);
+
+    /// Enforce backup limit by deleting oldest backups
+    void enforceBackupLimit(const std::string& configPath);
+
+    /// Generate timestamp string for backup filenames
+    static std::string generateTimestamp();
 
     mutable CriticalSection m_cs;       /// Thread synchronization
     ConfigStore* m_configStore;         /// Persistent storage (not owned)

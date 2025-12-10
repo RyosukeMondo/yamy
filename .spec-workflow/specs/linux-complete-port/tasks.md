@@ -535,7 +535,7 @@
   - _Requirements: FR-2.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Implement config file watcher - Create ConfigWatcher class, Use QFileSystemWatcher on Qt platforms or inotify on Linux, Watch active config file path, On file modified signal call Engine::switchConfiguration, Add debouncing to avoid multiple reloads, Methods: start, stop, setConfigPath | Restrictions: Handle file deletion gracefully, Debounce rapid changes (300ms), Don't reload if parsing fails, Stop watching when disabled | Success: Watcher detects file changes, Auto-reload works, Debouncing prevents excessive reloads, File deletion handled, Can be disabled | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.1.5 Add config backup and restore
+- [x] 2.1.5 Add config backup and restore
   - File: src/core/settings/config_manager.cpp
   - Backup config before modifications
   - Allow restore from backup

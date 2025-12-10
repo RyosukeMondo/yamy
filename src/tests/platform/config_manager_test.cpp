@@ -258,3 +258,179 @@ TEST_F(ConfigManagerTest, ThreadSafeAccess) {
         t.join();
     }
 }
+
+// ==================== Backup & Restore Tests ====================
+
+TEST_F(ConfigManagerTest, CreateBackupSucceeds) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    std::string backupPath = ConfigManager::instance().createBackup(configPath);
+    EXPECT_FALSE(backupPath.empty());
+    EXPECT_TRUE(fs::exists(backupPath));
+
+    // Verify backup is in .backups subdirectory
+    fs::path backup(backupPath);
+    EXPECT_EQ(backup.parent_path().filename(), ".backups");
+
+    // Verify backup filename pattern
+    std::string filename = backup.filename().string();
+    EXPECT_TRUE(filename.find("test_") == 0);
+    EXPECT_TRUE(filename.find(".mayu.bak") != std::string::npos);
+}
+
+TEST_F(ConfigManagerTest, CreateBackupNonexistentFileFails) {
+    std::string backupPath = ConfigManager::instance().createBackup("/nonexistent/file.mayu");
+    EXPECT_TRUE(backupPath.empty());
+}
+
+TEST_F(ConfigManagerTest, ListBackupsReturnsCorrectList) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    // Create multiple backups with small delay to ensure different timestamps
+    std::vector<std::string> createdBackups;
+    for (int i = 0; i < 3; ++i) {
+        std::string backupPath = ConfigManager::instance().createBackup(configPath);
+        EXPECT_FALSE(backupPath.empty());
+        createdBackups.push_back(backupPath);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    auto backups = ConfigManager::instance().listBackups(configPath);
+    EXPECT_GE(backups.size(), 3u);
+
+    // Verify all created backups are in the list
+    for (const auto& created : createdBackups) {
+        bool found = false;
+        for (const auto& backup : backups) {
+            if (backup == created) {
+                found = true;
+                break;
+            }
+        }
+        EXPECT_TRUE(found) << "Backup not found: " << created;
+    }
+}
+
+TEST_F(ConfigManagerTest, ListBackupsReturnsEmptyForNoBackups) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    auto backups = ConfigManager::instance().listBackups(configPath);
+    EXPECT_TRUE(backups.empty());
+}
+
+TEST_F(ConfigManagerTest, RestoreBackupSucceeds) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    // Read original content
+    std::ifstream ifs(configPath);
+    std::string originalContent((std::istreambuf_iterator<char>(ifs)),
+                                 std::istreambuf_iterator<char>());
+    ifs.close();
+
+    // Create backup
+    std::string backupPath = ConfigManager::instance().createBackup(configPath);
+    ASSERT_FALSE(backupPath.empty());
+
+    // Modify the original file
+    {
+        std::ofstream ofs(configPath);
+        ofs << "# Modified content" << std::endl;
+    }
+
+    // Restore from backup
+    bool restored = ConfigManager::instance().restoreBackup(backupPath);
+    EXPECT_TRUE(restored);
+
+    // Verify content is restored
+    std::ifstream ifs2(configPath);
+    std::string restoredContent((std::istreambuf_iterator<char>(ifs2)),
+                                 std::istreambuf_iterator<char>());
+    ifs2.close();
+
+    EXPECT_EQ(restoredContent, originalContent);
+}
+
+TEST_F(ConfigManagerTest, RestoreBackupCreatesPreRestoreBackup) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    // Create initial backup
+    std::string backupPath = ConfigManager::instance().createBackup(configPath);
+    ASSERT_FALSE(backupPath.empty());
+
+    // Modify the file
+    {
+        std::ofstream ofs(configPath);
+        ofs << "# Modified content before restore" << std::endl;
+    }
+
+    // Get backup count before restore
+    auto backupsBefore = ConfigManager::instance().listBackups(configPath);
+    size_t countBefore = backupsBefore.size();
+
+    // Restore from backup
+    bool restored = ConfigManager::instance().restoreBackup(backupPath);
+    EXPECT_TRUE(restored);
+
+    // Verify a new backup was created (pre-restore backup)
+    auto backupsAfter = ConfigManager::instance().listBackups(configPath);
+    EXPECT_GE(backupsAfter.size(), countBefore);
+}
+
+TEST_F(ConfigManagerTest, RestoreNonexistentBackupFails) {
+    bool restored = ConfigManager::instance().restoreBackup("/nonexistent/backup.mayu.bak");
+    EXPECT_FALSE(restored);
+}
+
+TEST_F(ConfigManagerTest, DeleteBackupSucceeds) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    std::string backupPath = ConfigManager::instance().createBackup(configPath);
+    ASSERT_FALSE(backupPath.empty());
+    ASSERT_TRUE(fs::exists(backupPath));
+
+    bool deleted = ConfigManager::instance().deleteBackup(backupPath);
+    EXPECT_TRUE(deleted);
+    EXPECT_FALSE(fs::exists(backupPath));
+}
+
+TEST_F(ConfigManagerTest, DeleteNonBackupFileFails) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    // Try to delete a non-backup file (should fail)
+    bool deleted = ConfigManager::instance().deleteBackup(configPath);
+    EXPECT_FALSE(deleted);
+    EXPECT_TRUE(fs::exists(configPath)); // File should still exist
+}
+
+TEST_F(ConfigManagerTest, BackupLimitEnforced) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    // Create more backups than the limit (limit is 10)
+    for (int i = 0; i < 15; ++i) {
+        ConfigManager::instance().createBackup(configPath);
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+
+    // Verify we have at most MAX_BACKUPS_PER_CONFIG backups
+    auto backups = ConfigManager::instance().listBackups(configPath);
+    EXPECT_LE(backups.size(), static_cast<size_t>(ConfigManager::MAX_BACKUPS_PER_CONFIG));
+}
+
+TEST_F(ConfigManagerTest, GetBackupDirReturnsCorrectPath) {
+    createTestConfig("test.mayu");
+    std::string configPath = (testDir / "test.mayu").string();
+
+    std::string backupDir = ConfigManager::getBackupDir(configPath);
+    EXPECT_FALSE(backupDir.empty());
+
+    fs::path expected = testDir / ".backups";
+    EXPECT_EQ(backupDir, expected.string());
+}
