@@ -65,6 +65,7 @@
 #include "../commands/cmd_set_ime_string.h"
 #include "../commands/cmd_mouse_hook.h"
 #include "../commands/cmd_cancel_prefix.h"
+#include "../commands/cmd_metrics.h"
 
 class FunctionCreator
 {
@@ -142,6 +143,7 @@ FunctionData *createFunctionData(const std::string &i_name)
   { "SetImeString", Command_SetImeString::create },
   { "MouseHook", Command_MouseHook::create },
   { "CancelPrefix", Command_CancelPrefix::create },
+  { "Metrics", Command_Metrics::create },
     };
 
     for (size_t i = 0; i != NUMBER_OF(functionCreators); ++ i)

@@ -13,6 +13,7 @@
 #endif
 #include "../platform/message_constants.h"
 #include "../platform/sync.h"
+#include "../../utils/metrics.h"
 
 #include <iomanip>
 #ifdef _WIN32
@@ -93,6 +94,9 @@ Engine::~Engine() {
 
 // start keyboard handler thread
 void Engine::start() {
+    // Start performance metrics collection with 60-second reporting interval
+    yamy::metrics::PerformanceMetrics::instance().startPeriodicLogging(60);
+
     m_inputHook->install(
         [this](const yamy::platform::KeyEvent& event) {
             // Pass KeyEvent directly to the queue
@@ -127,6 +131,9 @@ void Engine::start() {
 
 // stop keyboard handler thread
 void Engine::stop() {
+    // Stop performance metrics collection
+    yamy::metrics::PerformanceMetrics::instance().stopPeriodicLogging();
+
     m_inputHook->uninstall();
     m_inputDriver->close();
 

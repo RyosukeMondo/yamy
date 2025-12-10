@@ -5,12 +5,14 @@
 #include "keycode_mapping.h"
 #include "core/platform/platform_exception.h"
 #include "../../utils/platform_logger.h"
+#include "../../utils/metrics.h"
 #include <linux/input.h>
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <chrono>
 
 namespace yamy::platform {
 
@@ -132,13 +134,19 @@ void EventReaderThread::run()
         PLATFORM_LOG_DEBUG("input", "Key event: scancode=0x%04x %s",
                            yamyCode, event.isKeyDown ? "DOWN" : "UP");
 
-        // Call callback
+        // Call callback with timing
         if (m_callback) {
+            auto callbackStart = std::chrono::high_resolution_clock::now();
             try {
                 m_callback(event);
             } catch (const std::exception& e) {
                 PLATFORM_LOG_ERROR("input", "Callback exception: %s", e.what());
             }
+            auto callbackEnd = std::chrono::high_resolution_clock::now();
+            auto durationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                callbackEnd - callbackStart).count();
+            yamy::metrics::PerformanceMetrics::instance().recordLatency(
+                yamy::metrics::Operations::HOOK_CALLBACK, static_cast<uint64_t>(durationNs));
         }
     }
 

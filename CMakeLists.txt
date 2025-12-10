@@ -329,6 +329,8 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/commands/cmd_set_ime_string.cpp
         src/core/commands/cmd_mouse_hook.cpp
         src/core/commands/cmd_cancel_prefix.cpp
+        src/core/commands/cmd_metrics.cpp
+        src/utils/metrics.cpp
         src/core/input/keyboard.cpp
         src/core/input/keymap.cpp
         src/core/input/modifier_state.cpp
@@ -542,6 +544,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/input_hook_linux.cpp
             src/platform/linux/device_manager_linux.cpp
             src/platform/linux/ipc_linux.cpp
+            src/utils/metrics.cpp
         )
 
         add_executable(yamy_linux_test
@@ -678,6 +681,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/commands/cmd_set_ime_string.cpp
             src/core/commands/cmd_mouse_hook.cpp
             src/core/commands/cmd_cancel_prefix.cpp
+            src/core/commands/cmd_metrics.cpp
+            src/utils/metrics.cpp
         )
 
         add_executable(yamy_keyremap_test

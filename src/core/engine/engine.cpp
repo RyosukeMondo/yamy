@@ -12,6 +12,7 @@
 #include "windowstool.h"
 #endif
 #include "../platform/sync.h"
+#include "../../utils/metrics.h"
 
 #include <iomanip>
 #ifdef _WIN32
@@ -56,6 +57,9 @@ void Engine::keyboardHandler()
             break;
         }
         ReleaseMutex(m_queueMutex);
+
+        // Start timing key processing
+        auto keyProcessingStart = std::chrono::high_resolution_clock::now();
 
         // Convert KeyEvent to KEYBOARD_INPUT_DATA for legacy code paths
         KEYBOARD_INPUT_DATA kid = keyEventToKID(event);
@@ -238,6 +242,13 @@ void Engine::keyboardHandler()
         if (!isMouseEvent)
             key.initialize();
         updateLastPressedKey(isPhysicallyPressed ? c.m_mkey.m_key : nullptr);
+
+        // Record key processing latency
+        auto keyProcessingEnd = std::chrono::high_resolution_clock::now();
+        auto durationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            keyProcessingEnd - keyProcessingStart).count();
+        yamy::metrics::PerformanceMetrics::instance().recordLatency(
+            yamy::metrics::Operations::KEY_PROCESSING, static_cast<uint64_t>(durationNs));
     }
 }
 

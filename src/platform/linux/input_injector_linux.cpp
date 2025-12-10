@@ -3,6 +3,7 @@
 #include "core/input/input_event.h"
 #include "keycode_mapping.h"
 #include "../../utils/platform_logger.h"
+#include "../../utils/metrics.h"
 #include <linux/uinput.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -10,6 +11,7 @@
 #include <cstring>
 #include <vector>
 #include <cerrno>
+#include <chrono>
 
 namespace yamy::platform {
 
@@ -85,6 +87,8 @@ public:
 
         if (!data || m_fd < 0) return;
 
+        auto injectStart = std::chrono::high_resolution_clock::now();
+
         // Check for mouse events (E1 flag indicates mouse event)
         if (data->Flags & KEYBOARD_INPUT_DATA::E1) {
             bool isKeyUp = data->Flags & KEYBOARD_INPUT_DATA::BREAK;
@@ -139,6 +143,13 @@ public:
             writeEvent(EV_KEY, evdevCode, value);
             writeEvent(EV_SYN, SYN_REPORT, 0);
         }
+
+        // Record injection latency
+        auto injectEnd = std::chrono::high_resolution_clock::now();
+        auto durationNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            injectEnd - injectStart).count();
+        yamy::metrics::PerformanceMetrics::instance().recordLatency(
+            yamy::metrics::Operations::INPUT_INJECTION, static_cast<uint64_t>(durationNs));
     }
 
 private:
