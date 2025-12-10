@@ -349,7 +349,7 @@
   - _Requirements: FR-1.1 through FR-1.8_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Fix compilation errors in Core - Step 1: Run cmake and make on Linux, Step 2: Fix tstring-related errors, Step 3: Fix HWND-related errors, Step 4: Fix missing include directives, Step 5: Fix linker errors for platform functions, Step 6: Iterate until Core module compiles cleanly | Restrictions: Fix errors without changing behavior, Add includes as needed, Ensure Windows build not broken | Success: Core module compiles on Linux, No compiler errors, No linker errors, Windows build still works, All platform abstractions used correctly | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.11 Fix compilation errors in UI module
+- [x] 1.2.11 Fix compilation errors in UI module
   - Files: src/ui/qt/*.cpp
   - Fix Qt-specific compilation issues
   - Resolve UI-related type mismatches
