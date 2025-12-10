@@ -2,16 +2,9 @@
 #include "dialog_settings_qt.h"
 #include "dialog_log_qt.h"
 #include "dialog_about_qt.h"
+#include "../core/engine/engine.h"
 #include <QApplication>
 #include <QMessageBox>
-
-// Forward declaration - will be properly included in Phase 6
-class Engine {
-public:
-    bool getIsEnabled() const { return true; }
-    void setIsEnabled(bool enabled) {}
-    bool reload() { return true; }
-};
 
 TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)
@@ -111,7 +104,11 @@ void TrayIconQt::onToggleEnable()
     m_enabled = !m_enabled;
 
     // Update engine state
-    m_engine->setIsEnabled(m_enabled);
+    if (m_enabled) {
+        m_engine->enable();
+    } else {
+        m_engine->disable();
+    }
 
     // Update icon
     updateIcon(m_enabled);
@@ -136,12 +133,18 @@ void TrayIconQt::onReload()
         return;
     }
 
-    bool success = m_engine->reload();
+    // TODO: Implement configuration reload
+    // This requires:
+    // 1. Loading .mayu files from configured paths
+    // 2. Parsing settings
+    // 3. Calling engine->setSetting()
+    // For now, show a placeholder message
 
     showNotification(
         "YAMY",
-        success ? "Configuration reloaded successfully" : "Failed to reload configuration",
-        success ? QSystemTrayIcon::Information : QSystemTrayIcon::Warning
+        "Configuration reload - Not yet implemented\n"
+        "Please restart YAMY to reload configuration.",
+        QSystemTrayIcon::Information
     );
 }
 

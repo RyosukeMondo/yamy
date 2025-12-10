@@ -4,9 +4,10 @@
 #include <QMenu>
 #include <QIcon>
 #include <QObject>
+#include <QCheckBox>
 #include <memory>
 
-// Forward declaration - Engine will be integrated in Phase 6
+// Forward declaration
 class Engine;
 
 /**
