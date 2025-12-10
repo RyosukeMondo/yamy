@@ -463,7 +463,7 @@
   - _Requirements: NF-1 Performance_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with performance monitoring expertise | Task: Add performance metrics - Step 1: Add metrics collection class with methods recordLatency(operation, duration), Step 2: Instrument Engine::processKeyEvent with timing measurement, Step 3: Instrument input hook callback, Step 4: Instrument input injection, Step 5: Compute and log average/p95/p99 every 60 seconds, Step 6: Add /metrics IPC command to query metrics | Restrictions: Keep instrumentation overhead minimal (<1% CPU), Use thread-safe collection, Don't impact key processing latency | Success: Metrics collected accurately, Overhead <1% CPU, Stats logged periodically, /metrics command works, Performance baseline established | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.3.7 Add memory leak detection
+- [x] 1.3.7 Add memory leak detection
   - Files: src/app/main.cpp, tests/leak_test.cpp
   - Integrate AddressSanitizer or Valgrind checks
   - Verify no memory leaks in platform code
