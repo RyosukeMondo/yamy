@@ -373,7 +373,7 @@
   - _Requirements: FR-1.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with X11 expertise | Task: Create unit tests for WindowSystemLinux - Step 1: Create test fixture with mock X11 display, Step 2: Test getForegroundWindow returns correct window, Step 3: Test getWindowText retrieves _NET_WM_NAME correctly, Step 4: Test getWindowClassName retrieves WM_CLASS correctly, Step 5: Test showWindow with various ShowCommand values, Step 6: Test moveWindow changes window geometry | Restrictions: Use mock X11 functions or test in controlled environment, Ensure tests run in CI without X11 server, Test error handling | Success: All WindowSystemLinux methods tested, Tests pass reliably, Edge cases covered, Error handling verified, Tests run in CI | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.14 Create unit tests for InputInjectorLinux
+- [x] 1.2.14 Create unit tests for InputInjectorLinux
   - File: tests/platform/input_injector_linux_test.cpp
   - Test XTest input injection
   - Verify keycode mapping
