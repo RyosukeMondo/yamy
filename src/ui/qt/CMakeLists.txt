@@ -25,6 +25,7 @@ set(QT_GUI_SOURCES
     dialog_about_qt.cpp
     config_manager_dialog.cpp
     config_metadata_dialog.cpp
+    crosshair_widget_qt.cpp
     global_hotkey.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
 )
@@ -37,6 +38,7 @@ set(QT_GUI_HEADERS
     dialog_about_qt.h
     config_manager_dialog.h
     config_metadata_dialog.h
+    crosshair_widget_qt.h
     global_hotkey.h
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
 )
