@@ -106,4 +106,81 @@ private:
     }
 };
 
+/// Exception for uinput subsystem unavailability
+class UinputUnavailableException : public PlatformException {
+public:
+    explicit UinputUnavailableException(int errorCode, const std::string& errorText)
+        : PlatformException(buildMessage(errorCode, errorText))
+        , m_errorCode(errorCode) {}
+
+    int errorCode() const { return m_errorCode; }
+
+private:
+    int m_errorCode;
+
+    static std::string buildMessage(int errorCode, const std::string& errorText) {
+        std::string msg = "Failed to access /dev/uinput: " + errorText;
+        msg += " (errno " + std::to_string(errorCode) + ")";
+        msg += "\nThe uinput kernel module is required for input injection.";
+        msg += "\nPlease check:\n";
+        msg += "  1. Load uinput module: sudo modprobe uinput\n";
+        msg += "  2. Create udev rule for persistent access:\n";
+        msg += "     echo 'KERNEL==\"uinput\", MODE=\"0660\", GROUP=\"input\"' | sudo tee /etc/udev/rules.d/99-uinput.rules\n";
+        msg += "  3. Add your user to input group: sudo usermod -a -G input $USER\n";
+        msg += "  4. Reload udev: sudo udevadm control --reload-rules && sudo udevadm trigger\n";
+        msg += "  5. Log out and back in for group changes to take effect";
+        return msg;
+    }
+};
+
+/// Exception for evdev subsystem unavailability (no keyboard devices found)
+class EvdevUnavailableException : public PlatformException {
+public:
+    explicit EvdevUnavailableException(const std::string& reason = "")
+        : PlatformException(buildMessage(reason)) {}
+
+private:
+    static std::string buildMessage(const std::string& reason) {
+        std::string msg = "No keyboard devices found or accessible";
+        if (!reason.empty()) {
+            msg += ": " + reason;
+        }
+        msg += "\nThe evdev subsystem is required for input capture.";
+        msg += "\nPlease check:\n";
+        msg += "  1. Add your user to input group: sudo usermod -a -G input $USER\n";
+        msg += "  2. Log out and back in for group changes to take effect\n";
+        msg += "  3. Verify /dev/input/event* devices exist\n";
+        msg += "  4. Check permissions: ls -la /dev/input/event*";
+        return msg;
+    }
+};
+
+/// Exception for failed device grab (exclusive access)
+class DeviceGrabException : public PlatformException {
+public:
+    DeviceGrabException(const std::string& devicePath, int errorCode,
+                        const std::string& errorText)
+        : PlatformException(buildMessage(devicePath, errorCode, errorText))
+        , m_devicePath(devicePath)
+        , m_errorCode(errorCode) {}
+
+    const std::string& devicePath() const { return m_devicePath; }
+    int errorCode() const { return m_errorCode; }
+
+private:
+    std::string m_devicePath;
+    int m_errorCode;
+
+    static std::string buildMessage(const std::string& devicePath,
+                                    int errorCode, const std::string& errorText) {
+        std::string msg = "Failed to grab exclusive access to '" + devicePath + "': " + errorText;
+        msg += " (errno " + std::to_string(errorCode) + ")";
+        msg += "\nAnother application may have exclusive access to the device.";
+        msg += "\nPlease check:\n";
+        msg += "  1. No other keyboard remapping software is running\n";
+        msg += "  2. Close applications that might grab keyboards (e.g., VMs, remote desktop)";
+        return msg;
+    }
+};
+
 } // namespace yamy::platform

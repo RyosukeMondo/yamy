@@ -3,11 +3,14 @@
 
 #include "input_hook_linux.h"
 #include "keycode_mapping.h"
+#include "core/platform/platform_exception.h"
 #include <linux/input.h>
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
 #include <iostream>
+#include <dirent.h>
+#include <sys/stat.h>
 
 namespace yamy::platform {
 
@@ -162,6 +165,36 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
 
     std::cout << "[InputHook] Installing input hook..." << std::endl;
 
+    // First check if /dev/input directory exists
+    struct stat st;
+    if (stat("/dev/input", &st) != 0 || !S_ISDIR(st.st_mode)) {
+        std::cerr << "[InputHook] /dev/input directory not found" << std::endl;
+        throw EvdevUnavailableException("/dev/input directory not found");
+    }
+
+    // Check if any event devices exist
+    DIR* dir = opendir("/dev/input");
+    if (!dir) {
+        int err = errno;
+        std::cerr << "[InputHook] Cannot open /dev/input: " << std::strerror(err) << std::endl;
+        throw EvdevUnavailableException("Cannot open /dev/input: " + std::string(std::strerror(err)));
+    }
+
+    bool hasEventDevices = false;
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        if (strncmp(entry->d_name, "event", 5) == 0) {
+            hasEventDevices = true;
+            break;
+        }
+    }
+    closedir(dir);
+
+    if (!hasEventDevices) {
+        std::cerr << "[InputHook] No event devices found in /dev/input" << std::endl;
+        throw EvdevUnavailableException("No event devices found in /dev/input");
+    }
+
     m_keyCallback = keyCallback;
     m_mouseCallback = mouseCallback;
 
@@ -170,11 +203,16 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
 
     if (keyboards.empty()) {
         std::cerr << "[InputHook] No keyboard devices found!" << std::endl;
-        std::cerr << "[InputHook] Make sure you have permissions (input group)" << std::endl;
-        return false;
+        std::cerr << "[InputHook] Event devices exist but none have keyboard capabilities." << std::endl;
+        throw EvdevUnavailableException("Event devices exist but no keyboards found. Check permissions (input group)");
     }
 
     std::cout << "[InputHook] Found " << keyboards.size() << " keyboard device(s)" << std::endl;
+
+    // Track grab failures for better error reporting
+    int openFailures = 0;
+    int grabFailures = 0;
+    std::string lastGrabError;
 
     // Open and grab each keyboard
     for (const auto& kbInfo : keyboards) {
@@ -184,13 +222,17 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
         int fd = DeviceManager::openDevice(kbInfo.devNode, false); // Blocking mode for read
         if (fd < 0) {
             std::cerr << "[InputHook]   Failed to open " << kbInfo.devNode << std::endl;
+            openFailures++;
             continue;
         }
 
         // Grab device
         if (!DeviceManager::grabDevice(fd, true)) {
-            std::cerr << "[InputHook]   Failed to grab " << kbInfo.devNode << std::endl;
+            int err = errno;
+            std::cerr << "[InputHook]   Failed to grab " << kbInfo.devNode << ": " << std::strerror(err) << std::endl;
+            lastGrabError = std::strerror(err);
             DeviceManager::closeDevice(fd);
+            grabFailures++;
             continue;
         }
 
@@ -217,7 +259,16 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     if (m_readerThreads.empty()) {
         std::cerr << "[InputHook] Failed to hook any keyboard devices!" << std::endl;
         cleanup();
-        return false;
+
+        // Provide specific error based on failure type
+        if (openFailures == static_cast<int>(keyboards.size())) {
+            throw DeviceAccessException(keyboards[0].devNode, EACCES,
+                "Cannot open keyboard devices - check permissions (input group)");
+        } else if (grabFailures > 0) {
+            throw DeviceGrabException(keyboards[0].devNode, EBUSY, lastGrabError);
+        } else {
+            throw EvdevUnavailableException("Failed to hook keyboard devices");
+        }
     }
 
     m_isInstalled = true;

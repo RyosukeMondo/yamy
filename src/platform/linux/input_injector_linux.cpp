@@ -1,9 +1,11 @@
 #include "core/platform/input_injector_interface.h"
+#include "core/platform/platform_exception.h"
 #include "core/input/input_event.h"
 #include "keycode_mapping.h"
 #include <linux/uinput.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <cstring>
 #include <iostream>
 #include <vector>
@@ -144,15 +146,45 @@ private:
     int m_fd;
     int32_t m_wheelAccumulator;
 
+    /// Check if uinput is available on this system
+    static bool checkUinputAvailable() {
+        struct stat st;
+        if (stat("/dev/uinput", &st) != 0) {
+            return false;
+        }
+        // Check if we can open it (write access)
+        int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+        if (fd < 0) {
+            return false;
+        }
+        close(fd);
+        return true;
+    }
+
     void initializeUinput() {
+        // Check if /dev/uinput exists
+        struct stat st;
+        if (stat("/dev/uinput", &st) != 0) {
+            int err = errno;
+            std::cerr << "[Linux] /dev/uinput not found: " << std::strerror(err) << std::endl;
+            throw UinputUnavailableException(err, std::strerror(err));
+        }
+
         m_fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
         if (m_fd < 0) {
-            std::cerr << "[Linux] Failed to open /dev/uinput: " << std::strerror(errno) << std::endl;
-            return;
+            int err = errno;
+            std::cerr << "[Linux] Failed to open /dev/uinput: " << std::strerror(err) << std::endl;
+            throw UinputUnavailableException(err, std::strerror(err));
         }
 
         // Enable Key Events
-        ioctl(m_fd, UI_SET_EVBIT, EV_KEY);
+        if (ioctl(m_fd, UI_SET_EVBIT, EV_KEY) < 0) {
+            int err = errno;
+            std::cerr << "[Linux] Failed to set EV_KEY: " << std::strerror(err) << std::endl;
+            close(m_fd);
+            m_fd = -1;
+            throw UinputUnavailableException(err, "ioctl UI_SET_EVBIT failed: " + std::string(std::strerror(err)));
+        }
 
         // Enable mapped keys
         // We enable a standard range covering common keys and extended keys
@@ -188,17 +220,19 @@ private:
         uidev.id.version = 1;
 
         if (write(m_fd, &uidev, sizeof(uidev)) < 0) {
-             std::cerr << "[Linux] Failed to write uinput device config: " << std::strerror(errno) << std::endl;
-             close(m_fd);
-             m_fd = -1;
-             return;
+            int err = errno;
+            std::cerr << "[Linux] Failed to write uinput device config: " << std::strerror(err) << std::endl;
+            close(m_fd);
+            m_fd = -1;
+            throw UinputUnavailableException(err, "Failed to write uinput device config: " + std::string(std::strerror(err)));
         }
 
         if (ioctl(m_fd, UI_DEV_CREATE) < 0) {
-             std::cerr << "[Linux] Failed to create uinput device: " << std::strerror(errno) << std::endl;
-             close(m_fd);
-             m_fd = -1;
-             return;
+            int err = errno;
+            std::cerr << "[Linux] Failed to create uinput device: " << std::strerror(err) << std::endl;
+            close(m_fd);
+            m_fd = -1;
+            throw UinputUnavailableException(err, "Failed to create uinput device: " + std::string(std::strerror(err)));
         }
 
         std::cerr << "[Linux] Virtual input device created successfully" << std::endl;
