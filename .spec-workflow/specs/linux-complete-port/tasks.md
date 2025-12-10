@@ -285,7 +285,7 @@
   - _Requirements: FR-1.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Update keymap activation logic - Step 1: Update condition evaluation in KeymapLayer::shouldActivate, Step 2: Replace direct window API calls with windowSystem methods, Step 3: Ensure regex matching works with UTF-8 strings, Step 4: Test activation with various window title/class patterns | Restrictions: Maintain activation behavior, Ensure all condition types still work (WindowClass, WindowTitle, etc), Handle UTF-8 properly | Success: Keymap activation works correctly, All condition types functional, Regex patterns match properly, Works on both platforms | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [-] 1.2.3 Update modifier state tracking
+- [x] 1.2.3 Update modifier state tracking
   - File: src/core/modifier_state.cpp
   - Track modifier state using platform-agnostic key codes
   - Update modifier key detection
