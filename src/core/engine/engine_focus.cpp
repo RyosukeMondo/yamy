@@ -196,3 +196,83 @@ bool Engine::threadDetachNotify(uint32_t i_threadId) {
                               m_attachedThreadIds.end());
     return true;
 }
+
+
+// Query keymap status for a given window
+Engine::KeymapStatus Engine::queryKeymapForWindow(
+    yamy::platform::WindowHandle hwnd,
+    const std::string& className,
+    const std::string& titleName) const
+{
+    KeymapStatus status;
+    status.isDefault = true;
+    status.keymapName = "(default)";
+    status.matchedClassRegex = "";
+    status.matchedTitleRegex = "";
+    status.activeModifiers = "";
+
+    if (!m_setting) {
+        return status;
+    }
+
+    // Search for matching keymaps
+    Keymaps::KeymapPtrList keymapList;
+    m_setting->m_keymaps.searchWindow(&keymapList, className, titleName);
+
+    if (keymapList.empty()) {
+        return status;
+    }
+
+    // Get the first (most specific) matched keymap
+    const Keymap* keymap = keymapList.front();
+    if (!keymap) {
+        return status;
+    }
+
+    status.keymapName = keymap->getName();
+
+    // Check if this is a window-specific keymap
+    if (keymap->getType() == Keymap::Type_windowAnd ||
+        keymap->getType() == Keymap::Type_windowOr) {
+        status.isDefault = false;
+        status.matchedClassRegex = keymap->getWindowClassStr();
+        status.matchedTitleRegex = keymap->getWindowTitleStr();
+    }
+
+    // Build active modifiers string from current lock state
+    std::string modifiers;
+    if (m_currentLock.isOn(Modifier::Type_Shift)) {
+        modifiers += "Shift ";
+    }
+    if (m_currentLock.isOn(Modifier::Type_Control)) {
+        modifiers += "Ctrl ";
+    }
+    if (m_currentLock.isOn(Modifier::Type_Alt)) {
+        modifiers += "Alt ";
+    }
+    if (m_currentLock.isOn(Modifier::Type_Windows)) {
+        modifiers += "Win ";
+    }
+    if (m_currentLock.isOn(Modifier::Type_NumLock)) {
+        modifiers += "NumLock ";
+    }
+    if (m_currentLock.isOn(Modifier::Type_CapsLock)) {
+        modifiers += "CapsLock ";
+    }
+    if (m_currentLock.isOn(Modifier::Type_ScrollLock)) {
+        modifiers += "ScrollLock ";
+    }
+
+    // Trim trailing space
+    if (!modifiers.empty() && modifiers.back() == ' ') {
+        modifiers.pop_back();
+    }
+
+    if (modifiers.empty()) {
+        status.activeModifiers = "(none)";
+    } else {
+        status.activeModifiers = modifiers;
+    }
+
+    return status;
+}

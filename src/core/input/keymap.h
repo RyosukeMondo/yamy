@@ -314,6 +314,21 @@ public:
         return m_name;
     }
 
+    /// get window class regex string (for description/debugging)
+    const std::string &getWindowClassStr() const {
+        return m_windowClassStr;
+    }
+
+    /// get window title regex string (for description/debugging)
+    const std::string &getWindowTitleStr() const {
+        return m_windowTitleStr;
+    }
+
+    /// get keymap type
+    Type getType() const {
+        return m_type;
+    }
+
     /// does same window
     bool doesSameWindow(const std::string &i_className,
                         const std::string &i_titleName);

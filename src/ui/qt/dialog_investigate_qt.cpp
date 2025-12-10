@@ -1,5 +1,6 @@
 #include "dialog_investigate_qt.h"
 #include "crosshair_widget_qt.h"
+#include "../../core/engine/engine.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -13,8 +14,9 @@
 #include <unistd.h>
 #include <limits.h>
 
-DialogInvestigateQt::DialogInvestigateQt(QWidget* parent)
+DialogInvestigateQt::DialogInvestigateQt(Engine* engine, QWidget* parent)
     : QDialog(parent)
+    , m_engine(engine)
     , m_windowSystem(yamy::platform::createWindowSystem())
     , m_crosshair(nullptr)
     , m_labelHandle(nullptr)
@@ -359,6 +361,13 @@ void DialogInvestigateQt::updateWindowInfo(yamy::platform::WindowHandle hwnd)
         m_labelProcess->setText("(unknown)");
         m_labelProcessPath->setText("(unavailable)");
     }
+
+    // Get class name and title for keymap query
+    std::string classNameStr = m_windowSystem->getClassName(hwnd);
+    std::string titleNameStr = m_windowSystem->getWindowText(hwnd);
+
+    // Update keymap status panel
+    updateKeymapStatus(hwnd, classNameStr, titleNameStr);
 }
 
 QString DialogInvestigateQt::getProcessName(uint32_t pid)
@@ -413,4 +422,55 @@ QString DialogInvestigateQt::getProcessPath(uint32_t pid)
 
     buffer[len] = '\0';
     return QString::fromUtf8(buffer);
+}
+
+void DialogInvestigateQt::setEngine(Engine* engine)
+{
+    m_engine = engine;
+}
+
+void DialogInvestigateQt::updateKeymapStatus(
+    yamy::platform::WindowHandle hwnd,
+    const std::string& className,
+    const std::string& titleName)
+{
+    if (!m_engine) {
+        // No engine available - show placeholder
+        m_labelKeymapName->setText("(engine not available)");
+        m_labelMatchedRegex->setText("-");
+        m_labelModifiers->setText("-");
+        return;
+    }
+
+    // Query the engine for keymap status
+    Engine::KeymapStatus status = m_engine->queryKeymapForWindow(
+        hwnd, className, titleName);
+
+    // Update keymap name
+    m_labelKeymapName->setText(QString::fromStdString(status.keymapName));
+
+    // Update matched regex - combine class and title if both present
+    QString regexText;
+    if (!status.matchedClassRegex.empty() && status.matchedClassRegex != ".*") {
+        regexText = QString("Class: /%1/").arg(
+            QString::fromStdString(status.matchedClassRegex));
+    }
+    if (!status.matchedTitleRegex.empty() && status.matchedTitleRegex != ".*") {
+        if (!regexText.isEmpty()) {
+            regexText += "\n";
+        }
+        regexText += QString("Title: /%1/").arg(
+            QString::fromStdString(status.matchedTitleRegex));
+    }
+    if (regexText.isEmpty()) {
+        if (status.isDefault) {
+            regexText = "(global keymap)";
+        } else {
+            regexText = "(no pattern)";
+        }
+    }
+    m_labelMatchedRegex->setText(regexText);
+
+    // Update modifiers
+    m_labelModifiers->setText(QString::fromStdString(status.activeModifiers));
 }

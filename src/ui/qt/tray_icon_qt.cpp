@@ -189,7 +189,7 @@ void TrayIconQt::onShowLog()
 
 void TrayIconQt::onInvestigate()
 {
-    DialogInvestigateQt* dialog = new DialogInvestigateQt();
+    DialogInvestigateQt* dialog = new DialogInvestigateQt(m_engine);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
 }

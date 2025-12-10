@@ -460,6 +460,24 @@ public:
     std::string getClipboardText() const override;
     std::string getStrExprWindowClassName() const override;
     std::string getStrExprWindowTitleName() const override;
+
+    /// Keymap status information for investigate dialog
+    struct KeymapStatus {
+        std::string keymapName;      /// Name of the matched keymap (empty if default)
+        std::string matchedClassRegex;  /// Window class regex that matched
+        std::string matchedTitleRegex;  /// Window title regex that matched
+        std::string activeModifiers;    /// Currently active modifiers as string
+        bool isDefault;              /// True if using default/global keymap
+    };
+
+    /// Query keymap status for a given window
+    /// @param hwnd Window handle to query keymap for
+    /// @param className Window class name
+    /// @param titleName Window title name
+    /// @return KeymapStatus with matched keymap information
+    KeymapStatus queryKeymapForWindow(yamy::platform::WindowHandle hwnd,
+                                      const std::string& className,
+                                      const std::string& titleName) const;
 };
 
 ///

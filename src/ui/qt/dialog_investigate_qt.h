@@ -13,6 +13,7 @@
 #include <memory>
 
 class CrosshairWidget;
+class Engine;
 
 /**
  * @brief Investigate dialog for inspecting windows and keymap status
@@ -30,9 +31,16 @@ class DialogInvestigateQt : public QDialog {
 public:
     /**
      * @brief Construct investigate dialog
+     * @param engine Pointer to keyboard remapping engine (can be nullptr)
      * @param parent Parent widget
      */
-    explicit DialogInvestigateQt(QWidget* parent = nullptr);
+    explicit DialogInvestigateQt(Engine* engine = nullptr, QWidget* parent = nullptr);
+
+    /**
+     * @brief Set the engine instance
+     * @param engine Pointer to engine
+     */
+    void setEngine(Engine* engine);
 
     /**
      * @brief Destructor
@@ -119,6 +127,25 @@ private:
      * @return Full path to executable or empty string if unavailable
      */
     QString getProcessPath(uint32_t pid);
+
+    /**
+     * @brief Update keymap status panel with data from engine
+     * @param hwnd Handle of the window to query keymap for
+     * @param className Window class name
+     * @param titleName Window title name
+     *
+     * Queries the Engine for the active keymap for the given window
+     * and updates the KeymapStatusPanel with:
+     * - Keymap name
+     * - Matched regex pattern (class and/or title)
+     * - Active modifiers
+     */
+    void updateKeymapStatus(yamy::platform::WindowHandle hwnd,
+                            const std::string& className,
+                            const std::string& titleName);
+
+    // Engine instance (not owned)
+    Engine* m_engine;
 
     // Window system interface for platform abstraction
     std::unique_ptr<yamy::platform::IWindowSystem> m_windowSystem;
