@@ -21,9 +21,12 @@ DialogSettingsQt::DialogSettingsQt(QWidget* parent)
     , m_editEditorCommand(nullptr)
     , m_btnBrowseEditor(nullptr)
     , m_labelStatus(nullptr)
+    , m_chkQuickSwitchEnabled(nullptr)
+    , m_editQuickSwitchHotkey(nullptr)
+    , m_btnClearHotkey(nullptr)
 {
     setWindowTitle("YAMY Settings");
-    setMinimumSize(600, 400);
+    setMinimumSize(600, 500);
 
     setupUI();
     loadSettings();
@@ -370,6 +373,48 @@ void DialogSettingsQt::setupUI()
 
     mainLayout->addWidget(editorGroup);
 
+    // Quick-switch hotkey group
+    QGroupBox* hotkeyGroup = new QGroupBox("Config Quick-Switch Hotkey");
+    QVBoxLayout* hotkeyLayout = new QVBoxLayout(hotkeyGroup);
+
+    m_chkQuickSwitchEnabled = new QCheckBox("Enable quick-switch hotkey");
+    m_chkQuickSwitchEnabled->setChecked(true);
+    hotkeyLayout->addWidget(m_chkQuickSwitchEnabled);
+
+    QHBoxLayout* hotkeyEditLayout = new QHBoxLayout();
+
+    QLabel* hotkeyLabel = new QLabel("Hotkey:");
+    hotkeyEditLayout->addWidget(hotkeyLabel);
+
+    m_editQuickSwitchHotkey = new QKeySequenceEdit();
+    m_editQuickSwitchHotkey->setKeySequence(QKeySequence("Ctrl+Alt+C"));
+    hotkeyEditLayout->addWidget(m_editQuickSwitchHotkey);
+
+    m_btnClearHotkey = new QPushButton("Clear");
+    connect(m_btnClearHotkey, &QPushButton::clicked, this, [this]() {
+        m_editQuickSwitchHotkey->clear();
+    });
+    hotkeyEditLayout->addWidget(m_btnClearHotkey);
+
+    hotkeyEditLayout->addStretch();
+    hotkeyLayout->addLayout(hotkeyEditLayout);
+
+    QLabel* hotkeyHelp = new QLabel(
+        "Press the hotkey to cycle through available configurations.\n"
+        "Default: Ctrl+Alt+C. Leave empty to disable."
+    );
+    hotkeyHelp->setStyleSheet("QLabel { color: #666; font-size: 11px; }");
+    hotkeyHelp->setWordWrap(true);
+    hotkeyLayout->addWidget(hotkeyHelp);
+
+    // Connect checkbox to enable/disable hotkey edit
+    connect(m_chkQuickSwitchEnabled, &QCheckBox::toggled, this, [this](bool checked) {
+        m_editQuickSwitchHotkey->setEnabled(checked);
+        m_btnClearHotkey->setEnabled(checked);
+    });
+
+    mainLayout->addWidget(hotkeyGroup);
+
     // Status label
     m_labelStatus = new QLabel();
     m_labelStatus->setStyleSheet("QLabel { color: #666; }");
@@ -410,6 +455,15 @@ void DialogSettingsQt::loadSettings()
     QString editorCmd = settings.value("editor/command", "").toString();
     m_editEditorCommand->setText(editorCmd);
 
+    // Load quick-switch hotkey settings
+    bool hotkeyEnabled = settings.value("hotkeys/quickSwitch/enabled", true).toBool();
+    QString hotkeySeq = settings.value("hotkeys/quickSwitch/sequence", "Ctrl+Alt+C").toString();
+
+    m_chkQuickSwitchEnabled->setChecked(hotkeyEnabled);
+    m_editQuickSwitchHotkey->setKeySequence(QKeySequence(hotkeySeq));
+    m_editQuickSwitchHotkey->setEnabled(hotkeyEnabled);
+    m_btnClearHotkey->setEnabled(hotkeyEnabled);
+
     m_labelStatus->setText("Settings loaded");
 }
 
@@ -425,6 +479,11 @@ void DialogSettingsQt::saveSettings()
 
     // Save editor command
     settings.setValue("editor/command", m_editEditorCommand->text());
+
+    // Save quick-switch hotkey settings
+    settings.setValue("hotkeys/quickSwitch/enabled", m_chkQuickSwitchEnabled->isChecked());
+    settings.setValue("hotkeys/quickSwitch/sequence",
+                      m_editQuickSwitchHotkey->keySequence().toString());
 
     settings.sync();
 }

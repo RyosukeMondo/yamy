@@ -11,6 +11,7 @@
 // Forward declaration
 class Engine;
 class ConfigManager;
+class GlobalHotkey;
 
 /**
  * @brief Qt-based system tray icon for Linux
@@ -115,6 +116,12 @@ private slots:
      */
     void onManageConfigs();
 
+    /**
+     * @brief Handle quick-switch hotkey activation
+     * Cycles to the next configuration
+     */
+    void onQuickSwitchHotkey();
+
 private:
     /**
      * @brief Create and setup context menu
@@ -136,8 +143,16 @@ private:
      */
     void populateConfigMenu();
 
+    /**
+     * @brief Setup the global hotkey based on settings
+     */
+    void setupGlobalHotkey();
+
     // Engine instance (not owned)
     Engine* m_engine;
+
+    // Global hotkey for quick config switch
+    GlobalHotkey* m_quickSwitchHotkey;
 
     // Context menu
     QMenu* m_menu;

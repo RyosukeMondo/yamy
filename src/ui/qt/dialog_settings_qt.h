@@ -11,6 +11,8 @@
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
+#include <QKeySequenceEdit>
+#include <QCheckBox>
 
 /**
  * @brief Settings dialog for YAMY configuration
@@ -133,6 +135,11 @@ private:
     QLineEdit* m_editEditorCommand;
     QPushButton* m_btnBrowseEditor;
     QLabel* m_labelStatus;
+
+    // Quick-switch hotkey components
+    QCheckBox* m_chkQuickSwitchEnabled;
+    QKeySequenceEdit* m_editQuickSwitchHotkey;
+    QPushButton* m_btnClearHotkey;
 
     // Data
     QStringList m_keymapFiles;

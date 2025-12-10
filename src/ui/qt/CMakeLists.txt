@@ -6,7 +6,11 @@ find_package(Qt5 REQUIRED COMPONENTS
     Core
     Widgets
     Gui
+    X11Extras
 )
+
+# Find X11 for global hotkeys
+find_package(X11 REQUIRED)
 
 # Enable Qt MOC (Meta-Object Compiler)
 set(CMAKE_AUTOMOC ON)
@@ -20,6 +24,7 @@ set(QT_GUI_SOURCES
     dialog_log_qt.cpp
     dialog_about_qt.cpp
     config_manager_dialog.cpp
+    global_hotkey.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
 )
 
@@ -30,6 +35,7 @@ set(QT_GUI_HEADERS
     dialog_log_qt.h
     dialog_about_qt.h
     config_manager_dialog.h
+    global_hotkey.h
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
 )
 
@@ -51,11 +57,14 @@ add_library(yamy_qt_gui STATIC
     ${QT_GUI_RESOURCES}
 )
 
-# Link Qt libraries
+# Link Qt libraries and X11
 target_link_libraries(yamy_qt_gui PUBLIC
     Qt5::Core
     Qt5::Widgets
     Qt5::Gui
+    Qt5::X11Extras
+    ${X11_LIBRARIES}
+    xcb
 )
 
 # Include directories

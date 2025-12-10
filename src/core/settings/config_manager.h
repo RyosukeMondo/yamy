@@ -55,6 +55,11 @@ public:
     /// @return true if index valid and was set
     bool setActiveConfig(int index);
 
+    /// Cycle to the next configuration in the list
+    /// Wraps around to first config after the last one
+    /// @return true if switch was successful, false if no configs or only one config
+    bool setNextConfig();
+
     /// Add a configuration path to the list
     /// @return true if added (not already present)
     bool addConfig(const std::string& configPath);

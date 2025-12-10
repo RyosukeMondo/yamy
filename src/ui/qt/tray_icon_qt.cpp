@@ -3,10 +3,13 @@
 #include "dialog_log_qt.h"
 #include "dialog_about_qt.h"
 #include "config_manager_dialog.h"
+#include "global_hotkey.h"
 #include "../../core/settings/config_manager.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <QSignalMapper>
+#include <QSettings>
+#include <QDebug>
 
 // Stub Engine class definition (matches stub in main_qt.cpp)
 // This will be replaced once core YAMY is refactored for Linux
@@ -23,6 +26,7 @@ private:
 TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)
     , m_engine(engine)
+    , m_quickSwitchHotkey(nullptr)
     , m_menu(nullptr)
     , m_configMenu(nullptr)
     , m_configActionGroup(nullptr)
@@ -39,6 +43,9 @@ TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
 
     // Create context menu
     createMenu();
+
+    // Setup global hotkey for quick config switch
+    setupGlobalHotkey();
 
     // Connect activation signal
     connect(this, &QSystemTrayIcon::activated,
@@ -369,4 +376,74 @@ void TrayIconQt::onManageConfigs()
     ConfigManagerDialog* dialog = new ConfigManagerDialog();
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
+}
+
+void TrayIconQt::onQuickSwitchHotkey()
+{
+    ConfigManager& configMgr = ConfigManager::instance();
+
+    if (configMgr.setNextConfig()) {
+        // Get the new config name
+        std::vector<ConfigEntry> configs = configMgr.listConfigs();
+        int newIndex = configMgr.getActiveIndex();
+
+        if (newIndex >= 0 && newIndex < static_cast<int>(configs.size())) {
+            QString configName = QString::fromStdString(configs[newIndex].name);
+
+            // Show brief notification
+            showNotification(
+                "YAMY - Config Switch",
+                QString("Configuration: %1").arg(configName),
+                QSystemTrayIcon::Information,
+                2000  // 2 second timeout for quick switch
+            );
+
+            // Update tooltip with config name
+            updateTooltip(QString("YAMY - %1").arg(configName));
+        }
+    } else {
+        // No configs available or only one config
+        std::vector<ConfigEntry> configs = configMgr.listConfigs();
+        if (configs.empty()) {
+            showNotification(
+                "YAMY",
+                "No configurations available",
+                QSystemTrayIcon::Warning,
+                2000
+            );
+        }
+        // If only one config, silently do nothing
+    }
+}
+
+void TrayIconQt::setupGlobalHotkey()
+{
+    QSettings settings("YAMY", "YAMY");
+
+    // Read hotkey settings
+    bool hotkeyEnabled = settings.value("hotkeys/quickSwitch/enabled", true).toBool();
+    QString hotkeySeq = settings.value("hotkeys/quickSwitch/sequence", "Ctrl+Alt+C").toString();
+
+    // Create hotkey object if not exists
+    if (!m_quickSwitchHotkey) {
+        m_quickSwitchHotkey = new GlobalHotkey(this);
+
+        // Connect signals
+        connect(m_quickSwitchHotkey, &GlobalHotkey::activated,
+                this, &TrayIconQt::onQuickSwitchHotkey);
+
+        connect(m_quickSwitchHotkey, &GlobalHotkey::registrationFailed,
+                this, [this](const QString& reason) {
+            qWarning() << "Quick-switch hotkey registration failed:" << reason;
+            // Don't show notification on startup failure to avoid spam
+        });
+    }
+
+    // Configure the hotkey
+    m_quickSwitchHotkey->setEnabled(hotkeyEnabled);
+    if (hotkeyEnabled && !hotkeySeq.isEmpty()) {
+        m_quickSwitchHotkey->setShortcut(QKeySequence(hotkeySeq));
+    } else {
+        m_quickSwitchHotkey->setShortcut(QKeySequence());
+    }
 }

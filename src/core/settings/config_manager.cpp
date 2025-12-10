@@ -104,6 +104,52 @@ bool ConfigManager::setActiveConfig(int index)
     return true;
 }
 
+bool ConfigManager::setNextConfig()
+{
+    Acquire lock(&m_cs);
+
+    // Need at least one config to switch
+    if (m_configs.empty()) {
+        return false;
+    }
+
+    // If only one config, nothing to cycle
+    if (m_configs.size() == 1) {
+        // If not already active, make it active
+        if (m_activeIndex != 0) {
+            m_activeIndex = 0;
+            save();
+            if (m_changeCallback) {
+                m_changeCallback(m_configs[0].path);
+            }
+        }
+        return true;
+    }
+
+    // Calculate next index with wrap-around
+    int nextIndex = (m_activeIndex < 0) ? 0 : (m_activeIndex + 1) % static_cast<int>(m_configs.size());
+
+    // Skip non-existent configs
+    int startIndex = nextIndex;
+    while (!m_configs[nextIndex].exists) {
+        nextIndex = (nextIndex + 1) % static_cast<int>(m_configs.size());
+        if (nextIndex == startIndex) {
+            // All configs don't exist, give up
+            return false;
+        }
+    }
+
+    if (m_activeIndex != nextIndex) {
+        m_activeIndex = nextIndex;
+        save();
+
+        if (m_changeCallback) {
+            m_changeCallback(m_configs[m_activeIndex].path);
+        }
+    }
+    return true;
+}
+
 bool ConfigManager::addConfig(const std::string& configPath)
 {
     Acquire lock(&m_cs);
