@@ -27,7 +27,7 @@ set(LINUX_PLATFORM_SOURCES
     # window_system_linux_mouse.cpp
 
     # Track 5: Monitor Support
-    # window_system_linux_monitor.cpp
+    window_system_linux_monitor.cpp
 
     # Track 6: POSIX Synchronization
     # sync_linux.cpp
@@ -39,19 +39,20 @@ set(LINUX_PLATFORM_SOURCES
     # hook_data_linux.cpp
 
     # Track 9: evdev Input Capture
-    # input_hook_linux.cpp
+    input_hook_linux.cpp
     # device_manager_linux.cpp
 
     # Track 10: uinput Injection
-    # input_injector_linux.cpp
+    input_injector_linux.cpp
 
     # Track 11: Key Code Mapping
     # keycode_mapping.cpp
 
     # Track 12: Thread Management
-    # thread_linux.cpp
+    thread_linux.cpp
 
     # Existing files (keep as-is for now)
+    input_driver_linux.cpp
     window_system_linux.cpp
 )
 

@@ -234,17 +234,14 @@ if(WIN32)
 endif()
 
 if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
+    add_subdirectory(src/platform/linux)
+
     # Linux stub backend - minimal implementation for testing architecture
     set(STUB_SOURCES
         src/app/main_linux.cpp
-        src/platform/linux/window_system_linux.cpp
-        src/platform/linux/input_injector_linux.cpp
-        src/platform/linux/input_hook_linux.cpp
-        src/platform/linux/input_driver_linux.cpp
-        src/platform/linux/thread_linux.cpp
     )
     add_executable(yamy_stub ${STUB_SOURCES})
-    target_link_libraries(yamy_stub PRIVATE pthread)
+    target_link_libraries(yamy_stub PRIVATE yamy_platform_linux pthread)
 
     target_include_directories(yamy_stub PRIVATE
         src
