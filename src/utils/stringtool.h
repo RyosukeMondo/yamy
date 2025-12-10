@@ -373,4 +373,7 @@ extern tstring toLower(const tstring &i_str);
 // std::string version
 std::string toLower(const std::string &i_str);
 
+// Case-insensitive string comparison for std::string (UTF-8)
+int strcasecmp_utf8(const char* s1, const char* s2);
+
 #endif // !_STRINGTOOL_H

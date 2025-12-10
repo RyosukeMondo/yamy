@@ -24,8 +24,8 @@ void Engine::checkFocusWindow()
 restart:
     count ++;
 
-    HWND hwndFore = GetForegroundWindow();
-    DWORD threadId = GetWindowThreadProcessId(hwndFore, nullptr);
+    yamy::platform::WindowHandle hwndFore = m_windowSystem->getForegroundWindow();
+    uint32_t threadId = m_windowSystem->getWindowThreadId(hwndFore);
 
     if (hwndFore) {
         {
@@ -49,8 +49,8 @@ restart:
                         m_log << "\tHWND:\t" << std::hex << (ULONG_PTR)fot->m_hwndFocus
                         << std::dec << std::endl;
                         m_log << "\tTHREADID:" << fot->m_threadId << std::endl;
-                        m_log << "\tCLASS:\t" << fot->m_className << std::endl;
-                        m_log << "\tTITLE:\t" << fot->m_titleName << std::endl;
+                        m_log << "\tCLASS:\t" << to_tstring(fot->m_className) << std::endl;
+                        m_log << "\tTITLE:\t" << to_tstring(fot->m_titleName) << std::endl;
                         m_log << std::endl;
                         m_focusOfThreads.erase(j);
                     }
@@ -78,34 +78,27 @@ restart:
                     m_log << "\tTHREADID:"
                     << m_currentFocusOfThread->m_threadId << std::endl;
                     m_log << "\tCLASS:\t"
-                    << m_currentFocusOfThread->m_className << std::endl;
+                    << to_tstring(m_currentFocusOfThread->m_className) << std::endl;
                     m_log << "\tTITLE:\t"
-                    << m_currentFocusOfThread->m_titleName << std::endl;
+                    << to_tstring(m_currentFocusOfThread->m_titleName) << std::endl;
                     m_log << std::endl;
                     return;
                 }
             }
         }
 
-        _TCHAR className[GANA_MAX_ATOM_LENGTH];
-        if (GetClassName(hwndFore, className, NUMBER_OF(className))) {
-            if (_tcsicmp(className, _T("ConsoleWindowClass")) == 0) {
-                _TCHAR titleName[1024];
-                if (GetWindowText(hwndFore, titleName, NUMBER_OF(titleName)) == 0)
-                    titleName[0] = _T('\0');
+        std::string className = m_windowSystem->getClassName(hwndFore);
+        if (strcasecmp_utf8(className.c_str(), "ConsoleWindowClass") == 0) {
+            std::string titleName = m_windowSystem->getWindowText(hwndFore);
 
-                std::string classNameUtf8 = yamy::platform::wstring_to_utf8(className);
-                std::string titleNameUtf8 = yamy::platform::wstring_to_utf8(titleName);
-
-                setFocus(hwndFore, threadId, to_tstring(classNameUtf8), to_tstring(titleNameUtf8), true);
-                Acquire a(&m_log, 1);
-                m_log << "HWND:\t" << std::hex << reinterpret_cast<ULONG_PTR>(hwndFore)
-                << std::dec << std::endl;
-                m_log << "THREADID:" << threadId << std::endl;
-                m_log << "CLASS:\t" << className << std::endl;
-                m_log << "TITLE:\t" << titleName << std::endl << std::endl;
-                goto restart;
-            }
+            setFocus(hwndFore, threadId, className, titleName, true);
+            Acquire a(&m_log, 1);
+            m_log << "HWND:\t" << std::hex << reinterpret_cast<ULONG_PTR>(hwndFore)
+            << std::dec << std::endl;
+            m_log << "THREADID:" << threadId << std::endl;
+            m_log << "CLASS:\t" << to_tstring(className) << std::endl;
+            m_log << "TITLE:\t" << to_tstring(titleName) << std::endl << std::endl;
+            goto restart;
         }
     }
 
@@ -129,7 +122,7 @@ restart:
 
 // focus
 bool Engine::setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threadId,
-                      const tstringi &i_className, const tstringi &i_titleName,
+                      const std::string &i_className, const std::string &i_titleName,
                       bool i_isConsole) {
     Acquire a(&m_cs);
     if (m_isSynchronizing)
@@ -159,8 +152,8 @@ bool Engine::setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threa
         fot = &(*i).second;
         if (fot->m_hwndFocus == i_hwndFocus &&
                 fot->m_isConsole == i_isConsole &&
-                fot->m_className == i_className &&
-                fot->m_titleName == i_titleName)
+                strcasecmp_utf8(fot->m_className.c_str(), i_className.c_str()) == 0 &&
+                strcasecmp_utf8(fot->m_titleName.c_str(), i_titleName.c_str()) == 0)
             return true;
     } else {
         i = m_focusOfThreads.insert(
@@ -175,7 +168,7 @@ bool Engine::setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threa
 
     if (m_setting) {
         m_setting->m_keymaps.searchWindow(&fot->m_keymaps,
-                                          to_UTF_8(i_className), to_UTF_8(i_titleName));
+                                          i_className, i_titleName);
         ASSERT(0 < fot->m_keymaps.size());
     } else
         fot->m_keymaps.clear();

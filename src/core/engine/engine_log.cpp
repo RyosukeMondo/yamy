@@ -56,7 +56,7 @@ void Engine::describeBindings()
 
 
 // get help message
-void Engine::getHelpMessages(tstring *o_helpMessage, tstring *o_helpTitle) {
+void Engine::getHelpMessages(std::string *o_helpMessage, std::string *o_helpTitle) {
     Acquire a(&m_cs);
     *o_helpMessage = m_helpMessage;
     *o_helpTitle = m_helpTitle;
