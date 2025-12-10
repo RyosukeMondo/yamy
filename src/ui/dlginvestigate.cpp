@@ -30,6 +30,7 @@ public:
                                   addSessionId(WM_MAYU_MESSAGE_NAME).c_str())) {
         m_data.m_engine = nullptr;
         m_data.m_hwndLog = nullptr;
+        m_data.m_windowSystem = nullptr;
     }
 
     /// WM_INITDIALOG
@@ -49,7 +50,11 @@ public:
 
     /// WM_CLOSE
     BOOL wmClose() {
-        ShowWindow(m_hwnd, SW_HIDE);
+        if (m_data.m_windowSystem) {
+            m_data.m_windowSystem->showWindow(m_hwnd, SW_HIDE);
+        } else {
+            ShowWindow(m_hwnd, SW_HIDE);
+        }
         return TRUE;
     }
 
@@ -57,7 +62,11 @@ public:
     BOOL wmCommand(int /* i_notifyCode */, int i_id, HWND /* i_hwndControl */) {
         switch (i_id) {
         case IDOK: {
-            ShowWindow(m_hwnd, SW_HIDE);
+            if (m_data.m_windowSystem) {
+                m_data.m_windowSystem->showWindow(m_hwnd, SW_HIDE);
+            } else {
+                ShowWindow(m_hwnd, SW_HIDE);
+            }
             return TRUE;
         }
         }

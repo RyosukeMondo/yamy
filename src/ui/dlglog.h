@@ -8,6 +8,7 @@
 
 #  include <windows.h>
 #  include "msgstream.h"
+#  include "../core/platform/window_system_interface.h"
 
 
 //
@@ -27,11 +28,12 @@ enum DlgLogNotify {
     DlgLogNotify_logCleared,            ///
 };
 
-/// parameters for "Investigate" dialog box
+/// parameters for "Log" dialog box
 class DlgLogData {
 public:
     tomsgstream *m_log;                /// log stream
     HWND m_hwndTaskTray;                /// tasktray window
+    yamy::platform::IWindowSystem *m_windowSystem;  /// window system abstraction
 };
 
 #endif // !_DLGLOG_H

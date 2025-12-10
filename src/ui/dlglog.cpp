@@ -23,6 +23,7 @@ class DlgLog : public LayoutManager
     HFONT m_hfontOriginal;            ///
     HFONT m_hfont;                ///
     tomsgstream *m_log;                ///
+    yamy::platform::IWindowSystem *m_windowSystem;  /// window system abstraction
 
 public:
     ///
@@ -31,7 +32,8 @@ public:
             m_hwndEdit(GetDlgItem(m_hwnd, IDC_EDIT_log)),
             m_hwndTaskTray(nullptr),
             m_hfontOriginal(GetWindowFont(m_hwnd)),
-            m_hfont(nullptr) {
+            m_hfont(nullptr),
+            m_windowSystem(nullptr) {
     }
 
     virtual ~DlgLog() {}
@@ -41,6 +43,7 @@ public:
         DlgLogData *dld = reinterpret_cast<DlgLogData *>(i_lParam);
         m_log = dld->m_log;
         m_hwndTaskTray = dld->m_hwndTaskTray;
+        m_windowSystem = dld->m_windowSystem;
 
         // set icons
         setSmallIcon(m_hwnd, IDI_ICON_mayu);
@@ -103,7 +106,11 @@ public:
 
     /// WM_CLOSE
     BOOL wmClose() {
-        ShowWindow(m_hwnd, SW_HIDE);
+        if (m_windowSystem) {
+            m_windowSystem->showWindow(m_hwnd, SW_HIDE);
+        } else {
+            ShowWindow(m_hwnd, SW_HIDE);
+        }
         return TRUE;
     }
 
@@ -111,7 +118,11 @@ public:
     BOOL wmCommand(int /* i_notifyCode */, int i_id, HWND /* i_hwndControl */) {
         switch (i_id) {
         case IDOK: {
-            ShowWindow(m_hwnd, SW_HIDE);
+            if (m_windowSystem) {
+                m_windowSystem->showWindow(m_hwnd, SW_HIDE);
+            } else {
+                ShowWindow(m_hwnd, SW_HIDE);
+            }
             return TRUE;
         }
 

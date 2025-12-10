@@ -541,18 +541,19 @@ private:
                         This->load();
                         break;
                     case ID_MENUITEM_investigate: {
-                        ShowWindow(This->m_hwndLog, SW_SHOW);
-                        ShowWindow(This->m_hwndInvestigate, SW_SHOW);
+                        This->m_windowSystem->showWindow(This->m_hwndLog, SW_SHOW);
+                        This->m_windowSystem->showWindow(This->m_hwndInvestigate, SW_SHOW);
 
-                        RECT rc1, rc2;
-                        GetWindowRect(This->m_hwndInvestigate, &rc1);
-                        GetWindowRect(This->m_hwndLog, &rc2);
+                        yamy::platform::Rect rc1, rc2;
+                        This->m_windowSystem->getWindowRect(This->m_hwndInvestigate, &rc1);
+                        This->m_windowSystem->getWindowRect(This->m_hwndLog, &rc2);
 
-                        MoveWindow(This->m_hwndLog, rc1.left, rc1.bottom,
-                                   rcWidth(&rc1), rcHeight(&rc2), TRUE);
+                        yamy::platform::Rect newLogRect(rc1.left, rc1.bottom,
+                                                        rc1.left + rc1.width(), rc1.bottom + rc2.height());
+                        This->m_windowSystem->moveWindow(This->m_hwndLog, newLogRect);
 
-                        SetForegroundWindow(This->m_hwndLog);
-                        SetForegroundWindow(This->m_hwndInvestigate);
+                        This->m_windowSystem->setForegroundWindow(This->m_hwndLog);
+                        This->m_windowSystem->setForegroundWindow(This->m_hwndInvestigate);
                         break;
                     }
                     case ID_MENUITEM_setting:
@@ -565,8 +566,8 @@ private:
                         }
                         break;
                     case ID_MENUITEM_log:
-                        ShowWindow(This->m_hwndLog, SW_SHOW);
-                        SetForegroundWindow(This->m_hwndLog);
+                        This->m_windowSystem->showWindow(This->m_hwndLog, SW_SHOW);
+                        This->m_windowSystem->setForegroundWindow(This->m_hwndLog);
                         break;
                     case ID_MENUITEM_check: {
                         BOOL ret;
@@ -605,8 +606,8 @@ private:
                         break;
                     }
                     case ID_MENUITEM_version:
-                        ShowWindow(This->m_hwndVersion, SW_SHOW);
-                        SetForegroundWindow(This->m_hwndVersion);
+                        This->m_windowSystem->showWindow(This->m_hwndVersion, SW_SHOW);
+                        This->m_windowSystem->setForegroundWindow(This->m_hwndVersion);
                         break;
                     case ID_MENUITEM_help: {
                         _TCHAR buf[GANA_MAX_PATH];
@@ -664,14 +665,14 @@ private:
                         break;
                     }
                     if (hwnd) {
-                        ShowWindow(hwnd, sw);
+                        This->m_windowSystem->showWindow(hwnd, sw);
                         switch (sw) {
                         case SW_SHOWNORMAL:
                         case SW_SHOWMAXIMIZED:
                         case SW_SHOW:
                         case SW_RESTORE:
                         case SW_SHOWDEFAULT:
-                            SetForegroundWindow(hwnd);
+                            This->m_windowSystem->setForegroundWindow(hwnd);
                             break;
                         }
                     }
@@ -767,8 +768,8 @@ private:
         }
 
         if (!SettingLoader(&m_log, &m_log, m_configStore).load(newSetting)) {
-            ShowWindow(m_hwndLog, SW_SHOW);
-            SetForegroundWindow(m_hwndLog);
+            m_windowSystem->showWindow(m_hwndLog, SW_SHOW);
+            m_windowSystem->setForegroundWindow(m_hwndLog);
             delete newSetting;
             Acquire a(&m_log, 0);
             m_log << _T("error: failed to load.") << std::endl;
@@ -1111,6 +1112,7 @@ public:
         DlgLogData dld;
         dld.m_log = &m_log;
         dld.m_hwndTaskTray = m_hwndTaskTray;
+        dld.m_windowSystem = m_windowSystem;
         m_hwndLog =
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_log), nullptr,
                               (DLGPROC)dlgLog_dlgProc, (LPARAM)&dld);
@@ -1119,6 +1121,7 @@ public:
         DlgInvestigateData did;
         did.m_engine = &m_engine;
         did.m_hwndLog = m_hwndLog;
+        did.m_windowSystem = m_windowSystem;
         m_hwndInvestigate =
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_investigate), nullptr,
                               (DLGPROC)dlgInvestigate_dlgProc, (LPARAM)&did);
