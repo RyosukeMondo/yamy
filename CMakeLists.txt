@@ -679,6 +679,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_executable(yamy_keyremap_test
             src/tests/platform/test_main_linux.cpp
             src/tests/platform/key_remap_linux_test.cpp
+            src/tests/platform/window_context_keymap_test.cpp
             ${KEYREMAP_TEST_CORE_SOURCES}
             ${KEYREMAP_TEST_CMD_SOURCES}
             src/tests/googletest/src/gtest-all.cc
