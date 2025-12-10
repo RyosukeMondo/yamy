@@ -3,6 +3,10 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QProcess>
+#include <cstdlib>
 
 DialogSettingsQt::DialogSettingsQt(QWidget* parent)
     : QDialog(parent)
@@ -14,6 +18,8 @@ DialogSettingsQt::DialogSettingsQt(QWidget* parent)
     , m_btnSave(nullptr)
     , m_btnCancel(nullptr)
     , m_editKeymapPath(nullptr)
+    , m_editEditorCommand(nullptr)
+    , m_btnBrowseEditor(nullptr)
     , m_labelStatus(nullptr)
 {
     setWindowTitle("YAMY Settings");
@@ -67,15 +73,145 @@ void DialogSettingsQt::onEditKeymap()
     }
 
     QString file = item->text();
+    openInEditor(file);
+}
 
-    // Open file in default editor
-    // TODO: Use configured editor or system default
-    QMessageBox::information(
+void DialogSettingsQt::openInEditor(const QString& path)
+{
+    QSettings settings("YAMY", "YAMY");
+    QString editorCmd = settings.value("editor/command", "").toString();
+
+    // Strategy 1: Use configured editor command
+    if (!editorCmd.isEmpty()) {
+        if (launchEditor(editorCmd, path)) {
+            m_labelStatus->setText("Opened in editor: " + QFileInfo(path).fileName());
+            return;
+        }
+    }
+
+    // Strategy 2: Try $EDITOR environment variable
+    const char* envEditor = std::getenv("EDITOR");
+    if (envEditor && strlen(envEditor) > 0) {
+        QString envEditorCmd = QString::fromLocal8Bit(envEditor) + " %f";
+        if (launchEditor(envEditorCmd, path)) {
+            m_labelStatus->setText("Opened in editor: " + QFileInfo(path).fileName());
+            return;
+        }
+    }
+
+    // Strategy 3: Try $VISUAL environment variable
+    const char* envVisual = std::getenv("VISUAL");
+    if (envVisual && strlen(envVisual) > 0) {
+        QString visualCmd = QString::fromLocal8Bit(envVisual) + " %f";
+        if (launchEditor(visualCmd, path)) {
+            m_labelStatus->setText("Opened in editor: " + QFileInfo(path).fileName());
+            return;
+        }
+    }
+
+    // Strategy 4: Use QDesktopServices
+    QUrl fileUrl = QUrl::fromLocalFile(path);
+    if (QDesktopServices::openUrl(fileUrl)) {
+        m_labelStatus->setText("Opened in editor: " + QFileInfo(path).fileName());
+        return;
+    }
+
+    // Strategy 5: Platform fallback
+#ifdef Q_OS_LINUX
+    QProcess process;
+    process.setProgram("xdg-open");
+    process.setArguments({path});
+    if (process.startDetached()) {
+        m_labelStatus->setText("Opened in editor: " + QFileInfo(path).fileName());
+        return;
+    }
+#endif
+
+    // All strategies failed
+    QMessageBox::warning(
         this,
-        "Edit Keymap",
-        "Edit functionality will open the file in your configured editor.\n\n"
-        "File: " + file
+        "Editor Error",
+        QString("Failed to open file in editor.\n\n"
+                "File: %1\n\n"
+                "Please configure an editor in the External Editor setting below.")
+            .arg(path)
     );
+}
+
+bool DialogSettingsQt::launchEditor(const QString& editorCmd, const QString& filePath)
+{
+    if (editorCmd.isEmpty()) {
+        return false;
+    }
+
+    QString cmd = editorCmd;
+
+    // Quote the file path if it contains spaces
+    QString quotedPath = filePath;
+    if (quotedPath.contains(' ') && !quotedPath.startsWith('"')) {
+        quotedPath = "\"" + quotedPath + "\"";
+    }
+
+    // Replace %f placeholder or append file path
+    if (cmd.contains("%f")) {
+        cmd.replace("%f", quotedPath);
+    } else {
+        cmd += " " + quotedPath;
+    }
+
+    // Parse command line into program and arguments
+    QString program;
+    QStringList args;
+    bool inQuote = false;
+    QString currentArg;
+
+    for (int i = 0; i < cmd.length(); ++i) {
+        QChar c = cmd[i];
+
+        if (c == '"') {
+            inQuote = !inQuote;
+        } else if (c == ' ' && !inQuote) {
+            if (!currentArg.isEmpty()) {
+                if (program.isEmpty()) {
+                    program = currentArg;
+                } else {
+                    args.append(currentArg);
+                }
+                currentArg.clear();
+            }
+        } else {
+            currentArg += c;
+        }
+    }
+
+    if (!currentArg.isEmpty()) {
+        if (program.isEmpty()) {
+            program = currentArg;
+        } else {
+            args.append(currentArg);
+        }
+    }
+
+    if (program.isEmpty()) {
+        return false;
+    }
+
+    QProcess* process = new QProcess(this);
+    process->setProgram(program);
+    process->setArguments(args);
+
+    connect(process, QOverload<QProcess::ProcessError>::of(&QProcess::errorOccurred),
+            process, &QProcess::deleteLater);
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            process, &QProcess::deleteLater);
+
+    qint64 pid = 0;
+    if (process->startDetached(&pid)) {
+        return true;
+    }
+
+    delete process;
+    return false;
 }
 
 void DialogSettingsQt::onRemoveKeymap()
@@ -113,6 +249,24 @@ void DialogSettingsQt::onBrowseKeymap()
 
     if (!dir.isEmpty()) {
         m_editKeymapPath->setText(dir);
+    }
+}
+
+void DialogSettingsQt::onBrowseEditor()
+{
+    QString file = QFileDialog::getOpenFileName(
+        this,
+        "Select Editor Executable",
+        "/usr/bin",
+        "Executables (*)"
+    );
+
+    if (!file.isEmpty()) {
+        // Quote the path if it contains spaces and add %f placeholder
+        if (file.contains(' ')) {
+            file = "\"" + file + "\"";
+        }
+        m_editEditorCommand->setText(file + " %f");
     }
 }
 
@@ -191,6 +345,31 @@ void DialogSettingsQt::setupUI()
 
     mainLayout->addWidget(pathGroup);
 
+    // Editor configuration group
+    QGroupBox* editorGroup = new QGroupBox("External Editor");
+    QVBoxLayout* editorLayout = new QVBoxLayout(editorGroup);
+
+    QHBoxLayout* editorCmdLayout = new QHBoxLayout();
+    m_editEditorCommand = new QLineEdit();
+    m_editEditorCommand->setPlaceholderText("Leave empty to use system default ($EDITOR or xdg-open)");
+    editorCmdLayout->addWidget(m_editEditorCommand);
+
+    m_btnBrowseEditor = new QPushButton("Browse...");
+    connect(m_btnBrowseEditor, &QPushButton::clicked, this, &DialogSettingsQt::onBrowseEditor);
+    editorCmdLayout->addWidget(m_btnBrowseEditor);
+
+    editorLayout->addLayout(editorCmdLayout);
+
+    QLabel* editorHelp = new QLabel(
+        "Specify a command to open configuration files. Use %f as a placeholder for the file path.\n"
+        "Examples: code %f, gedit %f, vim %f, nano %f"
+    );
+    editorHelp->setStyleSheet("QLabel { color: #666; font-size: 11px; }");
+    editorHelp->setWordWrap(true);
+    editorLayout->addWidget(editorHelp);
+
+    mainLayout->addWidget(editorGroup);
+
     // Status label
     m_labelStatus = new QLabel();
     m_labelStatus->setStyleSheet("QLabel { color: #666; }");
@@ -227,6 +406,10 @@ void DialogSettingsQt::loadSettings()
     ).toString();
     m_editKeymapPath->setText(keymapDir);
 
+    // Load editor command
+    QString editorCmd = settings.value("editor/command", "").toString();
+    m_editEditorCommand->setText(editorCmd);
+
     m_labelStatus->setText("Settings loaded");
 }
 
@@ -239,6 +422,9 @@ void DialogSettingsQt::saveSettings()
 
     // Save keymap directory
     settings.setValue("keymaps/directory", m_editKeymapPath->text());
+
+    // Save editor command
+    settings.setValue("editor/command", m_editEditorCommand->text());
 
     settings.sync();
 }

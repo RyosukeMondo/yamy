@@ -10,6 +10,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QProcess>
+#include <QSettings>
+#include <cstdlib>
 
 ConfigManagerDialog::ConfigManagerDialog(QWidget* parent)
     : QDialog(parent)
@@ -260,12 +262,161 @@ bool ConfigManagerDialog::validateConfigName(const QString& name) const
 
 void ConfigManagerDialog::openInEditor(const QString& path)
 {
-    // Try to use the system default application
-    QUrl fileUrl = QUrl::fromLocalFile(path);
-    if (!QDesktopServices::openUrl(fileUrl)) {
-        // Fallback: try xdg-open
-        QProcess::startDetached("xdg-open", {path});
+    QSettings settings("YAMY", "YAMY");
+    QString editorCmd = settings.value("editor/command", "").toString();
+
+    // Strategy 1: Use configured editor command
+    if (!editorCmd.isEmpty()) {
+        if (launchEditor(editorCmd, path)) {
+            return;
+        }
+        // Fall through to other strategies if configured editor fails
     }
+
+    // Strategy 2: Try $EDITOR environment variable (Linux/Unix convention)
+    const char* envEditor = std::getenv("EDITOR");
+    if (envEditor && strlen(envEditor) > 0) {
+        QString envEditorCmd = QString::fromLocal8Bit(envEditor) + " %f";
+        if (launchEditor(envEditorCmd, path)) {
+            return;
+        }
+    }
+
+    // Strategy 3: Try $VISUAL environment variable (for GUI editors)
+    const char* envVisual = std::getenv("VISUAL");
+    if (envVisual && strlen(envVisual) > 0) {
+        QString visualCmd = QString::fromLocal8Bit(envVisual) + " %f";
+        if (launchEditor(visualCmd, path)) {
+            return;
+        }
+    }
+
+    // Strategy 4: Use QDesktopServices (system default)
+    QUrl fileUrl = QUrl::fromLocalFile(path);
+    if (QDesktopServices::openUrl(fileUrl)) {
+        return;
+    }
+
+    // Strategy 5: Fallback to xdg-open on Linux
+#ifdef Q_OS_LINUX
+    QProcess process;
+    process.setProgram("xdg-open");
+    process.setArguments({path});
+    if (process.startDetached()) {
+        return;
+    }
+#endif
+
+#ifdef Q_OS_WIN
+    // Strategy 5 (Windows): Fallback to notepad
+    QProcess process;
+    process.setProgram("notepad.exe");
+    process.setArguments({path});
+    if (process.startDetached()) {
+        return;
+    }
+#endif
+
+    // All strategies failed - show error
+    QMessageBox::warning(
+        this,
+        "Editor Error",
+        QString("Failed to open configuration file in editor.\n\n"
+                "File: %1\n\n"
+                "Please configure an editor in Settings or set the $EDITOR environment variable.")
+            .arg(path)
+    );
+}
+
+bool ConfigManagerDialog::launchEditor(const QString& editorCmd, const QString& filePath)
+{
+    if (editorCmd.isEmpty()) {
+        return false;
+    }
+
+    // Parse the editor command
+    // Support both "editor %f" and just "editor" formats
+    QString cmd = editorCmd;
+    QStringList args;
+
+    // Quote the file path if it contains spaces
+    QString quotedPath = filePath;
+    if (quotedPath.contains(' ') && !quotedPath.startsWith('"')) {
+        quotedPath = "\"" + quotedPath + "\"";
+    }
+
+    // Replace %f placeholder with the file path
+    if (cmd.contains("%f")) {
+        cmd.replace("%f", quotedPath);
+    } else {
+        // No placeholder - append file path
+        cmd += " " + quotedPath;
+    }
+
+    // Parse the command line into program and arguments
+    // Handle quoted strings properly
+    QString program;
+    bool inQuote = false;
+    QString currentArg;
+
+    for (int i = 0; i < cmd.length(); ++i) {
+        QChar c = cmd[i];
+
+        if (c == '"') {
+            inQuote = !inQuote;
+        } else if (c == ' ' && !inQuote) {
+            if (!currentArg.isEmpty()) {
+                if (program.isEmpty()) {
+                    program = currentArg;
+                } else {
+                    args.append(currentArg);
+                }
+                currentArg.clear();
+            }
+        } else {
+            currentArg += c;
+        }
+    }
+
+    // Add the last argument
+    if (!currentArg.isEmpty()) {
+        if (program.isEmpty()) {
+            program = currentArg;
+        } else {
+            args.append(currentArg);
+        }
+    }
+
+    if (program.isEmpty()) {
+        return false;
+    }
+
+    // Launch the editor
+    QProcess* process = new QProcess(this);
+    process->setProgram(program);
+    process->setArguments(args);
+
+    // Connect to error signal for cleanup
+    connect(process, QOverload<QProcess::ProcessError>::of(&QProcess::errorOccurred),
+            this, [this, process, program](QProcess::ProcessError error) {
+                Q_UNUSED(error);
+                // Clean up process object
+                process->deleteLater();
+            });
+
+    // Connect to finished signal for cleanup
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            process, &QProcess::deleteLater);
+
+    // Start detached so the editor runs independently
+    qint64 pid = 0;
+    if (process->startDetached(&pid)) {
+        return true;
+    }
+
+    // startDetached failed, clean up
+    delete process;
+    return false;
 }
 
 void ConfigManagerDialog::onNew()

@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QString>
 #include <QStringList>
+#include <QFileInfo>
 
 /**
  * @brief Settings dialog for YAMY configuration
@@ -68,6 +69,11 @@ private slots:
     void onBrowseKeymap();
 
     /**
+     * @brief Browse for editor executable
+     */
+    void onBrowseEditor();
+
+    /**
      * @brief Update button states based on selection
      */
     void onKeymapSelectionChanged();
@@ -98,6 +104,22 @@ private:
      */
     void saveSettings();
 
+    /**
+     * @brief Open a file in external editor
+     * @param path Path to the file to open
+     *
+     * Uses configured editor, $EDITOR/$VISUAL env vars, or system default
+     */
+    void openInEditor(const QString& path);
+
+    /**
+     * @brief Launch an editor with the specified command
+     * @param editorCmd Editor command (may contain %f placeholder)
+     * @param filePath Path to the file to open
+     * @return true if editor was launched successfully
+     */
+    bool launchEditor(const QString& editorCmd, const QString& filePath);
+
     // UI Components
     QListWidget* m_keymapList;
     QPushButton* m_btnAdd;
@@ -108,6 +130,8 @@ private:
     QPushButton* m_btnCancel;
 
     QLineEdit* m_editKeymapPath;
+    QLineEdit* m_editEditorCommand;
+    QPushButton* m_btnBrowseEditor;
     QLabel* m_labelStatus;
 
     // Data

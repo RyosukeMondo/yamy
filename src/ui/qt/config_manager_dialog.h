@@ -129,8 +129,23 @@ private:
     /**
      * @brief Open a configuration file in external editor
      * @param path Path to the configuration file
+     *
+     * Uses the following strategy to find an editor:
+     * 1. User-configured editor command from settings
+     * 2. $EDITOR environment variable
+     * 3. $VISUAL environment variable
+     * 4. QDesktopServices system default
+     * 5. Platform-specific fallback (xdg-open on Linux, notepad on Windows)
      */
     void openInEditor(const QString& path);
+
+    /**
+     * @brief Launch an editor with the specified command
+     * @param editorCmd Editor command (may contain %f placeholder for file path)
+     * @param filePath Path to the file to open
+     * @return true if editor was launched successfully
+     */
+    bool launchEditor(const QString& editorCmd, const QString& filePath);
 
     // UI Components
     QListWidget* m_configList;
