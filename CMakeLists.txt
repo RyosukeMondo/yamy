@@ -532,8 +532,11 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/tests/platform/test_main_linux.cpp
             src/tests/platform/window_system_linux_test.cpp
             src/tests/platform/input_injector_linux_test.cpp
+            src/tests/platform/input_hook_linux_test.cpp
             src/platform/linux/window_system_linux_queries.cpp
             src/platform/linux/keycode_mapping.cpp
+            src/platform/linux/input_hook_linux.cpp
+            src/platform/linux/device_manager_linux.cpp
         )
 
         add_executable(yamy_linux_test
@@ -555,6 +558,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         target_link_libraries(yamy_linux_test PRIVATE
             pthread
             ${X11_LIBRARIES}
+            ${UDEV_LIBRARIES}
         )
 
         # Add test to CTest
