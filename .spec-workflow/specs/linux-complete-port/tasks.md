@@ -577,7 +577,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create configuration menu - Add QMenu* m_configMenu to SystemTray class, In buildMenu add submenu "Configurations", Populate submenu with config list from ConfigManager, Add checkmark (QAction::setCheckable) on active config, Connect action triggered to Engine::switchConfiguration, Add "Manage Configurations..." action opening dialog | Restrictions: Update menu dynamically when configs change, Show checkmark correctly, Handle long config lists gracefully | Success: Configuration submenu appears, Configs listed correctly, Active config has checkmark, Clicking switches config, Manage action opens dialog | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.2.2 Create ConfigManagerDialog GUI
+- [x] 2.2.2 Create ConfigManagerDialog GUI
   - File: src/ui/qt/config_manager_dialog.h, src/ui/qt/config_manager_dialog.cpp, src/ui/qt/config_manager_dialog.ui
   - GUI for managing configurations
   - List, add, remove, rename, edit configs
