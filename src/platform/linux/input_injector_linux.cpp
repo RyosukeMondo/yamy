@@ -5,7 +5,7 @@ namespace yamy::platform {
 
 class InputInjectorLinux : public IInputInjector {
 public:
-    InputInjectorLinux(IWindowSystem* ws) {}
+    InputInjectorLinux(IWindowSystem* windowSystem) : m_windowSystem(windowSystem) {}
 
     // Keyboard
     void keyDown(KeyCode key) override {
@@ -32,6 +32,9 @@ public:
     void inject(const KEYBOARD_INPUT_DATA *data, const InjectionContext &ctx, const void *rawData = 0) override {
         std::cerr << "[STUB] inject()" << std::endl;
     }
+
+private:
+    IWindowSystem* m_windowSystem;
 };
 
 IInputInjector* createInputInjector(IWindowSystem* windowSystem) {

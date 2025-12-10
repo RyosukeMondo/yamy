@@ -86,7 +86,7 @@ public:
 
     WindowShowCmd getShowCommand(WindowHandle window) override {
         std::cerr << "[STUB] getShowCommand()" << std::endl;
-        return WindowShowCmd::Normal;
+        return WindowShowCmd::Normal; // Default
     }
 
     bool isConsoleWindow(WindowHandle window) override {
@@ -157,33 +157,37 @@ public:
 
     bool getClientRect(WindowHandle window, Rect* outRect) override {
         std::cerr << "[STUB] getClientRect()" << std::endl;
-        if (outRect) *outRect = Rect(0,0,100,100);
+        if (outRect) {
+            *outRect = Rect(0, 0, 800, 600);
+        }
         return false;
     }
 
     bool getChildWindowRect(WindowHandle window, Rect* outRect) override {
         std::cerr << "[STUB] getChildWindowRect()" << std::endl;
-        if (outRect) *outRect = Rect(0,0,100,100);
+        if (outRect) {
+            *outRect = Rect(0, 0, 800, 600);
+        }
         return false;
     }
 
     unsigned int mapVirtualKey(unsigned int vkey) override {
-        std::cerr << "[STUB] mapVirtualKey()" << std::endl;
+        std::cerr << "[STUB] mapVirtualKey(" << vkey << ")" << std::endl;
         return 0;
     }
 
     bool postMessage(WindowHandle window, unsigned int message, uintptr_t wParam, intptr_t lParam) override {
-        std::cerr << "[STUB] postMessage()" << std::endl;
+        std::cerr << "[STUB] postMessage(" << message << ")" << std::endl;
         return false;
     }
 
     unsigned int registerWindowMessage(const std::string& name) override {
-        std::cerr << "[STUB] registerWindowMessage()" << std::endl;
+        std::cerr << "[STUB] registerWindowMessage(" << name << ")" << std::endl;
         return 0xC000;
     }
 
     bool sendMessageTimeout(WindowHandle window, unsigned int msg, uintptr_t wParam, intptr_t lParam, unsigned int flags, unsigned int timeout, uintptr_t* result) override {
-        std::cerr << "[STUB] sendMessageTimeout()" << std::endl;
+        std::cerr << "[STUB] sendMessageTimeout(" << msg << ")" << std::endl;
         if (result) *result = 0;
         return false;
     }
@@ -224,8 +228,8 @@ public:
     }
 
     int shellExecute(const std::string& operation, const std::string& file, const std::string& parameters, const std::string& directory, int showCmd) override {
-        std::cerr << "[STUB] shellExecute()" << std::endl;
-        return 33; // >32 means success
+        std::cerr << "[STUB] shellExecute(" << operation << ", " << file << ")" << std::endl;
+        return 33; // Success > 32
     }
 
     bool disconnectNamedPipe(void* handle) override {
@@ -240,16 +244,17 @@ public:
 
     bool writeFile(void* handle, const void* buffer, unsigned int bytesToWrite, unsigned int* bytesWritten, void* overlapped) override {
         std::cerr << "[STUB] writeFile()" << std::endl;
+        if (bytesWritten) *bytesWritten = 0;
         return false;
     }
 
     void* openMutex(const std::string& name) override {
-        std::cerr << "[STUB] openMutex()" << std::endl;
+        std::cerr << "[STUB] openMutex(" << name << ")" << std::endl;
         return nullptr;
     }
 
     void* openFileMapping(const std::string& name) override {
-        std::cerr << "[STUB] openFileMapping()" << std::endl;
+        std::cerr << "[STUB] openFileMapping(" << name << ")" << std::endl;
         return nullptr;
     }
 
@@ -268,12 +273,12 @@ public:
     }
 
     void* loadLibrary(const std::string& path) override {
-        std::cerr << "[STUB] loadLibrary()" << std::endl;
+        std::cerr << "[STUB] loadLibrary(" << path << ")" << std::endl;
         return nullptr;
     }
 
     void* getProcAddress(void* module, const std::string& procName) override {
-        std::cerr << "[STUB] getProcAddress()" << std::endl;
+        std::cerr << "[STUB] getProcAddress(" << procName << ")" << std::endl;
         return nullptr;
     }
 

@@ -15,7 +15,8 @@ public:
     }
 
     void manageExtension(const std::string& dllName, const std::string& dependDllName, bool load, void **moduleHandle) override {
-        std::cerr << "[STUB] manageExtension()" << std::endl;
+        std::cerr << "[STUB] InputDriver::manageExtension()" << std::endl;
+        if (moduleHandle) *moduleHandle = nullptr;
     }
 };
 

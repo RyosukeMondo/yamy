@@ -274,7 +274,7 @@ grep -rl "HWND\|DWORD\|MSG\|WPARAM\|LPARAM" src/core --include="*.cpp" --include
 
 ## Track 7: CI & Linux Build Verification
 
-**Assignee:** `{ASSIGNEE_7}`
+**Assignee:** Jules
 **Priority:** 🟢 LOW (Quality assurance)
 **Estimated Effort:** 2-3 hours
 **Dependencies:** Tracks 1, 3 (to ensure portability)
@@ -288,15 +288,15 @@ Set up CI to build Linux stubs and verify no Windows dependencies leak into core
 - `src/platform/linux/README.md` (update)
 
 ### Tasks
-- [ ] Create GitHub Actions workflow for Linux build
-- [ ] Configure CMake to support Linux target build
-- [ ] Add CMake option: `BUILD_LINUX_STUB` (default: OFF)
-- [ ] Verify Linux stubs compile on Ubuntu latest
-- [ ] Add static analysis step to detect Windows.h includes in src/core
-- [ ] Add step to detect Win32 types in src/core (HWND, DWORD, etc.)
-- [ ] Configure workflow to run on every PR
-- [ ] Test: Trigger workflow manually and verify it passes
-- [ ] Document Linux build process in README
+- [x] Create GitHub Actions workflow for Linux build
+- [x] Configure CMake to support Linux target build
+- [x] Add CMake option: `BUILD_LINUX_STUB` (default: OFF)
+- [x] Verify Linux stubs compile on Ubuntu latest
+- [x] Add static analysis step to detect Windows.h includes in src/core
+- [x] Add step to detect Win32 types in src/core (HWND, DWORD, etc.)
+- [x] Configure workflow to run on every PR
+- [x] Test: Trigger workflow manually and verify it passes
+- [x] Document Linux build process in README
 
 ### Acceptance Criteria
 - CI workflow successfully builds Linux stub
@@ -321,6 +321,12 @@ Assignee: {NAME/AGENT_ID}
 Branch: feature/track-{N}-{short-name}
 Status: [ ] Not Started | [ ] In Progress | [ ] Review | [ ] Complete
 ```
+
+### Status Updates
+Track 7: CI & Linux Build Verification
+Assignee: Jules
+Branch: feature/track-7-ci-linux-verification
+Status: [x] Complete
 
 ### Branch Strategy
 Each track should work on its own branch:
