@@ -30,7 +30,7 @@ set(LINUX_PLATFORM_SOURCES
     # window_system_linux_monitor.cpp
 
     # Track 6: POSIX Synchronization
-    # sync_linux.cpp
+    sync_linux.cpp
 
     # Track 7: Unix IPC
     # ipc_linux.cpp
