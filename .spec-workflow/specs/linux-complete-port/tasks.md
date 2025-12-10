@@ -341,7 +341,7 @@
   - _Requirements: FR-1.8_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with Linux IPC expertise | Task: Test IPC on Linux - Step 1: Start first YAMY instance, Step 2: Attempt to start second instance and verify it exits, Step 3: Send reload command via yamy --reload and verify first instance reloads, Step 4: Send exit command via yamy --exit and verify first instance exits, Step 5: Verify socket files cleaned up, Step 6: Test error handling when socket locked | Restrictions: Test with real Unix domain sockets, Verify socket cleanup, Test permission issues, Check /tmp/yamy-*.sock files | Success: Single instance works, Reload command functional, Exit command functional, Socket cleanup works, No orphaned sockets, Error handling correct | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.10 Fix compilation errors in Core module
+- [x] 1.2.10 Fix compilation errors in Core module
   - Files: src/core/*.cpp
   - Fix any remaining type mismatches and API changes
   - Resolve linker errors
