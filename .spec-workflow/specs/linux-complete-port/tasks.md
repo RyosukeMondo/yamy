@@ -655,7 +655,7 @@
   - _Requirements: FR-3.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer with platform abstraction knowledge | Task: Implement updateWindowInfo method - Step 1: Accept WindowHandle parameter, Step 2: Use IWindowSystem to query: getWindowText, getClassName, getWindowRect, isWindowVisible, Step 3: Update UI labels: handle (hex format 0x%X), title (QString::fromStdString), className, geometry (%d, %d %dx%d), state (Visible/Hidden), Step 4: Handle errors gracefully if window invalid, Step 5: Clear previous info before updating | Restrictions: Use platform abstraction not direct X11 calls, Handle UTF-8 to QString conversion correctly, Format hex values properly, Don't crash on invalid windows | Success: Window info displays correctly, All properties accurate, Handle formatted as hex, UTF-8 text displays properly, Invalid windows handled gracefully | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.4 Add process information retrieval
+- [x] 3.4 Add process information retrieval
   - File: src/ui/qt/dialog_investigate_qt.cpp
   - Read /proc filesystem for process name and path
   - Display process info in WindowInfoPanel
