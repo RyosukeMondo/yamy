@@ -447,7 +447,7 @@
   - _Requirements: NF-1 Performance_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with X11 performance expertise | Task: Optimize window text retrieval - Step 1: Implement property cache with timeout, Step 2: Retrieve _NET_WM_NAME and WM_NAME in single call if possible, Step 3: Use XGetWindowProperty efficiently (check property existence first), Step 4: Add cache invalidation on window change events, Step 5: Benchmark and ensure <10ms retrieval time | Restrictions: Maintain correctness, Ensure cache doesn't serve stale data, Keep memory overhead minimal | Success: Window text retrieval <10ms, Cache reduces X11 calls by 80%, No stale data served, Memory overhead <1KB per window, Performance measurably improved | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.3.5 Optimize keycode mapping table
+- [x] 1.3.5 Optimize keycode mapping table
   - File: src/platform/linux/input_injector_linux.cpp
   - Pre-build keycode mapping table at initialization
   - Use efficient lookup structure
