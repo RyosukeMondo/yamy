@@ -309,7 +309,7 @@
   - _Requirements: FR-1.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Update key injection in actions - Step 1: Update Action::execute to accept IInputInjector* parameter, Step 2: Replace SendInput calls with inputInjector->injectKeyDown/injectKeyUp, Step 3: Update KeyAction, ModifierAction, StringAction to use injector, Step 4: Ensure key sequences injected correctly | Restrictions: Maintain action behavior exactly, Preserve key injection timing, Handle all action types correctly | Success: All actions use IInputInjector, Key injection works correctly, Action behavior unchanged, Works on both platforms | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.6 Update MainWindow to use IWindowSystem
+- [x] 1.2.6 Update MainWindow to use IWindowSystem
   - File: src/ui/qt/main_window.cpp
   - Replace direct window API calls with IWindowSystem
   - Update window management in GUI
