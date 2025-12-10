@@ -8,8 +8,18 @@
 #include <QLabel>
 #include <QString>
 #include <QStringList>
+#include <QTextEdit>
+#include <QFileSystemWatcher>
+#include <QTimer>
+#include <QIcon>
+#include <QMap>
+#include <QSet>
+#include <QMutex>
+#include <memory>
 
 class ConfigManager;
+class QThread;
+class ConfigValidationWorker;
 
 /**
  * @brief Dialog for managing YAMY configuration files
@@ -96,6 +106,22 @@ private slots:
      */
     void refreshConfigList();
 
+    /**
+     * @brief Handle validation results from worker thread
+     * @param configPath Path of validated config
+     * @param hasErrors True if validation found errors
+     * @param hasWarnings True if validation found warnings
+     * @param errorMessages Formatted error/warning messages
+     */
+    void onValidationComplete(const QString& configPath, bool hasErrors,
+                              bool hasWarnings, const QStringList& errorMessages);
+
+    /**
+     * @brief Handle file changes detected by watcher
+     * @param path Path to changed file
+     */
+    void onFileChanged(const QString& path);
+
 private:
     /**
      * @brief Setup UI components
@@ -147,6 +173,44 @@ private:
      */
     bool launchEditor(const QString& editorCmd, const QString& filePath);
 
+    /**
+     * @brief Start validation for a config file
+     * @param configPath Path to config file
+     */
+    void startValidation(const QString& configPath);
+
+    /**
+     * @brief Start validation for all configs
+     */
+    void startValidationForAll();
+
+    /**
+     * @brief Get icon for validation status
+     * @param hasErrors True if has errors
+     * @param hasWarnings True if has warnings
+     * @return Icon for the status
+     */
+    QIcon getValidationIcon(bool hasErrors, bool hasWarnings) const;
+
+    /**
+     * @brief Create validation status icons
+     */
+    void createValidationIcons();
+
+    /**
+     * @brief Update list item with validation status
+     * @param configPath Path to config
+     * @param hasErrors True if has errors
+     * @param hasWarnings True if has warnings
+     */
+    void updateItemValidationStatus(const QString& configPath, bool hasErrors,
+                                    bool hasWarnings);
+
+    /**
+     * @brief Setup file watcher for config files
+     */
+    void setupFileWatcher();
+
     // UI Components
     QListWidget* m_configList;
     QPushButton* m_btnNew;
@@ -160,4 +224,57 @@ private:
     QPushButton* m_btnClose;
     QLabel* m_labelStatus;
     QLabel* m_labelPath;
+    QTextEdit* m_validationDetails;
+
+    // Validation support
+    QFileSystemWatcher* m_fileWatcher;
+    QTimer* m_validationDebounceTimer;
+    QThread* m_validationThread;
+    ConfigValidationWorker* m_validationWorker;
+
+    // Validation status icons
+    QIcon m_iconValid;
+    QIcon m_iconError;
+    QIcon m_iconWarning;
+    QIcon m_iconPending;
+
+    // Validation results cache: configPath -> (hasErrors, hasWarnings, messages)
+    struct ValidationStatus {
+        bool hasErrors = false;
+        bool hasWarnings = false;
+        QStringList messages;
+    };
+    QMap<QString, ValidationStatus> m_validationCache;
+    QMutex m_validationCacheMutex;
+
+    // Pending validations (debounced)
+    QSet<QString> m_pendingValidations;
+};
+
+/**
+ * @brief Worker object for background config validation
+ */
+class ConfigValidationWorker : public QObject {
+    Q_OBJECT
+
+public:
+    explicit ConfigValidationWorker(QObject* parent = nullptr);
+
+public slots:
+    /**
+     * @brief Validate a config file
+     * @param configPath Path to config file
+     */
+    void validateConfig(const QString& configPath);
+
+signals:
+    /**
+     * @brief Emitted when validation completes
+     * @param configPath Path of validated config
+     * @param hasErrors True if validation found errors
+     * @param hasWarnings True if validation found warnings
+     * @param errorMessages Formatted error/warning messages
+     */
+    void validationComplete(const QString& configPath, bool hasErrors,
+                           bool hasWarnings, const QStringList& errorMessages);
 };

@@ -1,5 +1,6 @@
 #include "config_manager_dialog.h"
 #include "../../core/settings/config_manager.h"
+#include "../../core/settings/config_validator.h"
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -11,6 +12,10 @@
 #include <QDir>
 #include <QProcess>
 #include <QSettings>
+#include <QThread>
+#include <QMutexLocker>
+#include <QPainter>
+#include <QSplitter>
 #include <cstdlib>
 
 ConfigManagerDialog::ConfigManagerDialog(QWidget* parent)
@@ -27,21 +32,59 @@ ConfigManagerDialog::ConfigManagerDialog(QWidget* parent)
     , m_btnClose(nullptr)
     , m_labelStatus(nullptr)
     , m_labelPath(nullptr)
+    , m_validationDetails(nullptr)
+    , m_fileWatcher(nullptr)
+    , m_validationDebounceTimer(nullptr)
+    , m_validationThread(nullptr)
+    , m_validationWorker(nullptr)
 {
     setWindowTitle("Manage Configurations");
-    setMinimumSize(700, 500);
+    setMinimumSize(700, 600);
 
+    createValidationIcons();
     setupUI();
+    setupFileWatcher();
+
+    // Setup validation worker thread
+    m_validationThread = new QThread(this);
+    m_validationWorker = new ConfigValidationWorker();
+    m_validationWorker->moveToThread(m_validationThread);
+
+    connect(m_validationWorker, &ConfigValidationWorker::validationComplete,
+            this, &ConfigManagerDialog::onValidationComplete);
+    connect(this, &QObject::destroyed, m_validationThread, &QThread::quit);
+
+    m_validationThread->start();
+
+    // Setup debounce timer
+    m_validationDebounceTimer = new QTimer(this);
+    m_validationDebounceTimer->setSingleShot(true);
+    m_validationDebounceTimer->setInterval(500);  // 500ms debounce
+    connect(m_validationDebounceTimer, &QTimer::timeout, this, [this]() {
+        for (const QString& path : m_pendingValidations) {
+            startValidation(path);
+        }
+        m_pendingValidations.clear();
+    });
+
     refreshConfigList();
 }
 
 ConfigManagerDialog::~ConfigManagerDialog()
 {
+    if (m_validationThread) {
+        m_validationThread->quit();
+        m_validationThread->wait();
+    }
+    delete m_validationWorker;
 }
 
 void ConfigManagerDialog::setupUI()
 {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+
+    // Create splitter for list and validation details
+    QSplitter* splitter = new QSplitter(Qt::Vertical);
 
     // Configuration list group
     QGroupBox* listGroup = new QGroupBox("Available Configurations");
@@ -61,7 +104,23 @@ void ConfigManagerDialog::setupUI()
     m_labelPath->setWordWrap(true);
     listLayout->addWidget(m_labelPath);
 
-    mainLayout->addWidget(listGroup);
+    splitter->addWidget(listGroup);
+
+    // Validation details group
+    QGroupBox* validationGroup = new QGroupBox("Validation Details");
+    QVBoxLayout* validationLayout = new QVBoxLayout(validationGroup);
+
+    m_validationDetails = new QTextEdit();
+    m_validationDetails->setReadOnly(true);
+    m_validationDetails->setFont(QFont("monospace", 9));
+    m_validationDetails->setPlaceholderText("Select a configuration to see validation status...");
+    validationLayout->addWidget(m_validationDetails);
+
+    splitter->addWidget(validationGroup);
+    splitter->setStretchFactor(0, 2);  // Config list gets 2/3
+    splitter->setStretchFactor(1, 1);  // Validation details gets 1/3
+
+    mainLayout->addWidget(splitter);
 
     // Button row 1: File operations
     QHBoxLayout* btnLayout1 = new QHBoxLayout();
@@ -143,6 +202,14 @@ void ConfigManagerDialog::refreshConfigList()
 {
     m_configList->clear();
 
+    // Clear file watcher and re-add files
+    if (m_fileWatcher) {
+        QStringList watched = m_fileWatcher->files();
+        if (!watched.isEmpty()) {
+            m_fileWatcher->removePaths(watched);
+        }
+    }
+
     ConfigManager& configMgr = ConfigManager::instance();
     std::vector<ConfigEntry> configs = configMgr.listConfigs();
     int activeIndex = configMgr.getActiveIndex();
@@ -150,6 +217,7 @@ void ConfigManagerDialog::refreshConfigList()
     for (size_t i = 0; i < configs.size(); ++i) {
         const ConfigEntry& config = configs[i];
         QString displayName = QString::fromStdString(config.name);
+        QString configPath = QString::fromStdString(config.path);
 
         // Add indicator for active config
         if (static_cast<int>(i) == activeIndex) {
@@ -162,12 +230,16 @@ void ConfigManagerDialog::refreshConfigList()
         }
 
         QListWidgetItem* item = new QListWidgetItem(displayName);
-        item->setData(Qt::UserRole, QString::fromStdString(config.path));
+        item->setData(Qt::UserRole, configPath);
         item->setData(Qt::UserRole + 1, static_cast<int>(i));
+
+        // Set initial icon as pending
+        item->setIcon(m_iconPending);
 
         // Style missing files differently
         if (!config.exists) {
             item->setForeground(Qt::red);
+            item->setIcon(m_iconError);
         } else if (static_cast<int>(i) == activeIndex) {
             QFont font = item->font();
             font.setBold(true);
@@ -175,10 +247,18 @@ void ConfigManagerDialog::refreshConfigList()
         }
 
         m_configList->addItem(item);
+
+        // Add to file watcher if file exists
+        if (config.exists && m_fileWatcher) {
+            m_fileWatcher->addPath(configPath);
+        }
     }
 
     m_labelStatus->setText(QString("%1 configuration(s) found").arg(configs.size()));
     updateButtonStates();
+
+    // Start validation for all configs
+    startValidationForAll();
 }
 
 void ConfigManagerDialog::onSelectionChanged()
@@ -189,8 +269,36 @@ void ConfigManagerDialog::onSelectionChanged()
     QString path = getSelectedConfigPath();
     if (!path.isEmpty()) {
         m_labelPath->setText("Path: " + path);
+
+        // Show validation details for selected config
+        QMutexLocker locker(&m_validationCacheMutex);
+        if (m_validationCache.contains(path)) {
+            const ValidationStatus& status = m_validationCache[path];
+            if (status.messages.isEmpty()) {
+                m_validationDetails->setHtml(
+                    "<span style='color: green;'>&#10004; Configuration is valid</span>");
+            } else {
+                QString html = "<style>"
+                    "body { font-family: monospace; }"
+                    ".error { color: #cc0000; }"
+                    ".warning { color: #cc7700; }"
+                    ".line { color: #666666; }"
+                    "</style>";
+
+                for (const QString& msg : status.messages) {
+                    QString styleClass = msg.contains("error") ? "error" : "warning";
+                    QString escapedMsg = msg.toHtmlEscaped().replace("\n", "<br>");
+                    html += QString("<p class='%1'>%2</p>").arg(styleClass, escapedMsg);
+                }
+                m_validationDetails->setHtml(html);
+            }
+        } else {
+            m_validationDetails->setHtml(
+                "<span style='color: #666;'>Validating...</span>");
+        }
     } else {
         m_labelPath->clear();
+        m_validationDetails->clear();
     }
 }
 
@@ -803,4 +911,197 @@ void ConfigManagerDialog::onSetActive()
             "Failed to set active configuration."
         );
     }
+}
+
+void ConfigManagerDialog::createValidationIcons()
+{
+    const int iconSize = 16;
+
+    // Valid icon (green checkmark)
+    {
+        QPixmap pixmap(iconSize, iconSize);
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(QPen(QColor(0, 150, 0), 2));
+        painter.drawLine(3, 8, 6, 12);
+        painter.drawLine(6, 12, 13, 4);
+        m_iconValid = QIcon(pixmap);
+    }
+
+    // Error icon (red X)
+    {
+        QPixmap pixmap(iconSize, iconSize);
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(QPen(QColor(200, 0, 0), 2));
+        painter.drawLine(3, 3, 13, 13);
+        painter.drawLine(13, 3, 3, 13);
+        m_iconError = QIcon(pixmap);
+    }
+
+    // Warning icon (yellow triangle with !)
+    {
+        QPixmap pixmap(iconSize, iconSize);
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(QPen(QColor(200, 150, 0), 2));
+        QPolygon triangle;
+        triangle << QPoint(8, 2) << QPoint(2, 14) << QPoint(14, 14);
+        painter.drawPolygon(triangle);
+        painter.drawLine(8, 6, 8, 10);
+        painter.drawPoint(8, 12);
+        m_iconWarning = QIcon(pixmap);
+    }
+
+    // Pending icon (gray circle)
+    {
+        QPixmap pixmap(iconSize, iconSize);
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(QPen(QColor(150, 150, 150), 2));
+        painter.drawEllipse(2, 2, 12, 12);
+        m_iconPending = QIcon(pixmap);
+    }
+}
+
+QIcon ConfigManagerDialog::getValidationIcon(bool hasErrors, bool hasWarnings) const
+{
+    if (hasErrors) {
+        return m_iconError;
+    }
+    if (hasWarnings) {
+        return m_iconWarning;
+    }
+    return m_iconValid;
+}
+
+void ConfigManagerDialog::setupFileWatcher()
+{
+    m_fileWatcher = new QFileSystemWatcher(this);
+    connect(m_fileWatcher, &QFileSystemWatcher::fileChanged,
+            this, &ConfigManagerDialog::onFileChanged);
+}
+
+void ConfigManagerDialog::onFileChanged(const QString& path)
+{
+    // Debounce file changes to avoid excessive validation
+    m_pendingValidations.insert(path);
+    m_validationDebounceTimer->start();
+
+    // Re-add path to watcher (some systems remove it on change)
+    if (!m_fileWatcher->files().contains(path) && QFileInfo::exists(path)) {
+        m_fileWatcher->addPath(path);
+    }
+}
+
+void ConfigManagerDialog::startValidation(const QString& configPath)
+{
+    if (configPath.isEmpty() || !QFileInfo::exists(configPath)) {
+        return;
+    }
+
+    // Invoke validation in worker thread
+    QMetaObject::invokeMethod(m_validationWorker, "validateConfig",
+                              Qt::QueuedConnection,
+                              Q_ARG(QString, configPath));
+}
+
+void ConfigManagerDialog::startValidationForAll()
+{
+    ConfigManager& configMgr = ConfigManager::instance();
+    std::vector<ConfigEntry> configs = configMgr.listConfigs();
+
+    for (const auto& config : configs) {
+        if (config.exists) {
+            startValidation(QString::fromStdString(config.path));
+        }
+    }
+}
+
+void ConfigManagerDialog::onValidationComplete(const QString& configPath,
+                                               bool hasErrors,
+                                               bool hasWarnings,
+                                               const QStringList& errorMessages)
+{
+    // Update cache
+    {
+        QMutexLocker locker(&m_validationCacheMutex);
+        ValidationStatus& status = m_validationCache[configPath];
+        status.hasErrors = hasErrors;
+        status.hasWarnings = hasWarnings;
+        status.messages = errorMessages;
+    }
+
+    // Update list item icon
+    updateItemValidationStatus(configPath, hasErrors, hasWarnings);
+
+    // If this is the currently selected config, update the details view
+    QString selectedPath = getSelectedConfigPath();
+    if (selectedPath == configPath) {
+        onSelectionChanged();  // Refresh the details view
+    }
+}
+
+void ConfigManagerDialog::updateItemValidationStatus(const QString& configPath,
+                                                     bool hasErrors,
+                                                     bool hasWarnings)
+{
+    // Find the list item with this path
+    for (int i = 0; i < m_configList->count(); ++i) {
+        QListWidgetItem* item = m_configList->item(i);
+        if (item && item->data(Qt::UserRole).toString() == configPath) {
+            item->setIcon(getValidationIcon(hasErrors, hasWarnings));
+
+            // Update tooltip
+            if (hasErrors) {
+                item->setToolTip("Configuration has errors");
+            } else if (hasWarnings) {
+                item->setToolTip("Configuration has warnings");
+            } else {
+                item->setToolTip("Configuration is valid");
+            }
+            break;
+        }
+    }
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ConfigValidationWorker implementation
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ConfigValidationWorker::ConfigValidationWorker(QObject* parent)
+    : QObject(parent)
+{
+}
+
+void ConfigValidationWorker::validateConfig(const QString& configPath)
+{
+    ConfigValidator validator;
+    ValidationResult result = validator.validate(configPath.toStdString());
+
+    QStringList errorMessages;
+    for (const auto& error : result.errors) {
+        QString msg;
+        if (error.lineNumber > 0) {
+            msg = QString("Line %1: ").arg(error.lineNumber);
+        }
+        msg += QString::fromStdString(error.message);
+        if (!error.context.empty()) {
+            msg += "\n  " + QString::fromStdString(error.context);
+        }
+        // Prefix with severity
+        if (error.isError()) {
+            msg = "[error] " + msg;
+        } else {
+            msg = "[warning] " + msg;
+        }
+        errorMessages.append(msg);
+    }
+
+    emit validationComplete(configPath, result.hasErrors, result.hasWarnings,
+                           errorMessages);
 }
