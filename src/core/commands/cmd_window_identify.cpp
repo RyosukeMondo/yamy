@@ -16,7 +16,7 @@ void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) cons
         tstring titleName = to_tstring(i_engine->getWindowSystem()->getTitleName(i_param->m_hwnd));
 
         Acquire a(&i_engine->m_log, 1);
-        i_engine->m_log << _T("HWND:\t0x") << std::hex << (uintptr_t)i_param->m_hwnd << std::dec << std::endl;
+        i_engine->m_log << "WindowHandle:\t0x" << std::hex << (uintptr_t)i_param->m_hwnd << std::dec << std::endl;
         i_engine->m_log << _T("CLASS:\t") << className << std::endl;
         i_engine->m_log << _T("TITLE:\t") << titleName << std::endl;
 

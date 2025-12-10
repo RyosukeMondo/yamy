@@ -64,7 +64,7 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
     });
 
     if (data.found) {
-        setForegroundWindow(static_cast<HWND>(data.found));
+        setForegroundWindow(data.found);
     } else {
         // log warning
         tstring className = to_tstring(classNameUtf8);

@@ -94,4 +94,9 @@ struct InjectionContext {
     Point dragStartPos;
 };
 
+// Platform-agnostic message types
+using MessageId = uint32_t;
+using MessageWParam = uintptr_t;
+using MessageLParam = intptr_t;
+
 } // namespace yamy::platform

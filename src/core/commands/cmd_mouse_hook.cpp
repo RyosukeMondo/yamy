@@ -47,7 +47,7 @@ void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
             target = i_param->m_hwnd;
 
         g_hookData->m_hwndMouseHookTarget =
-            (uint32_t)((uintptr_t)getToplevelWindow(static_cast<HWND>(target), &isMDI));
+            (uint32_t)((uintptr_t)getToplevelWindow(target, &isMDI));
         break;
     }
     default:

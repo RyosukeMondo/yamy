@@ -57,7 +57,7 @@ void Command_WindowMoveVisibly::exec(Engine *i_engine, FunctionParam *i_param) c
     else
         y = rc.top;
 
-    asyncMoveWindow(static_cast<HWND>(hwnd), x, y);
+    asyncMoveWindow(hwnd, x, y);
 }
 
 tostream &Command_WindowMoveVisibly::outputArgs(tostream &i_ost) const

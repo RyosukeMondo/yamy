@@ -129,8 +129,9 @@ bool getChildWindowRect(HWND i_hwnd, RECT *o_rc)
 
 
 // get toplevel (non-child) window
-HWND getToplevelWindow(HWND i_hwnd, bool *io_isMDI)
+yamy::platform::WindowHandle getToplevelWindow(yamy::platform::WindowHandle i_handle, bool *io_isMDI)
 {
+    HWND i_hwnd = static_cast<HWND>(i_handle);
     while (i_hwnd) {
 #ifdef MAYU64
         LONG_PTR style = GetWindowLongPtr(i_hwnd, GWL_STYLE);
@@ -157,8 +158,9 @@ HWND getToplevelWindow(HWND i_hwnd, bool *io_isMDI)
 
 
 // move window asynchronously
-void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y)
+void asyncMoveWindow(yamy::platform::WindowHandle i_handle, int i_x, int i_y)
 {
+    HWND i_hwnd = static_cast<HWND>(i_handle);
     SetWindowPos(i_hwnd, nullptr, i_x, i_y, 0, 0,
                  SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOOWNERZORDER |
                  SWP_NOSIZE | SWP_NOZORDER);
@@ -166,8 +168,9 @@ void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y)
 
 
 // move window asynchronously
-void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y, int i_w, int i_h)
+void asyncMoveWindow(yamy::platform::WindowHandle i_handle, int i_x, int i_y, int i_w, int i_h)
 {
+    HWND i_hwnd = static_cast<HWND>(i_handle);
     SetWindowPos(i_hwnd, nullptr, i_x, i_y, i_w, i_h,
                  SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOOWNERZORDER |
                  SWP_NOZORDER);
@@ -175,8 +178,9 @@ void asyncMoveWindow(HWND i_hwnd, int i_x, int i_y, int i_w, int i_h)
 
 
 // resize asynchronously
-void asyncResize(HWND i_hwnd, int i_w, int i_h)
+void asyncResize(yamy::platform::WindowHandle i_handle, int i_w, int i_h)
 {
+    HWND i_hwnd = static_cast<HWND>(i_handle);
     SetWindowPos(i_hwnd, nullptr, 0, 0, i_w, i_h,
                  SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOOWNERZORDER |
                  SWP_NOMOVE | SWP_NOZORDER);
@@ -214,8 +218,9 @@ DWORD getDllVersion(const std::string &i_dllname)
 
 
 // workaround of SetForegroundWindow
-bool setForegroundWindow(HWND i_hwnd)
+bool setForegroundWindow(yamy::platform::WindowHandle i_handle)
 {
+    HWND i_hwnd = static_cast<HWND>(i_handle);
     int nForegroundID = GetWindowThreadProcessId(GetForegroundWindow(), nullptr);
     int nTargetID = GetWindowThreadProcessId(i_hwnd, nullptr);
 
