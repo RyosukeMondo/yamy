@@ -360,6 +360,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/settings/setting_loader.cpp
         src/core/settings/config_manager.cpp
         src/core/settings/config_validator.cpp
+        src/core/settings/config_metadata.cpp
         src/core/functions/strexpr.cpp
         src/utils/stringtool.cpp
     )
@@ -560,6 +561,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/tests/platform/ipc_multi_instance_test.cpp
             src/tests/platform/config_manager_test.cpp
             src/tests/platform/config_validator_test.cpp
+            src/tests/platform/config_metadata_test.cpp
             src/platform/linux/window_system_linux_queries.cpp
             src/platform/linux/x11_connection.cpp
             src/platform/linux/keycode_mapping.cpp
@@ -568,6 +570,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/ipc_linux.cpp
             src/core/settings/config_manager.cpp
             src/core/settings/config_validator.cpp
+            src/core/settings/config_metadata.cpp
             src/core/settings/parser.cpp
             src/utils/stringtool.cpp
             src/utils/metrics.cpp
@@ -614,6 +617,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/setting_loader.cpp
             src/core/settings/config_manager.cpp
             src/core/settings/config_validator.cpp
+            src/core/settings/config_metadata.cpp
             src/core/functions/strexpr.cpp
             src/core/functions/function.cpp
             src/core/functions/function_creator.cpp
@@ -829,6 +833,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 src/tests/platform/ipc_multi_instance_test.cpp
                 src/tests/platform/config_manager_test.cpp
                 src/tests/platform/config_validator_test.cpp
+                src/tests/platform/config_metadata_test.cpp
                 # Key remapping tests
                 src/tests/platform/key_remap_linux_test.cpp
                 src/tests/platform/window_context_keymap_test.cpp
@@ -870,6 +875,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 src/core/settings/setting_loader.cpp
                 src/core/settings/config_manager.cpp
                 src/core/settings/config_validator.cpp
+                src/core/settings/config_metadata.cpp
                 src/core/functions/strexpr.cpp
                 src/core/functions/function.cpp
                 src/core/functions/function_creator.cpp
