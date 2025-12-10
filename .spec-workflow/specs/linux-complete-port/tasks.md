@@ -609,7 +609,7 @@
   - _Requirements: FR-2.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with Qt expertise | Task: Add quick-switch hotkey - Add preference for quick-switch hotkey (default: Ctrl+Alt+C), In Engine hook callback check for hotkey, On hotkey call ConfigManager::setNextConfig(), Show tray notification with new config name, Add to system tray tooltip, Support disabled hotkey (set to none) | Restrictions: Don't conflict with other hotkeys, Allow customization, Notification should be brief, Hotkey must work even when YAMY is remapping | Success: Hotkey cycles configs, Notification shows config name, Hotkey customizable, Works with remapping active, Can be disabled | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.2.6 Add config metadata editor
+- [x] 2.2.6 Add config metadata editor
   - File: src/ui/qt/config_metadata_dialog.h, src/ui/qt/config_metadata_dialog.cpp
   - Edit config name, description, tags
   - Display creation and modification dates
