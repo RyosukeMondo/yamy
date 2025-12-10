@@ -235,6 +235,22 @@ if(WIN32)
 endif()
 
 if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
+    # Find required Linux dependencies
+    find_package(PkgConfig REQUIRED)
+
+    # Find X11 libraries
+    find_package(X11 REQUIRED)
+    pkg_check_modules(XRANDR REQUIRED xrandr)
+
+    # Find libudev (optional - for device enumeration)
+    pkg_check_modules(UDEV libudev)
+    if(UDEV_FOUND)
+        message(STATUS "libudev found - device enumeration enabled")
+        add_compile_definitions(HAVE_LIBUDEV)
+    else()
+        message(WARNING "libudev-dev not found - device enumeration disabled. Install with: sudo apt install libudev-dev")
+    endif()
+
     # Linux stub backend - minimal implementation for testing architecture
     set(STUB_SOURCES
         src/app/main_linux.cpp
@@ -271,19 +287,22 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
             list(APPEND STUB_SOURCES src/app/main_qt.cpp)
 
             add_executable(yamy_stub ${STUB_SOURCES})
+            target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
             target_link_libraries(yamy_stub PRIVATE
-                pthread X11 Xrandr udev
+                pthread ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
                 yamy_qt_gui
             )
         else()
             message(WARNING "Qt5 not found - building headless version")
             add_executable(yamy_stub ${STUB_SOURCES})
-            target_link_libraries(yamy_stub PRIVATE pthread X11 Xrandr udev)
+            target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
+            target_link_libraries(yamy_stub PRIVATE pthread ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES})
         endif()
     else()
         message(STATUS "Building without Qt5 GUI (headless mode)")
         add_executable(yamy_stub ${STUB_SOURCES})
-        target_link_libraries(yamy_stub PRIVATE pthread X11 Xrandr udev)
+        target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
+        target_link_libraries(yamy_stub PRIVATE pthread ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES})
     endif()
 
     target_include_directories(yamy_stub PRIVATE

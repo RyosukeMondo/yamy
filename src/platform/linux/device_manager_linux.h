@@ -6,6 +6,9 @@
 #include <vector>
 #include <cstdint>
 
+// Forward declaration for udev
+struct udev;
+
 namespace yamy::platform {
 
 /// Information about an input device
@@ -13,18 +16,18 @@ struct InputDeviceInfo {
     std::string devNode;        // e.g. "/dev/input/event0"
     std::string name;           // Device name
     std::string sysPath;        // sysfs path
-    uint16_t vendor;            // Vendor ID
-    uint16_t product;           // Product ID
-    bool isKeyboard;            // Has keyboard capabilities
-    bool isMouse;               // Has mouse capabilities
+    uint16_t vendor = 0;        // Vendor ID
+    uint16_t product = 0;       // Product ID
+    bool isKeyboard = false;    // Has keyboard capabilities
+    bool isMouse = false;       // Has mouse capabilities
 };
 
 /// Represents an opened input device
 struct OpenDevice {
-    int fd;                     // File descriptor
+    int fd = -1;                // File descriptor
     std::string devNode;        // Device path
     std::string name;           // Device name
-    bool grabbed;               // Whether we have exclusive access
+    bool grabbed = false;       // Whether we have exclusive access
 };
 
 /// Manages input device enumeration and monitoring

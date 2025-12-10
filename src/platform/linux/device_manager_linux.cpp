@@ -2,7 +2,9 @@
 // device_manager_linux.cpp - Device enumeration (Track 9 Phase 2-3)
 
 #include "device_manager_linux.h"
+#ifdef HAVE_LIBUDEV
 #include <libudev.h>
+#endif
 #include <linux/input.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -10,6 +12,7 @@
 #include <cerrno>
 #include <cstring>
 #include <iostream>
+#include <dirent.h>
 
 // Helper macros for bit manipulation
 #define NBITS(x) ((((x)-1)/8)+1)
@@ -24,25 +27,32 @@ namespace yamy::platform {
 DeviceManager::DeviceManager()
     : m_udev(nullptr)
 {
+#ifdef HAVE_LIBUDEV
     // Create udev context
     m_udev = udev_new();
     if (!m_udev) {
         std::cerr << "[DeviceManager] Failed to create udev context" << std::endl;
     }
+#else
+    std::cerr << "[DeviceManager] Built without libudev - using /dev/input fallback" << std::endl;
+#endif
 }
 
 DeviceManager::~DeviceManager()
 {
+#ifdef HAVE_LIBUDEV
     if (m_udev) {
         udev_unref(m_udev);
         m_udev = nullptr;
     }
+#endif
 }
 
 std::vector<InputDeviceInfo> DeviceManager::enumerateDevices()
 {
     std::vector<InputDeviceInfo> devices;
 
+#ifdef HAVE_LIBUDEV
     if (!m_udev) {
         std::cerr << "[DeviceManager] udev context not initialized" << std::endl;
         return devices;
@@ -119,7 +129,6 @@ std::vector<InputDeviceInfo> DeviceManager::enumerateDevices()
 
         // Check capabilities
         info.isKeyboard = isKeyboardDevice(devNodeStr);
-        // TODO: Add mouse detection if needed
         info.isMouse = false;
 
         devices.push_back(info);
@@ -128,6 +137,39 @@ std::vector<InputDeviceInfo> DeviceManager::enumerateDevices()
     }
 
     udev_enumerate_unref(enumerate);
+
+#else
+    // Fallback: scan /dev/input/event* directly without udev
+    DIR* dir = opendir("/dev/input");
+    if (!dir) {
+        std::cerr << "[DeviceManager] Failed to open /dev/input" << std::endl;
+        return devices;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        // Only process eventX devices
+        if (strncmp(entry->d_name, "event", 5) != 0) {
+            continue;
+        }
+
+        std::string devNode = "/dev/input/" + std::string(entry->d_name);
+
+        InputDeviceInfo info;
+        info.devNode = devNode;
+        info.name = getDeviceName(devNode);
+        info.vendor = 0;
+        info.product = 0;
+        info.isKeyboard = isKeyboardDevice(devNode);
+        info.isMouse = false;
+
+        if (!info.name.empty()) {
+            devices.push_back(info);
+        }
+    }
+
+    closedir(dir);
+#endif
 
     return devices;
 }
