@@ -27,11 +27,11 @@
   - _Requirements: FR-1.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Update stringtool.cpp implementation to match stringtool.h changes - Step 1: Remove all tstring usages in function implementations, Step 2: Convert wstring operations to UTF-8 std::string, Step 3: Update string conversions by removing toWide/toNarrow functions and adding UTF-8 conversion utilities if needed for Windows bridge, Step 4: Update all string literals from _T("foo") to "foo", Verify with grep commands and unit tests | Restrictions: Maintain UTF-8 encoding, Do not break Windows build (add UTF-8/UTF-16 bridge if needed), Preserve all function semantics | Success: No tstring references, All string literals are plain UTF-8, Unit tests pass on both Linux and Windows | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.1.3 Clean up config_store.h tstring overloads
-  - File: src/core/settings/config_store.h
+- [x] 1.1.3 Clean up config_store.h tstring overloads
+  - File: src/utils/config_store.h (actual location)
   - Remove duplicate tstring overloads causing link errors
   - Keep only std::string API versions
-  - _Leverage: src/core/settings/config_store.cpp_
+  - _Leverage: src/platform/windows/registry.h_
   - _Requirements: FR-1.2, FR-1.6_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: ConfigStore has duplicate overloads for tstring and std::string causing link errors on Linux, Remove tstring versions - Step 1: Remove overloads bool read(const tstring& key, tstring* value), bool write(const tstring& key, const tstring& value), bool exists(const tstring& key), Step 2: Keep only std::string versions, Step 3: Update internal storage to use std::string keys | Restrictions: Do not break existing callers, Maintain API compatibility where possible, Ensure no ambiguity errors during compilation | Success: No tstring overloads remain, Only std::string API exists, No compilation errors, File compiles on Linux | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
