@@ -27,6 +27,7 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_setting(nullptr),
         m_windowSystem(i_windowSystem),
         m_configStore(i_configStore),
+        m_configSwitchCallback(nullptr),
         m_inputInjector(i_inputInjector),
         m_inputHook(i_inputHook),
         m_inputDriver(i_inputDriver),

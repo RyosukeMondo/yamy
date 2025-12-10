@@ -14,12 +14,14 @@
 #  include "../platform/input_hook_interface.h"
 #  include "../platform/input_driver_interface.h"
 #  include "../utils/config_store.h"
+#  include "../settings/config_manager.h"
 #  include <set>
 #  include <queue>
 #  include "../functions/function.h"
 #  include "../input/input_event.h" // For KEYBOARD_INPUT_DATA (legacy)
 #  include "../platform/types.h" // For KeyEvent
 #  include "../platform/message_constants.h"
+#  include <functional>
 
 enum {
     ///
@@ -37,6 +39,9 @@ enum EngineNotify {
     EngineNotify_clearLog,            ///
 };
 
+
+/// Callback type for configuration switch notifications
+using ConfigSwitchCallback = std::function<void(bool success, const std::string& configPath)>;
 
 ///
 class Engine : public StrExprSystem
@@ -163,6 +168,7 @@ private:
     Setting * volatile m_setting;            /// setting
     yamy::platform::IWindowSystem *m_windowSystem;            /// window system abstraction
     ConfigStore *m_configStore;            /// config store abstraction
+    ConfigSwitchCallback m_configSwitchCallback; /// config switch notification callback
     yamy::platform::IInputInjector *m_inputInjector;            /// input injector abstraction
     yamy::platform::IInputHook *m_inputHook;                /// input hook abstraction
     yamy::platform::IInputDriver *m_inputDriver;            /// input driver abstraction
@@ -386,6 +392,16 @@ public:
 
     /// setting
     bool setSetting(Setting *i_setting);
+
+    /// Switch to a different configuration file
+    /// @param configPath Path to the .mayu configuration file
+    /// @return true if switch was successful, false on parse errors
+    bool switchConfiguration(const std::string& configPath);
+
+    /// Set callback for configuration switch notifications
+    void setConfigSwitchCallback(ConfigSwitchCallback callback) {
+        m_configSwitchCallback = callback;
+    }
 
     /// focus
     bool setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threadId,
