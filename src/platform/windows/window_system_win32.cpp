@@ -202,23 +202,29 @@ bool WindowSystemWin32::getMonitorWorkArea(int monitorIndex, Rect* rect) {
     return false;
 }
 
-int WindowSystemWin32::getMonitorIndex(WindowHandle window) {
-    HMONITOR hMon = MonitorFromWindow((HWND)window, MONITOR_DEFAULTTONEAREST);
-    struct EnumData {
+namespace {
+    struct MonitorEnumData {
         HMONITOR target;
         int index;
         int foundIndex;
-    } data = { hMon, 0, -1 };
+    };
 
-    EnumDisplayMonitors(nullptr, nullptr, [](HMONITOR hMon, HDC, LPRECT, LPARAM lParam) -> BOOL {
-        EnumData* d = (EnumData*)lParam;
+    BOOL CALLBACK MonitorEnumProc(HMONITOR hMon, HDC, LPRECT, LPARAM lParam) {
+        MonitorEnumData* d = (MonitorEnumData*)lParam;
         if (hMon == d->target) {
             d->foundIndex = d->index;
             return FALSE;
         }
         d->index++;
         return TRUE;
-    }, (LPARAM)&data);
+    }
+}
+
+int WindowSystemWin32::getMonitorIndex(WindowHandle window) {
+    HMONITOR hMon = MonitorFromWindow((HWND)window, MONITOR_DEFAULTTONEAREST);
+    MonitorEnumData data = { hMon, 0, -1 };
+
+    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumProc, (LPARAM)&data);
 
     return data.foundIndex;
 }
