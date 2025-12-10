@@ -2,6 +2,7 @@
 #include "dialog_settings_qt.h"
 #include "dialog_log_qt.h"
 #include "dialog_about_qt.h"
+#include "config_manager_dialog.h"
 #include "../../core/settings/config_manager.h"
 #include <QApplication>
 #include <QMessageBox>
@@ -365,14 +366,7 @@ void TrayIconQt::onSwitchConfig(int index)
 
 void TrayIconQt::onManageConfigs()
 {
-    // ConfigManagerDialog will be implemented in task 2.2.2
-    // For now, show a placeholder message
-    QMessageBox::information(
-        nullptr,
-        "Manage Configurations",
-        "Configuration manager dialog will be available soon.\n\n"
-        "For now, you can:\n"
-        "- Edit .mayu files directly in ~/.yamy/\n"
-        "- Use the Configurations submenu to switch between configs"
-    );
+    ConfigManagerDialog* dialog = new ConfigManagerDialog();
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
 }
