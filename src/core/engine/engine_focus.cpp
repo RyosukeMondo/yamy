@@ -175,7 +175,7 @@ bool Engine::setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threa
 
     if (m_setting) {
         m_setting->m_keymaps.searchWindow(&fot->m_keymaps,
-                                          i_className, i_titleName);
+                                          to_UTF_8(i_className), to_UTF_8(i_titleName));
         ASSERT(0 < fot->m_keymaps.size());
     } else
         fot->m_keymaps.clear();

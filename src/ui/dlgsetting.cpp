@@ -126,7 +126,7 @@ public:
         lvc.fmt = LVCFMT_LEFT;
         lvc.cx = (rc.right - rc.left) / 3;
 
-        tstring str = loadString(IDS_mayuPathName);
+        tstring str = to_tstring(loadString(IDS_mayuPathName));
         lvc.pszText = const_cast<_TCHAR *>(str.c_str());
         CHECK( 0 ==, ListView_InsertColumn(m_hwndMayuPaths, 0, &lvc) );
         str = to_tstring(loadString(IDS_mayuPath));

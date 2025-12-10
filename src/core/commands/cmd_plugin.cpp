@@ -13,14 +13,14 @@ class PlugIn
     };
 
 private:
-    WindowSystem* m_ws;
+    yamy::platform::IWindowSystem* m_ws;
     void* m_dll;
     void* m_func;
     Type m_type;
     std::string m_funcParam;
 
 public:
-    PlugIn(WindowSystem* ws) : m_ws(ws), m_dll(nullptr), m_func(nullptr) {
+    PlugIn(yamy::platform::IWindowSystem* ws) : m_ws(ws), m_dll(nullptr), m_func(nullptr) {
     }
 
     ~PlugIn() {
@@ -33,11 +33,11 @@ public:
 
         tstring tDllName = to_tstring(i_dllName);
 
-        m_dll = m_ws->loadLibrary((_T("Plugins\\") + tDllName).c_str());
+        m_dll = m_ws->loadLibrary(to_UTF_8(_T("Plugins\\") + tDllName));
         if (!m_dll) {
-            m_dll = m_ws->loadLibrary((_T("Plugin\\") + tDllName).c_str());
+            m_dll = m_ws->loadLibrary(to_UTF_8(_T("Plugin\\") + tDllName));
             if (!m_dll) {
-                m_dll = m_ws->loadLibrary(tDllName.c_str());
+                m_dll = m_ws->loadLibrary(i_dllName);
                 if (!m_dll) {
                     Acquire a(&i_log);
                     i_log << std::endl;

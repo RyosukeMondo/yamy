@@ -5,6 +5,6 @@ void Command_EmacsEditKillLineFunc::exec(Engine *i_engine, FunctionParam *i_para
 {
     if (!i_param->m_isPressed)
         return;
-    i_engine->m_emacsEditKillLine.func();
+    i_engine->m_emacsEditKillLine.func(i_engine->getWindowSystem());
     i_engine->m_emacsEditKillLine.m_doForceReset = false;
 }

@@ -49,8 +49,8 @@ public:
                                       NUMBER_OF(modulebuf)) );
 
         std::string modulebuf_str = yamy::platform::wstring_to_utf8(modulebuf);
-        std::string version_fmt = yamy::platform::wstring_to_utf8(loadString(IDS_version));
-        std::string homepage = yamy::platform::wstring_to_utf8(loadString(IDS_homepage));
+        std::string version_fmt = loadString(IDS_version);
+        std::string homepage = loadString(IDS_homepage);
         std::string built_by = std::string(LOGNAME) + "@" + yamy::platform::wstring_to_utf8(toLower(_T(COMPUTERNAME)));
         std::string compiler_ver = yamy::platform::wstring_to_utf8(getCompilerVersionString());
 
@@ -112,11 +112,7 @@ public:
             return TRUE;
         }
         case IDC_BUTTON_download: {
-<<<<<<< HEAD
             ShellExecute(nullptr, nullptr, to_tstring(loadString(IDS_homepage)).c_str(),
-=======
-            ShellExecuteW(nullptr, nullptr, loadString(IDS_homepage).c_str(),
->>>>>>> origin/master
                          nullptr, nullptr, SW_SHOWNORMAL);
             CHECK_TRUE( EndDialog(m_hwnd, 0) );
             return TRUE;

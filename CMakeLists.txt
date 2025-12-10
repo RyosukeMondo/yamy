@@ -281,6 +281,7 @@ if(WIN32)
     add_executable(yamy_launcher WIN32
         src/app/yamy.cpp
         src/utils/stringtool.cpp
+        src/platform/windows/utf_conversion.cpp
         src/ui/mayu.rc
     )
 

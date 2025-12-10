@@ -26,7 +26,7 @@ void Command_SetImeStatus::exec(Engine *i_engine, FunctionParam *i_param) const
         return;
     if (i_engine->m_hwndFocus) {
         UINT WM_MAYU_MESSAGE = i_engine->getWindowSystem()->registerWindowMessage(
-                                   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
+                                   to_UTF_8(addSessionId(WM_MAYU_MESSAGE_NAME)));
         int status = -1;
         switch (m_toggle) {
         case ToggleType_toggle:

@@ -23,7 +23,7 @@ public:
 
     std::string eval() const override {
         if (s_system) {
-            return to_UTF_8(s_system->getClipboardText());
+            return s_system->getClipboardText();
         }
         return "";
     }
@@ -45,7 +45,7 @@ public:
 
     std::string eval() const override {
         if (s_system) {
-            return to_UTF_8(s_system->getStrExprWindowClassName());
+            return s_system->getStrExprWindowClassName();
         }
         return "";
     }
@@ -67,7 +67,7 @@ public:
 
     std::string eval() const override {
         if (s_system) {
-            return to_UTF_8(s_system->getStrExprWindowTitleName());
+            return s_system->getStrExprWindowTitleName();
         }
         return "";
     }

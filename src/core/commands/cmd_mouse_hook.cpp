@@ -1,6 +1,7 @@
 #include "cmd_mouse_hook.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#include "../window/window_system.h" // For WindowPoint
 #include "../../platform/windows/hook.h" // For g_hookData
 #include "../../platform/windows/windowstool.h" // For getToplevelWindow
 
@@ -18,7 +19,7 @@ void Command_MouseHook::load(SettingLoader *i_sl)
 
 void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
 {
-    WindowPoint wp;
+    yamy::platform::Point wp;
     i_engine->getWindowSystem()->getCursorPos(&wp);
     g_hookData->m_mousePos.x = wp.x;
     g_hookData->m_mousePos.y = wp.y;
@@ -47,7 +48,7 @@ void Command_MouseHook::exec(Engine *i_engine, FunctionParam *i_param) const
             target = i_param->m_hwnd;
 
         g_hookData->m_hwndMouseHookTarget =
-            (DWORD)((ULONG_PTR)getToplevelWindow(target, &isMDI));
+            (DWORD)((ULONG_PTR)getToplevelWindow(static_cast<HWND>(target), &isMDI));
         break;
     }
     default:

@@ -409,6 +409,15 @@ tostream &operator<<(tostream &i_ost, const std::list<tstringq> &i_data)
     return i_ost;
 }
 
+tostream &operator<<(tostream &i_ost, const std::list<std::string> &i_data)
+{
+    for (std::list<std::string>::const_iterator
+            i = i_data.begin(); i != i_data.end(); ++ i) {
+        i_ost << to_tstring(*i) << _T(", ");
+    }
+    return i_ost;
+}
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // FunctionData (Same as before)

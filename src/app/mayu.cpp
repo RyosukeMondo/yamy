@@ -92,11 +92,11 @@ class Mayu
     Setting *m_setting;                /// current setting
     bool m_isSettingDialogOpened;            /// is setting dialog opened ?
 
-    WindowSystem *m_windowSystem;            /// window system
+    yamy::platform::IWindowSystem *m_windowSystem;            /// window system
     ConfigStore *m_configStore;            /// config store
-    InputInjector *m_inputInjector;            /// input injector
-    InputHook *m_inputHook;                /// input hook
-    InputDriver *m_inputDriver;            /// input driver
+    yamy::platform::IInputInjector *m_inputInjector;            /// input injector
+    yamy::platform::IInputHook *m_inputHook;                /// input hook
+    yamy::platform::IInputDriver *m_inputDriver;            /// input driver
     Engine m_engine;                /// engine
 
     bool m_usingSN;           /// using WTSRegisterSessionNotification() ?
@@ -1054,11 +1054,11 @@ public:
             m_escapeNlsKeys(0),
             m_setting(nullptr),
             m_isSettingDialogOpened(false),
-            m_windowSystem(new WindowSystemWin32),
+            m_windowSystem(new yamy::platform::WindowSystemWin32),
             m_configStore(new Registry(MAYU_REGISTRY_ROOT)),
-            m_inputInjector(new InputInjectorWin32(m_windowSystem)),
-            m_inputHook(new InputHookWin32),
-            m_inputDriver(new InputDriverWin32),
+            m_inputInjector(new yamy::platform::InputInjectorWin32(m_windowSystem)),
+            m_inputHook(new yamy::platform::InputHookWin32),
+            m_inputDriver(new yamy::platform::InputDriverWin32),
             m_engine(m_log, m_windowSystem, m_configStore, m_inputInjector, m_inputHook, m_inputDriver),
             m_usingSN(false),
             m_startTime(time(nullptr))

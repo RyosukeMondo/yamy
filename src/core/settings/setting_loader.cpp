@@ -548,7 +548,7 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
     }
 
     m_currentKeymap = m_setting->m_keymaps.add(
-                          Keymap(type, name->getString(), windowClassName, windowTitleName,
+                          Keymap(type, to_UTF_8(name->getString()), to_UTF_8(windowClassName), to_UTF_8(windowTitleName),
                                  nullptr, nullptr));
 
     if (doesLoadDefaultKeySeq) {
@@ -557,7 +557,7 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
         if (*t == _T(":")) {
             getToken();
             t = getToken();
-            parentKeymap = m_setting->m_keymaps.searchByName(t->getString());
+            parentKeymap = m_setting->m_keymaps.searchByName(to_UTF_8(t->getString()));
             if (!parentKeymap)
                 throw ErrorMessage() << _T("`") << *t
                 << _T("': unknown keymap name.");
@@ -579,7 +579,7 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
             fd = createFunctionData(_T("KeymapParent"));
         ASSERT( fd );
         keySeq = m_setting->m_keySeqs.add(
-                     KeySeq(name->getString()).add(ActionFunction(fd)));
+                     KeySeq(to_UTF_8(name->getString())).add(ActionFunction(fd)));
     }
 
     m_currentKeymap->setIfNotYet(keySeq, parentKeymap);
@@ -692,7 +692,7 @@ void SettingLoader::load_ARGUMENT(tregex *o_arg)
 // <ARGUMENT>
 void SettingLoader::load_ARGUMENT(Regex *o_arg)
 {
-    tstring pattern = getToken()->getRegexp().str();
+    tstring pattern = getToken()->getRegexp();
     std::string sPattern;
 #ifdef _UNICODE
     sPattern = to_UTF_8(pattern);
@@ -855,7 +855,7 @@ void SettingLoader::load_ARGUMENT(const Keymap **o_arg)
 {
     Token *t = getToken();
     const Keymap *&keymap = *o_arg;
-    keymap = m_setting->m_keymaps.searchByName(t->getString());
+    keymap = m_setting->m_keymaps.searchByName(to_UTF_8(t->getString()));
     if (!keymap)
         throw ErrorMessage() << _T("`") << *t << _T("': unknown keymap name.");
 }
@@ -871,7 +871,7 @@ void SettingLoader::load_ARGUMENT(const KeySeq **o_arg)
         getToken(); // close paren
     } else if (*t == _T("$")) {
         t = getToken();
-        keySeq = m_setting->m_keySeqs.searchByName(t->getString());
+        keySeq = m_setting->m_keySeqs.searchByName(to_UTF_8(t->getString()));
         if (!keySeq)
             throw ErrorMessage() << _T("`$") << *t << _T("': unknown keyseq name.");
     } else
@@ -908,7 +908,7 @@ void SettingLoader::load_ARGUMENT(WindowMonitorFromType *o_arg)
 KeySeq *SettingLoader::load_KEY_SEQUENCE(
     const tstringi &i_name, bool i_isInParen, Modifier::Type i_mode)
 {
-    KeySeq keySeq(i_name);
+    KeySeq keySeq(to_UTF_8(i_name));
     while (!isEOL()) {
         Modifier::Type mode;
         Modifier modifier = load_MODIFIER(i_mode, m_defaultKeySeqModifier, &mode);
@@ -924,7 +924,7 @@ KeySeq *SettingLoader::load_KEY_SEQUENCE(
         } else if (*t == _T("$")) { // <KEYSEQ_NAME>
             getToken();
             t = getToken();
-            KeySeq *ks = m_setting->m_keySeqs.searchByName(t->getString());
+            KeySeq *ks = m_setting->m_keySeqs.searchByName(to_UTF_8(t->getString()));
             if (ks == nullptr)
                 throw ErrorMessage() << _T("`$") << *t
                 << _T("': unknown keyseq name.");
@@ -1609,11 +1609,11 @@ bool SettingLoader::initialize(Setting *i_setting)
     // create global keymap's default keySeq
     FunctionData *fd = createFunctionData(_T("OtherWindowClass"));
     ActionFunction af(fd);
-    KeySeq *globalDefault = m_setting->m_keySeqs.add(KeySeq(_T("")).add(af));
+    KeySeq *globalDefault = m_setting->m_keySeqs.add(KeySeq("").add(af));
 
     // add default keymap
     m_currentKeymap = m_setting->m_keymaps.add(
-                          Keymap(Keymap::Type_windowOr, _T("Global"), _T(""), _T(""),
+                          Keymap(Keymap::Type_windowOr, "Global", "", "",
                                  globalDefault, nullptr));
     return true;
 }

@@ -6,7 +6,7 @@ void Command_Recenter::exec(Engine *i_engine, FunctionParam *i_param) const
 {
     if (i_engine->m_hwndFocus) {
         UINT WM_MAYU_MESSAGE = i_engine->getWindowSystem()->registerWindowMessage(
-                                   addSessionId(WM_MAYU_MESSAGE_NAME).c_str());
+                                   to_UTF_8(addSessionId(WM_MAYU_MESSAGE_NAME)));
         i_engine->getWindowSystem()->postMessage(i_engine->m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcRecenter, 0);
     }
 }

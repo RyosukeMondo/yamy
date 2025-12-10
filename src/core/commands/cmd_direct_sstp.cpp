@@ -81,7 +81,7 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
         return;
 
     // check Direct SSTP server exist ?
-    if (void* hm = i_engine->getWindowSystem()->openMutex(_T("sakura")))
+    if (void* hm = i_engine->getWindowSystem()->openMutex("sakura"))
         i_engine->getWindowSystem()->closeHandle(hm);
     else {
         Acquire a(&i_engine->m_log, 0);
@@ -89,7 +89,7 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
         return;
     }
 
-    void* hfm = i_engine->getWindowSystem()->openFileMapping(_T("Sakura"));
+    void* hfm = i_engine->getWindowSystem()->openFileMapping("Sakura");
     if (!hfm) {
         Acquire a(&i_engine->m_log, 0);
         i_engine->m_log << _T(" Error(2): Direct SSTP server does not provide data.");
@@ -121,24 +121,25 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!m_protocol.eval().size())
         request += _T("NOTIFY SSTP/1.1");
     else
-        request += m_protocol.eval();
+        request += to_tstring(m_protocol.eval());
     request += _T("\r\n");
 
     bool hasSender = false;
-    for (std::list<tstringq>::const_iterator
+    for (std::list<std::string>::const_iterator
             i = m_headers.begin(); i != m_headers.end(); ++ i) {
-        if (_tcsnicmp(_T("Charset"), i->c_str(), 7) == 0 ||
-                _tcsnicmp(_T("Hwnd"),    i->c_str(), 4) == 0)
+        tstringq header = to_tstring(*i);
+        if (_tcsnicmp(_T("Charset"), header.c_str(), 7) == 0 ||
+                _tcsnicmp(_T("Hwnd"),    header.c_str(), 4) == 0)
             continue;
-        if (_tcsnicmp(_T("Sender"), i->c_str(), 6) == 0)
+        if (_tcsnicmp(_T("Sender"), header.c_str(), 6) == 0)
             hasSender = true;
-        request += i->c_str();
+        request += header;
         request += _T("\r\n");
     }
 
     if (!hasSender) {
         request += _T("Sender: ");
-        request += loadString(IDS_mayu);
+        request += to_tstring(loadString(IDS_mayu));
         request += _T("\r\n");
     }
 
@@ -161,8 +162,9 @@ void Command_DirectSSTP::exec(Engine *i_engine, FunctionParam *i_param) const
     // send request to Direct SSTP Server which matches m_name;
     for (ParseDirectSSTPData::DirectSSTPServers::iterator
             i = servers.begin(); i != servers.end(); ++ i) {
-        tsmatch what;
-        if (std::regex_match(i->second.m_name, what, m_name)) {
+        std::smatch what;
+        std::string name_utf8 = to_UTF_8(i->second.m_name);
+        if (std::regex_match(name_utf8, what, m_name)) {
             COPYDATASTRUCT cd;
             cd.dwData = 9801;
 #ifdef _UNICODE
