@@ -246,6 +246,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/platform/linux/input_injector_linux.cpp
         src/platform/linux/input_hook_linux.cpp
         src/platform/linux/input_driver_linux.cpp
+        src/platform/linux/device_manager_linux.cpp
         src/platform/linux/keycode_mapping.cpp
         src/platform/linux/sync_linux.cpp
         src/platform/linux/thread_linux.cpp
@@ -253,7 +254,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/platform/linux/ipc_linux.cpp
     )
     add_executable(yamy_stub ${STUB_SOURCES})
-    target_link_libraries(yamy_stub PRIVATE pthread X11 Xrandr)
+    target_link_libraries(yamy_stub PRIVATE pthread X11 Xrandr udev)
 
     target_include_directories(yamy_stub PRIVATE
         src
