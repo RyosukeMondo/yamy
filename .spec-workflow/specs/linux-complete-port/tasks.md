@@ -301,7 +301,7 @@
   - _Requirements: FR-1.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer refactoring cross-platform keyboard remapping utility | Task: Update key event processing - Step 1: Update hook callback to receive KeyEvent instead of Windows KBDLLHOOKSTRUCT, Step 2: Update event processing logic to use KeyEvent fields, Step 3: Update modifier state from KeyEvent, Step 4: Update keymap matching using KeyEvent, Step 5: Return true to consume or false to pass through | Restrictions: Maintain event processing behavior, Ensure all key events handled correctly, Preserve event timing and ordering | Success: Key events processed correctly, Event consumption works, Modifier tracking accurate, Key remapping functional on both platforms | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 1.2.5 Update key injection in action execution
+- [x] 1.2.5 Update key injection in action execution
   - File: src/core/action.cpp
   - Use IInputInjector for key injection in actions
   - Update all action types that inject keys
