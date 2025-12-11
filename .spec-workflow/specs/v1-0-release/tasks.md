@@ -188,7 +188,7 @@ Create distribution packages, release notes, and automate release process
   - _Requirements: FR-7, NF-8_
   - _Prompt: Implement the task for spec v1-0-release, first run spec-workflow-guide to get the workflow guide then implement the task: Role: RPM packaging specialist | Task: Create .rpm package - Step 1: In CMakeLists.txt add RPM generator: list(APPEND CPACK_GENERATOR "RPM"), Step 2: Configure RPM-specific settings: CPACK_RPM_PACKAGE_LICENSE "MIT", CPACK_RPM_PACKAGE_GROUP "Applications/System", CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase, libX11, libudev", Step 3: Set release number: CPACK_RPM_PACKAGE_RELEASE "1%{?dist}", Step 4: Create %post scriptlet for group membership (same logic as .deb postinst), Step 5: Test build: cpack -G RPM, Step 6: Test on Fedora VM: sudo dnf install yamy_*.rpm, Step 7: Verify RPM query: rpm -ql yamy shows correct file list | Restrictions: Support Fedora and openSUSE (don't hardcode Fedora-only paths), Handle SELinux contexts if needed, Sign RPM for production release | Success: cpack generates yamy-1.0.0-1.fc40.x86_64.rpm, dnf install succeeds on Fedora 40, Files installed in correct locations, rpm -V yamy verifies package integrity, dnf remove cleans up completely | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.3 Create Arch Linux PKGBUILD for AUR
+- [x] 5.3 Create Arch Linux PKGBUILD for AUR
   - File: packaging/PKGBUILD (NEW)
   - Write PKGBUILD that builds from source tarball
   - Test with makepkg and namcap validation
