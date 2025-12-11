@@ -874,6 +874,41 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_notification_prefs_test COMMAND yamy_notification_prefs_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_plugin_test (Plugin System Tests)
+        # Tests plugin loading, initialization, and callback registration
+        # -----------------------------------------------------------------------------
+        if(BUILD_EXAMPLES)
+            set(PLUGIN_TEST_SOURCES
+                tests/plugin/plugin_test.cpp
+                src/core/notification_dispatcher.cpp
+            )
+
+            add_executable(yamy_plugin_test
+                ${PLUGIN_TEST_SOURCES}
+            )
+
+            set_target_properties(yamy_plugin_test PROPERTIES AUTOMOC ON)
+
+            target_include_directories(yamy_plugin_test PRIVATE
+                src
+                src/core
+                src/core/platform
+            )
+
+            # Export symbols so plugin can use NotificationDispatcher from test binary
+            target_link_options(yamy_plugin_test PRIVATE -rdynamic)
+
+            target_link_libraries(yamy_plugin_test PRIVATE
+                pthread
+                dl
+                Qt5::Core
+                Qt5::Test
+            )
+
+            add_test(NAME yamy_plugin_test COMMAND yamy_plugin_test)
+        endif()
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_keyremap_test (Key Remapping Integration Tests)
         # Tests the full key remapping flow including config loading and keymap resolution
         # This is a full integration test using the complete core module
@@ -1295,4 +1330,12 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             )
         endif()
     endif()
+endif()
+
+# -----------------------------------------------------------------------------
+# Example Plugins (optional, build with -DBUILD_EXAMPLES=ON)
+# -----------------------------------------------------------------------------
+option(BUILD_EXAMPLES "Build example plugins" OFF)
+if(BUILD_EXAMPLES AND NOT WIN32)
+    add_subdirectory(examples/plugins)
 endif()
