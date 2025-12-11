@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <chrono>
 #include "ui/qt/tray_icon_qt.h"
+#include "ui/qt/crash_report_dialog.h"
 #include "core/settings/session_manager.h"
 #include "platform/linux/ipc_control_server.h"
 #include "utils/crash_handler.h"
@@ -336,6 +337,22 @@ int main(int argc, char* argv[])
     // Create and show tray icon
     TrayIconQt trayIcon(engine);
     trayIcon.show();
+
+    // Check for crash reports from previous session
+    if (yamy::CrashReportDialog::shouldShowCrashDialog()) {
+        std::vector<std::string> crashReports = yamy::CrashHandler::getCrashReports();
+        if (!crashReports.empty()) {
+            std::cout << "Previous crash detected, showing crash report dialog" << std::endl;
+            yamy::CrashReportDialog crashDialog(crashReports);
+            if (crashDialog.exec() == QDialog::Accepted) {
+                // User chose to view the report
+                if (crashDialog.selectedAction() == yamy::CrashReportDialog::Action::ViewReport) {
+                    yamy::CrashReportViewerDialog viewer(crashDialog.currentReportPath());
+                    viewer.exec();
+                }
+            }
+        }
+    }
 
     // Create IPC control server for yamy-ctl commands
     yamy::platform::IPCControlServer controlServer;
