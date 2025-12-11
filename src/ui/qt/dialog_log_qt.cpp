@@ -5,9 +5,11 @@
 #include <QDateTime>
 #include <QFile>
 #include <QFileDialog>
+#include <QFontDatabase>
 #include <QLabel>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QTextStream>
 
@@ -15,6 +17,8 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     : QDialog(parent)
     , m_levelFilter(nullptr)
     , m_categoryGroup(nullptr)
+    , m_fontCombo(nullptr)
+    , m_fontSizeSpinner(nullptr)
     , m_statsPanel(nullptr)
     , m_logView(nullptr)
     , m_btnClear(nullptr)
@@ -28,6 +32,7 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     setMinimumSize(800, 600);
 
     setupUI();
+    loadFontSettings();
     subscribeToLogger();
 }
 
@@ -47,7 +52,7 @@ void DialogLogQt::setupUI()
     // Log view
     m_logView = new QTextEdit();
     m_logView->setReadOnly(true);
-    m_logView->setFont(QFont("Monospace", 10));
+    // Font is set in loadFontSettings()
     m_logView->setLineWrapMode(QTextEdit::NoWrap);
     mainLayout->addWidget(m_logView);
 
@@ -113,9 +118,39 @@ void DialogLogQt::setupFilterControls(QVBoxLayout* mainLayout)
     }
 
     filterLayout->addWidget(m_categoryGroup);
+
+    // Font controls
+    setupFontControls(filterLayout);
+
     filterLayout->addStretch();
 
     mainLayout->addLayout(filterLayout);
+}
+
+void DialogLogQt::setupFontControls(QHBoxLayout* filterLayout)
+{
+    filterLayout->addSpacing(20);
+
+    auto* fontLabel = new QLabel("Font:");
+    filterLayout->addWidget(fontLabel);
+
+    m_fontCombo = new QFontComboBox();
+    m_fontCombo->setFontFilters(QFontComboBox::MonospacedFonts);
+    m_fontCombo->setMaximumWidth(150);
+    connect(m_fontCombo, &QFontComboBox::currentFontChanged,
+            this, &DialogLogQt::onFontFamilyChanged);
+    filterLayout->addWidget(m_fontCombo);
+
+    auto* sizeLabel = new QLabel("Size:");
+    filterLayout->addWidget(sizeLabel);
+
+    m_fontSizeSpinner = new QSpinBox();
+    m_fontSizeSpinner->setRange(6, 24);
+    m_fontSizeSpinner->setValue(10);
+    m_fontSizeSpinner->setSuffix(" pt");
+    connect(m_fontSizeSpinner, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &DialogLogQt::onFontSizeChanged);
+    filterLayout->addWidget(m_fontSizeSpinner);
 }
 
 void DialogLogQt::subscribeToLogger()
@@ -329,4 +364,70 @@ void DialogLogQt::scrollToBottom()
 {
     QScrollBar* scrollBar = m_logView->verticalScrollBar();
     scrollBar->setValue(scrollBar->maximum());
+}
+
+void DialogLogQt::onFontFamilyChanged(const QFont& /*font*/)
+{
+    applyFont();
+    saveFontSettings();
+}
+
+void DialogLogQt::onFontSizeChanged(int /*size*/)
+{
+    applyFont();
+    saveFontSettings();
+}
+
+void DialogLogQt::loadFontSettings()
+{
+    QSettings settings("YAMY", "YAMY");
+
+    // Get default system monospace font
+    QFont defaultFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    QString defaultFamily = defaultFont.family();
+    int defaultSize = 10;
+
+    // Load saved font settings
+    QString fontFamily = settings.value("logviewer/fontFamily", defaultFamily).toString();
+    int fontSize = settings.value("logviewer/fontSize", defaultSize).toInt();
+
+    // Validate font size range
+    fontSize = qBound(6, fontSize, 24);
+
+    // Check if saved font family is available
+    QFontDatabase fontDb;
+    QStringList families = fontDb.families();
+    if (!families.contains(fontFamily)) {
+        // Fallback to default if saved font not available
+        fontFamily = defaultFamily;
+    }
+
+    // Block signals while setting values to avoid double saves
+    m_fontCombo->blockSignals(true);
+    m_fontSizeSpinner->blockSignals(true);
+
+    m_fontCombo->setCurrentFont(QFont(fontFamily));
+    m_fontSizeSpinner->setValue(fontSize);
+
+    m_fontCombo->blockSignals(false);
+    m_fontSizeSpinner->blockSignals(false);
+
+    // Apply font to log view
+    applyFont();
+}
+
+void DialogLogQt::saveFontSettings()
+{
+    QSettings settings("YAMY", "YAMY");
+
+    settings.setValue("logviewer/fontFamily", m_fontCombo->currentFont().family());
+    settings.setValue("logviewer/fontSize", m_fontSizeSpinner->value());
+    settings.sync();
+}
+
+void DialogLogQt::applyFont()
+{
+    QFont font = m_fontCombo->currentFont();
+    font.setPointSize(m_fontSizeSpinner->value());
+    m_logView->setFont(font);
 }

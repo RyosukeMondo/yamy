@@ -3,10 +3,12 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialog>
+#include <QFontComboBox>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHash>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QString>
 #include <QTextEdit>
 #include <QTimer>
@@ -63,6 +65,8 @@ private slots:
     void onAutoScrollToggled(bool checked);
     void onLevelFilterChanged(int index);
     void onCategoryFilterChanged(bool checked);
+    void onFontFamilyChanged(const QFont& font);
+    void onFontSizeChanged(int size);
 
 private:
     struct CachedLogEntry {
@@ -73,17 +77,25 @@ private:
 
     void setupUI();
     void setupFilterControls(QVBoxLayout* mainLayout);
+    void setupFontControls(QHBoxLayout* filterLayout);
     void subscribeToLogger();
     void scrollToBottom();
     void rebuildLogView();
     void processLogEntry(const CachedLogEntry& entry);
     bool shouldDisplay(const CachedLogEntry& entry) const;
     QString formatLogEntry(const yamy::logging::LogEntry& entry) const;
+    void loadFontSettings();
+    void saveFontSettings();
+    void applyFont();
 
     // Filter controls
     QComboBox* m_levelFilter;
     QGroupBox* m_categoryGroup;
     QHash<QString, QCheckBox*> m_categoryFilters;
+
+    // Font controls
+    QFontComboBox* m_fontCombo;
+    QSpinBox* m_fontSizeSpinner;
 
     // UI Components
     yamy::ui::LogStatsPanel* m_statsPanel;
