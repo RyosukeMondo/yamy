@@ -12,6 +12,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTextCharFormat>
+#include <QTextCodec>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextStream>
@@ -90,8 +91,8 @@ void DialogLogQt::setupUI()
     connect(m_btnClear, &QPushButton::clicked, this, &DialogLogQt::onClear);
     controlLayout->addWidget(m_btnClear);
 
-    m_btnSave = new QPushButton("Save...");
-    connect(m_btnSave, &QPushButton::clicked, this, &DialogLogQt::onSave);
+    m_btnSave = new QPushButton("Export...");
+    connect(m_btnSave, &QPushButton::clicked, this, &DialogLogQt::onExport);
     controlLayout->addWidget(m_btnSave);
 
     m_btnClose = new QPushButton("Close");
@@ -467,13 +468,38 @@ void DialogLogQt::onClear()
     clearLog();
 }
 
-void DialogLogQt::onSave()
+void DialogLogQt::onExport()
 {
+    // Ask user whether to export all or filtered logs
+    QMessageBox exportChoice(this);
+    exportChoice.setWindowTitle("Export Logs");
+    exportChoice.setText("Choose which logs to export:");
+    exportChoice.setIcon(QMessageBox::Question);
+
+    QPushButton* allBtn = exportChoice.addButton("All Logs", QMessageBox::AcceptRole);
+    QPushButton* filteredBtn = exportChoice.addButton("Filtered Only", QMessageBox::AcceptRole);
+    exportChoice.addButton(QMessageBox::Cancel);
+
+    exportChoice.exec();
+
+    QAbstractButton* clicked = exportChoice.clickedButton();
+    if (clicked != allBtn && clicked != filteredBtn) {
+        return; // User cancelled
+    }
+
+    bool exportFiltered = (clicked == filteredBtn);
+
+    // Generate timestamped filename
+    QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+    QString defaultFileName = QString("logs_%1.txt").arg(timestamp);
+    QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                          + "/" + defaultFileName;
+
     QString fileName = QFileDialog::getSaveFileName(
         this,
-        "Save Log",
-        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/yamy.log",
-        "Log Files (*.log);;Text Files (*.txt);;All Files (*)"
+        "Export Log",
+        defaultPath,
+        "Text Files (*.txt);;Log Files (*.log);;All Files (*)"
     );
 
     if (fileName.isEmpty()) {
@@ -484,20 +510,44 @@ void DialogLogQt::onSave()
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::critical(
             this,
-            "Save Log",
-            "Failed to save log file:\n" + file.errorString()
+            "Export Log",
+            "Failed to export log file:\n" + file.errorString()
         );
         return;
     }
 
+    // Use QTextStream with UTF-8 encoding
     QTextStream out(&file);
-    out << m_logView->toPlainText();
+    out.setCodec(QTextCodec::codecForName("UTF-8"));
+
+    int exportedCount = 0;
+
+    if (exportFiltered) {
+        // Export only entries that pass the current filter
+        for (const auto& entry : m_allEntries) {
+            if (shouldDisplay(entry)) {
+                out << entry.plainText << "\n";
+                ++exportedCount;
+            }
+        }
+    } else {
+        // Export all entries
+        for (const auto& entry : m_allEntries) {
+            out << entry.plainText << "\n";
+            ++exportedCount;
+        }
+    }
+
     file.close();
 
+    QString filterInfo = exportFiltered ? " (filtered)" : "";
     QMessageBox::information(
         this,
-        "Save Log",
-        "Log saved successfully to:\n" + fileName
+        "Export Log",
+        QString("Successfully exported %1 log entries%2 to:\n%3")
+            .arg(exportedCount)
+            .arg(filterInfo)
+            .arg(fileName)
     );
 }
 

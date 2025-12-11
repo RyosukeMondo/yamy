@@ -63,7 +63,7 @@ public slots:
 private slots:
     void onClear();
     void onPauseResume();
-    void onSave();
+    void onExport();
     void onClose();
     void onLevelFilterChanged(int index);
     void onCategoryFilterChanged(bool checked);
