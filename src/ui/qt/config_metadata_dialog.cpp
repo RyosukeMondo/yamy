@@ -1,32 +1,24 @@
 #include "config_metadata_dialog.h"
-#include "../../core/settings/config_metadata.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QGroupBox>
-#include <QMessageBox>
-#include <QDateTime>
-#include <QFileInfo>
+#include <QStringList>
 
-ConfigMetadataDialog::ConfigMetadataDialog(const QString& configPath, QWidget* parent)
+ConfigMetadataDialog::ConfigMetadataDialog(QWidget* parent)
     : QDialog(parent)
-    , m_configPath(configPath)
-    , m_saved(false)
     , m_editName(nullptr)
     , m_editDescription(nullptr)
     , m_editAuthor(nullptr)
     , m_editTags(nullptr)
-    , m_labelCreated(nullptr)
-    , m_labelModified(nullptr)
     , m_btnSave(nullptr)
     , m_btnCancel(nullptr)
     , m_labelValidation(nullptr)
 {
     setWindowTitle("Edit Configuration Metadata");
-    setMinimumSize(450, 400);
-
+    setMinimumSize(450, 320);
     setupUI();
-    loadMetadata();
+    validateInput();
 }
 
 ConfigMetadataDialog::~ConfigMetadataDialog()
@@ -37,7 +29,6 @@ void ConfigMetadataDialog::setupUI()
 {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-    // Editable fields group
     QGroupBox* editGroup = new QGroupBox("Configuration Details");
     QFormLayout* formLayout = new QFormLayout(editGroup);
 
@@ -65,21 +56,6 @@ void ConfigMetadataDialog::setupUI()
 
     mainLayout->addWidget(editGroup);
 
-    // Read-only dates group
-    QGroupBox* datesGroup = new QGroupBox("Timestamps");
-    QFormLayout* datesLayout = new QFormLayout(datesGroup);
-
-    m_labelCreated = new QLabel();
-    m_labelCreated->setStyleSheet("QLabel { color: #666; }");
-    datesLayout->addRow("Created:", m_labelCreated);
-
-    m_labelModified = new QLabel();
-    m_labelModified->setStyleSheet("QLabel { color: #666; }");
-    datesLayout->addRow("Last Modified:", m_labelModified);
-
-    mainLayout->addWidget(datesGroup);
-
-    // Validation message
     m_labelValidation = new QLabel();
     m_labelValidation->setStyleSheet("QLabel { color: #cc0000; }");
     m_labelValidation->setWordWrap(true);
@@ -88,7 +64,6 @@ void ConfigMetadataDialog::setupUI()
 
     mainLayout->addStretch();
 
-    // Button row
     QHBoxLayout* btnLayout = new QHBoxLayout();
     btnLayout->addStretch();
 
@@ -104,80 +79,48 @@ void ConfigMetadataDialog::setupUI()
     mainLayout->addLayout(btnLayout);
 }
 
-void ConfigMetadataDialog::loadMetadata()
+void ConfigMetadataDialog::setMetadata(const ConfigMetadataInfo& info)
 {
-    ConfigMetadata metadata;
-    metadata.load(m_configPath.toStdString());
+    m_info = info; // Cache the original metadata
 
-    const ConfigMetadataInfo& info = metadata.info();
-
-    // Populate fields
     m_editName->setText(QString::fromStdString(info.name));
     m_editDescription->setPlainText(QString::fromStdString(info.description));
     m_editAuthor->setText(QString::fromStdString(info.author));
 
-    // Convert tags vector to comma-separated string
     QStringList tagList;
     for (const auto& tag : info.tags) {
         tagList << QString::fromStdString(tag);
     }
     m_editTags->setText(tagList.join(", "));
-
-    // Display dates
-    m_labelCreated->setText(formatTimestamp(info.createdDate));
-    m_labelModified->setText(formatTimestamp(info.modifiedDate));
-
-    // If name is empty, use filename as default
-    if (m_editName->text().isEmpty()) {
-        QFileInfo fileInfo(m_configPath);
-        m_editName->setText(fileInfo.completeBaseName());
-    }
+    validateInput();
 }
 
-void ConfigMetadataDialog::onSave()
+ConfigMetadataInfo ConfigMetadataDialog::getMetadata() const
 {
-    // Validate name
-    QString name = m_editName->text().trimmed();
-    if (name.isEmpty()) {
-        m_labelValidation->setText("Name cannot be empty.");
-        m_labelValidation->show();
-        m_editName->setFocus();
-        return;
-    }
+    ConfigMetadataInfo updatedInfo = m_info; // Start with a copy of the original
+    updatedInfo.name = m_editName->text().trimmed().toStdString();
+    updatedInfo.description = m_editDescription->toPlainText().toStdString();
+    updatedInfo.author = m_editAuthor->text().trimmed().toStdString();
 
-    // Load existing metadata to preserve createdDate
-    ConfigMetadata metadata;
-    metadata.load(m_configPath.toStdString());
-
-    // Update fields
-    metadata.setName(name.toStdString());
-    metadata.setDescription(m_editDescription->toPlainText().toStdString());
-    metadata.setAuthor(m_editAuthor->text().trimmed().toStdString());
-
-    // Parse and set tags
-    metadata.clearTags();
+    updatedInfo.tags.clear();
     QString tagsText = m_editTags->text().trimmed();
     if (!tagsText.isEmpty()) {
         QStringList tags = tagsText.split(',', Qt::SkipEmptyParts);
         for (const QString& tag : tags) {
             QString trimmedTag = tag.trimmed();
             if (!trimmedTag.isEmpty()) {
-                metadata.addTag(trimmedTag.toStdString());
+                updatedInfo.tags.push_back(trimmedTag.toStdString());
             }
         }
     }
+    return updatedInfo;
+}
 
-    // Save metadata
-    if (metadata.save(m_configPath.toStdString())) {
-        m_saved = true;
+void ConfigMetadataDialog::onSave()
+{
+    validateInput();
+    if (m_btnSave->isEnabled()) {
         accept();
-    } else {
-        QMessageBox::critical(
-            this,
-            "Error",
-            "Failed to save metadata.\n\n"
-            "Please check file permissions and try again."
-        );
     }
 }
 
@@ -197,13 +140,4 @@ void ConfigMetadataDialog::validateInput()
         m_labelValidation->hide();
         m_btnSave->setEnabled(true);
     }
-}
-
-QString ConfigMetadataDialog::formatTimestamp(time_t timestamp) const
-{
-    if (timestamp == 0) {
-        return "Not set";
-    }
-    QDateTime dt = QDateTime::fromSecsSinceEpoch(timestamp);
-    return dt.toString("yyyy-MM-dd HH:mm:ss");
 }

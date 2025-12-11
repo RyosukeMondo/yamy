@@ -22,9 +22,25 @@
 #ifdef _WIN32
 #  include <string.h>
 #  define strcasecmp_platform _stricmp
+#  define tcslcpy wcslcpy
+
+// On Windows, these are wide-character types
+typedef std::wstring tstring;
+typedef std::wifstream tifstream;
+typedef std::wstringstream tstringstream;
+typedef std::wostream tostream;
+typedef std::wstring tstringi; // Treating tstringi as tstring for now
 #else
 #  include <strings.h>
 #  define strcasecmp_platform strcasecmp
+#  define tcslcpy strlcpy
+
+// On Linux, stub these to standard char types for compilation
+typedef std::string tstring;
+typedef std::ifstream tifstream;
+typedef std::stringstream tstringstream;
+typedef std::ostream tostream;
+typedef std::string tstringi;
 #endif
 
 // Regex wrapper for std::string (UTF-8)
@@ -89,6 +105,7 @@ std::string interpretMetaCharacters(const char* i_str, size_t i_len,
 
 /// add session id to i_str
 std::string addSessionId(const char* i_str);
+std::wstring addSessionId(const wchar_t* i_str);
 
 /// copy
 size_t strlcpy(char* o_dest, const char* i_src, size_t i_destSize);

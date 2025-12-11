@@ -31,11 +31,23 @@ ConfigManager::ConfigManager()
     : m_configStore(nullptr)
     , m_activeIndex(-1)
     , m_changeCallback(nullptr)
+    , m_configWatcher(std::make_unique<ConfigWatcher>())
 {
+    // Set up the callback from the watcher to the manager
+    m_configWatcher->setChangeCallback([this](const std::string& path) {
+        this->onActiveConfigChanged(path);
+    });
 }
 
 ConfigManager::~ConfigManager()
 {
+}
+
+void ConfigManager::setAutoReloadEnabled(bool enabled)
+{
+    if (m_configWatcher) {
+        m_configWatcher->setAutoReloadEnabled(enabled);
+    }
 }
 
 void ConfigManager::initialize(ConfigStore* configStore)
@@ -44,6 +56,13 @@ void ConfigManager::initialize(ConfigStore* configStore)
     m_configStore = configStore;
     load();
     refreshList();
+
+    // Start watching the active config, if any
+    std::string activeConfig = getActiveConfig();
+    if (!activeConfig.empty() && m_configWatcher) {
+        m_configWatcher->setConfigPath(activeConfig);
+        m_configWatcher->start();
+    }
 }
 
 std::vector<ConfigEntry> ConfigManager::listConfigs() const
@@ -79,6 +98,10 @@ bool ConfigManager::setActiveConfig(const std::string& configPath)
         m_activeIndex = index;
         save();
 
+        if (m_configWatcher) {
+            m_configWatcher->setConfigPath(configPath);
+        }
+
         if (m_changeCallback) {
             m_changeCallback(configPath);
         }
@@ -97,8 +120,13 @@ bool ConfigManager::setActiveConfig(int index)
         m_activeIndex = index;
         save();
 
-        if (m_changeCallback && m_activeIndex < static_cast<int>(m_configs.size())) {
-            m_changeCallback(m_configs[m_activeIndex].path);
+        const std::string& newPath = m_configs[m_activeIndex].path;
+        if (m_configWatcher) {
+            m_configWatcher->setConfigPath(newPath);
+        }
+
+        if (m_changeCallback) {
+            m_changeCallback(newPath);
         }
     }
     return true;
@@ -357,6 +385,22 @@ int ConfigManager::findConfig(const std::string& path) const
         }
     }
     return -1;
+}
+
+void ConfigManager::onActiveConfigChanged(const std::string& path)
+{
+    Acquire lock(&m_cs);
+
+    // Verify the changed file is still the active one
+    std::string activeConfig = getActiveConfig();
+    if (path != activeConfig) {
+        return;
+    }
+
+    // Trigger reload
+    if (m_changeCallback) {
+        m_changeCallback(path);
+    }
 }
 
 // ==================== Backup & Restore Implementation ====================

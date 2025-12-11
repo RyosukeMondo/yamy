@@ -947,7 +947,7 @@
   - _Requirements: FR-5.8_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add notification handling to tray icon - Step 1: Add handleEngineMessage slot accepting Message parameter, Step 2: Connect to IPC message received signal, Step 3: Switch on message type: EngineStarting sets loading icon and tooltip "YAMY - Starting...", EngineStarted sets running icon and tooltip "YAMY - Running", EngineStopped sets stopped icon and tooltip "YAMY - Stopped", EngineError sets error icon and shows error notification, ConfigLoaded updates tooltip with config name, Step 4: Create icon resources for each state | Restrictions: Icons must be visible in dark/light themes, Tooltip updates immediately, Error notifications auto-dismiss after 5 seconds, Handle missing icons gracefully, Don't spam notifications | Success: Tray icon changes with engine state, Tooltips show current state and config, Error notifications displayed with details, Icons visible in all themes, State always reflects engine accurately | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.9 Create engine status display widget
+- [x] 5.9 Create engine status display widget
   - File: src/ui/qt/status_widget_qt.h, src/ui/qt/status_widget_qt.cpp
   - Show engine state, config, uptime, key count
   - Update in real-time from notifications

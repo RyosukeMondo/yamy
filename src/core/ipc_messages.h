@@ -44,5 +44,11 @@ struct KeyEventNotification {
     char keyEvent[256];
 };
 
+struct Message {
+    MessageType type;
+    const void* data;
+    size_t size;
+};
+
 } // namespace ipc
 } // namespace yamy

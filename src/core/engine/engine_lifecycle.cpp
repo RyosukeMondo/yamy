@@ -24,11 +24,23 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <thread>
 #include "../platform/ipc_defs.h"
 
+#if defined(QT_CORE_LIB)
+void Engine::playSound(yamy::audio::NotificationType type)
+{
+    if (m_soundManager) {
+        m_soundManager->playSound(type);
+    }
+}
+#endif
 
 Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem, ConfigStore *i_configStore, yamy::platform::IInputInjector *i_inputInjector, yamy::platform::IInputHook *i_inputHook, yamy::platform::IInputDriver *i_inputDriver)
         : m_hwndAssocWindow(nullptr),
+#if defined(QT_CORE_LIB)
+        m_soundManager(std::make_unique<yamy::audio::SoundManager>()),
+#endif
         m_setting(nullptr),
         m_windowSystem(i_windowSystem),
         m_configStore(i_configStore),

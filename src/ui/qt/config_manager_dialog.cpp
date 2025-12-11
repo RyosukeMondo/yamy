@@ -1210,11 +1210,31 @@ void ConfigManagerDialog::onEditMetadata()
         return;
     }
 
-    ConfigMetadataDialog dialog(path, this);
-    if (dialog.exec() == QDialog::Accepted && dialog.wasSaved()) {
-        // Refresh the list to show updated metadata for search
-        refreshConfigList();
-        m_labelStatus->setText("Metadata updated successfully");
+    // Load the existing metadata
+    ConfigMetadata metadata;
+    metadata.load(path.toStdString());
+
+    // Create and configure the dialog
+    ConfigMetadataDialog dialog(this);
+    dialog.setMetadata(metadata.info());
+
+    // Show the dialog and check the result
+    if (dialog.exec() == QDialog::Accepted) {
+        // Get the updated metadata and save it
+        ConfigMetadataInfo updatedInfo = dialog.getMetadata();
+        metadata.info() = updatedInfo;
+        
+        if (metadata.save(path.toStdString())) {
+            // Refresh the list to reflect changes
+            refreshConfigList();
+            m_labelStatus->setText("Metadata updated successfully");
+        } else {
+            QMessageBox::critical(
+                this,
+                "Error",
+                "Failed to save metadata.\n\nPlease check file permissions and try again."
+            );
+        }
     }
 }
 

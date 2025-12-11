@@ -3,13 +3,19 @@
 #include "dialog_condition_generator_qt.h"
 #include "../../core/engine/engine.h"
 #include "../../core/platform/ipc_channel_factory.h"
+#include "../../core/platform/window_system_factory.h"
 #include "../../core/ipc_messages.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QGridLayout>
-#include <QFont>
+#include <QLabel>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QGroupBox>
 #include <QDateTime>
+#include <QTimer>
+#include <QHeaderView>
+#include <QDir>
 #include <QFile>
 #include <QTextStream>
 #include <QFileInfo>

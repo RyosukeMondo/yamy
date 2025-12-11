@@ -7,11 +7,15 @@
 #define _CONFIG_MANAGER_H
 
 #include "multithread.h"
+#include "config_watcher.h"
 #include "../utils/config_store.h"
 #include <string>
 #include <vector>
 #include <set>
 #include <functional>
+#include <memory>
+
+class ConfigWatcher;
 
 /// Configuration file entry with path and optional metadata
 struct ConfigEntry {
@@ -34,6 +38,9 @@ class ConfigManager
 public:
     /// Get singleton instance
     static ConfigManager& instance();
+
+    /// Enable/disable auto-reload on file changes
+    void setAutoReloadEnabled(bool enabled);
 
     /// Initialize with config store for persistence (call once at startup)
     void initialize(ConfigStore* configStore);
@@ -222,6 +229,9 @@ private:
     /// Find index of path in list (-1 if not found)
     int findConfig(const std::string& path) const;
 
+    /// Called by ConfigWatcher when active file changes
+    void onActiveConfigChanged(const std::string& path);
+
     /// Extract original config path from a backup path
     static std::string extractOriginalPath(const std::string& backupPath);
 
@@ -280,6 +290,7 @@ private:
     std::vector<ConfigEntry> m_configs; /// List of known configurations
     int m_activeIndex;                  /// Index of active config (-1 if none)
     ConfigChangeCallback m_changeCallback; /// Notification callback
+    std::unique_ptr<ConfigWatcher> m_configWatcher; /// Watches active config file
 };
 
 #endif // !_CONFIG_MANAGER_H

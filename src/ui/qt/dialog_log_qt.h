@@ -9,6 +9,12 @@
 #include <QString>
 #include <QTimer>
 
+namespace yamy {
+namespace ui {
+class LogStatsPanel;
+}
+}
+
 /**
  * @brief Log viewer dialog
  *
@@ -89,6 +95,7 @@ private:
     void scrollToBottom();
 
     // UI Components
+    yamy::ui::LogStatsPanel* m_statsPanel;
     QTextEdit* m_logView;
     QPushButton* m_btnClear;
     QPushButton* m_btnSave;

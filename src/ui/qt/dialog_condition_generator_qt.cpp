@@ -4,6 +4,7 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QLabel>
+#include <QRegularExpression>
 
 DialogConditionGeneratorQt::DialogConditionGeneratorQt(const QString& windowTitle, const QString& windowClass, QWidget* parent)
     : QDialog(parent), m_windowTitle(windowTitle), m_windowClass(windowClass)

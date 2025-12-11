@@ -7,16 +7,18 @@
 #include <QPushButton>
 #include <QString>
 
+#include "../../core/settings/config_metadata.h"
+
 /**
  * @brief Dialog for editing configuration metadata
  *
- * Allows users to view and edit:
- * - Name: Display name for the configuration
- * - Description: User description of the config
- * - Author: Who created the configuration
- * - Tags: Comma-separated list of tags
- * - Creation date (read-only)
- * - Modification date (read-only)
+ * Allows users to view and edit metadata fields for a configuration,
+ * such as its name, description, author, and tags.
+ *
+ * The dialog is decoupled from file I/O. The parent component is
+ * responsible for creating a ConfigMetadataInfo object, passing it to
+ * the dialog via setMetadata(), and then retrieving the updated object
+ * via getMetadata() if the dialog is accepted.
  */
 class ConfigMetadataDialog : public QDialog {
     Q_OBJECT
@@ -24,70 +26,40 @@ class ConfigMetadataDialog : public QDialog {
 public:
     /**
      * @brief Construct metadata editor dialog
-     * @param configPath Path to the configuration file
      * @param parent Parent widget
      */
-    explicit ConfigMetadataDialog(const QString& configPath, QWidget* parent = nullptr);
-
-    /**
-     * @brief Destructor
-     */
+    explicit ConfigMetadataDialog(QWidget* parent = nullptr);
     ~ConfigMetadataDialog() override;
 
     /**
-     * @brief Check if metadata was saved
-     * @return true if Save was clicked and succeeded
+     * @brief Set the metadata to be displayed and edited
+     * @param info The metadata to populate the dialog with
      */
-    bool wasSaved() const { return m_saved; }
+    void setMetadata(const ConfigMetadataInfo& info);
+
+    /**
+     * @brief Get the updated metadata from the dialog
+     * @return An object containing the new metadata values
+     */
+    ConfigMetadataInfo getMetadata() const;
 
 private slots:
-    /**
-     * @brief Save the metadata and close
-     */
     void onSave();
-
-    /**
-     * @brief Cancel and close without saving
-     */
     void onCancel();
-
-    /**
-     * @brief Validate input fields
-     */
     void validateInput();
 
 private:
-    /**
-     * @brief Setup UI components
-     */
     void setupUI();
-
-    /**
-     * @brief Load metadata from file
-     */
-    void loadMetadata();
-
-    /**
-     * @brief Format a timestamp for display
-     * @param timestamp Unix timestamp
-     * @return Formatted date string
-     */
-    QString formatTimestamp(time_t timestamp) const;
-
-    // Path to the config file
-    QString m_configPath;
-
-    // Whether metadata was saved
-    bool m_saved;
 
     // UI Components
     QLineEdit* m_editName;
     QTextEdit* m_editDescription;
     QLineEdit* m_editAuthor;
     QLineEdit* m_editTags;
-    QLabel* m_labelCreated;
-    QLabel* m_labelModified;
     QPushButton* m_btnSave;
     QPushButton* m_btnCancel;
     QLabel* m_labelValidation;
+
+    // Cached metadata
+    ConfigMetadataInfo m_info;
 };

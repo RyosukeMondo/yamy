@@ -451,6 +451,24 @@ std::string addSessionId(const char *i_str)
 }
 
 
+// add session id to i_str (wide char version)
+std::wstring addSessionId(const wchar_t *i_str)
+{
+#ifdef _WIN32
+    std::wstring s(i_str);
+    DWORD sessionId;
+    if (ProcessIdToSessionId(GetCurrentProcessId(), &sessionId)) {
+        wchar_t buf[20];
+        swprintf_s(buf, 20, L"%u", (unsigned int)sessionId);
+        s += buf;
+    }
+    return s;
+#else
+    return std::wstring(i_str);
+#endif
+}
+
+
 #ifdef _WIN32
 // escape regexp special characters in MBCS trail bytes (Windows only)
 std::string guardRegexpFromMbcs(const char *i_str)

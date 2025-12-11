@@ -22,9 +22,12 @@ set(QT_GUI_SOURCES
     tray_icon_qt.cpp
     dialog_settings_qt.cpp
     dialog_log_qt.cpp
+    log_stats_panel.cpp
     dialog_about_qt.cpp
     dialog_investigate_qt.cpp
     dialog_condition_generator_qt.cpp
+    config_search_panel.cpp
+    status_widget_qt.cpp
     config_manager_dialog.cpp
     config_metadata_dialog.cpp
     crosshair_widget_qt.cpp
@@ -37,9 +40,12 @@ set(QT_GUI_HEADERS
     tray_icon_qt.h
     dialog_settings_qt.h
     dialog_log_qt.h
+    log_stats_panel.h
     dialog_about_qt.h
     dialog_investigate_qt.h
     dialog_condition_generator_qt.h
+    config_search_panel.h
+    status_widget_qt.h
     config_manager_dialog.h
     config_metadata_dialog.h
     crosshair_widget_qt.h
@@ -55,6 +61,7 @@ set(QT_GUI_UI_FILES
 # Qt resources
 set(QT_GUI_RESOURCES
     resources.qrc
+    ${CMAKE_SOURCE_DIR}/src/core/audio/resources.qrc
 )
 
 # Create library for Qt GUI

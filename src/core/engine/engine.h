@@ -20,6 +20,7 @@
 #  include "../platform/ipc_defs.h"
 #  include <set>
 #  include <queue>
+#  include "../audio/sound_manager.h"
 #  include "../functions/function.h"
 #  include "../input/input_event.h" // For KEYBOARD_INPUT_DATA (legacy)
 #  include "../platform/types.h" // For KeyEvent
@@ -176,6 +177,9 @@ private:
     yamy::platform::IInputHook *m_inputHook;                /// input hook abstraction
     yamy::platform::IInputDriver *m_inputDriver;            /// input driver abstraction
     std::unique_ptr<yamy::platform::IIPCChannel> m_ipcChannel; /// IPC channel for UI communication
+#if defined(QT_CORE_LIB)
+    std::unique_ptr<yamy::audio::SoundManager> m_soundManager;
+#endif
 
     // engine thread state
     yamy::platform::ThreadHandle m_threadHandle;
@@ -477,10 +481,14 @@ public:
         return m_currentFocusOfThread->m_titleName;
     }
 
-    /// Get the current engine state
     yamy::EngineState getState() const {
         return m_state;
     }
+
+#if defined(QT_CORE_LIB)
+    /// Play a notification sound
+    void playSound(yamy::audio::NotificationType type);
+#endif
 
     /// Handle incoming IPC messages
     void handleIpcMessage(const yamy::ipc::Message& message);

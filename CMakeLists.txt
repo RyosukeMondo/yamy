@@ -214,6 +214,9 @@ set(ENGINE_SOURCES
     src/platform/windows/windowstool.cpp
     src/core/settings/setting.cpp
     src/core/settings/setting_loader.cpp
+    src/core/settings/config_backup.cpp
+    src/core/audio/sound_manager.cpp
+    src/resources/templates/template_manager.cpp
     src/core/functions/strexpr.cpp
     src/utils/stringtool.cpp
     src/app/mayu.cpp
@@ -361,9 +364,11 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/settings/parser.cpp
         src/core/settings/setting.cpp
         src/core/settings/setting_loader.cpp
+        src/core/settings/config_backup.cpp
         src/core/settings/config_manager.cpp
         src/core/settings/config_validator.cpp
         src/core/settings/config_metadata.cpp
+        src/resources/templates/template_manager.cpp
         src/core/functions/strexpr.cpp
         src/utils/stringtool.cpp
     )
@@ -397,7 +402,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
 
     if(BUILD_QT_GUI)
         # Find Qt5 packages
-        find_package(Qt5 COMPONENTS Core Widgets Gui)
+        find_package(Qt5 COMPONENTS Core Widgets Gui X11Extras)
 
         if(Qt5_FOUND)
             message(STATUS "Qt5 found - building with GUI support")
@@ -578,6 +583,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/parser.cpp
             src/utils/stringtool.cpp
             src/utils/metrics.cpp
+            src/core/logging/logger.cpp
         )
 
         add_executable(yamy_linux_test
@@ -612,6 +618,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         set(UI_TEST_SOURCES
             tests/ui/dialog_investigate_test.cpp
             src/ui/qt/dialog_investigate_qt.cpp
+            src/ui/qt/dialog_condition_generator_qt.cpp
             src/ui/qt/crosshair_widget_qt.cpp
         )
 
@@ -657,9 +664,11 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/parser.cpp
             src/core/settings/setting.cpp
             src/core/settings/setting_loader.cpp
+            src/core/settings/config_backup.cpp
             src/core/settings/config_manager.cpp
             src/core/settings/config_validator.cpp
             src/core/settings/config_metadata.cpp
+            src/resources/templates/template_manager.cpp
             src/core/functions/strexpr.cpp
             src/core/functions/function.cpp
             src/core/functions/function_creator.cpp
@@ -916,6 +925,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 src/core/settings/parser.cpp
                 src/core/settings/setting.cpp
                 src/core/settings/setting_loader.cpp
+                src/core/settings/config_backup.cpp
                 src/core/settings/config_manager.cpp
                 src/core/settings/config_validator.cpp
                 src/core/settings/config_metadata.cpp

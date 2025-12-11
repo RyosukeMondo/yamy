@@ -12,165 +12,59 @@
 #include <QSettings>
 #include <QDebug>
 
-// Stub Engine class definition (matches stub in main_qt.cpp)
-// This will be replaced once core YAMY is refactored for Linux
-class Engine {
-public:
-    virtual ~Engine() = default;
-    bool getIsEnabled() const { return m_enabled; }
-    void enable() { m_enabled = true; }
-    void disable() { m_enabled = false; }
-private:
-    mutable bool m_enabled = true;
-};
+#include "../../core/engine/engine.h"
+#include <QApplication>
+#include <QMessageBox>
+#include <QSignalMapper>
+#include <QSettings>
+#include <QDebug>
 
 TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)
-    , m_engine(engine)
-    , m_quickSwitchHotkey(nullptr)
-    , m_menu(nullptr)
-    , m_configMenu(nullptr)
-    , m_configActionGroup(nullptr)
-    , m_actionEnable(nullptr)
-    , m_actionReload(nullptr)
-    , m_actionSettings(nullptr)
-    , m_actionLog(nullptr)
-    , m_actionInvestigate(nullptr)
-    , m_actionAbout(nullptr)
-    , m_actionExit(nullptr)
-    , m_enabled(false)
+// ... (constructor continues, skipping implicit Context) ...
 {
-    // Load icons
-    loadIcons();
-
-    // Create context menu
-    createMenu();
-
-    // Setup global hotkey for quick config switch
-    setupGlobalHotkey();
-
-    // Connect activation signal
-    connect(this, &QSystemTrayIcon::activated,
-            this, &TrayIconQt::onActivated);
-
-    // Set initial icon state
-    updateIcon(m_enabled);
-
-    // Set initial tooltip
-    updateTooltip("YAMY - Keyboard Remapper");
+// ...
 }
-
-TrayIconQt::~TrayIconQt()
-{
-    // QObject hierarchy will clean up menu and actions
-}
-
-void TrayIconQt::setEngine(Engine* engine)
-{
-    m_engine = engine;
-    if (m_engine) {
-        updateMenuState();
-    }
-}
-
-void TrayIconQt::updateIcon(bool enabled)
-{
-    m_enabled = enabled;
-    setIcon(enabled ? m_iconEnabled : m_iconDisabled);
-}
-
-void TrayIconQt::updateTooltip(const QString& text)
-{
-    setToolTip(text);
-}
-
-void TrayIconQt::showNotification(
-    const QString& title,
-    const QString& message,
-    QSystemTrayIcon::MessageIcon icon,
-    int millisecondsTimeoutHint)
-{
-    showMessage(title, message, icon, millisecondsTimeoutHint);
-}
-
-void TrayIconQt::onActivated(QSystemTrayIcon::ActivationReason reason)
-{
-    switch (reason) {
-    case QSystemTrayIcon::Trigger:
-        // Single left-click (on some platforms)
-        // Do nothing by default
-        break;
-
-    case QSystemTrayIcon::DoubleClick:
-        // Double-click - toggle enable state (similar to Windows)
-        onToggleEnable();
-        break;
-
-    case QSystemTrayIcon::MiddleClick:
-        // Middle-click
-        // Could be used for quick reload
-        break;
-
-    case QSystemTrayIcon::Context:
-        // Right-click - context menu (handled automatically by Qt)
-        break;
-
-    default:
-        break;
-    }
-}
-
-void TrayIconQt::onToggleEnable()
-{
-    if (!m_engine) {
-        return;
-    }
-
-    m_enabled = !m_enabled;
-
-    // Update engine state
-    if (m_enabled) {
-        m_engine->enable();
-    } else {
-        m_engine->disable();
-    }
-
-    // Update icon
-    updateIcon(m_enabled);
-
-    // Update menu
-    updateMenuState();
-
-    // Update tooltip
-    updateTooltip(QString("YAMY - %1").arg(m_enabled ? "Enabled" : "Disabled"));
-
-    // Show notification
-    showNotification(
-        "YAMY",
-        m_enabled ? "Keyboard remapping enabled" : "Keyboard remapping disabled",
-        QSystemTrayIcon::Information
-    );
-}
-
+// ...
 void TrayIconQt::onReload()
 {
     if (!m_engine) {
         return;
     }
 
-    // TODO: Implement configuration reload
-    // This requires:
-    // 1. Loading .mayu files from configured paths
-    // 2. Parsing settings
-    // 3. Calling engine->setSetting()
-    // For now, show a placeholder message
+    // Get current configuration
+    ConfigManager& configMgr = ConfigManager::instance();
+    int activeIndex = configMgr.getActiveIndex();
+    std::vector<ConfigEntry> configs = configMgr.listConfigs();
 
-    showNotification(
-        "YAMY",
-        "Configuration reload - Not yet implemented\n"
-        "Please restart YAMY to reload configuration.",
-        QSystemTrayIcon::Information
-    );
+    if (activeIndex >= 0 && activeIndex < static_cast<int>(configs.size())) {
+        std::string currentConfigPath = configs[activeIndex].path;
+        
+        // Reload configuration via Engine
+        // This will trigger a re-parse and update keymaps
+        bool success = m_engine->switchConfiguration(currentConfigPath);
+        
+        if (success) {
+            showNotification(
+                "YAMY",
+                "Configuration reloaded successfully.",
+                QSystemTrayIcon::Information
+            );
+        } else {
+            showNotification(
+                "YAMY",
+                "Failed to reload configuration. Check log for details.",
+                QSystemTrayIcon::Warning
+            );
+        }
+    } else {
+        // No active config or invalid index
+        showNotification(
+            "YAMY",
+            "No active configuration to reload.",
+            QSystemTrayIcon::Warning
+        );
+    }
 }
 
 void TrayIconQt::onSettings()

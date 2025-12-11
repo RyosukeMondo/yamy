@@ -2,39 +2,31 @@
 
 This guide documents the effective method for utilizing `jules` (Google's AI coding agent) to execute large-scale refactoring and feature implementation in parallel.
 
-## The Core Philosophy: "Manager & Workers"
+## The Core Philosophy: "Architect & Builders"
 
-The key to this workflow is treating yourself (or the primary agent) as the **Engineering Manager** and the remote `jules` sessions as **Individual Contributors**.
+**Lesson from Wave 1**: You must shift your role from "Manager" to **"Architect"**.
+*   **The Architect (You)**: Designs the components, defines the interfaces, and creates the empty files/hooks.
+*   **The Builders (Jules)**: Fill in the implementations of specific, isolated components.
 
-**Success Formula:** `Structured Tasks + Contextual Prompts + CLI Automation = High Velocity`
+> [!IMPORTANT]
+> **Rule of Thumb**: Never assign two sessions to edit the same existing file (e.g., `engine.cpp`) simultaneously. It guarantees merge conflicts.
 
 ## Step-by-Step Workflow
 
-### 1. Preparation: The "Spec" (Critical Step)
-You cannot parallelize chaos. You need a strict, granular task list.
-*   **Format**: A `tasks.md` file (like in `.spec-workflow/specs/`).
-*   **Granularity**: Each task should be clear enough that a junior engineer could do it without asking questions.
-*   **Dependencies**: Explicitly note dependencies. Group independent tasks together.
+### 1. Preparation: Component Isolation
+Break features down into **new files**.
+*   *Bad*: "Session A: Add logging to Engine. Session B: Add notifications to Engine." (Both edit `engine.cpp`)
+*   *Good*: "Session A: Create `Logger` class. Session B: Create `NotificationManager` class." (No overlap)
 
-### 2. Strategy: Batching & Wave Planning
-Identify tasks that touch *different files* or *different modules*.
-*   **Wave 1**: Independent backends (e.g., Log Backend, Notification Backend) + Isolated fixes.
-*   **Wave 2**: UI components (dependent on Wave 1).
-*   **Wave 3**: Integration.
-
-### 3. The Prompt Factory
-Don't just say "Do task X". Create a **Self-Contained Prompt** for each session.
-A perfect prompt includes:
+### 2. The Prompt Factory
+Create a **Self-Contained Prompt** for each session.
 1.  **Role**: "You are an expert C++ developer..."
-2.  **Goal**: "Implement the Logging Backend."
-3.  **Context**: "Refer to `tasks.md` for full specs."
-4.  **Steps**: Copy/paste the exact checklist from `tasks.md`.
-5.  **Constraints**: "Do not implement the UI yet."
+2.  **Goal**: "Implement the [Component Name] class."
+3.  **Context**: "Refer to `tasks.md`."
+4.  **Constraint**: "Create new files `src/foo/bar.cpp`. Do NOT edit `main.cpp` or `engine.cpp` without explicit instruction."
 
-**Pro Tip**: Save these as temporary text files (`prompt_session_a.txt`).
-
-### 4. Dispatching (The "Swarm")
-Use the CLI to launch sessions rapidly without context switching.
+### 3. Dispatching (The "Swarm")
+Use the CLI to launch sessions rapidly.
 
 ```bash
 # Windows PowerShell
@@ -42,41 +34,45 @@ type prompt_session_a.txt | jules new
 type prompt_session_b.txt | jules new
 ```
 
-This pipes your prepared instructions directly into a new session.
-
-### 5. Monitoring & Merging
-*   **Monitor**: `jules remote list` shows you what's active.
-*   **Merge**: When a session is `Done`, review the PR/Changes using `jules remote pull <ID>`.
-
-### 6. Advanced Session Management (The "Manager's Console")
-The default `jules remote list` can sometimes truncate output or show cached states.
+### 4. Monitoring & Advanced Management
+The default `jules remote list` can act inconsistently. Use these "Pro" commands:
 
 **Accurate Status Checking:**
-*   **Dump to File**: `jules remote list --session > sessions.txt` gives you the full, untruncated output to check status messages like "Awaiting User Feedback".
-*   **Check PRs**: `gh pr list` often gives a better indication of "Done" state than the session list.
+*   **Dump to File**: `jules remote list --session > sessions.txt` (Untruncated view).
+*   **Check PRs**: `gh pr list` (Best indicator of completion).
 
 **Handling "Stuck" Sessions:**
-*   **Awaiting Feedback**: If a session is waiting for feedback, you can often just `pull` what it has done so far.
-    *   `jules remote pull --session <ID>` (without `--apply`) to inspect.
-    *   `jules remote pull --session <ID> --apply` to force apply.
-*   **Manual Intervention**: If the AI makes a logic error (e.g., malformed code blocks), plain `git apply` will fail.
-    *   Redirect output to a patch: `jules remote pull --session <ID> > session.patch`
-    *   Apply with reject: `git apply --reject session.patch`
-    *   Manually fix the `.rej` files and the code.
+*   **Inspecting**: `jules remote pull --session <ID>` (No `--apply`).
+*   **Forcing**: `jules remote pull --session <ID> --apply`.
+*   **Fixing Rejections**:
+    1.  `jules remote pull --session <ID> > session.patch`
+    2.  `git apply --reject session.patch`
+    3.  Manually fix `.rej` files.
 
-**Closing the Loop:**
-*   After manually merging a session, close its PR: `gh pr close <PR_ID> --comment "Manually merged."`
-*   This keeps your dashboard clean for the next wave.
+### 5. Closing the Loop
+*   Review the code (AI makes logic errors!).
+*   Manually merge if needed.
+*   Close the PR: `gh pr close <PR_ID> --comment "Merged manually."`
 
-## Example Structure
+## Wave Strategy
 
-| Session | Focus Area | Files Touched | Risk of Conflict |
+| Wave | Focus | Strategy | Risk |
 | :--- | :--- | :--- | :--- |
-| **A** | Core Fixes | `stringtool.cpp`, `input_hook.cpp` | Low |
-| **B** | Investigate UI | `dialog_investigate.cpp` | Low |
-| **C** | Log Backend | `logger.cpp` (New File) | None |
+| **1** | Core Backends | Independent Classes | Low |
+| **2** | UI Components | Isolated Widgets (`LogDialog`, `ConfigPanel`) | Medium |
+| **3** | Integration | **Serial Execution** (You or single agent) | High (Shared Glue) |
 
-## Why This Works
-*   **Context Isolation**: Each agent focuses on a narrow slice.
-*   **No Waiting**: You don't wait for one task to finish before starting the next.
-*   **Forced Clarity**: Writing the prompt forces you to clearly define the task, which reduces AI errors.
+## Troubleshooting
+
+### Session Identification: "Which session is which?"
+When running many sessions, `jules remote list` can be confusing.
+**Solution**: Use a mapping script or manually record IDs when launching.
+*   **Best Practice**: When dispatching, log the output: `type prompt.txt | jules new >> session_log.txt`
+*   **Recovery**: Use `scripts/track_sessions.ps1` to match active sessions back to their prompt files based on the Task description.
+
+### Conflict: "File Already Exists"
+If Jules complains that a file exists when you asked for "NEW FILES ONLY":
+1.  **Verify**: Check if the existing file is legacy code or a previous wave.
+2.  **Pivot**: Reply to the session (via web UI):
+    > "Refactor the existing file to meet the requirements. Ignore the 'Create New Files' constraint."
+3.  **Do Not Force**: Do not try to overwrite blindly.

@@ -1,4 +1,5 @@
 #include "dialog_log_qt.h"
+#include "log_stats_panel.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStandardPaths>
@@ -10,6 +11,7 @@
 
 DialogLogQt::DialogLogQt(QWidget* parent)
     : QDialog(parent)
+    , m_statsPanel(nullptr)
     , m_logView(nullptr)
     , m_btnClear(nullptr)
     , m_btnSave(nullptr)
@@ -41,8 +43,16 @@ void DialogLogQt::appendLog(const QString& message)
 
     m_logView->append(logEntry);
 
+    // Update stats
+    if (message.contains("ERROR", Qt::CaseInsensitive)) {
+        m_statsPanel->incrementError();
+    } else if (message.contains("WARNING", Qt::CaseInsensitive)) {
+        m_statsPanel->incrementWarning();
+    }
+
     // Limit log size
     QTextDocument* doc = m_logView->document();
+    m_statsPanel->setTotalLines(doc->blockCount());
     if (doc->blockCount() > MAX_LOG_LINES) {
         QTextCursor cursor = m_logView->textCursor();
         cursor.movePosition(QTextCursor::Start);
@@ -60,6 +70,7 @@ void DialogLogQt::appendLog(const QString& message)
 void DialogLogQt::clearLog()
 {
     m_logView->clear();
+    m_statsPanel->reset();
 }
 
 void DialogLogQt::setAutoScroll(bool enabled)
@@ -138,6 +149,10 @@ void DialogLogQt::onUpdateLog()
 void DialogLogQt::setupUI()
 {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+
+    // Stats panel
+    m_statsPanel = new yamy::ui::LogStatsPanel(this);
+    mainLayout->addWidget(m_statsPanel);
 
     // Log view
     m_logView = new QTextEdit();
