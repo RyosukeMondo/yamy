@@ -325,3 +325,204 @@ TEST_F(SessionManagerTest, MultipleWindowPositionUpdates) {
     EXPECT_EQ(pos.width, 200);
     EXPECT_EQ(pos.height, 200);
 }
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Autostart Tests
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class AutoStartTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        m_originalXdgConfig = getenv("XDG_CONFIG_HOME") ? getenv("XDG_CONFIG_HOME") : "";
+
+        // Create temp test dir
+        char tmpDir[] = "/tmp/yamy_autostart_test_XXXXXX";
+        m_testDir = mkdtemp(tmpDir);
+        ASSERT_FALSE(m_testDir.empty());
+
+        // Set XDG_CONFIG_HOME to test directory
+        setenv("XDG_CONFIG_HOME", m_testDir.c_str(), 1);
+    }
+
+    void TearDown() override {
+        // Clean up test files
+        std::string desktopPath = m_testDir + "/autostart/yamy.desktop";
+        std::remove(desktopPath.c_str());
+
+        std::string autostartDir = m_testDir + "/autostart";
+        rmdir(autostartDir.c_str());
+        rmdir(m_testDir.c_str());
+
+        // Restore environment
+        if (!m_originalXdgConfig.empty()) {
+            setenv("XDG_CONFIG_HOME", m_originalXdgConfig.c_str(), 1);
+        } else {
+            unsetenv("XDG_CONFIG_HOME");
+        }
+    }
+
+    std::string m_testDir;
+    std::string m_originalXdgConfig;
+};
+
+TEST_F(AutoStartTest, GetAutoStartPath) {
+    std::string path = SessionManager::getAutoStartPath();
+    EXPECT_EQ(path, m_testDir + "/autostart");
+}
+
+TEST_F(AutoStartTest, GetAutoStartFilePath) {
+    std::string path = SessionManager::getAutoStartFilePath();
+    EXPECT_EQ(path, m_testDir + "/autostart/yamy.desktop");
+}
+
+TEST_F(AutoStartTest, AutoStartInitiallyDisabled) {
+    SessionManager& sm = SessionManager::instance();
+    EXPECT_FALSE(sm.isAutoStartEnabled());
+}
+
+TEST_F(AutoStartTest, EnableAutoStart) {
+    SessionManager& sm = SessionManager::instance();
+
+    EXPECT_TRUE(sm.enableAutoStart());
+    EXPECT_TRUE(sm.isAutoStartEnabled());
+
+    // Verify file was created
+    std::string desktopPath = SessionManager::getAutoStartFilePath();
+    struct stat st;
+    EXPECT_EQ(stat(desktopPath.c_str(), &st), 0);
+    EXPECT_TRUE(S_ISREG(st.st_mode));
+}
+
+TEST_F(AutoStartTest, DisableAutoStart) {
+    SessionManager& sm = SessionManager::instance();
+
+    // First enable
+    EXPECT_TRUE(sm.enableAutoStart());
+    EXPECT_TRUE(sm.isAutoStartEnabled());
+
+    // Then disable
+    EXPECT_TRUE(sm.disableAutoStart());
+    EXPECT_FALSE(sm.isAutoStartEnabled());
+
+    // Verify file was removed
+    std::string desktopPath = SessionManager::getAutoStartFilePath();
+    struct stat st;
+    EXPECT_NE(stat(desktopPath.c_str(), &st), 0);
+}
+
+TEST_F(AutoStartTest, DisableAlreadyDisabledAutoStart) {
+    SessionManager& sm = SessionManager::instance();
+
+    // Disable when already disabled should succeed
+    EXPECT_TRUE(sm.disableAutoStart());
+    EXPECT_FALSE(sm.isAutoStartEnabled());
+}
+
+TEST_F(AutoStartTest, DesktopFileContainsRequiredEntries) {
+    SessionManager& sm = SessionManager::instance();
+
+    EXPECT_TRUE(sm.enableAutoStart());
+
+    std::string desktopPath = SessionManager::getAutoStartFilePath();
+    std::ifstream file(desktopPath);
+    ASSERT_TRUE(file.is_open());
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string content = buffer.str();
+
+    // Verify required Desktop Entry fields
+    EXPECT_NE(content.find("[Desktop Entry]"), std::string::npos);
+    EXPECT_NE(content.find("Type=Application"), std::string::npos);
+    EXPECT_NE(content.find("Name=YAMY"), std::string::npos);
+    EXPECT_NE(content.find("Exec="), std::string::npos);
+    EXPECT_NE(content.find("X-GNOME-Autostart-enabled=true"), std::string::npos);
+}
+
+TEST_F(AutoStartTest, DesktopFileHasAbsoluteExecPath) {
+    SessionManager& sm = SessionManager::instance();
+
+    EXPECT_TRUE(sm.enableAutoStart());
+
+    std::string desktopPath = SessionManager::getAutoStartFilePath();
+    std::ifstream file(desktopPath);
+    ASSERT_TRUE(file.is_open());
+
+    std::string line;
+    std::string execPath;
+    while (std::getline(file, line)) {
+        if (line.find("Exec=") == 0) {
+            execPath = line.substr(5);  // Remove "Exec="
+            break;
+        }
+    }
+
+    // Exec path should be absolute (start with /) or be "yamy" fallback
+    EXPECT_FALSE(execPath.empty());
+    EXPECT_TRUE(execPath[0] == '/' || execPath == "yamy");
+}
+
+TEST_F(AutoStartTest, EnableCreatesMissingAutostartDirectory) {
+    SessionManager& sm = SessionManager::instance();
+
+    // Verify autostart dir doesn't exist yet
+    std::string autostartDir = SessionManager::getAutoStartPath();
+    struct stat st;
+    EXPECT_NE(stat(autostartDir.c_str(), &st), 0);
+
+    // Enable should create the directory
+    EXPECT_TRUE(sm.enableAutoStart());
+
+    EXPECT_EQ(stat(autostartDir.c_str(), &st), 0);
+    EXPECT_TRUE(S_ISDIR(st.st_mode));
+}
+
+TEST_F(AutoStartTest, IsAutoStartEnabledWithInvalidFile) {
+    SessionManager& sm = SessionManager::instance();
+
+    // Create autostart directory
+    std::string autostartDir = SessionManager::getAutoStartPath();
+    mkdir(autostartDir.c_str(), 0755);
+
+    // Write an invalid desktop file (missing required fields)
+    std::string desktopPath = SessionManager::getAutoStartFilePath();
+    std::ofstream file(desktopPath);
+    file << "[Desktop Entry]\n"
+         << "Type=Application\n";  // Missing Name and Exec
+    file.close();
+
+    // Should return false for invalid file
+    EXPECT_FALSE(sm.isAutoStartEnabled());
+}
+
+TEST_F(AutoStartTest, IsAutoStartEnabledWithDisabledFlag) {
+    SessionManager& sm = SessionManager::instance();
+
+    // Create autostart directory
+    std::string autostartDir = SessionManager::getAutoStartPath();
+    mkdir(autostartDir.c_str(), 0755);
+
+    // Write a valid desktop file but with autostart disabled
+    std::string desktopPath = SessionManager::getAutoStartFilePath();
+    std::ofstream file(desktopPath);
+    file << "[Desktop Entry]\n"
+         << "Type=Application\n"
+         << "Name=YAMY\n"
+         << "Exec=/usr/bin/yamy\n"
+         << "X-GNOME-Autostart-enabled=false\n";
+    file.close();
+
+    // Should return false when explicitly disabled
+    EXPECT_FALSE(sm.isAutoStartEnabled());
+}
+
+TEST_F(AutoStartTest, EnableAutoStartOverwritesExisting) {
+    SessionManager& sm = SessionManager::instance();
+
+    // Enable first time
+    EXPECT_TRUE(sm.enableAutoStart());
+
+    // Enable again (should succeed and update file)
+    EXPECT_TRUE(sm.enableAutoStart());
+    EXPECT_TRUE(sm.isAutoStartEnabled());
+}

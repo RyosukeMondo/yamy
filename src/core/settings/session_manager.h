@@ -78,6 +78,28 @@ public:
     /// @return Path to ~/.config/yamy/
     static std::string getConfigDir();
 
+    /// Get the autostart directory path
+    /// @return Path to $XDG_CONFIG_HOME/autostart or ~/.config/autostart
+    static std::string getAutoStartPath();
+
+    /// Get the autostart desktop file path
+    /// @return Path to autostart/yamy.desktop
+    static std::string getAutoStartFilePath();
+
+    /// Enable application autostart on login
+    /// Creates yamy.desktop file in XDG autostart directory
+    /// @return true if autostart was enabled successfully
+    bool enableAutoStart();
+
+    /// Disable application autostart on login
+    /// Removes yamy.desktop file from XDG autostart directory
+    /// @return true if autostart was disabled successfully
+    bool disableAutoStart();
+
+    /// Check if autostart is currently enabled
+    /// @return true if yamy.desktop exists and is valid in autostart directory
+    bool isAutoStartEnabled() const;
+
 private:
     SessionManager();
     ~SessionManager();

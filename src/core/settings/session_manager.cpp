@@ -407,6 +407,129 @@ std::string SessionManager::toJson() const {
     return oss.str();
 }
 
+std::string SessionManager::getAutoStartPath() {
+    const char* xdgConfig = getenv("XDG_CONFIG_HOME");
+    if (xdgConfig && *xdgConfig) {
+        return std::string(xdgConfig) + "/autostart";
+    }
+    return getHomeDir() + "/.config/autostart";
+}
+
+std::string SessionManager::getAutoStartFilePath() {
+    return getAutoStartPath() + "/yamy.desktop";
+}
+
+namespace {
+
+std::string getExecutablePath() {
+    char path[4096];
+    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (len != -1) {
+        path[len] = '\0';
+        return path;
+    }
+    // Fallback: try to find yamy in PATH or use current working directory
+    return "yamy";
+}
+
+bool isValidDesktopEntry(const std::string& content) {
+    // Verify it's a valid .desktop file for yamy
+    return content.find("[Desktop Entry]") != std::string::npos &&
+           content.find("Type=Application") != std::string::npos &&
+           content.find("Name=YAMY") != std::string::npos &&
+           content.find("Exec=") != std::string::npos;
+}
+
+}  // anonymous namespace
+
+bool SessionManager::enableAutoStart() {
+    std::string autostartDir = getAutoStartPath();
+    std::string desktopFilePath = getAutoStartFilePath();
+
+    // Create autostart directory if it doesn't exist
+    std::string parentDir = autostartDir.substr(0, autostartDir.rfind('/'));
+    if (!directoryExists(parentDir)) {
+        if (!createDirectory(parentDir)) {
+            return false;
+        }
+    }
+
+    if (!directoryExists(autostartDir)) {
+        if (!createDirectory(autostartDir)) {
+            return false;
+        }
+    }
+
+    // Get the absolute path to the yamy executable
+    std::string execPath = getExecutablePath();
+
+    // Create the .desktop file
+    std::ofstream desktopFile(desktopFilePath);
+    if (!desktopFile.is_open()) {
+        return false;
+    }
+
+    desktopFile << "[Desktop Entry]\n"
+                << "Type=Application\n"
+                << "Name=YAMY\n"
+                << "GenericName=Keyboard Remapper\n"
+                << "Comment=Keyboard remapping utility\n"
+                << "Exec=" << execPath << "\n"
+                << "Icon=yamy\n"
+                << "Terminal=false\n"
+                << "Categories=Utility;System;\n"
+                << "X-GNOME-Autostart-enabled=true\n";
+
+    desktopFile.close();
+    return desktopFile.good();
+}
+
+bool SessionManager::disableAutoStart() {
+    std::string desktopFilePath = getAutoStartFilePath();
+
+    if (!fileExists(desktopFilePath)) {
+        return true;  // Already disabled
+    }
+
+    if (std::remove(desktopFilePath.c_str()) != 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SessionManager::isAutoStartEnabled() const {
+    std::string desktopFilePath = getAutoStartFilePath();
+
+    if (!fileExists(desktopFilePath)) {
+        return false;
+    }
+
+    // Read and validate the desktop file
+    std::ifstream file(desktopFilePath);
+    if (!file.is_open()) {
+        return false;
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
+
+    std::string content = buffer.str();
+
+    // Check if it's a valid yamy desktop entry
+    if (!isValidDesktopEntry(content)) {
+        return false;
+    }
+
+    // Check if X-GNOME-Autostart-enabled is false
+    if (content.find("X-GNOME-Autostart-enabled=false") != std::string::npos) {
+        return false;
+    }
+
+    return true;
+}
+
 bool SessionManager::validateSession() const {
     // Validate timestamp is reasonable (not in the future, not too old)
     int64_t now = static_cast<int64_t>(std::time(nullptr));
