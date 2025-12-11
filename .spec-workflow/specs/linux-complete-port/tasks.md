@@ -861,7 +861,7 @@
   - _Requirements: FR-4.9_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add statistics panel - Step 1: Add collapsible Statistics panel at bottom of dialog, Step 2: Show counts: Total entries, by Level (Trace/Info/Warning/Error), by Category (Engine/Parser/Input/Window), Step 3: Update counts in appendLog method, Step 4: Add Clear Stats button resetting counters, Step 5: Format nicely: "Errors: 3 | Warnings: 12 | Info: 145 | Trace: 8234" | Restrictions: Update efficiently (batch updates if needed), Don't slow down logging, Show only non-zero counts optionally, Keep display compact, Thread-safe counter updates | Success: Statistics panel shows accurate counts, Updates in real-time, Level and category breakdowns shown, Clear button resets counters, Compact display, No performance impact, Thread-safe | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.11 Implement log timestamp formatting options
+- [x] 4.11 Implement log timestamp formatting options
   - File: src/ui/qt/dialog_log_qt.cpp
   - Allow choosing timestamp format: absolute, relative, none
   - Update display when format changed
