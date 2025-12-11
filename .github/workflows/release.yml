@@ -2,38 +2,241 @@ name: Release Build
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: false
+        default: ''
   push:
     tags:
       - 'v*'
 
+env:
+  # Version is extracted from tag or input
+  VERSION: ${{ github.ref_name }}
+
 jobs:
-  build:
-    runs-on: windows-latest
-    
+  # ---------------------------------------------------------------------------
+  # Linux Build - Ubuntu (DEB package)
+  # ---------------------------------------------------------------------------
+  build-linux-deb:
+    name: Linux DEB Package (Ubuntu)
+    runs-on: ubuntu-24.04
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake g++ make \
+          qtbase5-dev qttools5-dev libqt5x11extras5-dev \
+          libx11-dev libxrandr-dev libudev-dev \
+          file dpkg-dev
+
+    - name: Extract version from tag
+      id: version
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"  # Remove 'v' prefix
+        else
+          VERSION="1.0.0"
+        fi
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "Building version: ${VERSION}"
+
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DBUILD_LINUX_STUB=ON \
+          -DCPACK_PACKAGE_VERSION=${{ steps.version.outputs.version }}
+
+    - name: Build
+      run: cmake --build build --parallel $(nproc)
+
+    - name: Create DEB package
+      run: |
+        cd build
+        cpack -G DEB
+        ls -la *.deb
+
+    - name: Verify DEB package
+      run: |
+        DEB_FILE=$(ls build/*.deb | head -1)
+        echo "## DEB Package Info" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        dpkg-deb --info "$DEB_FILE" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Contents:" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        dpkg-deb --contents "$DEB_FILE" | head -50 >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload DEB artifact
+      uses: actions/upload-artifact@v4
       with:
-        path: yamy
+        name: linux-deb-package
+        path: build/*.deb
+        retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Linux Build - Fedora (RPM package)
+  # ---------------------------------------------------------------------------
+  build-linux-rpm:
+    name: Linux RPM Package (Fedora)
+    runs-on: ubuntu-24.04
+    container:
+      image: fedora:40
+
+    steps:
+    - name: Install system dependencies
+      run: |
+        dnf install -y \
+          cmake gcc-c++ make git \
+          qt5-qtbase-devel qt5-qtx11extras-devel \
+          libX11-devel libXrandr-devel systemd-devel \
+          rpm-build file
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Extract version from tag
+      id: version
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"  # Remove 'v' prefix
+        else
+          VERSION="1.0.0"
+        fi
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "Building version: ${VERSION}"
+
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DBUILD_LINUX_STUB=ON \
+          -DCPACK_PACKAGE_VERSION=${{ steps.version.outputs.version }}
+
+    - name: Build
+      run: cmake --build build --parallel $(nproc)
+
+    - name: Create RPM package
+      run: |
+        cd build
+        cpack -G RPM
+        ls -la *.rpm
+
+    - name: Verify RPM package
+      run: |
+        RPM_FILE=$(ls build/*.rpm | head -1)
+        echo "## RPM Package Info" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        rpm -qip "$RPM_FILE" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Contents (first 50 files):" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        rpm -qlp "$RPM_FILE" | head -50 >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload RPM artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-rpm-package
+        path: build/*.rpm
+        retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Linux Source Tarball
+  # ---------------------------------------------------------------------------
+  build-linux-source:
+    name: Source Tarball
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake
+
+    - name: Extract version from tag
+      id: version
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"  # Remove 'v' prefix
+        else
+          VERSION="1.0.0"
+        fi
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+    - name: Configure CMake (for source package)
+      run: |
+        cmake -B build \
+          -DCPACK_PACKAGE_VERSION=${{ steps.version.outputs.version }}
+
+    - name: Create source tarball
+      run: |
+        cd build
+        cpack --config CPackSourceConfig.cmake -G TGZ
+        ls -la *.tar.gz || echo "No tarball found, creating manually"
+
+        # Fallback: create tarball manually if CPack source fails
+        if [ ! -f *.tar.gz ]; then
+          cd ..
+          tar --exclude='.git' \
+              --exclude='build' \
+              --exclude='build-*' \
+              --exclude='.spec-workflow' \
+              -czvf "build/yamy-${{ steps.version.outputs.version }}-source.tar.gz" \
+              .
+        fi
+
+    - name: Upload source tarball
+      uses: actions/upload-artifact@v4
+      with:
+        name: source-tarball
+        path: build/*.tar.gz
+        retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Windows Build
+  # ---------------------------------------------------------------------------
+  build-windows:
+    name: Windows Build
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.3
+      uses: microsoft/setup-msbuild@v2
 
     - name: Build Release x64
       shell: cmd
-      working-directory: yamy
       run: |
         msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=x64
 
     - name: Build Release Win32
       shell: cmd
-      working-directory: yamy
       run: |
         msbuild proj\yamy.sln /p:Configuration=Release /p:Platform=Win32
 
-    - name: Prepare Artifacts
+    - name: Prepare Windows artifacts
       shell: cmd
-      working-directory: yamy
       run: |
         cd Release
         if exist yamy64 move /Y yamy64 yamy64.exe
@@ -46,10 +249,9 @@ jobs:
         copy Release\yamy32.exe bin\
         copy Release\yamy64.dll bin\
         copy Release\yamy32.dll bin\
-        
-    - name: Copy Documentation and Config
+
+    - name: Copy documentation and config
       shell: cmd
-      working-directory: yamy
       run: |
         copy docs\README-ja.html bin\
         copy keymaps\109.mayu bin\
@@ -59,23 +261,105 @@ jobs:
         copy scripts\launch_yamy.bat bin\
         copy scripts\launch_yamy_admin.bat bin\
 
-    - name: Create Zip Archive
+    - name: Create Windows ZIP archive
       shell: cmd
-      working-directory: yamy/bin
       run: |
-        7z a ../../yamy-release.zip *
+        cd bin
+        7z a ../yamy-windows-release.zip *
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
       with:
-        files: yamy-release.zip
+        name: windows-release
+        path: yamy-windows-release.zip
+        retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Create GitHub Release
+  # ---------------------------------------------------------------------------
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-linux-deb, build-linux-rpm, build-linux-source, build-windows]
+    if: startsWith(github.ref, 'refs/tags/')
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Prepare release files
+      run: |
+        mkdir -p release-files
+
+        # Move all package files to release directory
+        find artifacts -type f \( -name "*.deb" -o -name "*.rpm" -o -name "*.tar.gz" -o -name "*.zip" \) -exec mv {} release-files/ \;
+
+        # List all release files
+        echo "## Release Files" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        ls -la release-files/ >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+    - name: Extract version for release
+      id: version
+      run: |
+        VERSION="${{ github.ref_name }}"
+        echo "tag=${VERSION}" >> $GITHUB_OUTPUT
+        echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: YAMY ${{ steps.version.outputs.tag }}
+        tag_name: ${{ steps.version.outputs.tag }}
+        body_path: RELEASE-NOTES-1.0.md
+        draft: false
+        prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
+        files: |
+          release-files/*
+        fail_on_unmatched_files: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload Artifact (for manual runs)
-      uses: actions/upload-artifact@v4
-      if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    - name: Release summary
+      run: |
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Release Created" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Version:** ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Release URL:** https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+
+  # ---------------------------------------------------------------------------
+  # Upload artifacts for manual runs (no tag)
+  # ---------------------------------------------------------------------------
+  upload-manual-artifacts:
+    name: Upload Manual Build Artifacts
+    runs-on: ubuntu-latest
+    needs: [build-linux-deb, build-linux-rpm, build-linux-source, build-windows]
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
       with:
-        name: yamy-release
-        path: yamy-release.zip
+        path: artifacts
+
+    - name: List all artifacts
+      run: |
+        echo "## Build Artifacts (Manual Run)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "The following packages were built:" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        find artifacts -type f \( -name "*.deb" -o -name "*.rpm" -o -name "*.tar.gz" -o -name "*.zip" \) -ls >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Download artifacts from the Actions run page." >> $GITHUB_STEP_SUMMARY
