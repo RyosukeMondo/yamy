@@ -821,7 +821,7 @@
   - _Requirements: FR-4.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add syntax highlighting - Step 1: In appendLog method detect log level from message text, Step 2: Wrap ERROR messages in red span, WARNING in orange, Trace in gray, Step 3: Highlight keywords: DOWN/UP in bold, HANDLED in green, PASSED in default, Step 4: Use HTML formatting: <span style='color: red;'>text</span>, Step 5: Ensure performance with large logs (don't reprocess entire buffer) | Restrictions: Use efficient string matching, Don't slow down log appending, Apply formatting only to new entries, Handle special HTML characters (escape <>&), Keep highlighting subtle and readable | Success: Error logs show in red, Warnings in orange, Trace in gray, Keywords highlighted, Performance acceptable with rapid logging, HTML characters escaped correctly, Highlighting improves readability | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.6 Add Clear and Pause controls
+- [x] 4.6 Add Clear and Pause controls
   - File: src/ui/qt/dialog_log_qt.cpp
   - Clear button to erase all log entries
   - Pause/Resume button to stop auto-scrolling
