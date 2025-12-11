@@ -1587,14 +1587,55 @@ set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
 # set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 # -----------------------------------------------------------------------------
-# RPM Package Configuration (Fedora/SUSE) - Placeholder for task 5.2
+# RPM Package Configuration (Fedora/SUSE)
 # -----------------------------------------------------------------------------
 set(CPACK_RPM_PACKAGE_NAME "yamy")
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
+set(CPACK_RPM_PACKAGE_SUMMARY "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
 set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
-set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase, qt5-qtx11extras, libX11, libXrandr, libudev")
-set(CPACK_RPM_PACKAGE_RELEASE "1")
+set(CPACK_RPM_PACKAGE_URL "${CPACK_PACKAGE_HOMEPAGE_URL}")
+set(CPACK_RPM_PACKAGE_VENDOR "${CPACK_PACKAGE_VENDOR}")
+
+# RPM release number with optional dist tag
+set(CPACK_RPM_PACKAGE_RELEASE "1%{?dist}")
+
+# Dependencies - using package names that work on both Fedora and openSUSE
+# Fedora uses: qt5-qtbase, qt5-qtx11extras
+# openSUSE uses: libqt5-qtbase, libqt5-qtx11extras
+# We use the Fedora names with alternatives for broader compatibility
+set(CPACK_RPM_PACKAGE_REQUIRES
+    "qt5-qtbase >= 5.12, qt5-qtx11extras >= 5.12, libX11, libXrandr, systemd-udev"
+)
+
+# Build dependencies (for SRPM)
+set(CPACK_RPM_PACKAGE_BUILDREQUIRES
+    "cmake >= 3.10, gcc-c++, qt5-qtbase-devel, qt5-qtx11extras-devel, libX11-devel, libXrandr-devel, systemd-devel"
+)
+
+# Architecture
+set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
+
+# Do not auto-detect dependencies (we specify them explicitly)
+set(CPACK_RPM_PACKAGE_AUTOREQ OFF)
+set(CPACK_RPM_PACKAGE_AUTOPROV OFF)
+
+# RPM scriptlets (post-install and post-uninstall)
+set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/packaging/rpm/post_install.sh")
+set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/packaging/rpm/post_uninstall.sh")
+
+# Compression type (xz is modern and well-supported)
+set(CPACK_RPM_COMPRESSION_TYPE "xz")
+
+# Package documentation
+set(CPACK_RPM_PACKAGE_DOCUMENTATION_DIRECTORY "/usr/share/doc/yamy")
+
+# Exclude debug info (debug packages would be separate)
+set(CPACK_RPM_PACKAGE_DEBUG OFF)
+
+# File permissions handling
+set(CPACK_RPM_DEFAULT_USER "root")
+set(CPACK_RPM_DEFAULT_GROUP "root")
 
 # Enable the generators
 if(UNIX AND NOT APPLE)
