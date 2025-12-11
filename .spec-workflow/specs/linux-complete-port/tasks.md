@@ -1089,7 +1089,7 @@
   - _Requirements: FR-9.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create about dialog - Step 1: Create QDialog showing YAMY logo/icon, Step 2: Display version from build info (VERSION macro), Step 3: Show license: GPL-3.0 (or project license) with full text in scrollable area, Step 4: List major contributors from AUTHORS file or embedded list, Step 5: Show build info: commit hash, build date, Qt version, compiler, Step 6: Include links: GitHub repository, Documentation site, Bug tracker | Restrictions: Read version from build system, Format license text readably, Keep dialog size reasonable, Make links clickable, Handle missing build info, Show platform: Linux/x86_64 etc | Success: Dialog shows version, License text readable, Contributors listed, Build info accurate, Links clickable and working, Platform shown, Professional appearance, Scrollable if content long | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.11 Add online documentation link
+- [x] 6.11 Add online documentation link
   - File: src/ui/qt/help_menu.cpp
   - Open documentation URL in browser
   - Support offline docs if available
