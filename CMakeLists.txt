@@ -394,6 +394,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/platform/linux/thread_linux.cpp
         src/platform/linux/hook_data_linux.cpp
         src/platform/linux/ipc_linux.cpp
+        src/platform/linux/ipc_control_server.cpp
     )
 
     # Combine Core and platform sources for Linux build
@@ -449,6 +450,22 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/utils
         src/app
     )
+
+    # -----------------------------------------------------------------------------
+    # Target: yamy-ctl (Command-line control tool)
+    # -----------------------------------------------------------------------------
+    add_executable(yamy-ctl
+        src/app/yamy_ctl.cpp
+    )
+
+    target_include_directories(yamy-ctl PRIVATE
+        src
+        src/core
+        src/core/platform
+    )
+
+    # yamy-ctl only needs pthread for potential future extensions
+    target_link_libraries(yamy-ctl PRIVATE pthread)
 
     # Note: Full engine build (yamy_engine_new) is disabled on Linux until Core Refactoring
     # (Branch 2 & 10) is complete and merged.

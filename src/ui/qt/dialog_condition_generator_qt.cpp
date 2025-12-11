@@ -39,7 +39,7 @@ void DialogConditionGeneratorQt::setupUI()
     connect(m_radioTitle, &QRadioButton::toggled, this, &DialogConditionGeneratorQt::onGenerate);
     connect(m_radioClass, &QRadioButton::toggled, this, &DialogConditionGeneratorQt::onGenerate);
     connect(m_radioBoth, &QRadioButton::toggled, this, &DialogConditionGeneratorQt::onGenerate);
-    connect(m_matchType, &QComboBox::currentIndexChanged, this, &DialogConditionGeneratorQt::onGenerate);
+    connect(m_matchType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DialogConditionGeneratorQt::onGenerate);
 
     mainLayout->addWidget(optionsGroup);
 

@@ -92,6 +92,16 @@ private slots:
      */
     void onIpcMessageReceived(const yamy::ipc::Message& message);
 
+    /**
+     * @brief Handle Copy to Clipboard button click
+     */
+    void onCopyToClipboard();
+
+    /**
+     * @brief Handle Generate Condition button click
+     */
+    void onGenerateCondition();
+
 protected:
     void showEvent(QShowEvent* event) override;
     void hideEvent(QHideEvent* event) override;

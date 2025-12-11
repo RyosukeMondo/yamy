@@ -18,6 +18,7 @@
 #  include "../ipc_messages.h"
 #  include "engine_state.h"
 #  include "../platform/ipc_defs.h"
+#  include "../platform/ipc_channel_interface.h"
 #  include <set>
 #  include <queue>
 #  include "../audio/sound_manager.h"

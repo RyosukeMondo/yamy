@@ -23,6 +23,17 @@ enum MessageType : uint32_t {
 
     // Notification of a key event for the live log
     NtfKeyEvent = 0x1005,
+
+    // Control commands from yamy-ctl
+    CmdReload = 0x2001,           // Reload configuration (data = config name or empty for current)
+    CmdStop = 0x2002,             // Stop the engine
+    CmdStart = 0x2003,            // Start the engine
+    CmdGetStatus = 0x2004,        // Get engine status
+
+    // Response to control commands
+    RspOk = 0x2100,               // Command succeeded (data may contain details)
+    RspError = 0x2101,            // Command failed (data contains error message)
+    RspStatus = 0x2102,           // Status response (data contains JSON status)
 };
 
 // Data for CmdInvestigateWindow request

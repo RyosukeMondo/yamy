@@ -3,25 +3,60 @@
 #include <QCommandLineParser>
 #include <QWidget>
 #include <iostream>
+#include <sstream>
 #include <sys/stat.h>
+#include <chrono>
 #include "ui/qt/tray_icon_qt.h"
 #include "core/settings/session_manager.h"
+#include "platform/linux/ipc_control_server.h"
 
 // Stub Engine class for Qt GUI (until core refactoring is complete)
 class Engine {
 public:
+    Engine() : m_startTime(std::chrono::steady_clock::now()) {}
+
     bool getIsEnabled() const { return m_enabled; }
     void enable() { m_enabled = true; }
     void disable() { m_enabled = false; }
-    void start() { m_running = true; }
+    void start() {
+        m_running = true;
+        m_engineStartTime = std::chrono::steady_clock::now();
+    }
     void stop() { m_running = false; }
     bool isRunning() const { return m_running; }
     const std::string& getConfigPath() const { return m_configPath; }
     void setConfigPath(const std::string& path) { m_configPath = path; }
+    uint64_t keyCount() const { return m_keyCount; }
+    void incrementKeyCount() { ++m_keyCount; }
+
+    /// Get uptime in seconds
+    int64_t uptimeSeconds() const {
+        if (!m_running) return 0;
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::duration_cast<std::chrono::seconds>(now - m_engineStartTime).count();
+    }
+
+    /// Format uptime as human-readable string
+    std::string uptimeString() const {
+        int64_t secs = uptimeSeconds();
+        int hours = static_cast<int>(secs / 3600);
+        int mins = static_cast<int>((secs % 3600) / 60);
+        std::ostringstream oss;
+        if (hours > 0) {
+            oss << hours << "h " << mins << "m";
+        } else {
+            oss << mins << "m";
+        }
+        return oss.str();
+    }
+
 private:
     bool m_enabled = true;
     bool m_running = false;
     std::string m_configPath;
+    uint64_t m_keyCount = 0;
+    std::chrono::steady_clock::time_point m_startTime;
+    std::chrono::steady_clock::time_point m_engineStartTime;
 };
 
 /// Command line options structure
@@ -188,6 +223,93 @@ int main(int argc, char* argv[])
     TrayIconQt trayIcon(engine);
     trayIcon.show();
 
+    // Create IPC control server for yamy-ctl commands
+    yamy::platform::IPCControlServer controlServer;
+    controlServer.setCommandCallback(
+        [engine, &trayIcon](yamy::platform::ControlCommand cmd, const std::string& data)
+            -> yamy::platform::ControlResult {
+        yamy::platform::ControlResult result;
+
+        switch (cmd) {
+            case yamy::platform::ControlCommand::Reload: {
+                std::cout << "IPC: Received reload command";
+                if (!data.empty()) {
+                    std::cout << " (config: " << data << ")";
+                }
+                std::cout << std::endl;
+
+                // If config name provided, set it
+                if (!data.empty()) {
+                    engine->setConfigPath(data);
+                }
+
+                // For stub engine, just report success
+                result.success = true;
+                result.message = "Configuration reloaded";
+                if (!engine->getConfigPath().empty()) {
+                    result.message += ": " + engine->getConfigPath();
+                }
+                break;
+            }
+
+            case yamy::platform::ControlCommand::Stop:
+                std::cout << "IPC: Received stop command" << std::endl;
+                if (engine->isRunning()) {
+                    engine->stop();
+                    engine->disable();
+                    result.success = true;
+                    result.message = "Engine stopped";
+                } else {
+                    result.success = true;
+                    result.message = "Engine was already stopped";
+                }
+                break;
+
+            case yamy::platform::ControlCommand::Start:
+                std::cout << "IPC: Received start command" << std::endl;
+                if (!engine->isRunning()) {
+                    engine->enable();
+                    engine->start();
+                    result.success = true;
+                    result.message = "Engine started";
+                } else {
+                    result.success = true;
+                    result.message = "Engine was already running";
+                }
+                break;
+
+            case yamy::platform::ControlCommand::GetStatus: {
+                std::cout << "IPC: Received status command" << std::endl;
+                std::ostringstream oss;
+                oss << "Engine: " << (engine->isRunning() ? "Running" : "Stopped");
+                if (engine->isRunning()) {
+                    oss << " | Uptime: " << engine->uptimeString();
+                }
+                if (!engine->getConfigPath().empty()) {
+                    oss << " | Config: " << engine->getConfigPath();
+                }
+                oss << " | Keys: " << engine->keyCount();
+                result.success = true;
+                result.message = oss.str();
+                break;
+            }
+
+            default:
+                result.success = false;
+                result.message = "Unknown command";
+                break;
+        }
+
+        return result;
+    });
+
+    // Start IPC control server
+    if (controlServer.start()) {
+        std::cout << "IPC control server started at: " << controlServer.socketPath() << std::endl;
+    } else {
+        std::cerr << "Warning: Failed to start IPC control server" << std::endl;
+    }
+
     // Show startup notification
     QString notificationMsg = sessionRestored
         ? "YAMY started (session restored)"
@@ -202,6 +324,9 @@ int main(int argc, char* argv[])
 
     // Run Qt event loop
     int result = app.exec();
+
+    // Stop IPC control server
+    controlServer.stop();
 
     // Save session state before exit
     std::cout << "Saving session state..." << std::endl;
