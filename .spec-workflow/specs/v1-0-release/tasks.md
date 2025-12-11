@@ -61,7 +61,7 @@ Integration tests exist but cannot compile due to:
   - _Requirements: FR-4, NF-1_
   - _Prompt: Implement the task for spec v1-0-release, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Refactoring specialist with regex/sed expertise | Task: Remove tstring typedef across codebase - Step 1: Search all tstring usages: grep -r "\\btstring\\b" src/ --include="*.h" --include="*.cpp", Step 2: Replace with std::string using sed: find src/ -name "*.cpp" -o -name "*.h" | xargs sed -i 's/\\btstring\\b/std::string/g', Step 3: Delete typedef line from src/utils/stringtool.h:31, Step 4: Rebuild entire project and fix any compilation errors, Step 5: Run unit tests to verify no behavioral changes | Restrictions: Do NOT modify string literals or comments containing "tstring", Preserve Unicode handling (wstring separate), Test after each batch of changes | Success: Zero occurrences of tstring in source files (grep returns empty), Full rebuild succeeds with no errors, All unit tests pass, No functionality changes | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.2 Replace Windows types in config_store.h with stdint types
+- [x] 2.2 Replace Windows types in config_store.h with stdint types
   - Files: src/utils/config_store.h, src/platform/windows/config_store_win32.cpp, src/platform/linux/config_store_linux.cpp
   - Replace `BYTE` with `uint8_t` and `DWORD` with `uint32_t` in interface and implementations
   - Update all callers of read()/write() methods
