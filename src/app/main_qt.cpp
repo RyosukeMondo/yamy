@@ -14,6 +14,7 @@
 #include "ui/qt/tray_icon_qt.h"
 #include "core/settings/session_manager.h"
 #include "platform/linux/ipc_control_server.h"
+#include "utils/crash_handler.h"
 
 // Stub Engine class for Qt GUI (until core refactoring is complete)
 class Engine {
@@ -30,7 +31,10 @@ public:
     void stop() { m_running = false; }
     bool isRunning() const { return m_running; }
     const std::string& getConfigPath() const { return m_configPath; }
-    void setConfigPath(const std::string& path) { m_configPath = path; }
+    void setConfigPath(const std::string& path) {
+        m_configPath = path;
+        yamy::CrashHandler::setConfigPath(path);
+    }
     uint64_t keyCount() const { return m_keyCount; }
     void incrementKeyCount() { ++m_keyCount; }
 
@@ -292,6 +296,10 @@ static void saveWindowPosition(QWidget* widget, const std::string& windowName) {
  */
 int main(int argc, char* argv[])
 {
+    // Install crash handler as early as possible
+    yamy::CrashHandler::install();
+    yamy::CrashHandler::setVersion("0.04");
+
     QApplication app(argc, argv);
 
     // Set application metadata

@@ -64,6 +64,7 @@ set(QT_GUI_HEADERS
     notification_prefs.h
     preferences_dialog.h
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
+    ${CMAKE_SOURCE_DIR}/src/core/platform/ipc_channel_interface.h
 )
 
 # Qt UI files (Designer) - Not used, using code-based layouts

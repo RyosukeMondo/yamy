@@ -280,6 +280,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/utils/compiler_specific_func.cpp
         src/core/engine/engine.cpp
         src/core/engine/engine_lifecycle.cpp
+        src/core/notification_dispatcher.cpp
         src/core/engine/engine_input.cpp
         src/core/engine/engine_modifier.cpp
         src/core/engine/engine_generator.cpp
@@ -373,6 +374,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/resources/templates/template_manager.cpp
         src/core/functions/strexpr.cpp
         src/utils/stringtool.cpp
+        src/utils/crash_handler.cpp
     )
 
     # Linux platform backend sources
