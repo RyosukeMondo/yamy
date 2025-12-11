@@ -1025,7 +1025,7 @@
   - _Requirements: FR-6.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with Linux desktop integration | Task: Add autostart support - Step 1: Implement getAutoStartPath returning $XDG_CONFIG_HOME/autostart or ~/.config/autostart, Step 2: In enableAutoStart create yamy.desktop file with: Type=Application, Name=YAMY, Exec=(path to yamy binary), Icon=yamy, X-GNOME-Autostart-enabled=true, Step 3: In disableAutoStart remove yamy.desktop file, Step 4: In isAutoStartEnabled check if file exists and is valid, Step 5: Handle permissions errors | Restrictions: Follow XDG desktop entry spec, Use absolute path in Exec, Create autostart directory if missing, Handle write errors, Don't break if XDG_CONFIG_HOME not set | Success: enableAutoStart creates desktop file, YAMY starts on login, disableAutoStart removes file, isAutoStartEnabled accurate, Follows XDG spec, Works with GNOME/KDE/XFCE, Errors handled gracefully | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.3 Add session restore on startup
+- [x] 6.3 Add session restore on startup
   - File: src/app/main.cpp, src/core/engine.cpp
   - Restore session automatically on startup
   - Restore last config and engine state
