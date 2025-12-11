@@ -1149,6 +1149,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 src/tests/platform/window_context_keymap_test.cpp
                 # Integration tests
                 tests/integration/key_remapping_integration_test.cpp
+                tests/integration/integration_suite.cpp
                 # Leak tests (without their own main)
                 # Note: leak_test.cpp has its own main, so we include individual test cases separately
             )
@@ -1188,6 +1189,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 src/core/settings/config_validator.cpp
                 src/core/settings/config_metadata.cpp
                 src/core/settings/session_manager.cpp
+                src/core/settings/config_watcher.cpp
                 src/core/functions/strexpr.cpp
                 src/core/functions/function.cpp
                 src/core/functions/function_creator.cpp
@@ -1203,6 +1205,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 src/core/engine/engine_window.cpp
                 src/core/engine/engine_setting.cpp
                 src/core/engine/engine_log.cpp
+                src/core/notification_dispatcher.cpp
+                src/core/logging/logger.cpp
+                src/core/platform/ipc_channel_interface.cpp
                 src/utils/stringtool.cpp
                 src/utils/compiler_specific_func.cpp
             )
@@ -1283,6 +1288,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 src/tests/googletest/src/gtest-all.cc
             )
 
+            # Enable Qt MOC for regression tests
+            set_target_properties(yamy_regression_test PROPERTIES AUTOMOC ON)
+
             target_include_directories(yamy_regression_test PRIVATE
                 ${GTEST_DIR}/include
                 ${GTEST_DIR}
@@ -1310,6 +1318,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 ${X11_LIBRARIES}
                 ${XRANDR_LIBRARIES}
                 ${UDEV_LIBRARIES}
+                Qt5::Core
+                Qt5::Test
             )
 
             # Register with CTest
