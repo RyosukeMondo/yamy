@@ -1129,7 +1129,7 @@
   - _Requirements: NF-4 Reliability_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add crash report dialog - Step 1: On startup check ~/.local/share/yamy/crashes/ for .txt files, Step 2: If found show dialog: "YAMY crashed. Would you like to view the crash report?", Step 3: View button opens dialog showing crash report contents, Step 4: Report Bug button opens GitHub issues with crash report pre-filled in template, Step 5: Dismiss button deletes crash report file, Step 6: Always show dialog option checkbox | Restrictions: Don't show every startup (store dismissed flag), Offer to delete report after viewing, Pre-fill GitHub issue carefully (don't expose sensitive info), Make dismissing easy, Respect user privacy | Success: Crash reports detected on startup, Dialog offers view/report/dismiss options, View shows report contents, Report Bug opens GitHub with template, Dismiss deletes file, Option to not show again, Privacy respected, Easy to dismiss | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.16 Add plugin system foundation
+- [x] 6.16 Add plugin system foundation
   - File: src/core/plugin_manager.h, src/core/plugin_manager.cpp
   - Define plugin interface and loading mechanism
   - Support shared library plugins
