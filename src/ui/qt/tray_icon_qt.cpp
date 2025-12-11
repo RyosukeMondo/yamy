@@ -6,6 +6,7 @@
 #include "dialog_shortcuts_qt.h"
 #include "dialog_examples_qt.h"
 #include "config_manager_dialog.h"
+#include "preferences_dialog.h"
 #include "global_hotkey.h"
 #include "notification_history.h"
 #include "notification_sound.h"
@@ -24,6 +25,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QStandardPaths>
+#include <QPointer>
 
 TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)
@@ -37,6 +39,7 @@ TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     , m_actionEnable(nullptr)
     , m_actionReload(nullptr)
     , m_actionSettings(nullptr)
+    , m_actionPreferences(nullptr)
     , m_actionLog(nullptr)
     , m_actionInvestigate(nullptr)
     , m_actionNotificationHistory(nullptr)
@@ -328,6 +331,24 @@ void TrayIconQt::onReportBug()
     }
 }
 
+void TrayIconQt::onPreferences()
+{
+    // Check if a preferences dialog is already open
+    static QPointer<PreferencesDialog> activeDialog;
+    if (activeDialog) {
+        // Bring existing dialog to front
+        activeDialog->raise();
+        activeDialog->activateWindow();
+        return;
+    }
+
+    // Create new preferences dialog
+    PreferencesDialog* dialog = new PreferencesDialog();
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    activeDialog = dialog;
+    dialog->show();
+}
+
 void TrayIconQt::onExit()
 {
     // Quit application
@@ -360,6 +381,11 @@ void TrayIconQt::createMenu()
 
     // Connect the config menu's aboutToShow signal to refresh the list
     connect(m_configMenu, &QMenu::aboutToShow, this, &TrayIconQt::populateConfigMenu);
+
+    // Preferences (after Configurations)
+    m_actionPreferences = m_menu->addAction(QIcon::fromTheme("preferences-system"), "Preferences...");
+    m_actionPreferences->setShortcut(QKeySequence("Ctrl+,"));
+    connect(m_actionPreferences, &QAction::triggered, this, &TrayIconQt::onPreferences);
 
     m_menu->addSeparator();
 

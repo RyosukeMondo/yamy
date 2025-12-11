@@ -142,6 +142,11 @@ private slots:
     void onReportBug();
 
     /**
+     * @brief Show preferences dialog
+     */
+    void onPreferences();
+
+    /**
      * @brief Exit application
      */
     void onExit();
@@ -234,6 +239,7 @@ private:
     QAction* m_actionEnable;
     QAction* m_actionReload;
     QAction* m_actionSettings;
+    QAction* m_actionPreferences;
     QAction* m_actionLog;
     QAction* m_actionInvestigate;
     QAction* m_actionNotificationHistory;
