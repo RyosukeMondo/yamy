@@ -7,6 +7,7 @@
 #include "global_hotkey.h"
 #include "notification_history.h"
 #include "notification_sound.h"
+#include "notification_prefs.h"
 #include "../../core/settings/config_manager.h"
 #include "../../core/engine/engine.h"
 #include <QApplication>
@@ -523,6 +524,9 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
     // Play notification sound if enabled
     yamy::ui::NotificationSound::instance().playForMessage(type);
 
+    // Get notification preferences
+    auto& prefs = yamy::ui::NotificationPrefs::instance();
+
     m_currentState = type;
 
     switch (type) {
@@ -540,6 +544,15 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
             }
             m_enabled = true;
             updateMenuState();
+            // Show desktop notification if enabled
+            if (prefs.shouldShowDesktopNotification(type)) {
+                showNotification(
+                    "YAMY",
+                    "Engine started",
+                    QSystemTrayIcon::Information,
+                    prefs.infoTimeout()
+                );
+            }
             break;
 
         case yamy::MessageType::EngineStopping:
@@ -552,18 +565,29 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
             setToolTip("YAMY - Stopped");
             m_enabled = false;
             updateMenuState();
+            // Show desktop notification if enabled
+            if (prefs.shouldShowDesktopNotification(type)) {
+                showNotification(
+                    "YAMY",
+                    "Engine stopped",
+                    QSystemTrayIcon::Information,
+                    prefs.infoTimeout()
+                );
+            }
             break;
 
         case yamy::MessageType::EngineError:
             setIcon(m_iconError);
             setToolTip(QString("YAMY - Error: %1").arg(data));
-            // Show error notification with 5-second auto-dismiss
-            showNotification(
-                "YAMY Error",
-                data.isEmpty() ? "An engine error occurred" : data,
-                QSystemTrayIcon::Critical,
-                5000
-            );
+            // Show error notification if enabled (default: enabled)
+            if (prefs.shouldShowDesktopNotification(type)) {
+                showNotification(
+                    "YAMY Error",
+                    data.isEmpty() ? "An engine error occurred" : data,
+                    QSystemTrayIcon::Critical,
+                    prefs.errorTimeout()
+                );
+            }
             break;
 
         case yamy::MessageType::ConfigLoading:
@@ -583,17 +607,29 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
                 setToolTip(QString("YAMY - %1").arg(data));
             }
             updateMenuState();
+            // Show desktop notification if enabled
+            if (prefs.shouldShowDesktopNotification(type)) {
+                showNotification(
+                    "YAMY",
+                    data.isEmpty() ? "Configuration loaded" : QString("Loaded: %1").arg(data),
+                    QSystemTrayIcon::Information,
+                    prefs.infoTimeout()
+                );
+            }
             break;
 
         case yamy::MessageType::ConfigError:
             setIcon(m_iconError);
             setToolTip(QString("YAMY - Config Error: %1").arg(data));
-            showNotification(
-                "YAMY Configuration Error",
-                data.isEmpty() ? "Failed to load configuration" : data,
-                QSystemTrayIcon::Warning,
-                5000
-            );
+            // Show config error notification if enabled (uses error prefs)
+            if (prefs.shouldShowDesktopNotification(type)) {
+                showNotification(
+                    "YAMY Configuration Error",
+                    data.isEmpty() ? "Failed to load configuration" : data,
+                    QSystemTrayIcon::Warning,
+                    prefs.errorTimeout()
+                );
+            }
             break;
 
         case yamy::MessageType::KeymapSwitched:
@@ -603,6 +639,15 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
                     QString("YAMY - Running [%1]").arg(data) :
                     QString("YAMY - %1 [%2]").arg(m_currentConfigName, data);
                 setToolTip(tooltip);
+            }
+            // Show desktop notification if enabled
+            if (prefs.shouldShowDesktopNotification(type)) {
+                showNotification(
+                    "YAMY",
+                    data.isEmpty() ? "Keymap switched" : QString("Keymap: %1").arg(data),
+                    QSystemTrayIcon::Information,
+                    prefs.infoTimeout()
+                );
             }
             break;
 

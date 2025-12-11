@@ -35,6 +35,7 @@ set(QT_GUI_SOURCES
     global_hotkey.cpp
     notification_history.cpp
     notification_sound.cpp
+    notification_prefs.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
 )
 
@@ -55,6 +56,7 @@ set(QT_GUI_HEADERS
     global_hotkey.h
     notification_history.h
     notification_sound.h
+    notification_prefs.h
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
 )
 
