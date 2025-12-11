@@ -1049,7 +1049,7 @@
   - _Requirements: FR-7.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Add query commands - Step 1: Add MessageType enum values: CmdGetStatus, CmdGetConfig, CmdGetKeymaps, CmdGetMetrics, Step 2: In Engine handle these commands returning JSON in response.data, Step 3: GetStatus returns: state, uptime, config, key_count, current_keymap, Step 4: GetConfig returns: config_path, config_name, loaded_time, Step 5: GetKeymaps returns array of keymap objects with name and window conditions, Step 6: GetMetrics returns latency stats and CPU usage | Restrictions: Return valid JSON, Handle missing data gracefully, Keep response size reasonable, Don't block engine processing, Format timestamps as ISO8601 | Success: All query commands implemented, Responses in valid JSON format, Data accurate and complete, Engine not blocked by queries, Timestamps formatted correctly, yamy-ctl can parse responses | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.6 Add yamy-ctl query subcommands
+- [x] 6.6 Add yamy-ctl query subcommands
   - File: src/app/yamy_ctl.cpp
   - Implement status, config, keymaps, metrics subcommands
   - Parse and format JSON responses
