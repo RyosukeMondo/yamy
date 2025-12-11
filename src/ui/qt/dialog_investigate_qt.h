@@ -169,10 +169,6 @@ private:
                             const std::string& className,
                             const std::string& titleName);
 
-namespace yamy::ipc {
-    struct Message;
-}
-
     // Engine instance (not owned)
     Engine* m_engine;
 

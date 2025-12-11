@@ -1,13 +1,19 @@
 #pragma once
 
-#include <QDialog>
-#include <QTextEdit>
-#include <QPushButton>
 #include <QCheckBox>
-#include <QVBoxLayout>
+#include <QComboBox>
+#include <QDialog>
+#include <QGroupBox>
 #include <QHBoxLayout>
+#include <QHash>
+#include <QPushButton>
 #include <QString>
+#include <QTextEdit>
 #include <QTimer>
+#include <QVBoxLayout>
+#include <vector>
+
+#include "core/logging/log_entry.h"
 
 namespace yamy {
 namespace ui {
@@ -16,83 +22,68 @@ class LogStatsPanel;
 }
 
 /**
- * @brief Log viewer dialog
+ * @brief Log viewer dialog with filtering capabilities
  *
  * Displays YAMY log messages with:
+ * - Real-time log updates from Logger
+ * - Level filtering (Trace, Info, Warning, Error)
+ * - Category filtering (Engine, Parser, Input, Window, Config)
  * - Auto-scroll to latest messages
  * - Clear log functionality
  * - Save to file
- * - Real-time log updates
+ * - Thread-safe updates via QMetaObject::invokeMethod
  */
 class DialogLogQt : public QDialog {
     Q_OBJECT
 
 public:
-    /**
-     * @brief Construct log dialog
-     * @param parent Parent widget
-     */
     explicit DialogLogQt(QWidget* parent = nullptr);
-
-    /**
-     * @brief Destructor
-     */
     ~DialogLogQt() override;
 
 public slots:
     /**
-     * @brief Append log message
+     * @brief Append formatted log message (called from UI thread)
      * @param message Log message to append
      */
     void appendLog(const QString& message);
 
     /**
-     * @brief Clear all log messages
+     * @brief Thread-safe method to receive log entries from Logger
+     * @param entry Log entry to process
      */
-    void clearLog();
+    void onLogEntry(const yamy::logging::LogEntry& entry);
 
-    /**
-     * @brief Set auto-scroll enabled/disabled
-     * @param enabled true to auto-scroll
-     */
+    void clearLog();
     void setAutoScroll(bool enabled);
 
 private slots:
-    /**
-     * @brief Clear button clicked
-     */
     void onClear();
-
-    /**
-     * @brief Save log to file
-     */
     void onSave();
-
-    /**
-     * @brief Close dialog
-     */
     void onClose();
-
-    /**
-     * @brief Auto-scroll toggle changed
-     */
     void onAutoScrollToggled(bool checked);
-
-    /**
-     * @brief Update log from engine (periodic)
-     */
-    void onUpdateLog();
+    void onLevelFilterChanged(int index);
+    void onCategoryFilterChanged(bool checked);
 
 private:
-    /**
-     * @brief Setup UI components
-     */
-    void setupUI();
+    struct CachedLogEntry {
+        yamy::logging::LogLevel level;
+        QString category;
+        QString formattedText;
+    };
 
-    /**
-     * @brief Scroll to bottom of log
-     */
+    void setupUI();
+    void setupFilterControls(QVBoxLayout* mainLayout);
+    void subscribeToLogger();
     void scrollToBottom();
+    void rebuildLogView();
+    void processLogEntry(const CachedLogEntry& entry);
+    bool shouldDisplay(const CachedLogEntry& entry) const;
+    QString formatLogEntry(const yamy::logging::LogEntry& entry) const;
+
+    // Filter controls
+    QComboBox* m_levelFilter;
+    QGroupBox* m_categoryGroup;
+    QHash<QString, QCheckBox*> m_categoryFilters;
 
     // UI Components
     yamy::ui::LogStatsPanel* m_statsPanel;
@@ -104,8 +95,14 @@ private:
 
     // State
     bool m_autoScroll;
-    QTimer* m_updateTimer;
+    yamy::logging::LogLevel m_minLevel;
+    std::vector<CachedLogEntry> m_allEntries;
 
-    // Maximum log lines to keep
-    static const int MAX_LOG_LINES = 10000;
+    static constexpr int MAX_LOG_ENTRIES = 10000;
+
+    // Standard categories
+    static constexpr const char* CATEGORIES[] = {
+        "Engine", "Parser", "Input", "Window", "Config"
+    };
+    static constexpr size_t CATEGORY_COUNT = 5;
 };

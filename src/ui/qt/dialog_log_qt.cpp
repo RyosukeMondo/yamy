@@ -1,16 +1,20 @@
 #include "dialog_log_qt.h"
+#include "core/logging/logger.h"
 #include "log_stats_panel.h"
+#include <QCheckBox>
+#include <QDateTime>
+#include <QFile>
 #include <QFileDialog>
+#include <QLabel>
 #include <QMessageBox>
+#include <QScrollBar>
 #include <QStandardPaths>
 #include <QTextStream>
-#include <QFile>
-#include <QCheckBox>
-#include <QScrollBar>
-#include <QDateTime>
 
 DialogLogQt::DialogLogQt(QWidget* parent)
     : QDialog(parent)
+    , m_levelFilter(nullptr)
+    , m_categoryGroup(nullptr)
     , m_statsPanel(nullptr)
     , m_logView(nullptr)
     , m_btnClear(nullptr)
@@ -18,58 +22,237 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     , m_btnClose(nullptr)
     , m_chkAutoScroll(nullptr)
     , m_autoScroll(true)
-    , m_updateTimer(nullptr)
+    , m_minLevel(yamy::logging::LogLevel::Trace)
 {
     setWindowTitle("YAMY Log Viewer");
-    setMinimumSize(700, 500);
+    setMinimumSize(800, 600);
 
     setupUI();
-
-    // Setup periodic log update timer
-    m_updateTimer = new QTimer(this);
-    connect(m_updateTimer, &QTimer::timeout, this, &DialogLogQt::onUpdateLog);
-    m_updateTimer->start(1000); // Update every second
+    subscribeToLogger();
 }
 
-DialogLogQt::~DialogLogQt()
+DialogLogQt::~DialogLogQt() = default;
+
+void DialogLogQt::setupUI()
 {
+    auto* mainLayout = new QVBoxLayout(this);
+
+    // Filter controls at top
+    setupFilterControls(mainLayout);
+
+    // Stats panel
+    m_statsPanel = new yamy::ui::LogStatsPanel(this);
+    mainLayout->addWidget(m_statsPanel);
+
+    // Log view
+    m_logView = new QTextEdit();
+    m_logView->setReadOnly(true);
+    m_logView->setFont(QFont("Monospace", 10));
+    m_logView->setLineWrapMode(QTextEdit::NoWrap);
+    mainLayout->addWidget(m_logView);
+
+    // Bottom controls
+    auto* controlLayout = new QHBoxLayout();
+
+    m_chkAutoScroll = new QCheckBox("Auto-scroll");
+    m_chkAutoScroll->setChecked(m_autoScroll);
+    connect(m_chkAutoScroll, &QCheckBox::toggled,
+            this, &DialogLogQt::onAutoScrollToggled);
+    controlLayout->addWidget(m_chkAutoScroll);
+
+    controlLayout->addStretch();
+
+    m_btnClear = new QPushButton("Clear");
+    connect(m_btnClear, &QPushButton::clicked, this, &DialogLogQt::onClear);
+    controlLayout->addWidget(m_btnClear);
+
+    m_btnSave = new QPushButton("Save...");
+    connect(m_btnSave, &QPushButton::clicked, this, &DialogLogQt::onSave);
+    controlLayout->addWidget(m_btnSave);
+
+    m_btnClose = new QPushButton("Close");
+    connect(m_btnClose, &QPushButton::clicked, this, &DialogLogQt::onClose);
+    controlLayout->addWidget(m_btnClose);
+
+    mainLayout->addLayout(controlLayout);
 }
 
-void DialogLogQt::appendLog(const QString& message)
+void DialogLogQt::setupFilterControls(QVBoxLayout* mainLayout)
 {
-    // Add timestamp
-    QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-    QString logEntry = QString("[%1] %2").arg(timestamp, message);
+    auto* filterLayout = new QHBoxLayout();
 
-    m_logView->append(logEntry);
+    // Level filter
+    auto* levelLabel = new QLabel("Level:");
+    filterLayout->addWidget(levelLabel);
+
+    m_levelFilter = new QComboBox();
+    m_levelFilter->addItem("Trace", static_cast<int>(yamy::logging::LogLevel::Trace));
+    m_levelFilter->addItem("Info", static_cast<int>(yamy::logging::LogLevel::Info));
+    m_levelFilter->addItem("Warning", static_cast<int>(yamy::logging::LogLevel::Warning));
+    m_levelFilter->addItem("Error", static_cast<int>(yamy::logging::LogLevel::Error));
+    m_levelFilter->setCurrentIndex(0);
+    connect(m_levelFilter, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &DialogLogQt::onLevelFilterChanged);
+    filterLayout->addWidget(m_levelFilter);
+
+    filterLayout->addSpacing(20);
+
+    // Category filters
+    m_categoryGroup = new QGroupBox("Categories");
+    auto* categoryLayout = new QHBoxLayout(m_categoryGroup);
+    categoryLayout->setContentsMargins(5, 2, 5, 2);
+
+    for (size_t i = 0; i < CATEGORY_COUNT; ++i) {
+        const char* cat = CATEGORIES[i];
+        auto* checkbox = new QCheckBox(cat);
+        checkbox->setChecked(true);
+        connect(checkbox, &QCheckBox::toggled,
+                this, &DialogLogQt::onCategoryFilterChanged);
+        categoryLayout->addWidget(checkbox);
+        m_categoryFilters[cat] = checkbox;
+    }
+
+    filterLayout->addWidget(m_categoryGroup);
+    filterLayout->addStretch();
+
+    mainLayout->addLayout(filterLayout);
+}
+
+void DialogLogQt::subscribeToLogger()
+{
+    auto& logger = yamy::logging::Logger::getInstance();
+    logger.addListener([this](const yamy::logging::LogEntry& entry) {
+        // Copy entry data to capture by value for thread safety
+        CachedLogEntry cached;
+        cached.level = entry.level;
+        cached.category = QString::fromStdString(entry.category);
+        cached.formattedText = formatLogEntry(entry);
+
+        // Use QMetaObject::invokeMethod for thread-safe UI update
+        QMetaObject::invokeMethod(this, [this, cached = std::move(cached)]() {
+            processLogEntry(cached);
+        }, Qt::QueuedConnection);
+    });
+}
+
+void DialogLogQt::onLogEntry(const yamy::logging::LogEntry& entry)
+{
+    CachedLogEntry cached;
+    cached.level = entry.level;
+    cached.category = QString::fromStdString(entry.category);
+    cached.formattedText = formatLogEntry(entry);
+    processLogEntry(cached);
+}
+
+void DialogLogQt::processLogEntry(const CachedLogEntry& entry)
+{
+    // Limit buffer size
+    if (m_allEntries.size() >= static_cast<size_t>(MAX_LOG_ENTRIES)) {
+        m_allEntries.erase(m_allEntries.begin(),
+                          m_allEntries.begin() + MAX_LOG_ENTRIES / 10);
+    }
+
+    m_allEntries.push_back(entry);
 
     // Update stats
-    if (message.contains("ERROR", Qt::CaseInsensitive)) {
+    if (entry.level == yamy::logging::LogLevel::Error) {
         m_statsPanel->incrementError();
-    } else if (message.contains("WARNING", Qt::CaseInsensitive)) {
+    } else if (entry.level == yamy::logging::LogLevel::Warning) {
         m_statsPanel->incrementWarning();
     }
+    m_statsPanel->setTotalLines(static_cast<int>(m_allEntries.size()));
 
-    // Limit log size
-    QTextDocument* doc = m_logView->document();
-    m_statsPanel->setTotalLines(doc->blockCount());
-    if (doc->blockCount() > MAX_LOG_LINES) {
-        QTextCursor cursor = m_logView->textCursor();
-        cursor.movePosition(QTextCursor::Start);
-        cursor.movePosition(QTextCursor::Down, QTextCursor::KeepAnchor,
-                          doc->blockCount() - MAX_LOG_LINES);
-        cursor.removeSelectedText();
+    // Display if passes filter
+    if (shouldDisplay(m_allEntries.back())) {
+        m_logView->append(m_allEntries.back().formattedText);
+        if (m_autoScroll) {
+            scrollToBottom();
+        }
+    }
+}
+
+QString DialogLogQt::formatLogEntry(const yamy::logging::LogEntry& entry) const
+{
+    QString levelStr;
+    switch (entry.level) {
+        case yamy::logging::LogLevel::Trace:   levelStr = "TRACE"; break;
+        case yamy::logging::LogLevel::Info:    levelStr = "INFO"; break;
+        case yamy::logging::LogLevel::Warning: levelStr = "WARN"; break;
+        case yamy::logging::LogLevel::Error:   levelStr = "ERROR"; break;
     }
 
-    // Auto-scroll to bottom
+    auto timestamp = std::chrono::system_clock::to_time_t(entry.timestamp);
+    std::tm tm{};
+    localtime_r(&timestamp, &tm);
+    char timeBuf[32];
+    std::strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", &tm);
+
+    return QString("[%1] [%2] [%3] %4")
+        .arg(timeBuf)
+        .arg(levelStr, -5)
+        .arg(QString::fromStdString(entry.category), -8)
+        .arg(QString::fromStdString(entry.message));
+}
+
+bool DialogLogQt::shouldDisplay(const CachedLogEntry& entry) const
+{
+    // Check level filter
+    if (entry.level < m_minLevel) {
+        return false;
+    }
+
+    // Check category filter
+    auto it = m_categoryFilters.find(entry.category);
+    if (it != m_categoryFilters.end()) {
+        return it.value()->isChecked();
+    }
+
+    // Unknown category - show by default
+    return true;
+}
+
+void DialogLogQt::rebuildLogView()
+{
+    m_logView->clear();
+
+    for (const auto& entry : m_allEntries) {
+        if (shouldDisplay(entry)) {
+            m_logView->append(entry.formattedText);
+        }
+    }
+
     if (m_autoScroll) {
         scrollToBottom();
     }
 }
 
+void DialogLogQt::onLevelFilterChanged(int index)
+{
+    m_minLevel = static_cast<yamy::logging::LogLevel>(
+        m_levelFilter->itemData(index).toInt());
+    rebuildLogView();
+}
+
+void DialogLogQt::onCategoryFilterChanged(bool /*checked*/)
+{
+    rebuildLogView();
+}
+
+void DialogLogQt::appendLog(const QString& message)
+{
+    // Legacy method for manually appending logs
+    yamy::logging::LogEntry entry(
+        yamy::logging::LogLevel::Info,
+        "UI",
+        message.toStdString()
+    );
+    onLogEntry(entry);
+}
+
 void DialogLogQt::clearLog()
 {
     m_logView->clear();
+    m_allEntries.clear();
     m_statsPanel->reset();
 }
 
@@ -81,16 +264,18 @@ void DialogLogQt::setAutoScroll(bool enabled)
 
 void DialogLogQt::onClear()
 {
-    int ret = QMessageBox::question(
-        this,
-        "Clear Log",
-        "Clear all log messages?",
-        QMessageBox::Yes | QMessageBox::No
-    );
-
-    if (ret == QMessageBox::Yes) {
-        clearLog();
+    if (m_allEntries.size() > 1000) {
+        int ret = QMessageBox::question(
+            this,
+            "Clear Log",
+            QString("Clear all %1 log messages?").arg(m_allEntries.size()),
+            QMessageBox::Yes | QMessageBox::No
+        );
+        if (ret != QMessageBox::Yes) {
+            return;
+        }
     }
+    clearLog();
 }
 
 void DialogLogQt::onSave()
@@ -138,57 +323,6 @@ void DialogLogQt::onAutoScrollToggled(bool checked)
     if (m_autoScroll) {
         scrollToBottom();
     }
-}
-
-void DialogLogQt::onUpdateLog()
-{
-    // TODO: Fetch new log entries from engine (Phase 6)
-    // For now, this is a placeholder
-}
-
-void DialogLogQt::setupUI()
-{
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
-
-    // Stats panel
-    m_statsPanel = new yamy::ui::LogStatsPanel(this);
-    mainLayout->addWidget(m_statsPanel);
-
-    // Log view
-    m_logView = new QTextEdit();
-    m_logView->setReadOnly(true);
-    m_logView->setFont(QFont("Monospace", 9));
-    m_logView->setLineWrapMode(QTextEdit::NoWrap);
-    mainLayout->addWidget(m_logView);
-
-    // Bottom controls
-    QHBoxLayout* controlLayout = new QHBoxLayout();
-
-    m_chkAutoScroll = new QCheckBox("Auto-scroll");
-    m_chkAutoScroll->setChecked(m_autoScroll);
-    connect(m_chkAutoScroll, &QCheckBox::toggled,
-            this, &DialogLogQt::onAutoScrollToggled);
-    controlLayout->addWidget(m_chkAutoScroll);
-
-    controlLayout->addStretch();
-
-    m_btnClear = new QPushButton("Clear");
-    connect(m_btnClear, &QPushButton::clicked, this, &DialogLogQt::onClear);
-    controlLayout->addWidget(m_btnClear);
-
-    m_btnSave = new QPushButton("Save...");
-    connect(m_btnSave, &QPushButton::clicked, this, &DialogLogQt::onSave);
-    controlLayout->addWidget(m_btnSave);
-
-    m_btnClose = new QPushButton("Close");
-    connect(m_btnClose, &QPushButton::clicked, this, &DialogLogQt::onClose);
-    controlLayout->addWidget(m_btnClose);
-
-    mainLayout->addLayout(controlLayout);
-
-    // Add some sample log messages
-    appendLog("YAMY log viewer initialized");
-    appendLog("Waiting for engine connection...");
 }
 
 void DialogLogQt::scrollToBottom()

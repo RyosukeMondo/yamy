@@ -797,7 +797,7 @@
   - _Requirements: FR-4.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Add logging to core components - Step 1: In Engine::start/stop log state changes at Info level, Step 2: In Engine::processKey log at Trace level with key info, Step 3: In Parser log config loading at Info, parsing errors at Error, Step 4: In error handling log all errors at Error level with context, Step 5: Use appropriate categories: "Engine", "Parser", "Input", "Window", "Config" | Restrictions: Don't log in tight loops excessively, Use Trace for frequent events, Include relevant context in messages, Don't log sensitive data, Keep messages concise | Success: Engine logs startup/shutdown, Key events logged at Trace level, Config loading logged, Errors logged with context, Categories used consistently, Logging overhead <1% CPU | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.3 Create DialogLogQt UI with filter controls
+- [x] 4.3 Create DialogLogQt UI with filter controls
   - File: src/ui/qt/dialog_log_qt.h, src/ui/qt/dialog_log_qt.cpp
   - Implement log viewer with level and category filters
   - Subscribe to Logger for real-time updates
