@@ -116,7 +116,7 @@ Measure code coverage, enforce 80% threshold, integrate with CI
   - _Requirements: FR-5, NF-6_
   - _Prompt: Implement the task for spec v1-0-release, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA engineer with coverage analysis experience | Task: Generate baseline coverage report - Step 1: Run cmake -B build -DENABLE_COVERAGE=ON -DBUILD_REGRESSION_TESTS=ON, Step 2: Build coverage target: cmake --build build --target coverage, Step 3: Open build/coverage/html/index.html in browser, Step 4: Extract overall coverage percentage from report, Step 5: Identify top 10 files with lowest coverage, Step 6: Create GitHub issue titled "Test Coverage Baseline - v1.0" with: (a) overall coverage %, (b) per-module breakdown, (c) critical uncovered functions, (d) prioritized list of gaps, Step 7: If coverage <80% create additional tasks to add tests | Restrictions: This is analysis only no code changes, Focus on critical paths (engine, platform layer) not utilities, Don't aim for 100% (diminishing returns) | Success: Coverage report generated successfully, Baseline documented in GitHub issue with metrics, Gaps identified and prioritized, If coverage <80% plan created to close gap | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 3.3 Integrate coverage reporting with GitHub Actions CI
+- [x] 3.3 Integrate coverage reporting with GitHub Actions CI
   - File: .github/workflows/ci.yml
   - Add coverage build job that uploads report to Codecov or GitHub artifacts
   - Configure PR comments with coverage delta
