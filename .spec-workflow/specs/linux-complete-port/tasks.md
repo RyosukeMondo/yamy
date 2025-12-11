@@ -869,7 +869,7 @@
   - _Requirements: FR-4.10_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add timestamp formatting - Step 1: Add QComboBox for timestamp format: Absolute (HH:MM:SS.mmm), Relative (since start), None (hidden), Step 2: Store dialog start time for relative calculation, Step 3: In appendLog format timestamp according to selected option, Step 4: For relative: show as +MM:SS.mmm from start, Step 5: Persist format preference in ConfigStore | Restrictions: Calculate relative time correctly, Format absolute time with milliseconds, Handle timezone consistently, Update preference on change, Don't reformat existing entries (only new) | Success: Three timestamp formats available, Absolute shows HH:MM:SS.mmm, Relative shows +MM:SS.mmm from start, None hides timestamps, Format preference persists, Selection applies to new entries | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.12 Create comprehensive tests for log dialog
+- [x] 4.12 Create comprehensive tests for log dialog -> Completed
   - File: tests/ui/dialog_log_test.cpp
   - Test logging system, UI controls, filtering, export
   - Verify thread-safety and performance
