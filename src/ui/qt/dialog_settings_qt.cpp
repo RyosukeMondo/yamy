@@ -1,4 +1,5 @@
 #include "dialog_settings_qt.h"
+#include "notification_sound.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSettings>
@@ -24,6 +25,13 @@ DialogSettingsQt::DialogSettingsQt(QWidget* parent)
     , m_chkQuickSwitchEnabled(nullptr)
     , m_editQuickSwitchHotkey(nullptr)
     , m_btnClearHotkey(nullptr)
+    , m_chkSoundsEnabled(nullptr)
+    , m_chkSoundOnError(nullptr)
+    , m_chkSoundOnConfigLoaded(nullptr)
+    , m_chkSoundOnStateChange(nullptr)
+    , m_sliderVolume(nullptr)
+    , m_labelVolumeValue(nullptr)
+    , m_btnTestSound(nullptr)
 {
     setWindowTitle("YAMY Settings");
     setMinimumSize(600, 500);
@@ -415,6 +423,87 @@ void DialogSettingsQt::setupUI()
 
     mainLayout->addWidget(hotkeyGroup);
 
+    // Notification sounds group
+    QGroupBox* soundGroup = new QGroupBox("Notification Sounds");
+    QVBoxLayout* soundLayout = new QVBoxLayout(soundGroup);
+
+    m_chkSoundsEnabled = new QCheckBox("Enable notification sounds");
+    m_chkSoundsEnabled->setChecked(false);
+    soundLayout->addWidget(m_chkSoundsEnabled);
+
+    // Individual sound type checkboxes
+    QHBoxLayout* soundTypesLayout = new QHBoxLayout();
+
+    m_chkSoundOnError = new QCheckBox("On error");
+    m_chkSoundOnError->setChecked(true);
+    m_chkSoundOnError->setEnabled(false);
+    soundTypesLayout->addWidget(m_chkSoundOnError);
+
+    m_chkSoundOnConfigLoaded = new QCheckBox("On config loaded");
+    m_chkSoundOnConfigLoaded->setChecked(true);
+    m_chkSoundOnConfigLoaded->setEnabled(false);
+    soundTypesLayout->addWidget(m_chkSoundOnConfigLoaded);
+
+    m_chkSoundOnStateChange = new QCheckBox("On state change");
+    m_chkSoundOnStateChange->setChecked(false);
+    m_chkSoundOnStateChange->setEnabled(false);
+    soundTypesLayout->addWidget(m_chkSoundOnStateChange);
+
+    soundTypesLayout->addStretch();
+    soundLayout->addLayout(soundTypesLayout);
+
+    // Volume slider
+    QHBoxLayout* volumeLayout = new QHBoxLayout();
+
+    QLabel* volumeLabel = new QLabel("Volume:");
+    volumeLayout->addWidget(volumeLabel);
+
+    m_sliderVolume = new QSlider(Qt::Horizontal);
+    m_sliderVolume->setRange(0, 100);
+    m_sliderVolume->setValue(70);
+    m_sliderVolume->setEnabled(false);
+    volumeLayout->addWidget(m_sliderVolume);
+
+    m_labelVolumeValue = new QLabel("70%");
+    m_labelVolumeValue->setMinimumWidth(40);
+    volumeLayout->addWidget(m_labelVolumeValue);
+
+    m_btnTestSound = new QPushButton("Test");
+    m_btnTestSound->setEnabled(false);
+    connect(m_btnTestSound, &QPushButton::clicked, this, [this]() {
+        yamy::ui::NotificationSound::instance().setVolume(m_sliderVolume->value());
+        yamy::ui::NotificationSound::instance().setEnabled(true);
+        yamy::ui::NotificationSound::instance().playForMessage(yamy::MessageType::ConfigLoaded);
+        yamy::ui::NotificationSound::instance().setEnabled(m_chkSoundsEnabled->isChecked());
+    });
+    volumeLayout->addWidget(m_btnTestSound);
+
+    soundLayout->addLayout(volumeLayout);
+
+    // Connect checkbox to enable/disable sound controls
+    connect(m_chkSoundsEnabled, &QCheckBox::toggled, this, [this](bool checked) {
+        m_chkSoundOnError->setEnabled(checked);
+        m_chkSoundOnConfigLoaded->setEnabled(checked);
+        m_chkSoundOnStateChange->setEnabled(checked);
+        m_sliderVolume->setEnabled(checked);
+        m_btnTestSound->setEnabled(checked);
+    });
+
+    // Connect slider to update label
+    connect(m_sliderVolume, &QSlider::valueChanged, this, [this](int value) {
+        m_labelVolumeValue->setText(QString("%1%").arg(value));
+    });
+
+    QLabel* soundHelp = new QLabel(
+        "Play sounds on notification events. Sounds use system theme or bundled files.\n"
+        "Sounds are brief and non-intrusive."
+    );
+    soundHelp->setStyleSheet("QLabel { color: #666; font-size: 11px; }");
+    soundHelp->setWordWrap(true);
+    soundLayout->addWidget(soundHelp);
+
+    mainLayout->addWidget(soundGroup);
+
     // Status label
     m_labelStatus = new QLabel();
     m_labelStatus->setStyleSheet("QLabel { color: #666; }");
@@ -464,6 +553,27 @@ void DialogSettingsQt::loadSettings()
     m_editQuickSwitchHotkey->setEnabled(hotkeyEnabled);
     m_btnClearHotkey->setEnabled(hotkeyEnabled);
 
+    // Load notification sound settings
+    bool soundsEnabled = settings.value("notifications/sounds/enabled", false).toBool();
+    bool soundOnError = settings.value("notifications/sounds/onError", true).toBool();
+    bool soundOnConfigLoaded = settings.value("notifications/sounds/onConfigLoaded", true).toBool();
+    bool soundOnStateChange = settings.value("notifications/sounds/onStateChange", false).toBool();
+    int soundVolume = settings.value("notifications/sounds/volume", 70).toInt();
+
+    m_chkSoundsEnabled->setChecked(soundsEnabled);
+    m_chkSoundOnError->setChecked(soundOnError);
+    m_chkSoundOnConfigLoaded->setChecked(soundOnConfigLoaded);
+    m_chkSoundOnStateChange->setChecked(soundOnStateChange);
+    m_sliderVolume->setValue(soundVolume);
+    m_labelVolumeValue->setText(QString("%1%").arg(soundVolume));
+
+    // Enable/disable sound controls based on master switch
+    m_chkSoundOnError->setEnabled(soundsEnabled);
+    m_chkSoundOnConfigLoaded->setEnabled(soundsEnabled);
+    m_chkSoundOnStateChange->setEnabled(soundsEnabled);
+    m_sliderVolume->setEnabled(soundsEnabled);
+    m_btnTestSound->setEnabled(soundsEnabled);
+
     m_labelStatus->setText("Settings loaded");
 }
 
@@ -485,5 +595,20 @@ void DialogSettingsQt::saveSettings()
     settings.setValue("hotkeys/quickSwitch/sequence",
                       m_editQuickSwitchHotkey->keySequence().toString());
 
+    // Save notification sound settings
+    settings.setValue("notifications/sounds/enabled", m_chkSoundsEnabled->isChecked());
+    settings.setValue("notifications/sounds/onError", m_chkSoundOnError->isChecked());
+    settings.setValue("notifications/sounds/onConfigLoaded", m_chkSoundOnConfigLoaded->isChecked());
+    settings.setValue("notifications/sounds/onStateChange", m_chkSoundOnStateChange->isChecked());
+    settings.setValue("notifications/sounds/volume", m_sliderVolume->value());
+
     settings.sync();
+
+    // Reload notification sound settings into the singleton
+    auto& soundMgr = yamy::ui::NotificationSound::instance();
+    soundMgr.setEnabled(m_chkSoundsEnabled->isChecked());
+    soundMgr.setErrorSoundEnabled(m_chkSoundOnError->isChecked());
+    soundMgr.setConfigLoadedSoundEnabled(m_chkSoundOnConfigLoaded->isChecked());
+    soundMgr.setStateChangeSoundEnabled(m_chkSoundOnStateChange->isChecked());
+    soundMgr.setVolume(m_sliderVolume->value());
 }

@@ -963,7 +963,7 @@
   - _Requirements: FR-5.10_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Implement notification history - Step 1: Create NotificationHistory class storing last 100 notifications, Step 2: Store Message with timestamp, Step 3: Add notification when received, rolling window, Step 4: Create history dialog showing list: timestamp, type, state, data, Step 5: Format nicely: "[15:42:33] EngineStarted: Config loaded - work.mayu", Step 6: Add to tray menu: "View Notification History" | Restrictions: Limit to 100 most recent, Thread-safe storage, Format timestamps consistently, Handle all message types, Dismiss old entries, Persistent across dialog closes | Success: History stores last 100 notifications, Dialog displays list with timestamps, All notification types shown, Formatted clearly, History accessible from tray menu, Thread-safe storage, No memory leaks | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.11 Implement notification sound preferences
+- [x] 5.11 Implement notification sound preferences
   - File: src/ui/qt/preferences_dialog.cpp, src/core/settings/config_store.h
   - Add preferences for notification sounds
   - Play sounds on critical notifications

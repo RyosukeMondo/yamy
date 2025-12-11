@@ -13,6 +13,7 @@
 #include <QFileInfo>
 #include <QKeySequenceEdit>
 #include <QCheckBox>
+#include <QSlider>
 
 /**
  * @brief Settings dialog for YAMY configuration
@@ -140,6 +141,15 @@ private:
     QCheckBox* m_chkQuickSwitchEnabled;
     QKeySequenceEdit* m_editQuickSwitchHotkey;
     QPushButton* m_btnClearHotkey;
+
+    // Notification sound components
+    QCheckBox* m_chkSoundsEnabled;
+    QCheckBox* m_chkSoundOnError;
+    QCheckBox* m_chkSoundOnConfigLoaded;
+    QCheckBox* m_chkSoundOnStateChange;
+    QSlider* m_sliderVolume;
+    QLabel* m_labelVolumeValue;
+    QPushButton* m_btnTestSound;
 
     // Data
     QStringList m_keymapFiles;

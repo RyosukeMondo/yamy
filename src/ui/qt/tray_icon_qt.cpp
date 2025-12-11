@@ -6,6 +6,7 @@
 #include "config_manager_dialog.h"
 #include "global_hotkey.h"
 #include "notification_history.h"
+#include "notification_sound.h"
 #include "../../core/settings/config_manager.h"
 #include "../../core/engine/engine.h"
 #include <QApplication>
@@ -518,6 +519,9 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
 {
     // Store notification in history
     yamy::ui::NotificationHistory::instance().addNotification(type, data);
+
+    // Play notification sound if enabled
+    yamy::ui::NotificationSound::instance().playForMessage(type);
 
     m_currentState = type;
 

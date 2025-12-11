@@ -34,6 +34,7 @@ set(QT_GUI_SOURCES
     crosshair_widget_qt.cpp
     global_hotkey.cpp
     notification_history.cpp
+    notification_sound.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
 )
 
@@ -53,6 +54,7 @@ set(QT_GUI_HEADERS
     crosshair_widget_qt.h
     global_hotkey.h
     notification_history.h
+    notification_sound.h
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
 )
 
