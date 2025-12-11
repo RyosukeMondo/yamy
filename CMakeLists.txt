@@ -1468,3 +1468,138 @@ if(ENABLE_COVERAGE)
         )
     endif()
 endif()
+
+# -----------------------------------------------------------------------------
+# Installation Rules
+# -----------------------------------------------------------------------------
+if(UNIX AND NOT APPLE AND NOT WIN32)
+    # Install main executable (renamed from yamy_stub to yamy)
+    install(TARGETS yamy_stub
+        RUNTIME DESTINATION bin
+        COMPONENT runtime
+    )
+    # Rename yamy_stub to yamy during installation
+    install(CODE "
+        execute_process(
+            COMMAND \${CMAKE_COMMAND} -E rename
+                \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/yamy_stub
+                \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/yamy
+        )
+    " COMPONENT runtime)
+
+    # Install control tool
+    install(TARGETS yamy-ctl
+        RUNTIME DESTINATION bin
+        COMPONENT runtime
+    )
+
+    # Install documentation
+    install(FILES README.md
+        DESTINATION share/doc/yamy
+        COMPONENT documentation
+    )
+
+    # Install example keymaps
+    install(DIRECTORY keymaps/
+        DESTINATION share/yamy/keymaps
+        COMPONENT configuration
+        FILES_MATCHING PATTERN "*.mayu"
+    )
+
+    # Install template configs
+    install(DIRECTORY src/resources/templates/
+        DESTINATION share/yamy/templates
+        COMPONENT configuration
+        FILES_MATCHING PATTERN "*.mayu"
+    )
+
+    # Install icons for desktop integration
+    install(FILES src/resources/icons/yamy_enabled.png
+        DESTINATION share/icons/hicolor/48x48/apps
+        RENAME yamy.png
+        COMPONENT desktop
+    )
+
+    # Install desktop entry
+    install(FILES packaging/yamy.desktop
+        DESTINATION share/applications
+        COMPONENT desktop
+    )
+endif()
+
+# -----------------------------------------------------------------------------
+# CPack Configuration for Package Generation
+# -----------------------------------------------------------------------------
+set(CPACK_PACKAGE_NAME "yamy")
+set(CPACK_PACKAGE_VENDOR "YAMY Project")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Cross-platform keyboard remapper")
+set(CPACK_PACKAGE_DESCRIPTION "YAMY is a powerful keyboard remapping tool that allows you to customize keyboard behavior, create macros, and remap keys across different applications. Originally a Windows tool (Yet Another Mado-tsukai no Yuutsu), now ported to Linux with full support for X11/XWayland.")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_VERSION_MAJOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_CONTACT "YAMY Project <yamy@example.com>")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/rmondo/yamy")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+
+# Set package file name
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+
+# Component grouping
+set(CPACK_COMPONENTS_ALL runtime documentation configuration desktop)
+set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "YAMY Application")
+set(CPACK_COMPONENT_RUNTIME_DESCRIPTION "Main YAMY executable and control tool")
+set(CPACK_COMPONENT_RUNTIME_REQUIRED ON)
+set(CPACK_COMPONENT_DOCUMENTATION_DISPLAY_NAME "Documentation")
+set(CPACK_COMPONENT_DOCUMENTATION_DESCRIPTION "User documentation and README")
+set(CPACK_COMPONENT_CONFIGURATION_DISPLAY_NAME "Example Configurations")
+set(CPACK_COMPONENT_CONFIGURATION_DESCRIPTION "Example keymap configurations")
+set(CPACK_COMPONENT_DESKTOP_DISPLAY_NAME "Desktop Integration")
+set(CPACK_COMPONENT_DESKTOP_DESCRIPTION "Desktop icons and application menu entry")
+
+# -----------------------------------------------------------------------------
+# DEB Package Configuration (Debian/Ubuntu)
+# -----------------------------------------------------------------------------
+set(CPACK_DEBIAN_PACKAGE_NAME "yamy")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "YAMY Project <yamy@example.com>")
+set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+
+# Dependencies (Qt5, X11, libudev)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS
+    "libqt5core5t64 | libqt5core5a, libqt5widgets5t64 | libqt5widgets5, libqt5gui5t64 | libqt5gui5, libqt5x11extras5, libx11-6, libxrandr2, libudev1"
+)
+
+# Recommended packages
+set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "")
+
+# Suggests
+set(CPACK_DEBIAN_PACKAGE_SUGGESTS "")
+
+# Control scripts
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+    "${CMAKE_SOURCE_DIR}/packaging/debian/postinst;${CMAKE_SOURCE_DIR}/packaging/debian/postrm"
+)
+
+# Use dpkg-shlibdeps to auto-detect dependencies (optional, slower but more accurate)
+# set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+
+# -----------------------------------------------------------------------------
+# RPM Package Configuration (Fedora/SUSE) - Placeholder for task 5.2
+# -----------------------------------------------------------------------------
+set(CPACK_RPM_PACKAGE_NAME "yamy")
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+set(CPACK_RPM_PACKAGE_GROUP "Applications/System")
+set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
+set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase, qt5-qtx11extras, libX11, libXrandr, libudev")
+set(CPACK_RPM_PACKAGE_RELEASE "1")
+
+# Enable the generators
+if(UNIX AND NOT APPLE)
+    set(CPACK_GENERATOR "DEB;RPM;TGZ")
+endif()
+
+# Include CPack module
+include(CPack)

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=YAMY
+GenericName=Keyboard Remapper
+Comment=Customize keyboard behavior, create macros, and remap keys
+Exec=yamy
+Icon=yamy
+Terminal=false
+Type=Application
+Categories=Utility;Settings;
+Keywords=keyboard;remap;keymap;macro;shortcut;
+StartupNotify=true
