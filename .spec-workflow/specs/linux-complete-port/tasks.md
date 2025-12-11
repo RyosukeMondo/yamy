@@ -1145,7 +1145,7 @@
   - _Requirements: FR-8.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Create example plugin - Step 1: Implement IPlugin interface in ExamplePlugin class, Step 2: In initialize register callback with NotificationDispatcher for ConfigLoaded events, Step 3: In callback log message "Example plugin: Config loaded", Step 4: Implement plugin_create factory function, Step 5: Add CMakeLists.txt building example plugin as shared library, Step 6: Document plugin in README explaining how to build and install | Restrictions: Keep example simple and well-commented, Show best practices, Demonstrate error handling, Include build instructions, Test plugin loads and works | Success: Example plugin compiles to .so, Implements IPlugin correctly, Factory function exports symbol, Registers notification callback, Callback invoked on events, Logs messages, README clear, Demonstrates plugin development | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.18 Create end-to-end integration tests
+- [x] 6.18 Create end-to-end integration tests
   - File: tests/integration/integration_suite.cpp
   - Test full application lifecycle
   - Verify all tracks working together
