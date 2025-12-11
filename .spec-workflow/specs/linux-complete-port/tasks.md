@@ -1073,7 +1073,7 @@
   - _Requirements: FR-9.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create shortcuts dialog - Step 1: Create QDialog with QTableWidget showing two columns: Action and Shortcut, Step 2: Populate with entries: "Reload Configuration" = configured hotkey, "Open Investigate Dialog" = configured, "Open Log Dialog" = configured, "Quick Config Switch" = Ctrl+Alt+C, etc, Step 3: Include dialog shortcuts: "Find in Log" = Ctrl+F, "Close Dialog" = Esc, Step 4: Make table sortable, read-only, Step 5: Add search box to filter shortcuts | Restrictions: Show only configured shortcuts (not empty), Update if shortcuts change, Keep table compact, Support keyboard navigation, Make searchable | Success: Dialog shows all shortcuts, Table has two columns, Sortable by action or shortcut, Search filters list, Keyboard navigation works, Shows current configured values, Read-only table | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.9 Create Configuration Examples dialog
+- [x] 6.9 Create Configuration Examples dialog
   - File: src/ui/qt/dialog_examples.h, src/ui/qt/dialog_examples.cpp
   - Show example .mayu configurations
   - Provide copy-to-clipboard functionality
