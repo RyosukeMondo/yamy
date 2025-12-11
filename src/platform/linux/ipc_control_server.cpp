@@ -15,15 +15,21 @@ namespace yamy::platform {
 
 namespace {
 
-/// Wire protocol message types (must match yamy_ctl.cpp)
+/// Wire protocol message types (must match yamy_ctl.cpp and ipc_messages.h)
 enum MessageType : uint32_t {
     CmdReload = 0x2001,
     CmdStop = 0x2002,
     CmdStart = 0x2003,
     CmdGetStatus = 0x2004,
+    CmdGetConfig = 0x2005,
+    CmdGetKeymaps = 0x2006,
+    CmdGetMetrics = 0x2007,
     RspOk = 0x2100,
     RspError = 0x2101,
-    RspStatus = 0x2102
+    RspStatus = 0x2102,
+    RspConfig = 0x2103,
+    RspKeymaps = 0x2104,
+    RspMetrics = 0x2105
 };
 
 /// Wire protocol message header
@@ -253,6 +259,15 @@ void IPCControlServer::handleClient(int clientFd) {
         case MessageType::CmdGetStatus:
             cmd = ControlCommand::GetStatus;
             break;
+        case MessageType::CmdGetConfig:
+            cmd = ControlCommand::GetConfig;
+            break;
+        case MessageType::CmdGetKeymaps:
+            cmd = ControlCommand::GetKeymaps;
+            break;
+        case MessageType::CmdGetMetrics:
+            cmd = ControlCommand::GetMetrics;
+            break;
         default:
             sendResponse(clientFd, MessageType::RspError, "Unknown command");
             return;
@@ -267,13 +282,19 @@ void IPCControlServer::handleClient(int clientFd) {
         result.message = "No command handler registered";
     }
 
-    // Send response
-    if (cmd == ControlCommand::GetStatus && result.success) {
-        sendResponse(clientFd, MessageType::RspStatus, result.message);
-    } else if (result.success) {
-        sendResponse(clientFd, MessageType::RspOk, result.message);
-    } else {
+    // Send response with appropriate type
+    if (!result.success) {
         sendResponse(clientFd, MessageType::RspError, result.message);
+    } else if (cmd == ControlCommand::GetStatus) {
+        sendResponse(clientFd, MessageType::RspStatus, result.message);
+    } else if (cmd == ControlCommand::GetConfig) {
+        sendResponse(clientFd, MessageType::RspConfig, result.message);
+    } else if (cmd == ControlCommand::GetKeymaps) {
+        sendResponse(clientFd, MessageType::RspKeymaps, result.message);
+    } else if (cmd == ControlCommand::GetMetrics) {
+        sendResponse(clientFd, MessageType::RspMetrics, result.message);
+    } else {
+        sendResponse(clientFd, MessageType::RspOk, result.message);
     }
 }
 

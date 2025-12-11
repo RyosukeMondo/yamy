@@ -29,11 +29,17 @@ enum MessageType : uint32_t {
     CmdStop = 0x2002,             // Stop the engine
     CmdStart = 0x2003,            // Start the engine
     CmdGetStatus = 0x2004,        // Get engine status
+    CmdGetConfig = 0x2005,        // Get configuration details
+    CmdGetKeymaps = 0x2006,       // Get loaded keymaps list
+    CmdGetMetrics = 0x2007,       // Get performance metrics
 
     // Response to control commands
     RspOk = 0x2100,               // Command succeeded (data may contain details)
     RspError = 0x2101,            // Command failed (data contains error message)
     RspStatus = 0x2102,           // Status response (data contains JSON status)
+    RspConfig = 0x2103,           // Config response (data contains JSON config)
+    RspKeymaps = 0x2104,          // Keymaps response (data contains JSON keymaps)
+    RspMetrics = 0x2105,          // Metrics response (data contains JSON metrics)
 };
 
 // Data for CmdInvestigateWindow request

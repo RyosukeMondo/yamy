@@ -2,8 +2,13 @@
 #include <QMessageBox>
 #include <QCommandLineParser>
 #include <QWidget>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDateTime>
 #include <iostream>
 #include <sstream>
+#include <vector>
 #include <sys/stat.h>
 #include <chrono>
 #include "ui/qt/tray_icon_qt.h"
@@ -50,13 +55,114 @@ public:
         return oss.str();
     }
 
+    /// Get current keymap name
+    std::string currentKeymap() const { return m_currentKeymap; }
+
+    /// Set current keymap name
+    void setCurrentKeymap(const std::string& name) { m_currentKeymap = name; }
+
+    /// Get status as JSON string
+    /// Returns: {"state": "running/stopped", "uptime": seconds, "config": "name", "key_count": N, "current_keymap": "name"}
+    std::string getStatusJson() const {
+        QJsonObject obj;
+        obj["state"] = m_running ? "running" : "stopped";
+        obj["uptime"] = static_cast<qint64>(uptimeSeconds());
+        obj["config"] = QString::fromStdString(m_configPath);
+        obj["key_count"] = static_cast<qint64>(m_keyCount);
+        obj["current_keymap"] = QString::fromStdString(m_currentKeymap.empty() ? "default" : m_currentKeymap);
+        return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
+    }
+
+    /// Get config as JSON string
+    /// Returns: {"config_path": "path", "config_name": "name", "loaded_time": "ISO8601"}
+    std::string getConfigJson() const {
+        QJsonObject obj;
+        obj["config_path"] = QString::fromStdString(m_configPath);
+
+        // Extract config name from path
+        std::string configName = m_configPath;
+        size_t lastSlash = m_configPath.find_last_of('/');
+        if (lastSlash != std::string::npos) {
+            configName = m_configPath.substr(lastSlash + 1);
+        }
+        obj["config_name"] = QString::fromStdString(configName);
+        obj["loaded_time"] = m_configLoadedTime.toString(Qt::ISODate);
+        return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
+    }
+
+    /// Set config loaded time (called when config is loaded/reloaded)
+    void setConfigLoadedTime() {
+        m_configLoadedTime = QDateTime::currentDateTime();
+    }
+
+    /// Get keymaps as JSON string
+    /// Returns: {"keymaps": [{"name": "name", "window_class": "regex", "window_title": "regex"}, ...]}
+    std::string getKeymapsJson() const {
+        QJsonArray keymapsArray;
+        for (const auto& km : m_keymaps) {
+            QJsonObject kmObj;
+            kmObj["name"] = QString::fromStdString(km.name);
+            kmObj["window_class"] = QString::fromStdString(km.windowClass);
+            kmObj["window_title"] = QString::fromStdString(km.windowTitle);
+            keymapsArray.append(kmObj);
+        }
+        QJsonObject obj;
+        obj["keymaps"] = keymapsArray;
+        return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
+    }
+
+    /// Keymap info structure
+    struct KeymapInfo {
+        std::string name;
+        std::string windowClass;
+        std::string windowTitle;
+    };
+
+    /// Add a keymap (stub - would be populated from real config)
+    void addKeymap(const std::string& name, const std::string& windowClass = "",
+                   const std::string& windowTitle = "") {
+        m_keymaps.push_back({name, windowClass, windowTitle});
+    }
+
+    /// Get metrics as JSON string
+    /// Returns: {"latency_avg_ns": N, "latency_p99_ns": N, "cpu_usage_percent": N}
+    std::string getMetricsJson() const {
+        QJsonObject obj;
+        obj["latency_avg_ns"] = static_cast<qint64>(m_latencyAvgNs);
+        obj["latency_p99_ns"] = static_cast<qint64>(m_latencyP99Ns);
+        obj["latency_max_ns"] = static_cast<qint64>(m_latencyMaxNs);
+        obj["cpu_usage_percent"] = m_cpuUsagePercent;
+        obj["keys_per_second"] = m_keysPerSecond;
+        return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
+    }
+
+    /// Update metrics (stub - would be populated from real metrics)
+    void updateMetrics(uint64_t avgNs, uint64_t p99Ns, uint64_t maxNs,
+                       double cpuPercent, double keysPerSec) {
+        m_latencyAvgNs = avgNs;
+        m_latencyP99Ns = p99Ns;
+        m_latencyMaxNs = maxNs;
+        m_cpuUsagePercent = cpuPercent;
+        m_keysPerSecond = keysPerSec;
+    }
+
 private:
     bool m_enabled = true;
     bool m_running = false;
     std::string m_configPath;
+    std::string m_currentKeymap;
     uint64_t m_keyCount = 0;
     std::chrono::steady_clock::time_point m_startTime;
     std::chrono::steady_clock::time_point m_engineStartTime;
+    QDateTime m_configLoadedTime;
+    std::vector<KeymapInfo> m_keymaps;
+
+    // Metrics (stub values)
+    uint64_t m_latencyAvgNs = 0;
+    uint64_t m_latencyP99Ns = 0;
+    uint64_t m_latencyMaxNs = 0;
+    double m_cpuUsagePercent = 0.0;
+    double m_keysPerSecond = 0.0;
 };
 
 /// Command line options structure
@@ -280,17 +386,29 @@ int main(int argc, char* argv[])
 
             case yamy::platform::ControlCommand::GetStatus: {
                 std::cout << "IPC: Received status command" << std::endl;
-                std::ostringstream oss;
-                oss << "Engine: " << (engine->isRunning() ? "Running" : "Stopped");
-                if (engine->isRunning()) {
-                    oss << " | Uptime: " << engine->uptimeString();
-                }
-                if (!engine->getConfigPath().empty()) {
-                    oss << " | Config: " << engine->getConfigPath();
-                }
-                oss << " | Keys: " << engine->keyCount();
                 result.success = true;
-                result.message = oss.str();
+                result.message = engine->getStatusJson();
+                break;
+            }
+
+            case yamy::platform::ControlCommand::GetConfig: {
+                std::cout << "IPC: Received config command" << std::endl;
+                result.success = true;
+                result.message = engine->getConfigJson();
+                break;
+            }
+
+            case yamy::platform::ControlCommand::GetKeymaps: {
+                std::cout << "IPC: Received keymaps command" << std::endl;
+                result.success = true;
+                result.message = engine->getKeymapsJson();
+                break;
+            }
+
+            case yamy::platform::ControlCommand::GetMetrics: {
+                std::cout << "IPC: Received metrics command" << std::endl;
+                result.success = true;
+                result.message = engine->getMetricsJson();
                 break;
             }
 

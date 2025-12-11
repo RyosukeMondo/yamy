@@ -19,7 +19,10 @@ enum class ControlCommand {
     Reload,
     Stop,
     Start,
-    GetStatus
+    GetStatus,
+    GetConfig,
+    GetKeymaps,
+    GetMetrics
 };
 
 /// Result of command execution
