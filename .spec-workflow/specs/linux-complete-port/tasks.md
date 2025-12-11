@@ -813,7 +813,7 @@
   - _Requirements: FR-4.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add font controls - Step 1: Add QFontComboBox for font family selection, Step 2: Add QSpinBox for font size (range 6-24, default 10), Step 3: Connect signals to slots updating QTextEdit font, Step 4: Load saved font settings from ConfigStore on dialog open, Step 5: Save font settings to ConfigStore when changed, Step 6: Set default to system fixed-width font if no preference saved | Restrictions: Use system fixed-width font as default, Validate font size range, Persist settings immediately, Handle font not available gracefully, Ensure readable minimum size | Success: Font selector lists all available fonts, Size spinner changes font size, Settings persist across sessions, Default to system monospace font, Font changes apply immediately, Readable at all sizes | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.5 Implement syntax highlighting for log entries
+- [x] 4.5 Implement syntax highlighting for log entries
   - File: src/ui/qt/dialog_log_qt.cpp
   - Color-code log entries by level: Error=red, Warning=orange, Info=default, Trace=gray
   - Highlight keywords: DOWN, UP, HANDLED, PASSED
