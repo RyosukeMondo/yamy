@@ -853,7 +853,7 @@
   - _Requirements: FR-4.8_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add buffer limit - Step 1: Set maximum buffer size (default 10000 lines, configurable), Step 2: In appendLog check line count after adding entry, Step 3: If exceeds limit: remove oldest lines from top (use QTextCursor movePosition with QTextCursor::Start), Step 4: Add preference setting for buffer size in ConfigStore, Step 5: Show buffer usage: "Log: 8543/10000 lines" in status area | Restrictions: Remove full lines not partial, Keep buffer limit configurable, Don't impact performance when under limit, Update usage indicator periodically not every append, Handle concurrent appends safely | Success: Buffer never exceeds limit, Oldest entries removed when full, Configurable limit in settings, Usage indicator shows current/max, Performance good even when full, No UI lag, Thread-safe trimming | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.10 Add log statistics panel
+- [x] 4.10 Add log statistics panel
   - File: src/ui/qt/dialog_log_qt.cpp
   - Display log entry counts by level and category
   - Update statistics in real-time
