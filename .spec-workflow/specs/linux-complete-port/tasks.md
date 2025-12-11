@@ -1097,7 +1097,7 @@
   - _Requirements: FR-9.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add documentation link - Step 1: Define documentation URL (e.g. https://github.com/user/yamy/wiki), Step 2: In Online Documentation action call QDesktopServices::openUrl, Step 3: If URL fails show error with alternative: "Documentation available at: [URL]", Step 4: Check for local docs in /usr/share/doc/yamy/ or ~/.local/share/yamy/docs/, Step 5: If local docs exist add "Local Documentation" action opening file:// URL | Restrictions: Handle browser launch failures gracefully, Provide URL as fallback, Check local docs on startup, Use proper file:// URLs for local, Don't hard-code absolute paths | Success: Online Documentation opens browser with correct URL, Errors show message with URL, Local docs detected if present, Local Documentation action appears when available, file:// URLs work, Browser failures handled | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.12 Create Preferences dialog
+- [x] 6.12 Create Preferences dialog
   - File: src/ui/qt/preferences_dialog.h, src/ui/qt/preferences_dialog.cpp
   - Centralize all user preferences
   - Organize into tabs: General, Notifications, Logging, Advanced
