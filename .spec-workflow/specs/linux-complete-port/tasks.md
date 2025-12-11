@@ -829,7 +829,7 @@
   - _Requirements: FR-4.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add clear and pause controls - Step 1: Add Clear button connected to QTextEdit::clear slot, Step 2: Add Pause/Resume toggle button (default: Resume), Step 3: When paused: stop auto-scrolling but continue adding log entries, buffer indicator shows "(Paused)", Step 4: When resumed: scroll to bottom and clear pause indicator, Step 5: Show count of entries added while paused | Restrictions: Don't lose log entries when paused, Resume scrolls to latest, Pause indicator visible, Clear requires confirmation if >1000 entries, Button states clear | Success: Clear button erases all logs, Pause stops scrolling but keeps logging, Resume scrolls to bottom, Entry count shown when paused, Confirmation on large clear, Button states intuitive | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.7 Implement log search functionality
+- [x] 4.7 Implement log search functionality
   - File: src/ui/qt/dialog_log_qt.cpp
   - Add search box to find text in logs
   - Highlight matches and navigate between them
