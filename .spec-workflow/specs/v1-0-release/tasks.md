@@ -170,7 +170,7 @@ Create distribution packages, release notes, and automate release process
 
 ---
 
-- [ ] 5.1 Create Debian/Ubuntu .deb package with CPack
+- [x] 5.1 Create Debian/Ubuntu .deb package with CPack
   - Files: CMakeLists.txt (add CPack configuration), DEBIAN control files
   - Configure CPack to generate .deb with correct dependencies and FHS layout
   - Add postinst script for udev rules and group setup
