@@ -27,6 +27,8 @@ set(QT_GUI_SOURCES
     dialog_about_qt.cpp
     dialog_investigate_qt.cpp
     dialog_condition_generator_qt.cpp
+    dialog_shortcuts_qt.cpp
+    dialog_examples_qt.cpp
     config_search_panel.cpp
     status_widget_qt.cpp
     config_manager_dialog.cpp
@@ -48,6 +50,8 @@ set(QT_GUI_HEADERS
     dialog_about_qt.h
     dialog_investigate_qt.h
     dialog_condition_generator_qt.h
+    dialog_shortcuts_qt.h
+    dialog_examples_qt.h
     config_search_panel.h
     status_widget_qt.h
     config_manager_dialog.h

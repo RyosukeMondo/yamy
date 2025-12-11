@@ -762,6 +762,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/ui/qt/log_stats_panel.cpp
             src/ui/qt/dialog_about_qt.cpp
             src/ui/qt/dialog_investigate_qt.cpp
+            src/ui/qt/dialog_shortcuts_qt.cpp
+            src/ui/qt/dialog_examples_qt.cpp
             src/ui/qt/config_manager_dialog.cpp
             src/ui/qt/crosshair_widget_qt.cpp
             src/ui/qt/notification_history.cpp

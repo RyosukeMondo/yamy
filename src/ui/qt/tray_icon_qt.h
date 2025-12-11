@@ -10,6 +10,10 @@
 #include <memory>
 #include "../../core/platform/ipc_defs.h"
 
+// Forward declarations for help dialogs
+class DialogShortcutsQt;
+class DialogExamplesQt;
+
 // Forward declaration
 class Engine;
 class ConfigManager;
@@ -113,6 +117,26 @@ private slots:
     void onAbout();
 
     /**
+     * @brief Open online documentation in browser
+     */
+    void onOnlineDocumentation();
+
+    /**
+     * @brief Show keyboard shortcuts dialog
+     */
+    void onKeyboardShortcuts();
+
+    /**
+     * @brief Show configuration examples dialog
+     */
+    void onConfigExamples();
+
+    /**
+     * @brief Open bug report page in browser
+     */
+    void onReportBug();
+
+    /**
      * @brief Exit application
      */
     void onExit();
@@ -188,6 +212,9 @@ private:
     // Configurations submenu
     QMenu* m_configMenu;
     QActionGroup* m_configActionGroup;
+
+    // Help submenu
+    QMenu* m_helpMenu;
 
     // Menu actions
     QAction* m_actionEnable;

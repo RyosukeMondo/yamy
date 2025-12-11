@@ -3,6 +3,8 @@
 #include "dialog_log_qt.h"
 #include "dialog_about_qt.h"
 #include "dialog_investigate_qt.h"
+#include "dialog_shortcuts_qt.h"
+#include "dialog_examples_qt.h"
 #include "config_manager_dialog.h"
 #include "global_hotkey.h"
 #include "notification_history.h"
@@ -17,6 +19,8 @@
 #include <QDebug>
 #include <QPainter>
 #include <QPixmap>
+#include <QDesktopServices>
+#include <QUrl>
 
 TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)
@@ -25,6 +29,7 @@ TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     , m_menu(nullptr)
     , m_configMenu(nullptr)
     , m_configActionGroup(nullptr)
+    , m_helpMenu(nullptr)
     , m_actionEnable(nullptr)
     , m_actionReload(nullptr)
     , m_actionSettings(nullptr)
@@ -204,6 +209,44 @@ void TrayIconQt::onAbout()
     dialog->exec(); // Modal dialog for About
 }
 
+void TrayIconQt::onOnlineDocumentation()
+{
+    const QString docUrl = "https://github.com/yamy-dev/yamy/wiki";
+    if (!QDesktopServices::openUrl(QUrl(docUrl))) {
+        showNotification(
+            "YAMY",
+            "Failed to open documentation. Please visit:\n" + docUrl,
+            QSystemTrayIcon::Warning
+        );
+    }
+}
+
+void TrayIconQt::onKeyboardShortcuts()
+{
+    DialogShortcutsQt* dialog = new DialogShortcutsQt();
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
+}
+
+void TrayIconQt::onConfigExamples()
+{
+    DialogExamplesQt* dialog = new DialogExamplesQt();
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
+}
+
+void TrayIconQt::onReportBug()
+{
+    const QString bugUrl = "https://github.com/yamy-dev/yamy/issues/new";
+    if (!QDesktopServices::openUrl(QUrl(bugUrl))) {
+        showNotification(
+            "YAMY",
+            "Failed to open bug report page. Please visit:\n" + bugUrl,
+            QSystemTrayIcon::Warning
+        );
+    }
+}
+
 void TrayIconQt::onExit()
 {
     // Quit application
@@ -255,8 +298,33 @@ void TrayIconQt::createMenu()
     m_actionNotificationHistory = m_menu->addAction("Notification History...");
     connect(m_actionNotificationHistory, &QAction::triggered, this, &TrayIconQt::onNotificationHistory);
 
-    // About
-    m_actionAbout = m_menu->addAction("About...");
+    m_menu->addSeparator();
+
+    // Help submenu
+    m_helpMenu = m_menu->addMenu("Help");
+
+    // Online Documentation
+    QAction* actionDocs = m_helpMenu->addAction(QIcon::fromTheme("help-contents"), "Online Documentation");
+    connect(actionDocs, &QAction::triggered, this, &TrayIconQt::onOnlineDocumentation);
+
+    // Keyboard Shortcuts
+    QAction* actionShortcuts = m_helpMenu->addAction(QIcon::fromTheme("preferences-desktop-keyboard-shortcuts"), "Keyboard Shortcuts...");
+    connect(actionShortcuts, &QAction::triggered, this, &TrayIconQt::onKeyboardShortcuts);
+
+    // Configuration Examples
+    QAction* actionExamples = m_helpMenu->addAction(QIcon::fromTheme("text-x-generic"), "Configuration Examples...");
+    connect(actionExamples, &QAction::triggered, this, &TrayIconQt::onConfigExamples);
+
+    m_helpMenu->addSeparator();
+
+    // Report Bug
+    QAction* actionBug = m_helpMenu->addAction(QIcon::fromTheme("tools-report-bug"), "Report Bug...");
+    connect(actionBug, &QAction::triggered, this, &TrayIconQt::onReportBug);
+
+    m_helpMenu->addSeparator();
+
+    // About (in Help menu)
+    m_actionAbout = m_helpMenu->addAction(QIcon::fromTheme("help-about"), "About YAMY...");
     connect(m_actionAbout, &QAction::triggered, this, &TrayIconQt::onAbout);
 
     m_menu->addSeparator();
