@@ -1105,7 +1105,7 @@
   - _Requirements: FR-6.4_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create preferences dialog - Step 1: Create QDialog with QTabWidget, Step 2: General tab: Start on login checkbox, Quick-switch hotkey editor, Default config dropdown, Step 3: Notifications tab: Enable/disable per type, Sound settings, Desktop notification settings, Step 4: Logging tab: Log level dropdown, Buffer size spinner, Log to file checkbox with path, Step 5: Advanced tab: IPC port (if configurable), Performance metrics interval, Debug mode checkbox, Step 6: Load from ConfigStore on open, save on OK/Apply | Restrictions: Validate all inputs, Apply immediately or on OK (user choice), Provide tooltips for complex settings, Use standard dialog buttons, Reset to defaults button per tab | Success: Preferences dialog with 4 tabs, All settings editable, Validation works, Changes persist via ConfigStore, Apply button updates immediately, Reset to defaults works, Tooltips helpful, Professional layout | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.13 Add preferences action to tray menu
+- [x] 6.13 Add preferences action to tray menu
   - File: src/ui/qt/tray_icon_qt.cpp
   - Add Preferences action opening dialog
   - Place appropriately in menu structure
