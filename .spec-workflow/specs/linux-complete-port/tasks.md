@@ -979,7 +979,7 @@
   - _Requirements: FR-5.12_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer with Linux desktop integration | Task: Add desktop notifications - Step 1: On EngineError call showMessage with Critical icon, title "YAMY Error", error text, Step 2: On ConfigLoaded call showMessage with Information icon if configured, Step 3: On EngineStarted show brief notification if enabled in prefs, Step 4: Use appropriate QSystemTrayIcon::MessageIcon for each type, Step 5: Set timeout: errors 10s, others 3s | Restrictions: Follow freedesktop.org notification spec on Linux, Don't spam notifications, Respect user notification preferences, Use appropriate urgency levels, Keep messages brief | Success: Desktop notifications displayed, Appropriate icons used, Errors shown prominently for 10s, Info messages brief, Notifications respect system settings, Users can disable in preferences, Works with various desktop environments | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.13 Implement notification filtering preferences
+- [x] 5.13 Implement notification filtering preferences
   - File: src/ui/qt/preferences_dialog.cpp
   - Allow users to enable/disable specific notification types
   - Filter notifications before displaying
