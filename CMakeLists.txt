@@ -403,7 +403,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
 
     if(BUILD_QT_GUI)
         # Find Qt5 packages
-        find_package(Qt5 COMPONENTS Core Widgets Gui X11Extras)
+        find_package(Qt5 COMPONENTS Core Widgets Gui X11Extras Test)
 
         if(Qt5_FOUND)
             message(STATUS "Qt5 found - building with GUI support")
@@ -776,9 +776,77 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             Qt5::Core
             Qt5::Widgets
             Qt5::Gui
+            Qt5::Test
         )
 
         add_test(NAME yamy_tray_test COMMAND yamy_tray_test)
+
+        # -----------------------------------------------------------------------------
+        # Target: yamy_notification_dispatcher_test (NotificationDispatcher Tests)
+        # Tests for core NotificationDispatcher callback system
+        # -----------------------------------------------------------------------------
+        set(NOTIFICATION_DISPATCHER_TEST_SOURCES
+            tests/core/notification_test.cpp
+            src/core/notification_dispatcher.cpp
+        )
+
+        add_executable(yamy_notification_dispatcher_test
+            ${NOTIFICATION_DISPATCHER_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_notification_dispatcher_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/utils
+        )
+
+        target_link_libraries(yamy_notification_dispatcher_test PRIVATE
+            pthread
+        )
+
+        add_test(NAME yamy_notification_dispatcher_test COMMAND yamy_notification_dispatcher_test)
+
+        # -----------------------------------------------------------------------------
+        # Target: yamy_notification_prefs_test (NotificationPrefs Tests)
+        # Tests for NotificationPrefs filtering system
+        # -----------------------------------------------------------------------------
+        set(NOTIFICATION_PREFS_TEST_SOURCES
+            tests/ui/notification_ui_test.cpp
+            src/ui/qt/notification_prefs.cpp
+        )
+
+        add_executable(yamy_notification_prefs_test
+            ${NOTIFICATION_PREFS_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        set_target_properties(yamy_notification_prefs_test PROPERTIES
+            AUTOMOC ON
+        )
+
+        target_include_directories(yamy_notification_prefs_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/utils
+            src/ui/qt
+        )
+
+        target_link_libraries(yamy_notification_prefs_test PRIVATE
+            pthread
+            Qt5::Core
+            Qt5::Widgets
+            Qt5::Gui
+            Qt5::Test
+        )
+
+        add_test(NAME yamy_notification_prefs_test COMMAND yamy_notification_prefs_test)
 
         # -----------------------------------------------------------------------------
         # Target: yamy_keyremap_test (Key Remapping Integration Tests)
