@@ -1,5 +1,5 @@
 #include "crosshair_widget_qt.h"
-#include "core/platform/window_system_factory.h"
+#include "core/platform/window_system_interface.h"
 
 #include <QPainter>
 #include <QMouseEvent>

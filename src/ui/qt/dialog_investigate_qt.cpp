@@ -3,7 +3,7 @@
 #include "dialog_condition_generator_qt.h"
 #include "../../core/engine/engine.h"
 #include "../../core/platform/ipc_channel_factory.h"
-#include "../../core/platform/window_system_factory.h"
+#include "../../core/platform/window_system_interface.h"
 #include "../../core/ipc_messages.h"
 
 #include <QHBoxLayout>

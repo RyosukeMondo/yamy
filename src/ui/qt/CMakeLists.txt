@@ -8,6 +8,7 @@ find_package(Qt5 REQUIRED COMPONENTS
     Gui
     X11Extras
 )
+find_package(Qt5 COMPONENTS Multimedia QUIET)
 
 # Find X11 for global hotkeys
 find_package(X11 REQUIRED)
@@ -81,6 +82,12 @@ target_link_libraries(yamy_qt_gui PUBLIC
     ${X11_LIBRARIES}
     xcb
 )
+
+# Optionally link Qt Multimedia if available
+if(Qt5Multimedia_FOUND)
+    target_link_libraries(yamy_qt_gui PUBLIC Qt5::Multimedia)
+    target_compile_definitions(yamy_qt_gui PRIVATE QT_MULTIMEDIA_AVAILABLE)
+endif()
 
 # Include directories
 target_include_directories(yamy_qt_gui PUBLIC

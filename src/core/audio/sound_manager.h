@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(QT_CORE_LIB)
+#if defined(QT_MULTIMEDIA_AVAILABLE)
 #include <QSoundEffect>
 #endif
 #include <map>
@@ -14,7 +14,7 @@ enum class NotificationType {
     Warning,
 };
 
-#if defined(QT_CORE_LIB)
+#if defined(QT_MULTIMEDIA_AVAILABLE)
 class SoundManager {
 public:
     SoundManager();
