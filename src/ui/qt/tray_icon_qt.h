@@ -122,6 +122,11 @@ private slots:
     void onOnlineDocumentation();
 
     /**
+     * @brief Open local documentation in browser
+     */
+    void onLocalDocumentation();
+
+    /**
      * @brief Show keyboard shortcuts dialog
      */
     void onKeyboardShortcuts();
@@ -200,6 +205,12 @@ private:
      */
     QIcon createStateIcon(const QIcon& baseIcon, const QColor& overlayColor);
 
+    /**
+     * @brief Find local documentation path if available
+     * @return Path to local docs, empty string if not found
+     */
+    QString findLocalDocumentationPath() const;
+
     // Engine instance (not owned)
     Engine* m_engine;
 
@@ -215,6 +226,9 @@ private:
 
     // Help submenu
     QMenu* m_helpMenu;
+
+    // Local documentation action (only visible if local docs exist)
+    QAction* m_actionLocalDocs;
 
     // Menu actions
     QAction* m_actionEnable;

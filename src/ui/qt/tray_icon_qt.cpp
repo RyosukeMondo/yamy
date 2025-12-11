@@ -21,6 +21,9 @@
 #include <QPixmap>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QDir>
+#include <QFileInfo>
+#include <QStandardPaths>
 
 TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)
@@ -30,6 +33,7 @@ TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     , m_configMenu(nullptr)
     , m_configActionGroup(nullptr)
     , m_helpMenu(nullptr)
+    , m_actionLocalDocs(nullptr)
     , m_actionEnable(nullptr)
     , m_actionReload(nullptr)
     , m_actionSettings(nullptr)
@@ -221,6 +225,83 @@ void TrayIconQt::onOnlineDocumentation()
     }
 }
 
+void TrayIconQt::onLocalDocumentation()
+{
+    QString localPath = findLocalDocumentationPath();
+    if (localPath.isEmpty()) {
+        showNotification(
+            "YAMY",
+            "Local documentation not found.\nTry Online Documentation instead.",
+            QSystemTrayIcon::Warning
+        );
+        return;
+    }
+
+    QUrl fileUrl = QUrl::fromLocalFile(localPath);
+    if (!QDesktopServices::openUrl(fileUrl)) {
+        showNotification(
+            "YAMY",
+            QString("Failed to open local documentation.\nPath: %1").arg(localPath),
+            QSystemTrayIcon::Warning
+        );
+    }
+}
+
+QString TrayIconQt::findLocalDocumentationPath() const
+{
+    // Check standard documentation locations
+    QStringList searchPaths;
+
+    // System-wide documentation paths
+    searchPaths << "/usr/share/doc/yamy/index.html"
+                << "/usr/share/doc/yamy/README.html"
+                << "/usr/share/doc/yamy/README.md"
+                << "/usr/local/share/doc/yamy/index.html"
+                << "/usr/local/share/doc/yamy/README.html";
+
+    // User-local documentation paths
+    QString localDataPath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    if (!localDataPath.isEmpty()) {
+        searchPaths << localDataPath + "/yamy/docs/index.html"
+                    << localDataPath + "/yamy/docs/README.html"
+                    << localDataPath + "/yamy/docs/README.md";
+    }
+
+    // Check ~/.local/share/yamy/docs explicitly
+    QString homeDir = QDir::homePath();
+    searchPaths << homeDir + "/.local/share/yamy/docs/index.html"
+                << homeDir + "/.local/share/yamy/docs/README.html"
+                << homeDir + "/.local/share/yamy/docs/README.md";
+
+    // Check for documentation directory (prefer index.html if dir exists)
+    QStringList dirPaths;
+    dirPaths << "/usr/share/doc/yamy"
+             << "/usr/local/share/doc/yamy"
+             << homeDir + "/.local/share/yamy/docs";
+
+    // First check specific file paths
+    for (const QString& path : searchPaths) {
+        if (QFileInfo::exists(path)) {
+            return path;
+        }
+    }
+
+    // Then check directories for any HTML/MD file
+    for (const QString& dirPath : dirPaths) {
+        QDir dir(dirPath);
+        if (dir.exists()) {
+            QStringList filters;
+            filters << "*.html" << "*.htm" << "*.md";
+            QStringList docs = dir.entryList(filters, QDir::Files, QDir::Name);
+            if (!docs.isEmpty()) {
+                return dir.filePath(docs.first());
+            }
+        }
+    }
+
+    return QString();
+}
+
 void TrayIconQt::onKeyboardShortcuts()
 {
     DialogShortcutsQt* dialog = new DialogShortcutsQt();
@@ -306,6 +387,13 @@ void TrayIconQt::createMenu()
     // Online Documentation
     QAction* actionDocs = m_helpMenu->addAction(QIcon::fromTheme("help-contents"), "Online Documentation");
     connect(actionDocs, &QAction::triggered, this, &TrayIconQt::onOnlineDocumentation);
+
+    // Local Documentation (only shown if local docs exist)
+    QString localDocsPath = findLocalDocumentationPath();
+    if (!localDocsPath.isEmpty()) {
+        m_actionLocalDocs = m_helpMenu->addAction(QIcon::fromTheme("folder-documents"), "Local Documentation");
+        connect(m_actionLocalDocs, &QAction::triggered, this, &TrayIconQt::onLocalDocumentation);
+    }
 
     // Keyboard Shortcuts
     QAction* actionShortcuts = m_helpMenu->addAction(QIcon::fromTheme("preferences-desktop-keyboard-shortcuts"), "Keyboard Shortcuts...");
