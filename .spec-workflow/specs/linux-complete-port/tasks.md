@@ -1033,7 +1033,7 @@
   - _Requirements: FR-6.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Add session restore - Step 1: In main after QApplication creation call SessionManager::restoreSession, Step 2: If session has active config load it instead of default, Step 3: If engine was running start it automatically, Step 4: Restore dialog positions if available, Step 5: Add --no-restore command line flag to skip restoration | Restrictions: Restore should be optional (respect --no-restore), Handle corrupt session files gracefully, Fall back to defaults if restoration fails, Don't restore if config file missing, Log restoration actions | Success: Session restores on startup, Last config loaded, Engine auto-starts if was running, Dialog positions restored, --no-restore flag works, Corrupt sessions handled, Falls back gracefully, Logs restoration steps | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [-] 6.4 Create yamy-ctl command-line tool
+- [x] 6.4 Create yamy-ctl command-line tool
   - File: src/app/yamy_ctl.cpp, src/app/CMakeLists.txt
   - Implement CLI for controlling running YAMY instance
   - Support: reload, stop, start, status commands
