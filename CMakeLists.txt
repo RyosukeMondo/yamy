@@ -652,6 +652,46 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_ui_test COMMAND yamy_ui_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_log_test (Log Dialog Unit Tests)
+        # Comprehensive tests for Logger and DialogLogQt
+        # -----------------------------------------------------------------------------
+        set(LOG_TEST_SOURCES
+            tests/ui/dialog_log_test.cpp
+            src/ui/qt/dialog_log_qt.cpp
+            src/ui/qt/log_stats_panel.cpp
+            src/core/logging/logger.cpp
+        )
+
+        add_executable(yamy_log_test
+            ${LOG_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        set_target_properties(yamy_log_test PROPERTIES
+            AUTOMOC ON
+        )
+
+        target_include_directories(yamy_log_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/logging
+            src/core/platform
+            src/utils
+            src/ui/qt
+        )
+
+        target_link_libraries(yamy_log_test PRIVATE
+            pthread
+            Qt5::Core
+            Qt5::Widgets
+            Qt5::Gui
+        )
+
+        add_test(NAME yamy_log_test COMMAND yamy_log_test)
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_keyremap_test (Key Remapping Integration Tests)
         # Tests the full key remapping flow including config loading and keymap resolution
         # This is a full integration test using the complete core module
