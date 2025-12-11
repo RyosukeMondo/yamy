@@ -837,7 +837,7 @@
   - _Requirements: FR-4.6_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add search functionality - Step 1: Add QLineEdit for search text with Find Next/Previous buttons, Step 2: Implement find using QTextEdit::find with QTextDocument::FindFlags, Step 3: Highlight all matches with background color, Step 4: Navigate with Find Next/Previous, wrap around at ends, Step 5: Show match count: "3 of 15 matches", Step 6: Clear highlights when search cleared or dialog closed | Restrictions: Case-insensitive search by default (add case-sensitive option), Highlight all matches not just current, Wrap around at document ends, Clear previous highlights before new search, Update match count dynamically | Success: Search finds text in logs, All matches highlighted, Navigate between matches works, Match count accurate, Wraps around, Case option works, Highlights clear appropriately | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.8 Add log export functionality
+- [x] 4.8 Add log export functionality
   - File: src/ui/qt/dialog_log_qt.cpp
   - Export logs to text file
   - Support filtered export (only visible entries)
