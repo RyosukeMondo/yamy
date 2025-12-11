@@ -29,6 +29,9 @@ struct Rect {
     int32_t width() const { return right - left; }
     int32_t height() const { return bottom - top; }
 
+    /// Check if this rectangle has a valid (non-zero) size
+    bool isValid() const { return width() > 0 && height() > 0; }
+
     /// Check if this rectangle is completely contained within another rectangle
     bool isContainedIn(const Rect& outer) const {
         return (outer.left <= left &&

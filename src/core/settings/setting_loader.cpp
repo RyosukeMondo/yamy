@@ -646,12 +646,14 @@ void SettingLoader::load_ARGUMENT(__int64 *o_arg)
 #endif
 
 
+#ifdef _WIN32
+// Windows: tstring is wstring, so we need a separate version for std::string
 // &lt;ARGUMENT&gt;
-void SettingLoader::load_ARGUMENT(tstringq *o_arg)
+void SettingLoader::load_ARGUMENT(tstring *o_arg)
 {
     *o_arg = getToken()->getString();
 }
-
+#endif
 
 // <ARGUMENT>
 void SettingLoader::load_ARGUMENT(std::string *o_arg)
@@ -659,13 +661,15 @@ void SettingLoader::load_ARGUMENT(std::string *o_arg)
 #ifdef _UNICODE
     *o_arg = to_UTF_8(getToken()->getString());
 #else
-    *o_arg = to_UTF_8(to_wstring(getToken()->getString()));
+    // On Linux, tstring is std::string, so getString() returns std::string
+    *o_arg = getToken()->getString();
 #endif
 }
 
-
+#ifdef _WIN32
+// Windows: tstring is wstring, so we need a separate version for std::string
 // &lt;ARGUMENT&gt;
-void SettingLoader::load_ARGUMENT(std::list<tstringq> *o_arg)
+void SettingLoader::load_ARGUMENT(std::list<tstring> *o_arg)
 {
     while (true) {
         if (!lookToken()->isString())
@@ -677,7 +681,7 @@ void SettingLoader::load_ARGUMENT(std::list<tstringq> *o_arg)
         getToken();
     }
 }
-
+#endif
 
 // <ARGUMENT>
 void SettingLoader::load_ARGUMENT(std::list<std::string> *o_arg)
@@ -689,7 +693,8 @@ void SettingLoader::load_ARGUMENT(std::list<std::string> *o_arg)
 #ifdef _UNICODE
         s = to_UTF_8(getToken()->getString());
 #else
-        s = to_UTF_8(to_wstring(getToken()->getString()));
+        // On Linux, tstring is std::string, so getString() returns std::string
+        s = getToken()->getString();
 #endif
         o_arg->push_back(s);
 
