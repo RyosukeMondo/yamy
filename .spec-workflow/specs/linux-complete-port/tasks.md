@@ -1081,7 +1081,7 @@
   - _Requirements: FR-9.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create examples dialog - Step 1: Create QDialog with QListWidget on left showing example names: Basic Remapping, Emacs Bindings, Vim Mode, CapsLock as Ctrl, Multi-Monitor Setup, Step 2: QTextEdit on right showing selected example code with syntax highlighting, Step 3: Each example includes commented explanation, Step 4: Add Copy button copying example to clipboard, Step 5: Add Save As button saving to file | Restrictions: Examples must be valid .mayu syntax, Include helpful comments, Use syntax highlighting if possible (or monospace font), Make examples practical and reusable | Success: Dialog shows example list, Selecting example displays code, Examples valid and well-commented, Copy button works, Save As creates file, Syntax highlighting or monospace, Examples helpful and practical | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.10 Create About dialog
+- [x] 6.10 Create About dialog
   - File: src/ui/qt/dialog_about.h, src/ui/qt/dialog_about.cpp
   - Show version, license, contributors, build info
   - Include links to project resources
