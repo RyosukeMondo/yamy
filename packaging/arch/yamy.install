@@ -1,0 +1,49 @@
+# YAMY post-installation script for Arch Linux
+
+post_install() {
+    # Reload udev rules
+    udevadm control --reload-rules 2>/dev/null || true
+    udevadm trigger 2>/dev/null || true
+
+    echo ""
+    echo "============================================================"
+    echo "YAMY Installation Complete"
+    echo "============================================================"
+    echo ""
+    echo "IMPORTANT: To use YAMY for keyboard remapping, you need to"
+    echo "add your user to the 'input' group:"
+    echo ""
+    echo "    sudo usermod -aG input \$USER"
+    echo ""
+    echo "Then log out and log back in for changes to take effect."
+    echo ""
+    echo "Getting Started:"
+    echo "  1. Run 'yamy' to start the application"
+    echo "  2. Example keymaps are in /usr/share/yamy/keymaps/"
+    echo "  3. Configuration templates in /usr/share/yamy/templates/"
+    echo ""
+    echo "============================================================"
+}
+
+post_upgrade() {
+    post_install
+}
+
+pre_remove() {
+    # Nothing to do before removal
+    :
+}
+
+post_remove() {
+    # Remove udev rules
+    rm -f /usr/lib/udev/rules.d/99-yamy-input.rules 2>/dev/null || true
+
+    # Reload udev rules
+    udevadm control --reload-rules 2>/dev/null || true
+
+    echo ""
+    echo "YAMY has been removed."
+    echo "Note: Your user will remain in the 'input' group."
+    echo "To remove: sudo gpasswd -d \$USER input"
+    echo ""
+}
