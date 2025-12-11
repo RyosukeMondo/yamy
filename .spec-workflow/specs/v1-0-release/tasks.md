@@ -79,7 +79,7 @@ Integration tests exist but cannot compile due to:
   - _Requirements: FR-4, NF-2_
   - _Prompt: Implement the task for spec v1-0-release, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Multithreading expert with C++ concurrency knowledge | Task: Add thread-safe vector access - Step 1: Locate m_readerThreads vector in input_hook_linux.cpp class, Step 2: Add private member std::mutex m_readerThreadsMutex;, Step 3: Find all m_readerThreads accesses (push_back, clear, iteration, size, empty), Step 4: Wrap each access with std::lock_guard<std::mutex> lock(m_readerThreadsMutex);, Step 5: Test with thread sanitizer: cmake -DCMAKE_CXX_FLAGS=-fsanitize=thread, Step 6: Verify no data races during device plug/unplug | Restrictions: Minimize critical section duration (don't hold lock during long operations), Use lock_guard not manual lock/unlock, Don't introduce deadlocks | Success: Thread sanitizer reports zero data races, Device hotplug stress test passes (plug/unplug 100 times), No crashes or hangs during concurrent access, Code review confirms proper lock usage | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.4 Refactor stringtool.cpp to meet file size limit (<500 lines)
+- [x] 2.4 Refactor stringtool.cpp to meet file size limit (<500 lines)
   - Files: src/utils/stringtool.cpp (split), stringtool_conversion.cpp (NEW), stringtool_parsing.cpp (NEW)
   - Extract interpretMetaCharacters() and helpers into stringtool_parsing.cpp
   - Extract UTF conversion functions into stringtool_conversion.cpp
