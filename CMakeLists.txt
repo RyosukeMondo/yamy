@@ -542,6 +542,7 @@ if(BUILD_TESTING)
 
     # Using the existing gtest source in the repo as per vcxproj
     set(GTEST_DIR src/tests/googletest)
+    set(GMOCK_DIR src/tests/googlemock)
 
     # We might need to compile gtest as a library first if not already managed
     # For simplicity, including gtest-all.cc directly as the vcxproj did
@@ -598,6 +599,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         enable_testing()
 
         set(GTEST_DIR src/tests/googletest)
+        set(GMOCK_DIR src/tests/googlemock)
 
         # Linux platform test sources
         set(LINUX_TEST_SOURCES
@@ -669,18 +671,27 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
 
         add_executable(yamy_ui_test
-            ${UI_TEST_SOURCES}
+            tests/ui/dialog_investigate_test.cpp
             src/tests/googletest/src/gtest-all.cc
+            src/tests/googlemock/src/gmock-all.cc
         )
+
+        # Enable AUTOMOC for Qt-based tests (MockIPCChannel uses Q_OBJECT)
+        set_target_properties(yamy_ui_test PROPERTIES AUTOMOC ON)
 
         target_include_directories(yamy_ui_test PRIVATE
             ${GTEST_DIR}/include
             ${GTEST_DIR}
+            ${GMOCK_DIR}/include
+            ${GMOCK_DIR}
             src
             src/core
             src/core/platform
             src/core/input
             src/core/settings
+            src/core/functions
+            src/core/engine
+            src/core/window
             src/utils
             src/platform/linux
             src/ui/qt
@@ -689,6 +700,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         target_link_libraries(yamy_ui_test PRIVATE
             pthread
             ${X11_LIBRARIES}
+            yamy_qt_gui
             Qt5::Core
             Qt5::Widgets
             Qt5::Gui
@@ -945,6 +957,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/setting_loader.cpp
             src/core/settings/config_backup.cpp
             src/core/settings/config_manager.cpp
+            src/core/settings/config_watcher.cpp
             src/core/settings/config_validator.cpp
             src/core/settings/config_metadata.cpp
             src/core/settings/session_manager.cpp
@@ -1081,10 +1094,14 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             tests/integration
         )
 
+        # Enable AUTOMOC for Qt-based sources (ConfigWatcher uses QObject)
+        set_target_properties(yamy_keyremap_test PROPERTIES AUTOMOC ON)
+
         target_link_libraries(yamy_keyremap_test PRIVATE
             pthread
             ${X11_LIBRARIES}
             ${XRANDR_LIBRARIES}
+            Qt5::Core
         )
 
         add_test(NAME yamy_keyremap_test COMMAND yamy_keyremap_test)
