@@ -277,10 +277,10 @@ protected:
         m_tempFiles.clear();
     }
 
-    void LoadConfig(const tstring& config) {
+    void LoadConfig(const std::string& config) {
         m_loader->loadFromData(config);
-        tstring log_output = m_logStream.str();
-        if (log_output.find(_T("error:")) != tstring::npos) {
+        std::string log_output = m_logStream.str();
+        if (log_output.find(_T("error:")) != std::string::npos) {
             FAIL() << "Errors found during config loading: " << log_output;
         }
     }
@@ -292,7 +292,7 @@ protected:
     }
 
     // Standard key definitions for tests
-    tstring getKeyDefinitions() {
+    std::string getKeyDefinitions() {
         return
             _T("def key A = 0x1E\n")
             _T("def key B = 0x30\n")
@@ -350,7 +350,7 @@ TEST_F(IntegrationLifecycleTest, FullLifecycleInitLoadProcessShutdown) {
     EXPECT_EQ(m_inputInjector->getInjectedCount(), 0u);
 
     // Step 2: Load configuration
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("key C-J = Enter\n");
@@ -395,7 +395,7 @@ TEST_F(IntegrationLifecycleTest, FullLifecycleInitLoadProcessShutdown) {
 
 TEST_F(IntegrationLifecycleTest, ConfigReloadDuringOperation) {
     // Initial config
-    tstring config1 = getKeyDefinitions() +
+    std::string config1 = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n");
 
@@ -418,7 +418,7 @@ TEST_F(IntegrationLifecycleTest, ConfigReloadDuringOperation) {
     SettingLoader newLoader(&m_soLog, &newLogStream);
     newLoader.initialize(&newSetting);
 
-    tstring config2 = getKeyDefinitions() +
+    std::string config2 = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = C\n")  // Changed mapping
         _T("key B = D\n"); // New mapping
@@ -449,7 +449,7 @@ TEST_F(IntegrationLifecycleTest, ConfigReloadDuringOperation) {
 //=============================================================================
 
 TEST_F(IntegrationLifecycleTest, MultipleKeymapsWindowMatching) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window Editor /code|vim|emacs/ : Global\n")
@@ -554,7 +554,7 @@ TEST_F(IntegrationLifecycleTest, HookEventFlowWithCallbacks) {
 //=============================================================================
 
 TEST_F(IntegrationLifecycleTest, ComplexKeymapInheritanceChain) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = A\n")  // Default: A stays A
         _T("key B = B\n")
@@ -847,7 +847,7 @@ protected:
         m_loader.reset();
     }
 
-    tstring getKeyDefinitions() {
+    std::string getKeyDefinitions() {
         return
             _T("def key A = 0x1E\n")
             _T("def key B = 0x30\n")
@@ -865,7 +865,7 @@ protected:
 
 TEST_F(IntegrationPerformanceTest, KeyProcessingLatencyUnderLoad) {
     // Load a typical configuration
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("key C-A = C\n");
@@ -931,7 +931,7 @@ TEST_F(IntegrationPerformanceTest, KeyProcessingLatencyUnderLoad) {
 
 TEST_F(IntegrationPerformanceTest, ConfigLoadingPerformance) {
     // Create a complex configuration with many keymaps and mappings
-    tstring config = getKeyDefinitions();
+    std::string config = getKeyDefinitions();
 
     // Create 10 keymaps with 5 mappings each (simpler to avoid string conversion issues)
     config += _T("keymap Global\n");
@@ -967,7 +967,7 @@ TEST_F(IntegrationPerformanceTest, ConfigLoadingPerformance) {
 
     for (int km = 1; km <= 10; ++km) {
         std::string name = "App" + std::to_string(km);
-        const Keymap* appMap = m_setting.m_keymaps.searchByName(tstring(name.begin(), name.end()));
+        const Keymap* appMap = m_setting.m_keymaps.searchByName(std::string(name.begin(), name.end()));
         EXPECT_NE(appMap, nullptr) << "Keymap " << name << " should exist";
     }
 }
@@ -977,7 +977,7 @@ TEST_F(IntegrationPerformanceTest, ConfigLoadingPerformance) {
 //=============================================================================
 
 TEST_F(IntegrationPerformanceTest, SustainedKeyEventProcessing) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n");
 
@@ -1034,7 +1034,7 @@ class IntegrationAllTracksTest : public IntegrationLifecycleTest {
 
 TEST_F(IntegrationAllTracksTest, AllTracksWorkingTogether) {
     // Track 1: Platform Abstraction - Load config
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("key C-J = Enter\n")
@@ -1089,7 +1089,7 @@ TEST_F(IntegrationAllTracksTest, AllTracksWorkingTogether) {
 
 TEST_F(IntegrationAllTracksTest, ErrorRecoveryAndResilience) {
     // Test with invalid config - should not crash
-    tstring invalidConfig = _T("this is not valid config syntax\n");
+    std::string invalidConfig = _T("this is not valid config syntax\n");
 
     // This should not throw or crash
     EXPECT_NO_THROW({
@@ -1097,7 +1097,7 @@ TEST_F(IntegrationAllTracksTest, ErrorRecoveryAndResilience) {
     });
 
     // Engine should still be usable after invalid config
-    tstring validConfig = getKeyDefinitions() +
+    std::string validConfig = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n");
 
@@ -1119,7 +1119,7 @@ TEST_F(IntegrationAllTracksTest, ErrorRecoveryAndResilience) {
 //=============================================================================
 
 TEST_F(IntegrationAllTracksTest, ConcurrentEventProcessing) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n");
 
@@ -1162,7 +1162,7 @@ TEST_F(IntegrationAllTracksTest, ConcurrentEventProcessing) {
 //=============================================================================
 
 TEST_F(IntegrationAllTracksTest, MemorySafetyUnderRapidReconnection) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n");
 

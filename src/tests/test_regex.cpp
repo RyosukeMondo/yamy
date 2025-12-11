@@ -17,7 +17,7 @@ TEST(RegexTest, Wildcards) {
 TEST(RegexTest, SubExpressions) {
     // Pattern from setting.cpp: getFilename
     tregex re(_T("^([^;]*);([^;]*);(.*)$"));
-    tstring input = _T("Name;Filename;Symbols");
+    std::string input = _T("Name;Filename;Symbols");
     
     tsmatch match;
     EXPECT_TRUE(std::regex_match(input, match, re));
@@ -33,7 +33,7 @@ TEST(RegexTest, Search) {
     // The pattern -D([^;]*)(.*)$ consumes until semicolon.
     // So input must be separated by semicolons if multiple symbols exist.
     tregex re(_T("-D([^;]*)(.*)$"));
-    tstring input = _T("-DSYM1;-DSYM2");
+    std::string input = _T("-DSYM1;-DSYM2");
     
     tsmatch match;
     EXPECT_TRUE(std::regex_search(input, match, re));

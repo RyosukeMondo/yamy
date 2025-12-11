@@ -35,15 +35,10 @@ typedef std::wstring tstringi; // Treating tstringi as tstring for now
 #  define strcasecmp_platform strcasecmp
 #  define tcslcpy strlcpy
 
-// On Linux, stub these to standard char types for compilation
-typedef std::string tstring;
+// On Linux, use standard types directly (no tstring abstraction)
 typedef std::ifstream tifstream;
 typedef std::stringstream tstringstream;
 typedef std::ostream tostream;
-typedef std::string tstringi;
-
-// On Linux, to_tstring is identity since tstring is std::string
-inline tstring to_tstring(const std::string& s) { return s; }
 #endif
 
 // Regex wrapper for std::string (UTF-8)

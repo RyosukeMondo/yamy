@@ -52,7 +52,7 @@ Integration tests exist but cannot compile due to:
 
 ---
 
-- [ ] 2.1 Remove tstring typedef and migrate to std::string
+- [x] 2.1 Remove tstring typedef and migrate to std::string
   - Files: src/utils/stringtool.h (delete typedef), ~100 files (replace usage)
   - Search entire codebase for `tstring` usage and replace with `std::string`
   - Remove `using tstring = std::string;` typedef from stringtool.h

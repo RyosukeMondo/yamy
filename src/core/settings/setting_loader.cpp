@@ -661,7 +661,7 @@ void SettingLoader::load_ARGUMENT(std::string *o_arg)
 #ifdef _UNICODE
     *o_arg = to_UTF_8(getToken()->getString());
 #else
-    // On Linux, tstring is std::string, so getString() returns std::string
+    // On Linux, getString() returns std::string directly
     *o_arg = getToken()->getString();
 #endif
 }
@@ -693,7 +693,7 @@ void SettingLoader::load_ARGUMENT(std::list<std::string> *o_arg)
 #ifdef _UNICODE
         s = to_UTF_8(getToken()->getString());
 #else
-        // On Linux, tstring is std::string, so getString() returns std::string
+        // On Linux, getString() returns std::string directly
         s = getToken()->getString();
 #endif
         o_arg->push_back(s);

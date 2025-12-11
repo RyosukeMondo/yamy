@@ -54,16 +54,16 @@ protected:
         m_loader.reset();
     }
 
-    void LoadConfig(const tstring& config) {
+    void LoadConfig(const std::string& config) {
         m_loader->loadFromData(config);
-        tstring log_output = m_logStream.str();
-        if (log_output.find(_T("error:")) != tstring::npos) {
+        std::string log_output = m_logStream.str();
+        if (log_output.find(_T("error:")) != std::string::npos) {
             FAIL() << "Errors found during config loading: " << log_output;
         }
     }
 
     // Helper to define basic keyboard keys
-    tstring getKeyDefinitions() {
+    std::string getKeyDefinitions() {
         return
             _T("def key A = 0x1E\n")
             _T("def key B = 0x30\n")
@@ -125,7 +125,7 @@ protected:
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, WindowClassMatching_SimplePattern) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window Terminal /gnome-terminal/ : Global\n")
@@ -152,7 +152,7 @@ TEST_F(WindowContextKeymapTest, WindowClassMatching_SimplePattern) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, WindowClassMatching_CaseInsensitive) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window Terminal /terminal/ : Global\n")
@@ -175,7 +175,7 @@ TEST_F(WindowContextKeymapTest, WindowClassMatching_CaseInsensitive) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, WindowClassMatching_PartialMatch) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window XTerm /xterm/ : Global\n")
@@ -198,7 +198,7 @@ TEST_F(WindowContextKeymapTest, WindowClassMatching_PartialMatch) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, WindowTitleMatching_AndCondition) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window Editor ( /code/ && /\\.cpp/ ) : Global\n")
@@ -221,7 +221,7 @@ TEST_F(WindowContextKeymapTest, WindowTitleMatching_AndCondition) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, WindowTitleMatching_OrCondition) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window Browser ( /firefox/ || /chrome/ ) : Global\n")
@@ -244,7 +244,7 @@ TEST_F(WindowContextKeymapTest, WindowTitleMatching_OrCondition) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, MultipleWindowKeymaps) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window Terminal /terminal/ : Global\n")
@@ -282,7 +282,7 @@ TEST_F(WindowContextKeymapTest, MultipleWindowKeymaps) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, WindowKeymapInheritance) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("key X = Y\n")
@@ -312,7 +312,7 @@ TEST_F(WindowContextKeymapTest, WindowKeymapInheritance) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, WindowContextSwitchSimulation) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = X\n")
         _T("window Terminal /gnome-terminal/ : Global\n")
@@ -362,7 +362,7 @@ TEST_F(WindowContextKeymapTest, WindowContextSwitchSimulation) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, RegexSpecialCharacters) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         // Match windows with dots in class name (e.g., org.gnome.Terminal)
@@ -385,7 +385,7 @@ TEST_F(WindowContextKeymapTest, RegexSpecialCharacters) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, WindowPatternWildcard) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         // Match any window with ".cpp" in title
@@ -409,7 +409,7 @@ TEST_F(WindowContextKeymapTest, WindowPatternWildcard) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, LinuxSpecificWindowClasses) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         // Common Linux desktop application classes
@@ -447,7 +447,7 @@ TEST_F(WindowContextKeymapTest, LinuxSpecificWindowClasses) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, OverlappingWindowPatterns) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         // More specific pattern
@@ -475,7 +475,7 @@ TEST_F(WindowContextKeymapTest, OverlappingWindowPatterns) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, EmptyWindowHandling) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window Terminal /terminal/ : Global\n")
@@ -501,7 +501,7 @@ TEST_F(WindowContextKeymapTest, EmptyWindowHandling) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, UnicodeWindowTitles) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         // Match firefox with any title (including unicode)
@@ -526,7 +526,7 @@ TEST_F(WindowContextKeymapTest, UnicodeWindowTitles) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, KeyAssignmentLookupInContext) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = X\n")
         _T("window Terminal /terminal/ : Global\n")
@@ -560,7 +560,7 @@ TEST_F(WindowContextKeymapTest, KeyAssignmentLookupInContext) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, KeymapTypeDetection) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         // Type_windowAnd (class && title)
@@ -597,7 +597,7 @@ TEST_F(WindowContextKeymapTest, KeymapTypeDetection) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, DoesSameWindowDirectTest) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window Test /myclass/ : Global\n")
@@ -621,7 +621,7 @@ TEST_F(WindowContextKeymapTest, DoesSameWindowDirectTest) {
 //=============================================================================
 
 TEST_F(WindowContextKeymapTest, WindowPatternExactMatch) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         // Use anchors for exact match

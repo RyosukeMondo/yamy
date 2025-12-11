@@ -154,6 +154,11 @@ void StrExprArg::setSystem(const StrExprSystem *i_system)
 // stream output
 tostream &operator<<(tostream &i_ost, const StrExprArg &i_data)
 {
+#ifdef _WIN32
     i_ost << to_tstring(i_data.eval());
+#else
+    // On Linux, directly use std::string (no tstring abstraction)
+    i_ost << i_data.eval();
+#endif
     return i_ost;
 }

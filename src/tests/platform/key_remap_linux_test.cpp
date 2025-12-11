@@ -42,17 +42,17 @@ protected:
         m_loader.reset();
     }
 
-    void LoadConfig(const tstring& config) {
+    void LoadConfig(const std::string& config) {
         m_loader->loadFromData(config);
         // Check for errors
-        tstring log_output = m_logStream.str();
-        if (log_output.find(_T("error:")) != tstring::npos) {
+        std::string log_output = m_logStream.str();
+        if (log_output.find(_T("error:")) != std::string::npos) {
             FAIL() << "Errors found during config loading: " << log_output;
         }
     }
 
     // Helper to define basic 104 keyboard keys
-    tstring getKeyDefinitions() {
+    std::string getKeyDefinitions() {
         return
             _T("def key A = 0x1E\n")
             _T("def key B = 0x30\n")
@@ -112,7 +112,7 @@ protected:
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, SimpleKeyRemap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n");
 
@@ -143,7 +143,7 @@ TEST_F(KeyRemapLinuxTest, SimpleKeyRemap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, KeySwap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key F1 = Escape\n")
         _T("key Escape = F1\n");
@@ -177,7 +177,7 @@ TEST_F(KeyRemapLinuxTest, KeySwap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, ModifierKeyRemap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key *CapsLock = *LControl\n");
 
@@ -200,7 +200,7 @@ TEST_F(KeyRemapLinuxTest, ModifierKeyRemap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, KeyCombinationRemap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key C-J = Enter\n");
 
@@ -225,7 +225,7 @@ TEST_F(KeyRemapLinuxTest, KeyCombinationRemap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, AltKeyCombinationRemap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A-H = BackSpace\n");
 
@@ -250,7 +250,7 @@ TEST_F(KeyRemapLinuxTest, AltKeyCombinationRemap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, ShiftCtrlCombinationRemap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key C-S-A = C-S-Z\n");
 
@@ -276,7 +276,7 @@ TEST_F(KeyRemapLinuxTest, ShiftCtrlCombinationRemap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, NavigationKeyRemap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key C-P = Up\n")
         _T("key C-N = Down\n")
@@ -322,7 +322,7 @@ TEST_F(KeyRemapLinuxTest, NavigationKeyRemap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, HomeEndKeyRemap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key C-A = Home\n")
         _T("key C-E = End\n");
@@ -352,7 +352,7 @@ TEST_F(KeyRemapLinuxTest, HomeEndKeyRemap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, FunctionKeyRemap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key F5 = F10\n");
 
@@ -374,7 +374,7 @@ TEST_F(KeyRemapLinuxTest, FunctionKeyRemap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, KeymapInheritance) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("keymap ChildMap : Global\n")
@@ -403,7 +403,7 @@ TEST_F(KeyRemapLinuxTest, KeymapInheritance) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, KeySeqDefinition) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keyseq $MySeq = A B C\n")
         _T("keymap Global\n")
         _T("key F1 = $MySeq\n");
@@ -431,7 +431,7 @@ TEST_F(KeyRemapLinuxTest, KeySeqDefinition) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, ModifierPassthrough) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key *CapsLock = *LControl\n");
 
@@ -454,7 +454,7 @@ TEST_F(KeyRemapLinuxTest, ModifierPassthrough) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, WindowMatchingKeymap) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n")
         _T("window Terminal /terminal/ : Global\n")
@@ -479,7 +479,7 @@ TEST_F(KeyRemapLinuxTest, WindowMatchingKeymap) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, ExtendedKeyDefinition) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key Home = End\n");
 
@@ -499,7 +499,7 @@ TEST_F(KeyRemapLinuxTest, ExtendedKeyDefinition) {
 //=============================================================================
 
 TEST_F(KeyRemapLinuxTest, ModifierTypes) {
-    tstring config = getKeyDefinitions();
+    std::string config = getKeyDefinitions();
 
     LoadConfig(config);
 

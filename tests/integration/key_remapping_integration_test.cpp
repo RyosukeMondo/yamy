@@ -201,16 +201,16 @@ protected:
         m_loader.reset();
     }
 
-    void LoadConfig(const tstring& config) {
+    void LoadConfig(const std::string& config) {
         m_loader->loadFromData(config);
-        tstring log_output = m_logStream.str();
-        if (log_output.find(_T("error:")) != tstring::npos) {
+        std::string log_output = m_logStream.str();
+        if (log_output.find(_T("error:")) != std::string::npos) {
             FAIL() << "Errors found during config loading: " << log_output;
         }
     }
 
     // Helper to define basic 104 keyboard keys
-    tstring getKeyDefinitions() {
+    std::string getKeyDefinitions() {
         return
             _T("def key A = 0x1E\n")
             _T("def key B = 0x30\n")
@@ -354,7 +354,7 @@ TEST_F(KeyRemappingIntegrationTest, MockInputInjectorRecordsKeys) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, ConfigLoadingAndKeyDefinition) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n");
 
@@ -381,7 +381,7 @@ TEST_F(KeyRemappingIntegrationTest, ConfigLoadingAndKeyDefinition) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, SimpleKeyRemappingFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n");
 
@@ -412,7 +412,7 @@ TEST_F(KeyRemappingIntegrationTest, SimpleKeyRemappingFlow) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, KeySwapFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key F1 = Escape\n")
         _T("key Escape = F1\n");
@@ -443,7 +443,7 @@ TEST_F(KeyRemappingIntegrationTest, KeySwapFlow) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, ModifierKeyCombinationFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key C-J = Enter\n");
 
@@ -468,7 +468,7 @@ TEST_F(KeyRemappingIntegrationTest, ModifierKeyCombinationFlow) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, MultipleModifierCombinationFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key C-S-A = C-S-Z\n");
 
@@ -494,7 +494,7 @@ TEST_F(KeyRemappingIntegrationTest, MultipleModifierCombinationFlow) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, AltModifierCombinationFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A-H = BackSpace\n");
 
@@ -518,7 +518,7 @@ TEST_F(KeyRemappingIntegrationTest, AltModifierCombinationFlow) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, EmacsNavigationKeysFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key C-P = Up\n")
         _T("key C-N = Down\n")
@@ -559,7 +559,7 @@ TEST_F(KeyRemappingIntegrationTest, EmacsNavigationKeysFlow) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, WindowContextKeymapSwitching) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = X\n")
         _T("window Terminal /terminal/ : Global\n")
@@ -605,7 +605,7 @@ TEST_F(KeyRemappingIntegrationTest, WindowContextKeymapSwitching) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, ModifierPassthroughFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key *CapsLock = *LControl\n");
 
@@ -627,7 +627,7 @@ TEST_F(KeyRemappingIntegrationTest, ModifierPassthroughFlow) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, FunctionKeyRemappingFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key F5 = F10\n");
 
@@ -649,7 +649,7 @@ TEST_F(KeyRemappingIntegrationTest, FunctionKeyRemappingFlow) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, KeySequenceDefinitionFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keyseq $MySeq = A B C\n")
         _T("keymap Global\n")
         _T("key F1 = $MySeq\n");
@@ -677,7 +677,7 @@ TEST_F(KeyRemappingIntegrationTest, KeySequenceDefinitionFlow) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, KeymapInheritanceChainFlow) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = X\n")
         _T("keymap Child : Global\n")
@@ -717,7 +717,7 @@ TEST_F(KeyRemappingIntegrationTest, CompletePipelineVerification) {
     // 2. Config is loaded with valid keymaps
     // 3. Injector is ready to receive events
 
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = B\n");
 
@@ -757,7 +757,7 @@ TEST_F(KeyRemappingIntegrationTest, CompletePipelineVerification) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, ExtendedKeyHandling) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key Up = Down\n");
 
@@ -821,7 +821,7 @@ TEST_F(KeyRemappingIntegrationTest, EventOrderingVerification) {
 
 TEST_F(KeyRemappingIntegrationTest, EmptyConfigHandling) {
     // Just key definitions, no keymap - should still work
-    tstring config = getKeyDefinitions();
+    std::string config = getKeyDefinitions();
 
     LoadConfig(config);
 
@@ -835,7 +835,7 @@ TEST_F(KeyRemappingIntegrationTest, EmptyConfigHandling) {
 //=============================================================================
 
 TEST_F(KeyRemappingIntegrationTest, MultipleKeymapsDifferentMappings) {
-    tstring config = getKeyDefinitions() +
+    std::string config = getKeyDefinitions() +
         _T("keymap Global\n")
         _T("key A = X\n")
         _T("keymap Map1 : Global\n")

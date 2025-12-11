@@ -2,7 +2,7 @@
 #include "parser.h"
 
 TEST(ParserTest, BasicTokenization) {
-    tstring input = _T("key A = B");
+    std::string input = _T("key A = B");
     Parser p(input.c_str(), input.length());
     
     // Parser requires symbols like '=' to be registered as prefixes
@@ -32,7 +32,7 @@ TEST(ParserTest, BasicTokenization) {
 }
 
 TEST(ParserTest, QuotedStrings) {
-    tstring input = _T("key \"Space Key\"");
+    std::string input = _T("key \"Space Key\"");
     Parser p(input.c_str(), input.length());
     
     std::vector<Token> tokens;
@@ -45,7 +45,7 @@ TEST(ParserTest, QuotedStrings) {
 }
 
 TEST(ParserTest, Comments) {
-    tstring input = _T("key A # This is a comment");
+    std::string input = _T("key A # This is a comment");
     Parser p(input.c_str(), input.length());
     
     std::vector<Token> tokens;
@@ -58,7 +58,7 @@ TEST(ParserTest, Comments) {
 }
 
 TEST(ParserTest, Prefixes) {
-    tstring input = _T("M0-A");
+    std::string input = _T("M0-A");
     Parser p(input.c_str(), input.length());
     
     std::vector<tstringi> prefixes;

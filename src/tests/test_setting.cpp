@@ -16,26 +16,26 @@ protected:
         m_loader->initialize(&m_setting);
     }
 
-    void LoadConfig(const tstring& config) {
+    void LoadConfig(const std::string& config) {
         m_loader->loadFromData(config);
         // Check for errors in log
-        tstring log_output = m_logStream.str();
-        if (log_output.find(_T("error:")) != tstring::npos) {
+        std::string log_output = m_logStream.str();
+        if (log_output.find(_T("error:")) != std::string::npos) {
             FAIL() << "Errors found in log: " << log_output;
         }
     }
     
-    void LoadConfigExpectError(const tstring& config, const tstring& errorFragment) {
+    void LoadConfigExpectError(const std::string& config, const std::string& errorFragment) {
         m_loader->loadFromData(config);
-        tstring log_output = m_logStream.str();
-        EXPECT_NE(log_output.find(_T("error:")), tstring::npos) << "Expected error not found";
-        EXPECT_NE(log_output.find(errorFragment), tstring::npos) 
+        std::string log_output = m_logStream.str();
+        EXPECT_NE(log_output.find(_T("error:")), std::string::npos) << "Expected error not found";
+        EXPECT_NE(log_output.find(errorFragment), std::string::npos) 
             << "Expected error fragment '" << errorFragment << "' not found in: " << log_output;
     }
 };
 
 TEST_F(SettingLoaderTest, LoadSimpleKeyDef) {
-    tstring config = _T("def key A = 0x1E\n");
+    std::string config = _T("def key A = 0x1E\n");
     LoadConfig(config);
     
     Key* k = m_setting.m_keyboard.searchKey(_T("A"));
@@ -44,7 +44,7 @@ TEST_F(SettingLoaderTest, LoadSimpleKeyDef) {
 }
 
 TEST_F(SettingLoaderTest, LoadKeymapDefinition) {
-    tstring config = 
+    std::string config = 
         _T("keymap MyMap\n")
         _T("keymap AnotherMap : MyMap\n"); // Inheritance
     
@@ -73,7 +73,7 @@ TEST_F(SettingLoaderTest, ConditionalIf) {
     
     m_setting.m_symbols.insert(_T("TEST_SYMBOL"));
     
-    tstring config = 
+    std::string config = 
         _T("if ( TEST_SYMBOL )\n")
         _T("  def key A = 0x1E\n")
         _T("else\n")
@@ -94,7 +94,7 @@ TEST_F(SettingLoaderTest, ConditionalIf) {
 TEST_F(SettingLoaderTest, ConditionalElse) {
     // NOT defining TEST_SYMBOL
     
-    tstring config = 
+    std::string config = 
         _T("if ( TEST_SYMBOL )\n")
         _T("  def key A = 0x1E\n")
         _T("else\n")
@@ -115,7 +115,7 @@ TEST_F(SettingLoaderTest, InvalidSyntax) {
 
 TEST_F(SettingLoaderTest, ModifierDefinition) {
     // Need to define key first
-    tstring config = 
+    std::string config = 
         _T("def key LShift = 0x2A\n")
         _T("def mod shift = LShift\n");
         
