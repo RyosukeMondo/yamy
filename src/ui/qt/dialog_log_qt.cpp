@@ -11,6 +11,9 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QTextCharFormat>
+#include <QTextCursor>
+#include <QTextDocument>
 #include <QTextStream>
 
 DialogLogQt::DialogLogQt(QWidget* parent)
@@ -26,9 +29,17 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     , m_btnSave(nullptr)
     , m_btnClose(nullptr)
     , m_pauseIndicator(nullptr)
+    , m_searchEdit(nullptr)
+    , m_btnFindNext(nullptr)
+    , m_btnFindPrev(nullptr)
+    , m_caseSensitive(nullptr)
+    , m_searchStatus(nullptr)
     , m_paused(false)
     , m_entriesWhilePaused(0)
     , m_minLevel(yamy::logging::LogLevel::Trace)
+    , m_searchCaseSensitive(false)
+    , m_currentMatchIndex(0)
+    , m_totalMatches(0)
 {
     setWindowTitle("YAMY Log Viewer");
     setMinimumSize(800, 600);
@@ -46,6 +57,9 @@ void DialogLogQt::setupUI()
 
     // Filter controls at top
     setupFilterControls(mainLayout);
+
+    // Search controls
+    setupSearchControls(mainLayout);
 
     // Stats panel
     m_statsPanel = new yamy::ui::LogStatsPanel(this);
@@ -156,6 +170,48 @@ void DialogLogQt::setupFontControls(QHBoxLayout* filterLayout)
     connect(m_fontSizeSpinner, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &DialogLogQt::onFontSizeChanged);
     filterLayout->addWidget(m_fontSizeSpinner);
+}
+
+void DialogLogQt::setupSearchControls(QVBoxLayout* mainLayout)
+{
+    auto* searchLayout = new QHBoxLayout();
+
+    auto* searchLabel = new QLabel("Search:");
+    searchLayout->addWidget(searchLabel);
+
+    m_searchEdit = new QLineEdit();
+    m_searchEdit->setPlaceholderText("Enter text to search...");
+    m_searchEdit->setClearButtonEnabled(true);
+    connect(m_searchEdit, &QLineEdit::textChanged,
+            this, &DialogLogQt::onSearchTextChanged);
+    connect(m_searchEdit, &QLineEdit::returnPressed,
+            this, &DialogLogQt::onFindNext);
+    searchLayout->addWidget(m_searchEdit);
+
+    m_btnFindPrev = new QPushButton("◀ Previous");
+    m_btnFindPrev->setEnabled(false);
+    connect(m_btnFindPrev, &QPushButton::clicked,
+            this, &DialogLogQt::onFindPrevious);
+    searchLayout->addWidget(m_btnFindPrev);
+
+    m_btnFindNext = new QPushButton("Next ▶");
+    m_btnFindNext->setEnabled(false);
+    connect(m_btnFindNext, &QPushButton::clicked,
+            this, &DialogLogQt::onFindNext);
+    searchLayout->addWidget(m_btnFindNext);
+
+    m_caseSensitive = new QCheckBox("Case sensitive");
+    connect(m_caseSensitive, &QCheckBox::toggled,
+            this, &DialogLogQt::onCaseSensitiveToggled);
+    searchLayout->addWidget(m_caseSensitive);
+
+    m_searchStatus = new QLabel();
+    m_searchStatus->setMinimumWidth(100);
+    searchLayout->addWidget(m_searchStatus);
+
+    searchLayout->addStretch();
+
+    mainLayout->addLayout(searchLayout);
 }
 
 void DialogLogQt::subscribeToLogger()
@@ -546,4 +602,175 @@ void DialogLogQt::applyFont()
     QFont font = m_fontCombo->currentFont();
     font.setPointSize(m_fontSizeSpinner->value());
     m_logView->setFont(font);
+}
+
+void DialogLogQt::onSearchTextChanged(const QString& text)
+{
+    m_searchText = text;
+    m_currentMatchIndex = 0;
+
+    if (text.isEmpty()) {
+        clearSearchHighlights();
+        m_btnFindNext->setEnabled(false);
+        m_btnFindPrev->setEnabled(false);
+        m_searchStatus->clear();
+        m_totalMatches = 0;
+        return;
+    }
+
+    highlightAllMatches();
+    updateSearchStatus();
+
+    bool hasMatches = m_totalMatches > 0;
+    m_btnFindNext->setEnabled(hasMatches);
+    m_btnFindPrev->setEnabled(hasMatches);
+
+    // Move cursor to first match if any
+    if (hasMatches) {
+        m_logView->moveCursor(QTextCursor::Start);
+        findMatch(true);
+    }
+}
+
+void DialogLogQt::onFindNext()
+{
+    findMatch(true);
+}
+
+void DialogLogQt::onFindPrevious()
+{
+    findMatch(false);
+}
+
+void DialogLogQt::onCaseSensitiveToggled(bool checked)
+{
+    m_searchCaseSensitive = checked;
+    if (!m_searchText.isEmpty()) {
+        onSearchTextChanged(m_searchText);
+    }
+}
+
+void DialogLogQt::highlightAllMatches()
+{
+    clearSearchHighlights();
+
+    if (m_searchText.isEmpty()) {
+        m_totalMatches = 0;
+        return;
+    }
+
+    QTextDocument* document = m_logView->document();
+    QTextCursor cursor(document);
+
+    // Define highlight format
+    QTextCharFormat highlightFormat;
+    highlightFormat.setBackground(QColor(255, 255, 0)); // Yellow background
+    highlightFormat.setForeground(QColor(0, 0, 0));     // Black text
+
+    QTextDocument::FindFlags flags;
+    if (m_searchCaseSensitive) {
+        flags |= QTextDocument::FindCaseSensitively;
+    }
+
+    m_totalMatches = 0;
+
+    // Find and highlight all matches
+    cursor = document->find(m_searchText, 0, flags);
+    while (!cursor.isNull()) {
+        cursor.mergeCharFormat(highlightFormat);
+        ++m_totalMatches;
+        cursor = document->find(m_searchText, cursor, flags);
+    }
+}
+
+void DialogLogQt::clearSearchHighlights()
+{
+    // Reset all formatting by rebuilding the log view
+    // This preserves the original HTML formatting
+    if (!m_searchText.isEmpty() || m_totalMatches > 0) {
+        rebuildLogView();
+    }
+}
+
+void DialogLogQt::updateSearchStatus()
+{
+    if (m_searchText.isEmpty()) {
+        m_searchStatus->clear();
+        return;
+    }
+
+    if (m_totalMatches == 0) {
+        m_searchStatus->setText("No matches");
+        m_searchStatus->setStyleSheet("QLabel { color: #FF6B6B; }");
+    } else {
+        m_searchStatus->setText(QString("%1 of %2 matches")
+            .arg(m_currentMatchIndex + 1)
+            .arg(m_totalMatches));
+        m_searchStatus->setStyleSheet("");
+    }
+}
+
+int DialogLogQt::countMatches()
+{
+    if (m_searchText.isEmpty()) {
+        return 0;
+    }
+
+    QTextDocument* document = m_logView->document();
+    QTextDocument::FindFlags flags;
+    if (m_searchCaseSensitive) {
+        flags |= QTextDocument::FindCaseSensitively;
+    }
+
+    int count = 0;
+    QTextCursor cursor(document);
+    cursor = document->find(m_searchText, cursor, flags);
+    while (!cursor.isNull()) {
+        ++count;
+        cursor = document->find(m_searchText, cursor, flags);
+    }
+
+    return count;
+}
+
+void DialogLogQt::findMatch(bool forward)
+{
+    if (m_searchText.isEmpty() || m_totalMatches == 0) {
+        return;
+    }
+
+    QTextDocument::FindFlags flags;
+    if (m_searchCaseSensitive) {
+        flags |= QTextDocument::FindCaseSensitively;
+    }
+    if (!forward) {
+        flags |= QTextDocument::FindBackward;
+    }
+
+    bool found = m_logView->find(m_searchText, flags);
+
+    if (!found) {
+        // Wrap around
+        QTextCursor cursor = m_logView->textCursor();
+        if (forward) {
+            cursor.movePosition(QTextCursor::Start);
+            m_currentMatchIndex = 0;
+        } else {
+            cursor.movePosition(QTextCursor::End);
+            m_currentMatchIndex = m_totalMatches - 1;
+        }
+        m_logView->setTextCursor(cursor);
+        m_logView->find(m_searchText, flags);
+    } else {
+        // Update match index
+        if (forward) {
+            m_currentMatchIndex = (m_currentMatchIndex + 1) % m_totalMatches;
+        } else {
+            m_currentMatchIndex = (m_currentMatchIndex - 1 + m_totalMatches) % m_totalMatches;
+        }
+    }
+
+    // Ensure the match is visible
+    m_logView->ensureCursorVisible();
+    updateSearchStatus();
 }

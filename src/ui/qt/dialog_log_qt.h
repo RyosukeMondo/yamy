@@ -8,6 +8,7 @@
 #include <QHBoxLayout>
 #include <QHash>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QSpinBox>
 #include <QString>
@@ -68,6 +69,10 @@ private slots:
     void onCategoryFilterChanged(bool checked);
     void onFontFamilyChanged(const QFont& font);
     void onFontSizeChanged(int size);
+    void onSearchTextChanged(const QString& text);
+    void onFindNext();
+    void onFindPrevious();
+    void onCaseSensitiveToggled(bool checked);
 
 private:
     struct CachedLogEntry {
@@ -93,6 +98,12 @@ private:
     void saveFontSettings();
     void applyFont();
     void updatePauseIndicator();
+    void setupSearchControls(QVBoxLayout* mainLayout);
+    void highlightAllMatches();
+    void clearSearchHighlights();
+    void updateSearchStatus();
+    int countMatches();
+    void findMatch(bool forward);
 
     // Filter controls
     QComboBox* m_levelFilter;
@@ -112,11 +123,24 @@ private:
     QPushButton* m_btnClose;
     QLabel* m_pauseIndicator;
 
+    // Search controls
+    QLineEdit* m_searchEdit;
+    QPushButton* m_btnFindNext;
+    QPushButton* m_btnFindPrev;
+    QCheckBox* m_caseSensitive;
+    QLabel* m_searchStatus;
+
     // State
     bool m_paused;
     int m_entriesWhilePaused;
     yamy::logging::LogLevel m_minLevel;
     std::vector<CachedLogEntry> m_allEntries;
+
+    // Search state
+    QString m_searchText;
+    bool m_searchCaseSensitive;
+    int m_currentMatchIndex;
+    int m_totalMatches;
 
     static constexpr int MAX_LOG_ENTRIES = 10000;
 
