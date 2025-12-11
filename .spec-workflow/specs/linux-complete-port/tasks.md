@@ -1137,7 +1137,7 @@
   - _Requirements: FR-8.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with plugin architecture expertise | Task: Create plugin system foundation - Step 1: Define IPlugin interface with methods: getName, getVersion, initialize(Engine*), shutdown, Step 2: Create PluginManager singleton loading plugins from ~/.local/share/yamy/plugins/, Step 3: Use dlopen to load .so files, dlsym to resolve plugin_create factory function, Step 4: Call initialize on each plugin passing Engine pointer, Step 5: Store loaded plugins, call shutdown on program exit, Step 6: Handle plugin errors gracefully (log and continue) | Restrictions: Isolate plugin errors (don't crash main app), Validate plugin interface version, Support unloading plugins, Use RTLD_LOCAL to avoid symbol conflicts, Document plugin API, Provide example plugin | Success: PluginManager loads .so files from plugins directory, Factory function resolved and called, Plugins initialized with Engine access, Plugins can register callbacks, shutdown called on exit, Errors logged not crashed, API versioning works, Example plugin functional | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.17 Create example plugin
+- [x] 6.17 Create example plugin
   - File: examples/plugins/example_plugin.cpp
   - Demonstrate plugin interface usage
   - Show registration with notification system
