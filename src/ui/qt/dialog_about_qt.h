@@ -5,15 +5,18 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QTabWidget>
+#include <QTextBrowser>
 
 /**
  * @brief About dialog
  *
  * Displays:
  * - Application name and version
- * - Build information
- * - License information
- * - Credits
+ * - Build information (commit hash, date, compiler, Qt version)
+ * - License information (full text in scrollable area)
+ * - Contributors list
+ * - Links to project resources
  */
 class DialogAboutQt : public QDialog {
     Q_OBJECT
@@ -36,6 +39,11 @@ private slots:
      */
     void onClose();
 
+    /**
+     * @brief Handle link clicks
+     */
+    void onLinkClicked(const QUrl& url);
+
 private:
     /**
      * @brief Setup UI components
@@ -43,21 +51,46 @@ private:
     void setupUI();
 
     /**
+     * @brief Create the About tab content
+     */
+    QWidget* createAboutTab();
+
+    /**
+     * @brief Create the License tab content
+     */
+    QWidget* createLicenseTab();
+
+    /**
+     * @brief Create the Contributors tab content
+     */
+    QWidget* createContributorsTab();
+
+    /**
      * @brief Get version string
      */
     QString getVersionString() const;
 
     /**
-     * @brief Get build info string
+     * @brief Get detailed build info string
      */
     QString getBuildInfo() const;
 
+    /**
+     * @brief Get platform info string
+     */
+    QString getPlatformInfo() const;
+
+    /**
+     * @brief Get license text
+     */
+    QString getLicenseText() const;
+
+    /**
+     * @brief Get contributors HTML
+     */
+    QString getContributorsHtml() const;
+
     // UI Components
-    QLabel* m_labelIcon;
-    QLabel* m_labelTitle;
-    QLabel* m_labelVersion;
-    QLabel* m_labelBuild;
-    QLabel* m_labelDescription;
-    QLabel* m_labelLicense;
+    QTabWidget* m_tabWidget;
     QPushButton* m_btnClose;
 };
