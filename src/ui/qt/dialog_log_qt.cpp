@@ -68,6 +68,8 @@ void DialogLogQt::setupUI()
 
     // Stats panel
     m_statsPanel = new yamy::ui::LogStatsPanel(this);
+    connect(m_statsPanel, &yamy::ui::LogStatsPanel::clearStatsRequested,
+            this, &DialogLogQt::clearLog);
     mainLayout->addWidget(m_statsPanel);
 
     // Log view
@@ -266,12 +268,24 @@ void DialogLogQt::processLogEntry(const CachedLogEntry& entry)
 {
     m_allEntries.push_back(entry);
 
-    // Update stats
-    if (entry.level == yamy::logging::LogLevel::Error) {
-        m_statsPanel->incrementError();
-    } else if (entry.level == yamy::logging::LogLevel::Warning) {
-        m_statsPanel->incrementWarning();
+    // Update stats by level
+    switch (entry.level) {
+        case yamy::logging::LogLevel::Trace:
+            m_statsPanel->incrementTrace();
+            break;
+        case yamy::logging::LogLevel::Info:
+            m_statsPanel->incrementInfo();
+            break;
+        case yamy::logging::LogLevel::Warning:
+            m_statsPanel->incrementWarning();
+            break;
+        case yamy::logging::LogLevel::Error:
+            m_statsPanel->incrementError();
+            break;
     }
+
+    // Update stats by category
+    m_statsPanel->incrementCategory(entry.category);
 
     // Trim buffer if needed (removes 10% when limit reached)
     trimBufferIfNeeded();
