@@ -224,7 +224,7 @@ Verify all requirements met, no regressions, ready for release
 
 ---
 
-- [ ] 6.1 Run full integration test suite on all platforms
+- [x] 6.1 Run full integration test suite on all platforms
   - Command: `xvfb-run -a ./build/bin/yamy_regression_test`
   - Execute on Ubuntu, Fedora, Arch after all fixes applied
   - Verify zero test failures and no memory leaks
