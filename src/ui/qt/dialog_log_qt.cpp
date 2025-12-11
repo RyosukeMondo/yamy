@@ -1,6 +1,7 @@
 #include "dialog_log_qt.h"
 #include "core/logging/logger.h"
 #include "log_stats_panel.h"
+#include <algorithm>
 #include <QCheckBox>
 #include <QDateTime>
 #include <QFile>
@@ -23,6 +24,7 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     , m_categoryGroup(nullptr)
     , m_fontCombo(nullptr)
     , m_fontSizeSpinner(nullptr)
+    , m_bufferLimitSpinner(nullptr)
     , m_statsPanel(nullptr)
     , m_logView(nullptr)
     , m_btnClear(nullptr)
@@ -41,12 +43,14 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     , m_searchCaseSensitive(false)
     , m_currentMatchIndex(0)
     , m_totalMatches(0)
+    , m_maxBufferSize(DEFAULT_MAX_BUFFER_SIZE)
 {
     setWindowTitle("YAMY Log Viewer");
     setMinimumSize(800, 600);
 
     setupUI();
     loadFontSettings();
+    loadBufferSettings();
     subscribeToLogger();
 }
 
@@ -171,6 +175,21 @@ void DialogLogQt::setupFontControls(QHBoxLayout* filterLayout)
     connect(m_fontSizeSpinner, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &DialogLogQt::onFontSizeChanged);
     filterLayout->addWidget(m_fontSizeSpinner);
+
+    filterLayout->addSpacing(20);
+
+    auto* bufferLabel = new QLabel("Buffer:");
+    filterLayout->addWidget(bufferLabel);
+
+    m_bufferLimitSpinner = new QSpinBox();
+    m_bufferLimitSpinner->setRange(MIN_BUFFER_SIZE, MAX_BUFFER_SIZE);
+    m_bufferLimitSpinner->setValue(DEFAULT_MAX_BUFFER_SIZE);
+    m_bufferLimitSpinner->setSingleStep(1000);
+    m_bufferLimitSpinner->setSuffix(" lines");
+    m_bufferLimitSpinner->setToolTip("Maximum number of log entries to keep in memory");
+    connect(m_bufferLimitSpinner, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &DialogLogQt::onBufferLimitChanged);
+    filterLayout->addWidget(m_bufferLimitSpinner);
 }
 
 void DialogLogQt::setupSearchControls(QVBoxLayout* mainLayout)
@@ -245,12 +264,6 @@ void DialogLogQt::onLogEntry(const yamy::logging::LogEntry& entry)
 
 void DialogLogQt::processLogEntry(const CachedLogEntry& entry)
 {
-    // Limit buffer size
-    if (m_allEntries.size() >= static_cast<size_t>(MAX_LOG_ENTRIES)) {
-        m_allEntries.erase(m_allEntries.begin(),
-                          m_allEntries.begin() + MAX_LOG_ENTRIES / 10);
-    }
-
     m_allEntries.push_back(entry);
 
     // Update stats
@@ -259,7 +272,12 @@ void DialogLogQt::processLogEntry(const CachedLogEntry& entry)
     } else if (entry.level == yamy::logging::LogLevel::Warning) {
         m_statsPanel->incrementWarning();
     }
-    m_statsPanel->setTotalLines(static_cast<int>(m_allEntries.size()));
+
+    // Trim buffer if needed (removes 10% when limit reached)
+    trimBufferIfNeeded();
+
+    // Update buffer usage display
+    updateBufferUsageDisplay();
 
     // Display if passes filter
     if (shouldDisplay(m_allEntries.back())) {
@@ -432,6 +450,7 @@ void DialogLogQt::clearLog()
     m_allEntries.clear();
     m_statsPanel->reset();
     m_entriesWhilePaused = 0;
+    updateBufferUsageDisplay();
     if (m_paused) {
         updatePauseIndicator();
     }
@@ -823,4 +842,69 @@ void DialogLogQt::findMatch(bool forward)
     // Ensure the match is visible
     m_logView->ensureCursorVisible();
     updateSearchStatus();
+}
+
+void DialogLogQt::loadBufferSettings()
+{
+    QSettings settings("YAMY", "YAMY");
+    int savedLimit = settings.value("logviewer/bufferLimit", DEFAULT_MAX_BUFFER_SIZE).toInt();
+
+    // Validate the saved limit
+    m_maxBufferSize = qBound(MIN_BUFFER_SIZE, savedLimit, MAX_BUFFER_SIZE);
+
+    // Update spinner without triggering save
+    m_bufferLimitSpinner->blockSignals(true);
+    m_bufferLimitSpinner->setValue(m_maxBufferSize);
+    m_bufferLimitSpinner->blockSignals(false);
+
+    // Update stats panel with initial buffer usage
+    updateBufferUsageDisplay();
+}
+
+void DialogLogQt::saveBufferSettings()
+{
+    QSettings settings("YAMY", "YAMY");
+    settings.setValue("logviewer/bufferLimit", m_maxBufferSize);
+    settings.sync();
+}
+
+void DialogLogQt::onBufferLimitChanged(int value)
+{
+    m_maxBufferSize = value;
+    saveBufferSettings();
+
+    // If current buffer exceeds new limit, trim immediately
+    trimBufferIfNeeded();
+    updateBufferUsageDisplay();
+
+    // Rebuild view if entries were trimmed
+    if (!m_allEntries.empty()) {
+        rebuildLogView();
+    }
+}
+
+void DialogLogQt::trimBufferIfNeeded()
+{
+    if (m_allEntries.size() > static_cast<size_t>(m_maxBufferSize)) {
+        // Remove oldest 10% when limit is exceeded to avoid frequent trimming
+        size_t trimCount = static_cast<size_t>(m_maxBufferSize) / 10;
+        if (trimCount < 1) {
+            trimCount = 1;
+        }
+
+        // Calculate how many entries to remove to get back under limit
+        size_t excess = m_allEntries.size() - static_cast<size_t>(m_maxBufferSize);
+        size_t toRemove = std::max(trimCount, excess);
+
+        m_allEntries.erase(m_allEntries.begin(),
+                          m_allEntries.begin() + static_cast<std::ptrdiff_t>(toRemove));
+
+        // Rebuild the view after trimming (only if not triggered from rebuildLogView)
+        // Note: rebuildLogView will be called separately when needed
+    }
+}
+
+void DialogLogQt::updateBufferUsageDisplay()
+{
+    m_statsPanel->setBufferUsage(static_cast<int>(m_allEntries.size()), m_maxBufferSize);
 }

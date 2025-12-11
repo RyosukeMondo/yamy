@@ -20,6 +20,7 @@ public slots:
     void incrementError();
     void incrementWarning();
     void setTotalLines(int count);
+    void setBufferUsage(int current, int max);
     void reset();
 
 private:
@@ -29,10 +30,11 @@ private:
     int m_errorCount;
     int m_warningCount;
     int m_totalLines;
+    int m_bufferMax;
 
     QLabel* m_errorCountLabel;
     QLabel* m_warningCountLabel;
-    QLabel* m_totalLinesLabel;
+    QLabel* m_bufferUsageLabel;
 };
 }
 }

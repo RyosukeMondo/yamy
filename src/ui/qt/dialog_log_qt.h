@@ -73,6 +73,7 @@ private slots:
     void onFindNext();
     void onFindPrevious();
     void onCaseSensitiveToggled(bool checked);
+    void onBufferLimitChanged(int value);
 
 private:
     struct CachedLogEntry {
@@ -97,6 +98,10 @@ private:
     void loadFontSettings();
     void saveFontSettings();
     void applyFont();
+    void loadBufferSettings();
+    void saveBufferSettings();
+    void trimBufferIfNeeded();
+    void updateBufferUsageDisplay();
     void updatePauseIndicator();
     void setupSearchControls(QVBoxLayout* mainLayout);
     void highlightAllMatches();
@@ -113,6 +118,9 @@ private:
     // Font controls
     QFontComboBox* m_fontCombo;
     QSpinBox* m_fontSizeSpinner;
+
+    // Buffer limit control
+    QSpinBox* m_bufferLimitSpinner;
 
     // UI Components
     yamy::ui::LogStatsPanel* m_statsPanel;
@@ -142,7 +150,11 @@ private:
     int m_currentMatchIndex;
     int m_totalMatches;
 
-    static constexpr int MAX_LOG_ENTRIES = 10000;
+    // Buffer limit
+    int m_maxBufferSize;
+    static constexpr int DEFAULT_MAX_BUFFER_SIZE = 10000;
+    static constexpr int MIN_BUFFER_SIZE = 1000;
+    static constexpr int MAX_BUFFER_SIZE = 100000;
 
     // Standard categories
     static constexpr const char* CATEGORIES[] = {
