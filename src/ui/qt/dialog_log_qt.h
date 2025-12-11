@@ -7,6 +7,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHash>
+#include <QLabel>
 #include <QPushButton>
 #include <QSpinBox>
 #include <QString>
@@ -60,9 +61,9 @@ public slots:
 
 private slots:
     void onClear();
+    void onPauseResume();
     void onSave();
     void onClose();
-    void onAutoScrollToggled(bool checked);
     void onLevelFilterChanged(int index);
     void onCategoryFilterChanged(bool checked);
     void onFontFamilyChanged(const QFont& font);
@@ -91,6 +92,7 @@ private:
     void loadFontSettings();
     void saveFontSettings();
     void applyFont();
+    void updatePauseIndicator();
 
     // Filter controls
     QComboBox* m_levelFilter;
@@ -105,12 +107,14 @@ private:
     yamy::ui::LogStatsPanel* m_statsPanel;
     QTextEdit* m_logView;
     QPushButton* m_btnClear;
+    QPushButton* m_btnPause;
     QPushButton* m_btnSave;
     QPushButton* m_btnClose;
-    QCheckBox* m_chkAutoScroll;
+    QLabel* m_pauseIndicator;
 
     // State
-    bool m_autoScroll;
+    bool m_paused;
+    int m_entriesWhilePaused;
     yamy::logging::LogLevel m_minLevel;
     std::vector<CachedLogEntry> m_allEntries;
 

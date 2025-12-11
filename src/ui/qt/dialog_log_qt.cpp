@@ -22,10 +22,12 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     , m_statsPanel(nullptr)
     , m_logView(nullptr)
     , m_btnClear(nullptr)
+    , m_btnPause(nullptr)
     , m_btnSave(nullptr)
     , m_btnClose(nullptr)
-    , m_chkAutoScroll(nullptr)
-    , m_autoScroll(true)
+    , m_pauseIndicator(nullptr)
+    , m_paused(false)
+    , m_entriesWhilePaused(0)
     , m_minLevel(yamy::logging::LogLevel::Trace)
 {
     setWindowTitle("YAMY Log Viewer");
@@ -59,11 +61,14 @@ void DialogLogQt::setupUI()
     // Bottom controls
     auto* controlLayout = new QHBoxLayout();
 
-    m_chkAutoScroll = new QCheckBox("Auto-scroll");
-    m_chkAutoScroll->setChecked(m_autoScroll);
-    connect(m_chkAutoScroll, &QCheckBox::toggled,
-            this, &DialogLogQt::onAutoScrollToggled);
-    controlLayout->addWidget(m_chkAutoScroll);
+    m_btnPause = new QPushButton("Pause");
+    connect(m_btnPause, &QPushButton::clicked, this, &DialogLogQt::onPauseResume);
+    controlLayout->addWidget(m_btnPause);
+
+    m_pauseIndicator = new QLabel();
+    m_pauseIndicator->setStyleSheet("QLabel { color: #FFA500; font-weight: bold; }");
+    m_pauseIndicator->hide();
+    controlLayout->addWidget(m_pauseIndicator);
 
     controlLayout->addStretch();
 
@@ -202,8 +207,12 @@ void DialogLogQt::processLogEntry(const CachedLogEntry& entry)
     // Display if passes filter
     if (shouldDisplay(m_allEntries.back())) {
         m_logView->append(m_allEntries.back().htmlText);
-        if (m_autoScroll) {
+        if (!m_paused) {
             scrollToBottom();
+        } else {
+            // Update paused indicator with entry count
+            ++m_entriesWhilePaused;
+            updatePauseIndicator();
         }
     }
 }
@@ -332,7 +341,7 @@ void DialogLogQt::rebuildLogView()
         }
     }
 
-    if (m_autoScroll) {
+    if (!m_paused) {
         scrollToBottom();
     }
 }
@@ -365,12 +374,25 @@ void DialogLogQt::clearLog()
     m_logView->clear();
     m_allEntries.clear();
     m_statsPanel->reset();
+    m_entriesWhilePaused = 0;
+    if (m_paused) {
+        updatePauseIndicator();
+    }
 }
 
 void DialogLogQt::setAutoScroll(bool enabled)
 {
-    m_autoScroll = enabled;
-    m_chkAutoScroll->setChecked(enabled);
+    m_paused = !enabled;
+    if (m_paused) {
+        m_btnPause->setText("Resume");
+        m_entriesWhilePaused = 0;
+        updatePauseIndicator();
+        m_pauseIndicator->show();
+    } else {
+        m_btnPause->setText("Pause");
+        m_pauseIndicator->hide();
+        scrollToBottom();
+    }
 }
 
 void DialogLogQt::onClear()
@@ -428,11 +450,29 @@ void DialogLogQt::onClose()
     close();
 }
 
-void DialogLogQt::onAutoScrollToggled(bool checked)
+void DialogLogQt::onPauseResume()
 {
-    m_autoScroll = checked;
-    if (m_autoScroll) {
+    m_paused = !m_paused;
+
+    if (m_paused) {
+        m_btnPause->setText("Resume");
+        m_entriesWhilePaused = 0;
+        updatePauseIndicator();
+        m_pauseIndicator->show();
+    } else {
+        m_btnPause->setText("Pause");
+        m_pauseIndicator->hide();
+        m_entriesWhilePaused = 0;
         scrollToBottom();
+    }
+}
+
+void DialogLogQt::updatePauseIndicator()
+{
+    if (m_entriesWhilePaused > 0) {
+        m_pauseIndicator->setText(QString("(Paused - %1 new entries)").arg(m_entriesWhilePaused));
+    } else {
+        m_pauseIndicator->setText("(Paused)");
     }
 }
 
