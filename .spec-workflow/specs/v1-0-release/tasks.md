@@ -98,7 +98,7 @@ Measure code coverage, enforce 80% threshold, integrate with CI
 
 ---
 
-- [ ] 3.1 Add CMake coverage target with lcov/gcov
+- [x] 3.1 Add CMake coverage target with lcov/gcov
   - File: CMakeLists.txt
   - Add `ENABLE_COVERAGE` option with `--coverage` compiler/linker flags
   - Create `coverage` custom target that runs tests and generates HTML report
