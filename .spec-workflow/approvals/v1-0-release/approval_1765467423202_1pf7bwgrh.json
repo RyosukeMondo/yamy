@@ -1,0 +1,12 @@
+{
+  "id": "approval_1765467423202_1pf7bwgrh",
+  "title": "Tasks Document - YAMY v1.0 Release (17 tasks)",
+  "filePath": ".spec-workflow/specs/v1-0-release/tasks.md",
+  "type": "document",
+  "status": "approved",
+  "createdAt": "2025-12-11T15:37:03.202Z",
+  "category": "spec",
+  "categoryName": "v1-0-release",
+  "response": "ダッシュボードから承認",
+  "respondedAt": "2025-12-11T15:39:03.003Z"
+}
