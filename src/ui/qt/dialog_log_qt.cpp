@@ -161,7 +161,8 @@ void DialogLogQt::subscribeToLogger()
         CachedLogEntry cached;
         cached.level = entry.level;
         cached.category = QString::fromStdString(entry.category);
-        cached.formattedText = formatLogEntry(entry);
+        cached.plainText = formatLogEntry(entry);
+        cached.htmlText = formatLogEntryHtml(entry);
 
         // Use QMetaObject::invokeMethod for thread-safe UI update
         QMetaObject::invokeMethod(this, [this, cached = std::move(cached)]() {
@@ -175,7 +176,8 @@ void DialogLogQt::onLogEntry(const yamy::logging::LogEntry& entry)
     CachedLogEntry cached;
     cached.level = entry.level;
     cached.category = QString::fromStdString(entry.category);
-    cached.formattedText = formatLogEntry(entry);
+    cached.plainText = formatLogEntry(entry);
+    cached.htmlText = formatLogEntryHtml(entry);
     processLogEntry(cached);
 }
 
@@ -199,7 +201,7 @@ void DialogLogQt::processLogEntry(const CachedLogEntry& entry)
 
     // Display if passes filter
     if (shouldDisplay(m_allEntries.back())) {
-        m_logView->append(m_allEntries.back().formattedText);
+        m_logView->append(m_allEntries.back().htmlText);
         if (m_autoScroll) {
             scrollToBottom();
         }
@@ -229,6 +231,80 @@ QString DialogLogQt::formatLogEntry(const yamy::logging::LogEntry& entry) const
         .arg(QString::fromStdString(entry.message));
 }
 
+QString DialogLogQt::escapeHtml(const QString& text)
+{
+    QString escaped = text;
+    escaped.replace('&', "&amp;");
+    escaped.replace('<', "&lt;");
+    escaped.replace('>', "&gt;");
+    return escaped;
+}
+
+QString DialogLogQt::highlightKeywords(const QString& text)
+{
+    QString result = text;
+    // Highlight DOWN and UP in bold
+    result.replace(" DOWN ", " <b>DOWN</b> ");
+    result.replace(" UP ", " <b>UP</b> ");
+    // Highlight HANDLED in green
+    result.replace("HANDLED", "<span style='color:#228B22;'>HANDLED</span>");
+    // PASSED remains default (no change needed)
+    return result;
+}
+
+QString DialogLogQt::formatLogEntryHtml(const yamy::logging::LogEntry& entry) const
+{
+    QString levelStr;
+    QString levelColor;
+    switch (entry.level) {
+        case yamy::logging::LogLevel::Trace:
+            levelStr = "TRACE";
+            levelColor = "#808080";  // Gray
+            break;
+        case yamy::logging::LogLevel::Info:
+            levelStr = "INFO";
+            levelColor.clear();  // Default (no color)
+            break;
+        case yamy::logging::LogLevel::Warning:
+            levelStr = "WARN";
+            levelColor = "#FFA500";  // Orange
+            break;
+        case yamy::logging::LogLevel::Error:
+            levelStr = "ERROR";
+            levelColor = "#FF0000";  // Red
+            break;
+    }
+
+    auto timestamp = std::chrono::system_clock::to_time_t(entry.timestamp);
+    std::tm tm{};
+    localtime_r(&timestamp, &tm);
+    char timeBuf[32];
+    std::strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", &tm);
+
+    // Escape HTML characters in message
+    QString escapedMessage = escapeHtml(QString::fromStdString(entry.message));
+    QString escapedCategory = escapeHtml(QString::fromStdString(entry.category));
+
+    // Apply keyword highlighting
+    escapedMessage = highlightKeywords(escapedMessage);
+
+    // Format the log entry
+    QString formattedEntry = QString("[%1] [%2] [%3] %4")
+        .arg(timeBuf)
+        .arg(levelStr, -5)
+        .arg(escapedCategory, -8)
+        .arg(escapedMessage);
+
+    // Wrap in color span if needed
+    if (!levelColor.isEmpty()) {
+        return QString("<span style='color:%1;'>%2</span>")
+            .arg(levelColor)
+            .arg(formattedEntry);
+    }
+
+    return formattedEntry;
+}
+
 bool DialogLogQt::shouldDisplay(const CachedLogEntry& entry) const
 {
     // Check level filter
@@ -252,7 +328,7 @@ void DialogLogQt::rebuildLogView()
 
     for (const auto& entry : m_allEntries) {
         if (shouldDisplay(entry)) {
-            m_logView->append(entry.formattedText);
+            m_logView->append(entry.htmlText);
         }
     }
 

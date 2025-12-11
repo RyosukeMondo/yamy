@@ -72,7 +72,8 @@ private:
     struct CachedLogEntry {
         yamy::logging::LogLevel level;
         QString category;
-        QString formattedText;
+        QString plainText;
+        QString htmlText;
     };
 
     void setupUI();
@@ -84,6 +85,9 @@ private:
     void processLogEntry(const CachedLogEntry& entry);
     bool shouldDisplay(const CachedLogEntry& entry) const;
     QString formatLogEntry(const yamy::logging::LogEntry& entry) const;
+    QString formatLogEntryHtml(const yamy::logging::LogEntry& entry) const;
+    static QString escapeHtml(const QString& text);
+    static QString highlightKeywords(const QString& text);
     void loadFontSettings();
     void saveFontSettings();
     void applyFont();
