@@ -1057,7 +1057,7 @@
   - _Requirements: FR-7.3_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Add query commands to yamy-ctl - Step 1: Add status command sending CmdGetStatus and formatting response: "Engine: Running | Config: work.mayu | Uptime: 2h 15m | Keys: 12,453", Step 2: Add config command showing config details, Step 3: Add keymaps command listing all keymaps with window conditions, Step 4: Add metrics command showing latency and CPU stats, Step 5: Use JSON library to parse responses, handle parse errors | Restrictions: Format output human-readable, Handle JSON parse errors, Show error if command fails, Keep output concise, Support --json flag for raw JSON output | Success: status command shows formatted info, config shows config details, keymaps lists all keymaps, metrics shows performance stats, JSON parsing works, Errors handled, --json flag outputs raw JSON | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.7 Create Help menu structure
+- [x] 6.7 Create Help menu structure
   - File: src/ui/qt/main_window.cpp, src/ui/qt/help_menu.cpp
   - Add Help menu to system tray
   - Include: Documentation, Keyboard Shortcuts, Examples, Report Bug, About
