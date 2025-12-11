@@ -25,6 +25,7 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     , m_fontCombo(nullptr)
     , m_fontSizeSpinner(nullptr)
     , m_bufferLimitSpinner(nullptr)
+    , m_timestampFormatCombo(nullptr)
     , m_statsPanel(nullptr)
     , m_logView(nullptr)
     , m_btnClear(nullptr)
@@ -44,6 +45,8 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     , m_currentMatchIndex(0)
     , m_totalMatches(0)
     , m_maxBufferSize(DEFAULT_MAX_BUFFER_SIZE)
+    , m_timestampFormat(TimestampFormat::Absolute)
+    , m_dialogStartTime(std::chrono::system_clock::now())
 {
     setWindowTitle("YAMY Log Viewer");
     setMinimumSize(800, 600);
@@ -51,6 +54,7 @@ DialogLogQt::DialogLogQt(QWidget* parent)
     setupUI();
     loadFontSettings();
     loadBufferSettings();
+    loadTimestampSettings();
     subscribeToLogger();
 }
 
@@ -192,6 +196,20 @@ void DialogLogQt::setupFontControls(QHBoxLayout* filterLayout)
     connect(m_bufferLimitSpinner, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &DialogLogQt::onBufferLimitChanged);
     filterLayout->addWidget(m_bufferLimitSpinner);
+
+    filterLayout->addSpacing(20);
+
+    auto* timestampLabel = new QLabel("Time:");
+    filterLayout->addWidget(timestampLabel);
+
+    m_timestampFormatCombo = new QComboBox();
+    m_timestampFormatCombo->addItem("Absolute", static_cast<int>(TimestampFormat::Absolute));
+    m_timestampFormatCombo->addItem("Relative", static_cast<int>(TimestampFormat::Relative));
+    m_timestampFormatCombo->addItem("None", static_cast<int>(TimestampFormat::None));
+    m_timestampFormatCombo->setToolTip("Timestamp format: Absolute (HH:MM:SS.mmm), Relative (+MM:SS.mmm), None");
+    connect(m_timestampFormatCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &DialogLogQt::onTimestampFormatChanged);
+    filterLayout->addWidget(m_timestampFormatCombo);
 }
 
 void DialogLogQt::setupSearchControls(QVBoxLayout* mainLayout)
@@ -244,6 +262,8 @@ void DialogLogQt::subscribeToLogger()
         CachedLogEntry cached;
         cached.level = entry.level;
         cached.category = QString::fromStdString(entry.category);
+        cached.message = QString::fromStdString(entry.message);
+        cached.timestamp = entry.timestamp;
         cached.plainText = formatLogEntry(entry);
         cached.htmlText = formatLogEntryHtml(entry);
 
@@ -259,6 +279,8 @@ void DialogLogQt::onLogEntry(const yamy::logging::LogEntry& entry)
     CachedLogEntry cached;
     cached.level = entry.level;
     cached.category = QString::fromStdString(entry.category);
+    cached.message = QString::fromStdString(entry.message);
+    cached.timestamp = entry.timestamp;
     cached.plainText = formatLogEntry(entry);
     cached.htmlText = formatLogEntryHtml(entry);
     processLogEntry(cached);
@@ -316,17 +338,23 @@ QString DialogLogQt::formatLogEntry(const yamy::logging::LogEntry& entry) const
         case yamy::logging::LogLevel::Error:   levelStr = "ERROR"; break;
     }
 
-    auto timestamp = std::chrono::system_clock::to_time_t(entry.timestamp);
-    std::tm tm{};
-    localtime_r(&timestamp, &tm);
-    char timeBuf[32];
-    std::strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", &tm);
+    QString timestampStr = formatTimestamp(entry.timestamp);
+    QString result;
 
-    return QString("[%1] [%2] [%3] %4")
-        .arg(timeBuf)
-        .arg(levelStr, -5)
-        .arg(QString::fromStdString(entry.category), -8)
-        .arg(QString::fromStdString(entry.message));
+    if (!timestampStr.isEmpty()) {
+        result = QString("%1 [%2] [%3] %4")
+            .arg(timestampStr)
+            .arg(levelStr, -5)
+            .arg(QString::fromStdString(entry.category), -8)
+            .arg(QString::fromStdString(entry.message));
+    } else {
+        result = QString("[%1] [%2] %3")
+            .arg(levelStr, -5)
+            .arg(QString::fromStdString(entry.category), -8)
+            .arg(QString::fromStdString(entry.message));
+    }
+
+    return result;
 }
 
 QString DialogLogQt::escapeHtml(const QString& text)
@@ -373,12 +401,6 @@ QString DialogLogQt::formatLogEntryHtml(const yamy::logging::LogEntry& entry) co
             break;
     }
 
-    auto timestamp = std::chrono::system_clock::to_time_t(entry.timestamp);
-    std::tm tm{};
-    localtime_r(&timestamp, &tm);
-    char timeBuf[32];
-    std::strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", &tm);
-
     // Escape HTML characters in message
     QString escapedMessage = escapeHtml(QString::fromStdString(entry.message));
     QString escapedCategory = escapeHtml(QString::fromStdString(entry.category));
@@ -386,12 +408,22 @@ QString DialogLogQt::formatLogEntryHtml(const yamy::logging::LogEntry& entry) co
     // Apply keyword highlighting
     escapedMessage = highlightKeywords(escapedMessage);
 
-    // Format the log entry
-    QString formattedEntry = QString("[%1] [%2] [%3] %4")
-        .arg(timeBuf)
-        .arg(levelStr, -5)
-        .arg(escapedCategory, -8)
-        .arg(escapedMessage);
+    // Format the log entry with timestamp
+    QString timestampHtml = formatTimestampHtml(entry.timestamp);
+    QString formattedEntry;
+
+    if (!timestampHtml.isEmpty()) {
+        formattedEntry = QString("%1[%2] [%3] %4")
+            .arg(timestampHtml)
+            .arg(levelStr, -5)
+            .arg(escapedCategory, -8)
+            .arg(escapedMessage);
+    } else {
+        formattedEntry = QString("[%1] [%2] %3")
+            .arg(levelStr, -5)
+            .arg(escapedCategory, -8)
+            .arg(escapedMessage);
+    }
 
     // Wrap in color span if needed
     if (!levelColor.isEmpty()) {
@@ -426,7 +458,55 @@ void DialogLogQt::rebuildLogView()
 
     for (const auto& entry : m_allEntries) {
         if (shouldDisplay(entry)) {
-            m_logView->append(entry.htmlText);
+            // Regenerate HTML with current timestamp format
+            QString levelStr;
+            QString levelColor;
+            switch (entry.level) {
+                case yamy::logging::LogLevel::Trace:
+                    levelStr = "TRACE";
+                    levelColor = "#808080";
+                    break;
+                case yamy::logging::LogLevel::Info:
+                    levelStr = "INFO";
+                    levelColor.clear();
+                    break;
+                case yamy::logging::LogLevel::Warning:
+                    levelStr = "WARN";
+                    levelColor = "#FFA500";
+                    break;
+                case yamy::logging::LogLevel::Error:
+                    levelStr = "ERROR";
+                    levelColor = "#FF0000";
+                    break;
+            }
+
+            QString escapedCategory = escapeHtml(entry.category);
+            QString escapedMessage = escapeHtml(entry.message);
+            escapedMessage = highlightKeywords(escapedMessage);
+
+            QString timestampHtml = formatTimestampHtml(entry.timestamp);
+            QString formattedEntry;
+
+            if (!timestampHtml.isEmpty()) {
+                formattedEntry = QString("%1[%2] [%3] %4")
+                    .arg(timestampHtml)
+                    .arg(levelStr, -5)
+                    .arg(escapedCategory, -8)
+                    .arg(escapedMessage);
+            } else {
+                formattedEntry = QString("[%1] [%2] %3")
+                    .arg(levelStr, -5)
+                    .arg(escapedCategory, -8)
+                    .arg(escapedMessage);
+            }
+
+            if (!levelColor.isEmpty()) {
+                m_logView->append(QString("<span style='color:%1;'>%2</span>")
+                    .arg(levelColor)
+                    .arg(formattedEntry));
+            } else {
+                m_logView->append(formattedEntry);
+            }
         }
     }
 
@@ -921,4 +1001,90 @@ void DialogLogQt::trimBufferIfNeeded()
 void DialogLogQt::updateBufferUsageDisplay()
 {
     m_statsPanel->setBufferUsage(static_cast<int>(m_allEntries.size()), m_maxBufferSize);
+}
+
+void DialogLogQt::loadTimestampSettings()
+{
+    QSettings settings("YAMY", "YAMY");
+    int savedFormat = settings.value("logviewer/timestampFormat",
+                                     static_cast<int>(TimestampFormat::Absolute)).toInt();
+
+    // Validate the saved format
+    if (savedFormat < 0 || savedFormat > 2) {
+        savedFormat = static_cast<int>(TimestampFormat::Absolute);
+    }
+
+    m_timestampFormat = static_cast<TimestampFormat>(savedFormat);
+
+    // Update combobox without triggering signal
+    m_timestampFormatCombo->blockSignals(true);
+    m_timestampFormatCombo->setCurrentIndex(savedFormat);
+    m_timestampFormatCombo->blockSignals(false);
+}
+
+void DialogLogQt::saveTimestampSettings()
+{
+    QSettings settings("YAMY", "YAMY");
+    settings.setValue("logviewer/timestampFormat", static_cast<int>(m_timestampFormat));
+    settings.sync();
+}
+
+void DialogLogQt::onTimestampFormatChanged(int index)
+{
+    m_timestampFormat = static_cast<TimestampFormat>(
+        m_timestampFormatCombo->itemData(index).toInt());
+    saveTimestampSettings();
+    rebuildLogView();
+}
+
+QString DialogLogQt::formatTimestamp(const std::chrono::system_clock::time_point& timestamp) const
+{
+    switch (m_timestampFormat) {
+        case TimestampFormat::Absolute: {
+            auto time_t_val = std::chrono::system_clock::to_time_t(timestamp);
+            std::tm tm{};
+            localtime_r(&time_t_val, &tm);
+
+            // Get milliseconds
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                timestamp.time_since_epoch()) % 1000;
+
+            char timeBuf[32];
+            std::strftime(timeBuf, sizeof(timeBuf), "%H:%M:%S", &tm);
+            return QString("[%1.%2]")
+                .arg(timeBuf)
+                .arg(ms.count(), 3, 10, QChar('0'));
+        }
+        case TimestampFormat::Relative: {
+            auto duration = timestamp - m_dialogStartTime;
+            auto totalMs = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+            // Handle negative durations (entries from before dialog opened)
+            if (totalMs < 0) {
+                totalMs = 0;
+            }
+
+            auto minutes = totalMs / 60000;
+            auto seconds = (totalMs % 60000) / 1000;
+            auto ms = totalMs % 1000;
+
+            return QString("[+%1:%2.%3]")
+                .arg(minutes, 2, 10, QChar('0'))
+                .arg(seconds, 2, 10, QChar('0'))
+                .arg(ms, 3, 10, QChar('0'));
+        }
+        case TimestampFormat::None:
+            return QString();
+    }
+    return QString();
+}
+
+QString DialogLogQt::formatTimestampHtml(const std::chrono::system_clock::time_point& timestamp) const
+{
+    QString ts = formatTimestamp(timestamp);
+    if (ts.isEmpty()) {
+        return QString();
+    }
+    // Wrap timestamp in a span with gray color for readability
+    return QString("<span style='color:#666666;'>%1</span> ").arg(ts);
 }

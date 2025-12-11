@@ -15,9 +15,19 @@
 #include <QTextEdit>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <chrono>
 #include <vector>
 
 #include "core/logging/log_entry.h"
+
+/**
+ * @brief Timestamp display format options for log entries
+ */
+enum class TimestampFormat {
+    Absolute,  ///< Show absolute time: HH:MM:SS.mmm
+    Relative,  ///< Show time relative to dialog start: +MM:SS.mmm
+    None       ///< Hide timestamps
+};
 
 namespace yamy {
 namespace ui {
@@ -74,13 +84,16 @@ private slots:
     void onFindPrevious();
     void onCaseSensitiveToggled(bool checked);
     void onBufferLimitChanged(int value);
+    void onTimestampFormatChanged(int index);
 
 private:
     struct CachedLogEntry {
         yamy::logging::LogLevel level;
         QString category;
+        QString message;  ///< Original message text
         QString plainText;
         QString htmlText;
+        std::chrono::system_clock::time_point timestamp;  ///< Original timestamp for reformatting
     };
 
     void setupUI();
@@ -104,6 +117,10 @@ private:
     void updateBufferUsageDisplay();
     void updatePauseIndicator();
     void setupSearchControls(QVBoxLayout* mainLayout);
+    void loadTimestampSettings();
+    void saveTimestampSettings();
+    QString formatTimestamp(const std::chrono::system_clock::time_point& timestamp) const;
+    QString formatTimestampHtml(const std::chrono::system_clock::time_point& timestamp) const;
     void highlightAllMatches();
     void clearSearchHighlights();
     void updateSearchStatus();
@@ -121,6 +138,9 @@ private:
 
     // Buffer limit control
     QSpinBox* m_bufferLimitSpinner;
+
+    // Timestamp format control
+    QComboBox* m_timestampFormatCombo;
 
     // UI Components
     yamy::ui::LogStatsPanel* m_statsPanel;
@@ -155,6 +175,10 @@ private:
     static constexpr int DEFAULT_MAX_BUFFER_SIZE = 10000;
     static constexpr int MIN_BUFFER_SIZE = 1000;
     static constexpr int MAX_BUFFER_SIZE = 100000;
+
+    // Timestamp format
+    TimestampFormat m_timestampFormat;
+    std::chrono::system_clock::time_point m_dialogStartTime;
 
     // Standard categories
     static constexpr const char* CATEGORIES[] = {
