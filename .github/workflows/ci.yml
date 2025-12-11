@@ -164,6 +164,81 @@ jobs:
           echo "- Errors: ${ERRORS:-0}" >> $GITHUB_STEP_SUMMARY
         fi
 
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    # Only run on PRs and main branch pushes (not every commit to feature branches)
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++ make \
+          libx11-dev libxrandr-dev libudev-dev \
+          qtbase5-dev qttools5-dev qtx11extras5-dev \
+          xvfb lcov bc
+
+    - name: Configure CMake with coverage
+      run: |
+        cmake -B build \
+          -DBUILD_LINUX_STUB=ON \
+          -DBUILD_REGRESSION_TESTS=ON \
+          -DENABLE_COVERAGE=ON \
+          -DCMAKE_BUILD_TYPE=Debug
+
+    - name: Build
+      run: cmake --build build --parallel
+
+    - name: Run tests with coverage (Xvfb)
+      run: |
+        xvfb-run -a cmake --build build --target coverage
+      env:
+        DISPLAY: :99
+
+    - name: Extract coverage percentage
+      id: coverage
+      run: |
+        COVERAGE=$(lcov --summary build/coverage/coverage.info 2>&1 | grep 'lines' | grep -oP '[0-9.]+(?=%)' | head -1)
+        echo "coverage=${COVERAGE}" >> $GITHUB_OUTPUT
+        echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Line Coverage: ${COVERAGE}%**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Full HTML report available in artifacts." >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: build/coverage/
+        retention-days: 30
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: build/coverage/coverage.info
+        flags: unittests
+        name: yamy-coverage
+        fail_ci_if_error: false
+        verbose: true
+      continue-on-error: true  # Don't fail if Codecov is not configured
+
+    - name: Check coverage threshold
+      run: |
+        COVERAGE=${{ steps.coverage.outputs.coverage }}
+        THRESHOLD=80
+        echo "Coverage: ${COVERAGE}%, Threshold: ${THRESHOLD}%"
+        if [ $(echo "${COVERAGE} < ${THRESHOLD}" | bc -l) -eq 1 ]; then
+          echo "::warning::Coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
+          # Don't fail the build for now, just warn
+          # exit 1
+        else
+          echo "Coverage meets threshold!"
+        fi
+
   build-windows-mingw:
     name: Windows MinGW Build
     runs-on: ubuntu-latest
