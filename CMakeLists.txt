@@ -375,6 +375,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/functions/strexpr.cpp
         src/utils/stringtool.cpp
         src/utils/crash_handler.cpp
+        src/core/plugin_manager.cpp
     )
 
     # Linux platform backend sources
@@ -420,20 +421,20 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
             add_executable(yamy_stub ${STUB_SOURCES})
             target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
             target_link_libraries(yamy_stub PRIVATE
-                pthread ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
+                pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
                 yamy_qt_gui
             )
         else()
             message(WARNING "Qt5 not found - building headless version")
             add_executable(yamy_stub ${STUB_SOURCES})
             target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
-            target_link_libraries(yamy_stub PRIVATE pthread ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES})
+            target_link_libraries(yamy_stub PRIVATE pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES})
         endif()
     else()
         message(STATUS "Building without Qt5 GUI (headless mode)")
         add_executable(yamy_stub ${STUB_SOURCES})
         target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
-        target_link_libraries(yamy_stub PRIVATE pthread ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES})
+        target_link_libraries(yamy_stub PRIVATE pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES})
     endif()
 
     target_include_directories(yamy_stub PRIVATE

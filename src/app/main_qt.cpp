@@ -14,6 +14,7 @@
 #include "ui/qt/tray_icon_qt.h"
 #include "ui/qt/crash_report_dialog.h"
 #include "core/settings/session_manager.h"
+#include "core/plugin_manager.h"
 #include "platform/linux/ipc_control_server.h"
 #include "utils/crash_handler.h"
 
@@ -338,6 +339,21 @@ int main(int argc, char* argv[])
     TrayIconQt trayIcon(engine);
     trayIcon.show();
 
+    // Initialize plugin system
+    std::cout << "Initializing plugin system..." << std::endl;
+    yamy::core::PluginManager& pluginManager = yamy::core::PluginManager::instance();
+    if (pluginManager.initialize(engine)) {
+        auto loadedPlugins = pluginManager.getLoadedPlugins();
+        if (loadedPlugins.empty()) {
+            std::cout << "No plugins loaded (plugin directory: "
+                      << yamy::core::PluginManager::getPluginDirectory() << ")" << std::endl;
+        } else {
+            std::cout << "Loaded " << loadedPlugins.size() << " plugin(s)" << std::endl;
+        }
+    } else {
+        std::cerr << "Warning: Plugin system initialization failed" << std::endl;
+    }
+
     // Check for crash reports from previous session
     if (yamy::CrashReportDialog::shouldShowCrashDialog()) {
         std::vector<std::string> crashReports = yamy::CrashHandler::getCrashReports();
@@ -481,6 +497,10 @@ int main(int argc, char* argv[])
     } else {
         std::cout << "Warning: Failed to save session" << std::endl;
     }
+
+    // Shutdown plugin system
+    std::cout << "Shutting down plugin system..." << std::endl;
+    pluginManager.shutdown();
 
     // Cleanup
     std::cout << "Shutting down YAMY..." << std::endl;
