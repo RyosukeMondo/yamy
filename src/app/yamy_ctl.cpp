@@ -5,15 +5,20 @@
 //   yamy-ctl reload [--config NAME]  - Reload configuration
 //   yamy-ctl stop                    - Stop the engine
 //   yamy-ctl start                   - Start the engine
-//   yamy-ctl status                  - Get engine status
+//   yamy-ctl status [--json]         - Get engine status
+//   yamy-ctl config [--json]         - Get configuration details
+//   yamy-ctl keymaps [--json]        - List loaded keymaps
+//   yamy-ctl metrics [--json]        - Get performance metrics
 //   yamy-ctl --help                  - Show help
 //
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <cstring>
 #include <cstdlib>
 #include <cstdint>
+#include <cctype>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -43,9 +48,15 @@ enum MessageType : uint32_t {
     CmdStop = 0x2002,
     CmdStart = 0x2003,
     CmdGetStatus = 0x2004,
+    CmdGetConfig = 0x2005,
+    CmdGetKeymaps = 0x2006,
+    CmdGetMetrics = 0x2007,
     RspOk = 0x2100,
     RspError = 0x2101,
-    RspStatus = 0x2102
+    RspStatus = 0x2102,
+    RspConfig = 0x2103,
+    RspKeymaps = 0x2104,
+    RspMetrics = 0x2105
 };
 
 /// Wire protocol message header
@@ -53,6 +64,179 @@ struct MessageHeader {
     uint32_t type;
     uint32_t dataSize;
 };
+
+/// Extract a string value from a JSON object (simple parser)
+/// Assumes valid JSON format from engine
+std::string jsonGetString(const std::string& json, const std::string& key) {
+    std::string searchKey = "\"" + key + "\":";
+    size_t pos = json.find(searchKey);
+    if (pos == std::string::npos) {
+        return "";
+    }
+    pos += searchKey.length();
+
+    // Skip whitespace
+    while (pos < json.length() && (json[pos] == ' ' || json[pos] == '\t')) {
+        ++pos;
+    }
+
+    if (pos >= json.length()) {
+        return "";
+    }
+
+    // Check if it's a string value
+    if (json[pos] == '"') {
+        ++pos;
+        size_t end = json.find('"', pos);
+        if (end != std::string::npos) {
+            return json.substr(pos, end - pos);
+        }
+    }
+    return "";
+}
+
+/// Extract a numeric value from a JSON object (simple parser)
+int64_t jsonGetInt(const std::string& json, const std::string& key) {
+    std::string searchKey = "\"" + key + "\":";
+    size_t pos = json.find(searchKey);
+    if (pos == std::string::npos) {
+        return 0;
+    }
+    pos += searchKey.length();
+
+    // Skip whitespace
+    while (pos < json.length() && (json[pos] == ' ' || json[pos] == '\t')) {
+        ++pos;
+    }
+
+    if (pos >= json.length()) {
+        return 0;
+    }
+
+    // Parse number (handles negatives)
+    std::string numStr;
+    if (json[pos] == '-') {
+        numStr += json[pos++];
+    }
+    while (pos < json.length() && std::isdigit(json[pos])) {
+        numStr += json[pos++];
+    }
+
+    if (numStr.empty() || numStr == "-") {
+        return 0;
+    }
+    return std::strtoll(numStr.c_str(), nullptr, 10);
+}
+
+/// Extract a double value from a JSON object (simple parser)
+double jsonGetDouble(const std::string& json, const std::string& key) {
+    std::string searchKey = "\"" + key + "\":";
+    size_t pos = json.find(searchKey);
+    if (pos == std::string::npos) {
+        return 0.0;
+    }
+    pos += searchKey.length();
+
+    // Skip whitespace
+    while (pos < json.length() && (json[pos] == ' ' || json[pos] == '\t')) {
+        ++pos;
+    }
+
+    if (pos >= json.length()) {
+        return 0.0;
+    }
+
+    // Parse number (handles negatives and decimals)
+    std::string numStr;
+    if (json[pos] == '-') {
+        numStr += json[pos++];
+    }
+    while (pos < json.length() && (std::isdigit(json[pos]) || json[pos] == '.')) {
+        numStr += json[pos++];
+    }
+
+    if (numStr.empty() || numStr == "-") {
+        return 0.0;
+    }
+    return std::strtod(numStr.c_str(), nullptr);
+}
+
+/// Format uptime seconds into human readable string
+std::string formatUptime(int64_t seconds) {
+    if (seconds < 60) {
+        return std::to_string(seconds) + "s";
+    }
+
+    int64_t hours = seconds / 3600;
+    int64_t mins = (seconds % 3600) / 60;
+
+    if (hours > 0) {
+        return std::to_string(hours) + "h " + std::to_string(mins) + "m";
+    }
+    return std::to_string(mins) + "m";
+}
+
+/// Format nanoseconds into human readable string
+std::string formatLatency(int64_t ns) {
+    if (ns >= 1000000) {
+        return std::to_string(ns / 1000000) + "ms";
+    } else if (ns >= 1000) {
+        return std::to_string(ns / 1000) + "us";
+    }
+    return std::to_string(ns) + "ns";
+}
+
+/// Extract JSON array element from keymaps JSON
+/// Returns next object in array or empty string if done
+std::string jsonGetArrayObject(const std::string& json, const std::string& arrayKey, size_t& offset) {
+    if (offset == 0) {
+        // First call - find the array
+        std::string searchKey = "\"" + arrayKey + "\":";
+        size_t pos = json.find(searchKey);
+        if (pos == std::string::npos) {
+            return "";
+        }
+        pos += searchKey.length();
+
+        // Find opening bracket
+        pos = json.find('[', pos);
+        if (pos == std::string::npos) {
+            return "";
+        }
+        offset = pos + 1;
+    }
+
+    // Skip whitespace
+    while (offset < json.length() && (json[offset] == ' ' || json[offset] == '\t' ||
+           json[offset] == '\n' || json[offset] == '\r' || json[offset] == ',')) {
+        ++offset;
+    }
+
+    // Check for end of array
+    if (offset >= json.length() || json[offset] == ']') {
+        return "";
+    }
+
+    // Find object start
+    if (json[offset] != '{') {
+        return "";
+    }
+
+    // Find matching closing brace
+    size_t start = offset;
+    int braceCount = 1;
+    ++offset;
+    while (offset < json.length() && braceCount > 0) {
+        if (json[offset] == '{') {
+            ++braceCount;
+        } else if (json[offset] == '}') {
+            --braceCount;
+        }
+        ++offset;
+    }
+
+    return json.substr(start, offset - start);
+}
 
 /// Print usage information
 void printUsage(const char* progName) {
@@ -63,9 +247,13 @@ void printUsage(const char* progName) {
               << "  stop                    Stop the key remapping engine\n"
               << "  start                   Start the key remapping engine\n"
               << "  status                  Show engine status\n"
+              << "  config                  Show configuration details\n"
+              << "  keymaps                 List loaded keymaps\n"
+              << "  metrics                 Show performance metrics\n"
               << "\n"
               << "Options:\n"
               << "  -c, --config NAME       Specify configuration name for reload\n"
+              << "  -j, --json              Output raw JSON (for status, config, keymaps, metrics)\n"
               << "  -s, --socket PATH       Use custom socket path (default: " << DEFAULT_SOCKET_PATH << ")\n"
               << "  -t, --timeout MS        Response timeout in milliseconds (default: " << DEFAULT_TIMEOUT_MS << ")\n"
               << "  -h, --help              Show this help message\n"
@@ -78,6 +266,10 @@ void printUsage(const char* progName) {
               << "\n"
               << "Examples:\n"
               << "  " << progName << " status\n"
+              << "  " << progName << " status --json\n"
+              << "  " << progName << " config\n"
+              << "  " << progName << " keymaps\n"
+              << "  " << progName << " metrics\n"
               << "  " << progName << " reload\n"
               << "  " << progName << " reload --config work\n"
               << "  " << progName << " stop\n";
@@ -268,7 +460,8 @@ int cmdStart(int sock, int timeoutMs) {
 }
 
 /// Execute status command
-int cmdStatus(int sock, int timeoutMs) {
+/// Output format (human-readable): "Engine: running | Config: work.mayu | Uptime: 2h 15m | Keys: 12,453"
+int cmdStatus(int sock, int timeoutMs, bool rawJson) {
     if (!sendMessage(sock, MessageType::CmdGetStatus)) {
         return COMMAND_FAILED;
     }
@@ -280,14 +473,212 @@ int cmdStatus(int sock, int timeoutMs) {
     }
 
     if (respType == MessageType::RspStatus || respType == MessageType::RspOk) {
-        if (!respData.empty()) {
+        if (respData.empty()) {
+            std::cout << "Engine is running\n";
+            return SUCCESS;
+        }
+
+        if (rawJson) {
             std::cout << respData << "\n";
         } else {
-            std::cout << "Engine is running\n";
+            // Parse JSON and format nicely
+            std::string state = jsonGetString(respData, "state");
+            std::string config = jsonGetString(respData, "config");
+            int64_t uptime = jsonGetInt(respData, "uptime");
+            int64_t keyCount = jsonGetInt(respData, "key_count");
+            std::string keymap = jsonGetString(respData, "current_keymap");
+
+            // Extract just the config filename
+            size_t lastSlash = config.find_last_of('/');
+            if (lastSlash != std::string::npos) {
+                config = config.substr(lastSlash + 1);
+            }
+            if (config.empty()) {
+                config = "(none)";
+            }
+
+            // Format state with capitalized first letter
+            if (!state.empty()) {
+                state[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(state[0])));
+            }
+
+            std::cout << "Engine: " << state
+                      << " | Config: " << config
+                      << " | Uptime: " << formatUptime(uptime)
+                      << " | Keys: " << keyCount;
+
+            if (!keymap.empty()) {
+                std::cout << " | Keymap: " << keymap;
+            }
+            std::cout << "\n";
         }
         return SUCCESS;
     } else if (respType == MessageType::RspError) {
         std::cerr << "Error: " << (respData.empty() ? "Failed to get status" : respData) << "\n";
+        return COMMAND_FAILED;
+    }
+
+    std::cerr << "Error: Unexpected response from engine\n";
+    return COMMAND_FAILED;
+}
+
+/// Execute config command
+/// Shows configuration details: path, name, and when it was loaded
+int cmdConfig(int sock, int timeoutMs, bool rawJson) {
+    if (!sendMessage(sock, MessageType::CmdGetConfig)) {
+        return COMMAND_FAILED;
+    }
+
+    MessageType respType;
+    std::string respData;
+    if (!receiveResponse(sock, timeoutMs, respType, respData)) {
+        return COMMAND_FAILED;
+    }
+
+    if (respType == MessageType::RspConfig || respType == MessageType::RspOk) {
+        if (respData.empty()) {
+            std::cout << "No configuration loaded\n";
+            return SUCCESS;
+        }
+
+        if (rawJson) {
+            std::cout << respData << "\n";
+        } else {
+            // Parse JSON and format nicely
+            std::string configPath = jsonGetString(respData, "config_path");
+            std::string configName = jsonGetString(respData, "config_name");
+            std::string loadedTime = jsonGetString(respData, "loaded_time");
+
+            std::cout << "Configuration Details:\n";
+            std::cout << "  Name:   " << (configName.empty() ? "(none)" : configName) << "\n";
+            std::cout << "  Path:   " << (configPath.empty() ? "(none)" : configPath) << "\n";
+            std::cout << "  Loaded: " << (loadedTime.empty() ? "(unknown)" : loadedTime) << "\n";
+        }
+        return SUCCESS;
+    } else if (respType == MessageType::RspError) {
+        std::cerr << "Error: " << (respData.empty() ? "Failed to get config" : respData) << "\n";
+        return COMMAND_FAILED;
+    }
+
+    std::cerr << "Error: Unexpected response from engine\n";
+    return COMMAND_FAILED;
+}
+
+/// Execute keymaps command
+/// Lists all loaded keymaps with window matching conditions
+int cmdKeymaps(int sock, int timeoutMs, bool rawJson) {
+    if (!sendMessage(sock, MessageType::CmdGetKeymaps)) {
+        return COMMAND_FAILED;
+    }
+
+    MessageType respType;
+    std::string respData;
+    if (!receiveResponse(sock, timeoutMs, respType, respData)) {
+        return COMMAND_FAILED;
+    }
+
+    if (respType == MessageType::RspKeymaps || respType == MessageType::RspOk) {
+        if (respData.empty()) {
+            std::cout << "No keymaps loaded\n";
+            return SUCCESS;
+        }
+
+        if (rawJson) {
+            std::cout << respData << "\n";
+        } else {
+            std::cout << "Loaded Keymaps:\n";
+
+            size_t offset = 0;
+            int count = 0;
+            std::string obj;
+            while (!(obj = jsonGetArrayObject(respData, "keymaps", offset)).empty()) {
+                ++count;
+                std::string name = jsonGetString(obj, "name");
+                std::string windowClass = jsonGetString(obj, "window_class");
+                std::string windowTitle = jsonGetString(obj, "window_title");
+
+                std::cout << "  " << count << ". " << (name.empty() ? "(unnamed)" : name);
+
+                bool hasCondition = false;
+                if (!windowClass.empty()) {
+                    std::cout << " [class: " << windowClass;
+                    hasCondition = true;
+                }
+                if (!windowTitle.empty()) {
+                    if (hasCondition) {
+                        std::cout << ", title: " << windowTitle;
+                    } else {
+                        std::cout << " [title: " << windowTitle;
+                        hasCondition = true;
+                    }
+                }
+                if (hasCondition) {
+                    std::cout << "]";
+                }
+                std::cout << "\n";
+            }
+
+            if (count == 0) {
+                std::cout << "  (no keymaps defined)\n";
+            }
+        }
+        return SUCCESS;
+    } else if (respType == MessageType::RspError) {
+        std::cerr << "Error: " << (respData.empty() ? "Failed to get keymaps" : respData) << "\n";
+        return COMMAND_FAILED;
+    }
+
+    std::cerr << "Error: Unexpected response from engine\n";
+    return COMMAND_FAILED;
+}
+
+/// Execute metrics command
+/// Shows performance metrics: latency stats and CPU usage
+int cmdMetrics(int sock, int timeoutMs, bool rawJson) {
+    if (!sendMessage(sock, MessageType::CmdGetMetrics)) {
+        return COMMAND_FAILED;
+    }
+
+    MessageType respType;
+    std::string respData;
+    if (!receiveResponse(sock, timeoutMs, respType, respData)) {
+        return COMMAND_FAILED;
+    }
+
+    if (respType == MessageType::RspMetrics || respType == MessageType::RspOk) {
+        if (respData.empty()) {
+            std::cout << "No metrics available\n";
+            return SUCCESS;
+        }
+
+        if (rawJson) {
+            std::cout << respData << "\n";
+        } else {
+            // Parse JSON and format nicely
+            int64_t latencyAvg = jsonGetInt(respData, "latency_avg_ns");
+            int64_t latencyP99 = jsonGetInt(respData, "latency_p99_ns");
+            int64_t latencyMax = jsonGetInt(respData, "latency_max_ns");
+            double cpuPercent = jsonGetDouble(respData, "cpu_usage_percent");
+            double keysPerSec = jsonGetDouble(respData, "keys_per_second");
+
+            std::cout << "Performance Metrics:\n";
+            std::cout << "  Latency (avg):   " << formatLatency(latencyAvg) << "\n";
+            std::cout << "  Latency (p99):   " << formatLatency(latencyP99) << "\n";
+            std::cout << "  Latency (max):   " << formatLatency(latencyMax) << "\n";
+
+            // Format CPU with fixed precision
+            std::cout << "  CPU usage:       ";
+            std::cout << std::fixed;
+            std::cout.precision(1);
+            std::cout << cpuPercent << "%\n";
+
+            std::cout << "  Keys/second:     ";
+            std::cout.precision(1);
+            std::cout << keysPerSec << "\n";
+        }
+        return SUCCESS;
+    } else if (respType == MessageType::RspError) {
+        std::cerr << "Error: " << (respData.empty() ? "Failed to get metrics" : respData) << "\n";
         return COMMAND_FAILED;
     }
 
@@ -301,10 +692,12 @@ int main(int argc, char* argv[]) {
     const char* socketPath = DEFAULT_SOCKET_PATH;
     int timeoutMs = DEFAULT_TIMEOUT_MS;
     std::string configName;
+    bool rawJson = false;
 
     // Long options
     static struct option longOpts[] = {
         {"config",  required_argument, nullptr, 'c'},
+        {"json",    no_argument,       nullptr, 'j'},
         {"socket",  required_argument, nullptr, 's'},
         {"timeout", required_argument, nullptr, 't'},
         {"help",    no_argument,       nullptr, 'h'},
@@ -313,10 +706,13 @@ int main(int argc, char* argv[]) {
 
     // Parse options
     int opt;
-    while ((opt = getopt_long(argc, argv, "c:s:t:h", longOpts, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "c:js:t:h", longOpts, nullptr)) != -1) {
         switch (opt) {
             case 'c':
                 configName = optarg;
+                break;
+            case 'j':
+                rawJson = true;
                 break;
             case 's':
                 socketPath = optarg;
@@ -347,7 +743,9 @@ int main(int argc, char* argv[]) {
     std::string command = argv[optind];
 
     // Validate command
-    if (command != "reload" && command != "stop" && command != "start" && command != "status") {
+    if (command != "reload" && command != "stop" && command != "start" &&
+        command != "status" && command != "config" && command != "keymaps" &&
+        command != "metrics") {
         std::cerr << "Error: Unknown command: " << command << "\n\n";
         printUsage(argv[0]);
         return INVALID_ARGS;
@@ -368,7 +766,13 @@ int main(int argc, char* argv[]) {
     } else if (command == "start") {
         result = cmdStart(sock, timeoutMs);
     } else if (command == "status") {
-        result = cmdStatus(sock, timeoutMs);
+        result = cmdStatus(sock, timeoutMs, rawJson);
+    } else if (command == "config") {
+        result = cmdConfig(sock, timeoutMs, rawJson);
+    } else if (command == "keymaps") {
+        result = cmdKeymaps(sock, timeoutMs, rawJson);
+    } else if (command == "metrics") {
+        result = cmdMetrics(sock, timeoutMs, rawJson);
     } else {
         result = INVALID_ARGS;
     }
