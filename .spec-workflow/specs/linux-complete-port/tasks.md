@@ -995,7 +995,7 @@
   - _Requirements: FR-5.14_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Create notification dispatcher - Step 1: Create NotificationDispatcher singleton with methods: registerCallback, unregisterCallback, dispatch, Step 2: Store callbacks in vector: std::function<void(MessageType, const std::string&)>, Step 3: In Engine::notifyGUI also call dispatcher.dispatch, Step 4: Support filtering: registerCallback(types, callback) for specific types only, Step 5: Thread-safe callback invocation | Restrictions: Thread-safe registration and dispatch, Handle callback exceptions gracefully, Support multiple callbacks per type, Allow unregistration, Don't block on slow callbacks | Success: Dispatcher manages callback registration, Multiple callbacks per type supported, dispatch invokes all matching callbacks, Thread-safe operation, Callback exceptions caught and logged, Unregistration works, Extensible for plugins | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.15 Create comprehensive tests for notification system
+- [x] 5.15 Create comprehensive tests for notification system
   - File: tests/core/notification_test.cpp, tests/ui/notification_ui_test.cpp
   - Test notification generation, delivery, UI handling
   - Verify callback system and filtering
