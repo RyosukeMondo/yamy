@@ -971,7 +971,7 @@
   - _Requirements: FR-5.11_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add notification sound preferences - Step 1: Add preferences checkboxes: Enable sounds, Sound on error, Sound on config loaded, Sound on state change, Step 2: Store preferences in ConfigStore, Step 3: In handleEngineMessage play appropriate sound based on type and prefs, Step 4: Use system beep or bundled sound files, Step 5: Add volume control slider | Restrictions: Respect system sound settings, Don't play excessively, Use short non-annoying sounds, Handle audio unavailable gracefully, Make all sounds optional | Success: Preferences allow enabling/disabling sounds per notification type, Sounds play on appropriate notifications, Volume adjustable, Preferences persist, System audio respected, Sounds brief and appropriate, All optional | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.12 Add notification desktop integration
+- [x] 5.12 Add notification desktop integration
   - File: src/ui/qt/tray_icon_qt.cpp
   - Use QSystemTrayIcon::showMessage for desktop notifications
   - Follow desktop notification standards
