@@ -805,7 +805,7 @@
   - _Requirements: FR-4.2_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create log dialog UI - Step 1: Create QDialog with QComboBox for log level (Trace/Info/Warning/Error), Step 2: Add QCheckBox for each category (Engine, Parser, Input, Window, Config), Step 3: Add QTextEdit for log display with fixed-width font, Step 4: Subscribe to Logger::addListener in constructor, Step 5: Implement appendLog slot using QMetaObject::invokeMethod for thread-safety, Step 6: Filter logs based on level and category checkboxes | Restrictions: Thread-safe UI updates, Don't block logger callbacks, Filter efficiently, Auto-scroll to latest entries, Support large log volumes (limit buffer size) | Success: Dialog displays logs in real-time, Level filter works, Category filters work, Thread-safe updates, Auto-scrolls, Handles high log volume, Fixed-width font readable | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.4 Add font customization controls
+- [x] 4.4 Add font customization controls
   - File: src/ui/qt/dialog_log_qt.cpp
   - Add font selector and size spinner
   - Persist font preferences
