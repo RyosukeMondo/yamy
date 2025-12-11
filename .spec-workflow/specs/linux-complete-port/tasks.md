@@ -955,7 +955,7 @@
   - _Requirements: FR-5.9_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create status widget - Step 1: Create QWidget with labels: State (Stopped/Loading/Running/Error), Config name, Uptime (HH:MM:SS), Keys processed count, Current keymap, Step 2: Handle engine notifications updating labels, Step 3: Update uptime every second using QTimer, Step 4: Track key count from engine (add to notifications or query periodically), Step 5: Format compactly for tray menu or status bar | Restrictions: Update efficiently (batch label updates), Handle missing data gracefully, Format uptime clearly, Keep widget compact, Thread-safe label updates | Success: Widget shows all status info, Updates in real-time from notifications, Uptime updates every second, Key count accurate, Current keymap displayed, Compact and readable, All data accurate | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [-] 5.10 Add notification history log
+- [x] 5.10 Add notification history log
   - File: src/ui/qt/notification_history.h, src/ui/qt/notification_history.cpp
   - Store recent notifications with timestamps
   - Provide UI to view notification history
