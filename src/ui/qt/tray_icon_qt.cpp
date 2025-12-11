@@ -6,26 +6,124 @@
 #include "config_manager_dialog.h"
 #include "global_hotkey.h"
 #include "../../core/settings/config_manager.h"
-#include <QApplication>
-#include <QMessageBox>
-#include <QSignalMapper>
-#include <QSettings>
-#include <QDebug>
-
 #include "../../core/engine/engine.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <QSignalMapper>
 #include <QSettings>
 #include <QDebug>
+#include <QPainter>
+#include <QPixmap>
 
 TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)
-// ... (constructor continues, skipping implicit Context) ...
+    , m_engine(engine)
+    , m_quickSwitchHotkey(nullptr)
+    , m_menu(nullptr)
+    , m_configMenu(nullptr)
+    , m_configActionGroup(nullptr)
+    , m_actionEnable(nullptr)
+    , m_actionReload(nullptr)
+    , m_actionSettings(nullptr)
+    , m_actionLog(nullptr)
+    , m_actionInvestigate(nullptr)
+    , m_actionAbout(nullptr)
+    , m_actionExit(nullptr)
+    , m_enabled(true)
+    , m_currentState(yamy::MessageType::EngineStopped)
 {
-// ...
+    // Load icons for different states
+    loadIcons();
+
+    // Set initial state
+    setIcon(m_iconStopped);
+    setToolTip("YAMY - Stopped");
+
+    // Create context menu
+    createMenu();
+
+    // Setup global hotkey for quick config switch
+    setupGlobalHotkey();
+
+    // Connect activation signal
+    connect(this, &QSystemTrayIcon::activated,
+            this, &TrayIconQt::onActivated);
+
+    // Show the tray icon
+    show();
 }
-// ...
+
+TrayIconQt::~TrayIconQt()
+{
+    delete m_quickSwitchHotkey;
+    delete m_menu;
+}
+
+void TrayIconQt::setEngine(Engine* engine)
+{
+    m_engine = engine;
+    updateMenuState();
+}
+
+void TrayIconQt::updateIcon(bool enabled)
+{
+    m_enabled = enabled;
+    if (enabled) {
+        setIcon(m_iconRunning);
+    } else {
+        setIcon(m_iconDisabled);
+    }
+}
+
+void TrayIconQt::updateTooltip(const QString& text)
+{
+    setToolTip(text);
+}
+
+void TrayIconQt::showNotification(
+    const QString& title,
+    const QString& message,
+    QSystemTrayIcon::MessageIcon icon,
+    int millisecondsTimeoutHint)
+{
+    showMessage(title, message, icon, millisecondsTimeoutHint);
+}
+
+void TrayIconQt::onActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason) {
+        case QSystemTrayIcon::DoubleClick:
+            // Toggle enable/disable on double-click
+            onToggleEnable();
+            break;
+        case QSystemTrayIcon::Trigger:
+            // Left click - could show status or menu
+            break;
+        case QSystemTrayIcon::MiddleClick:
+            // Middle click - reload config
+            onReload();
+            break;
+        default:
+            break;
+    }
+}
+
+void TrayIconQt::onToggleEnable()
+{
+    if (!m_engine) {
+        return;
+    }
+
+    bool newState = !m_engine->getIsEnabled();
+    m_engine->enable(newState);
+    updateIcon(newState);
+    updateMenuState();
+
+    QString stateStr = newState ? "enabled" : "disabled";
+    showNotification("YAMY", QString("YAMY is now %1").arg(stateStr),
+                    QSystemTrayIcon::Information, 2000);
+}
+
 void TrayIconQt::onReload()
 {
     if (!m_engine) {
@@ -161,14 +259,62 @@ void TrayIconQt::loadIcons()
     // Load icons from Qt resources
     m_iconEnabled = QIcon(":/icons/yamy_enabled.png");
     m_iconDisabled = QIcon(":/icons/yamy_disabled.png");
+    m_iconLoading = QIcon(":/icons/yamy_loading.png");
+    m_iconRunning = QIcon(":/icons/yamy_running.png");
+    m_iconStopped = QIcon(":/icons/yamy_stopped.png");
+    m_iconError = QIcon(":/icons/yamy_error.png");
 
-    // Fallback to system icons if resources not found
+    // Fallback: Create state icons from enabled/disabled with overlays
+    if (m_iconLoading.isNull()) {
+        m_iconLoading = createStateIcon(m_iconEnabled, Qt::yellow);
+    }
+    if (m_iconRunning.isNull()) {
+        // Use enabled icon as running icon
+        m_iconRunning = m_iconEnabled;
+        if (m_iconRunning.isNull()) {
+            m_iconRunning = QIcon::fromTheme("preferences-desktop-keyboard");
+        }
+    }
+    if (m_iconStopped.isNull()) {
+        // Use disabled icon as stopped icon
+        m_iconStopped = m_iconDisabled;
+        if (m_iconStopped.isNull()) {
+            m_iconStopped = QIcon::fromTheme("preferences-desktop-keyboard-shortcuts");
+        }
+    }
+    if (m_iconError.isNull()) {
+        m_iconError = createStateIcon(m_iconEnabled.isNull() ?
+            QIcon::fromTheme("preferences-desktop-keyboard") : m_iconEnabled, Qt::red);
+    }
+
+    // Final fallbacks for enabled/disabled
     if (m_iconEnabled.isNull()) {
-        m_iconEnabled = QIcon::fromTheme("preferences-desktop-keyboard");
+        m_iconEnabled = m_iconRunning;
     }
     if (m_iconDisabled.isNull()) {
-        m_iconDisabled = QIcon::fromTheme("preferences-desktop-keyboard-shortcuts");
+        m_iconDisabled = m_iconStopped;
     }
+}
+
+QIcon TrayIconQt::createStateIcon(const QIcon& baseIcon, const QColor& overlayColor)
+{
+    // Create a state indicator overlay on the base icon
+    QPixmap basePixmap = baseIcon.pixmap(22, 22);
+    if (basePixmap.isNull()) {
+        // Create a simple colored icon if base is null
+        basePixmap = QPixmap(22, 22);
+        basePixmap.fill(Qt::transparent);
+    }
+
+    QPainter painter(&basePixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    // Draw a small colored circle in the bottom-right corner
+    painter.setBrush(overlayColor);
+    painter.setPen(Qt::black);
+    painter.drawEllipse(14, 14, 7, 7);
+
+    return QIcon(basePixmap);
 }
 
 void TrayIconQt::updateMenuState()
@@ -352,5 +498,109 @@ void TrayIconQt::setupGlobalHotkey()
         m_quickSwitchHotkey->setShortcut(QKeySequence(hotkeySeq));
     } else {
         m_quickSwitchHotkey->setShortcut(QKeySequence());
+    }
+}
+
+void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data)
+{
+    m_currentState = type;
+
+    switch (type) {
+        case yamy::MessageType::EngineStarting:
+            setIcon(m_iconLoading);
+            setToolTip("YAMY - Starting...");
+            break;
+
+        case yamy::MessageType::EngineStarted:
+            setIcon(m_iconRunning);
+            if (m_currentConfigName.isEmpty()) {
+                setToolTip("YAMY - Running");
+            } else {
+                setToolTip(QString("YAMY - Running (%1)").arg(m_currentConfigName));
+            }
+            m_enabled = true;
+            updateMenuState();
+            break;
+
+        case yamy::MessageType::EngineStopping:
+            setIcon(m_iconLoading);
+            setToolTip("YAMY - Stopping...");
+            break;
+
+        case yamy::MessageType::EngineStopped:
+            setIcon(m_iconStopped);
+            setToolTip("YAMY - Stopped");
+            m_enabled = false;
+            updateMenuState();
+            break;
+
+        case yamy::MessageType::EngineError:
+            setIcon(m_iconError);
+            setToolTip(QString("YAMY - Error: %1").arg(data));
+            // Show error notification with 5-second auto-dismiss
+            showNotification(
+                "YAMY Error",
+                data.isEmpty() ? "An engine error occurred" : data,
+                QSystemTrayIcon::Critical,
+                5000
+            );
+            break;
+
+        case yamy::MessageType::ConfigLoading:
+            setIcon(m_iconLoading);
+            setToolTip(QString("YAMY - Loading config: %1").arg(data));
+            break;
+
+        case yamy::MessageType::ConfigLoaded:
+            m_currentConfigName = data;
+            if (m_currentState == yamy::MessageType::EngineStarted ||
+                m_currentState == yamy::MessageType::ConfigLoaded) {
+                setIcon(m_iconRunning);
+            }
+            if (data.isEmpty()) {
+                setToolTip("YAMY - Running");
+            } else {
+                setToolTip(QString("YAMY - %1").arg(data));
+            }
+            updateMenuState();
+            break;
+
+        case yamy::MessageType::ConfigError:
+            setIcon(m_iconError);
+            setToolTip(QString("YAMY - Config Error: %1").arg(data));
+            showNotification(
+                "YAMY Configuration Error",
+                data.isEmpty() ? "Failed to load configuration" : data,
+                QSystemTrayIcon::Warning,
+                5000
+            );
+            break;
+
+        case yamy::MessageType::KeymapSwitched:
+            // Update tooltip with keymap info but don't change icon
+            if (!data.isEmpty()) {
+                QString tooltip = m_currentConfigName.isEmpty() ?
+                    QString("YAMY - Running [%1]").arg(data) :
+                    QString("YAMY - %1 [%2]").arg(m_currentConfigName, data);
+                setToolTip(tooltip);
+            }
+            break;
+
+        case yamy::MessageType::FocusChanged:
+            // No visual change for focus events
+            break;
+
+        case yamy::MessageType::ModifierChanged:
+            // No visual change for modifier events
+            break;
+
+        case yamy::MessageType::LatencyReport:
+        case yamy::MessageType::CpuUsageReport:
+            // Performance metrics - no visual change
+            break;
+
+        default:
+            qDebug() << "TrayIconQt: Unknown message type:" << static_cast<uint32_t>(type);
+            break;
     }
 }

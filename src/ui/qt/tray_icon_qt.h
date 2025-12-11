@@ -6,7 +6,9 @@
 #include <QObject>
 #include <QCheckBox>
 #include <QActionGroup>
+#include <QColor>
 #include <memory>
+#include "../../core/platform/ipc_defs.h"
 
 // Forward declaration
 class Engine;
@@ -127,6 +129,14 @@ private slots:
      */
     void onQuickSwitchHotkey();
 
+    /**
+     * @brief Handle engine notification messages
+     * Updates tray icon and tooltip based on engine state
+     * @param type Message type indicating engine state change
+     * @param data Additional data associated with the message
+     */
+    void handleEngineMessage(yamy::MessageType type, const QString& data);
+
 private:
     /**
      * @brief Create and setup context menu
@@ -153,6 +163,14 @@ private:
      */
     void setupGlobalHotkey();
 
+    /**
+     * @brief Create state icon with overlay color
+     * @param baseIcon Base icon to overlay
+     * @param overlayColor Color for state indicator
+     * @return Icon with state overlay
+     */
+    QIcon createStateIcon(const QIcon& baseIcon, const QColor& overlayColor);
+
     // Engine instance (not owned)
     Engine* m_engine;
 
@@ -178,7 +196,17 @@ private:
     // Icons for different states
     QIcon m_iconEnabled;
     QIcon m_iconDisabled;
+    QIcon m_iconLoading;    // Loading/starting state
+    QIcon m_iconRunning;    // Engine running normally
+    QIcon m_iconStopped;    // Engine stopped
+    QIcon m_iconError;      // Engine error state
 
     // Current state
     bool m_enabled;
+
+    // Current engine state
+    yamy::MessageType m_currentState;
+
+    // Currently loaded config name (for tooltip)
+    QString m_currentConfigName;
 };

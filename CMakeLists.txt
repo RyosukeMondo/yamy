@@ -692,6 +692,56 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_log_test COMMAND yamy_log_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_tray_test (Tray Icon Notification Handling Tests)
+        # Tests for TrayIconQt notification handling
+        # -----------------------------------------------------------------------------
+        set(TRAY_TEST_SOURCES
+            tests/ui/tray_icon_test.cpp
+            src/ui/qt/tray_icon_qt.cpp
+            src/ui/qt/global_hotkey.cpp
+            src/ui/qt/dialog_settings_qt.cpp
+            src/ui/qt/dialog_log_qt.cpp
+            src/ui/qt/log_stats_panel.cpp
+            src/ui/qt/dialog_about_qt.cpp
+            src/ui/qt/dialog_investigate_qt.cpp
+            src/ui/qt/config_manager_dialog.cpp
+            src/ui/qt/crosshair_widget.cpp
+            src/core/settings/config_manager.cpp
+            src/core/settings/config_backup.cpp
+            src/core/settings/config_metadata.cpp
+            src/core/logging/logger.cpp
+        )
+
+        add_executable(yamy_tray_test
+            ${TRAY_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        set_target_properties(yamy_tray_test PROPERTIES
+            AUTOMOC ON
+        )
+
+        target_include_directories(yamy_tray_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/core/settings
+            src/utils
+            src/ui/qt
+        )
+
+        target_link_libraries(yamy_tray_test PRIVATE
+            pthread
+            Qt5::Core
+            Qt5::Widgets
+            Qt5::Gui
+        )
+
+        add_test(NAME yamy_tray_test COMMAND yamy_tray_test)
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_keyremap_test (Key Remapping Integration Tests)
         # Tests the full key remapping flow including config loading and keymap resolution
         # This is a full integration test using the complete core module

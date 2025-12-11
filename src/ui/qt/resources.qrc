@@ -3,5 +3,10 @@
     <qresource prefix="/icons">
         <file alias="yamy_enabled.png">../../resources/icons/yamy_enabled.png</file>
         <file alias="yamy_disabled.png">../../resources/icons/yamy_disabled.png</file>
+        <!-- State icons (optional - will be auto-generated if missing) -->
+        <!-- <file alias="yamy_loading.png">../../resources/icons/yamy_loading.png</file> -->
+        <!-- <file alias="yamy_running.png">../../resources/icons/yamy_running.png</file> -->
+        <!-- <file alias="yamy_stopped.png">../../resources/icons/yamy_stopped.png</file> -->
+        <!-- <file alias="yamy_error.png">../../resources/icons/yamy_error.png</file> -->
     </qresource>
 </RCC>
