@@ -14,6 +14,23 @@ set(CMAKE_UNICODE ON) # For Windows Unicode support if using CMake 3.20+, else w
 # AddressSanitizer option (Linux/macOS only)
 option(ENABLE_ASAN "Enable AddressSanitizer for memory error detection" OFF)
 
+# Code Coverage option (Linux/macOS only, requires lcov)
+option(ENABLE_COVERAGE "Enable code coverage measurement with gcov/lcov" OFF)
+
+if(ENABLE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Code coverage enabled")
+        set(COVERAGE_FLAGS "--coverage -O0 -g -fprofile-arcs -ftest-coverage")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COVERAGE_FLAGS}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_FLAGS}")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --coverage")
+        add_compile_definitions(COVERAGE_ENABLED)
+    else()
+        message(WARNING "ENABLE_COVERAGE is only supported with GCC or Clang")
+    endif()
+endif()
+
 if(ENABLE_ASAN)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         message(STATUS "AddressSanitizer enabled")
@@ -603,6 +620,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/config_manager.cpp
             src/core/settings/config_validator.cpp
             src/core/settings/config_metadata.cpp
+            src/core/settings/config_watcher.cpp
             src/core/settings/session_manager.cpp
             src/core/settings/parser.cpp
             src/utils/stringtool.cpp
@@ -614,6 +632,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             ${LINUX_TEST_SOURCES}
             src/tests/googletest/src/gtest-all.cc
         )
+
+        # Enable AUTOMOC for Qt-based sources (ConfigWatcher uses QObject)
+        set_target_properties(yamy_linux_test PROPERTIES AUTOMOC ON)
 
         target_include_directories(yamy_linux_test PRIVATE
             ${GTEST_DIR}/include
@@ -631,6 +652,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             pthread
             ${X11_LIBRARIES}
             ${UDEV_LIBRARIES}
+            Qt5::Core
         )
 
         # Add test to CTest
@@ -1348,4 +1370,101 @@ endif()
 option(BUILD_EXAMPLES "Build example plugins" OFF)
 if(BUILD_EXAMPLES AND NOT WIN32)
     add_subdirectory(examples/plugins)
+endif()
+
+# -----------------------------------------------------------------------------
+# Code Coverage Target (requires lcov and genhtml)
+# Usage: cmake -B build -DENABLE_COVERAGE=ON && cmake --build build --target coverage
+# -----------------------------------------------------------------------------
+if(ENABLE_COVERAGE)
+    # Find required tools
+    find_program(LCOV_PATH lcov)
+    find_program(GENHTML_PATH genhtml)
+
+    if(NOT LCOV_PATH)
+        message(WARNING "lcov not found - coverage target will not be available. Install with: sudo apt install lcov")
+    elseif(NOT GENHTML_PATH)
+        message(WARNING "genhtml not found - coverage target will not be available. Install with: sudo apt install lcov")
+    else()
+        message(STATUS "lcov found: ${LCOV_PATH}")
+        message(STATUS "genhtml found: ${GENHTML_PATH}")
+
+        # Coverage output directory
+        set(COVERAGE_OUTPUT_DIR ${CMAKE_BINARY_DIR}/coverage)
+        set(COVERAGE_INFO_FILE ${COVERAGE_OUTPUT_DIR}/coverage.info)
+        set(COVERAGE_HTML_DIR ${COVERAGE_OUTPUT_DIR}/html)
+
+        # Create coverage target
+        add_custom_target(coverage
+            # Step 1: Create output directory
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${COVERAGE_OUTPUT_DIR}
+
+            # Step 2: Zero coverage counters
+            COMMAND ${LCOV_PATH} --zerocounters --directory ${CMAKE_BINARY_DIR}
+
+            # Step 3: Run initial capture (baseline)
+            COMMAND ${LCOV_PATH} --capture --initial --directory ${CMAKE_BINARY_DIR}
+                --output-file ${COVERAGE_OUTPUT_DIR}/baseline.info
+                --ignore-errors mismatch,inconsistent
+
+            # Step 4: Run tests via CTest
+            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure || true
+
+            # Step 5: Capture coverage data after tests
+            COMMAND ${LCOV_PATH} --capture --directory ${CMAKE_BINARY_DIR}
+                --output-file ${COVERAGE_OUTPUT_DIR}/test.info
+                --ignore-errors mismatch,inconsistent
+
+            # Step 6: Combine baseline and test coverage
+            COMMAND ${LCOV_PATH} --add-tracefile ${COVERAGE_OUTPUT_DIR}/baseline.info
+                --add-tracefile ${COVERAGE_OUTPUT_DIR}/test.info
+                --output-file ${COVERAGE_INFO_FILE}
+                --ignore-errors mismatch,inconsistent
+
+            # Step 7: Remove external code from coverage (system headers, tests, googletest)
+            COMMAND ${LCOV_PATH} --remove ${COVERAGE_INFO_FILE}
+                '/usr/*'
+                '*/tests/*'
+                '*/googletest/*'
+                '*/gtest/*'
+                '*/Qt5/*'
+                --output-file ${COVERAGE_INFO_FILE}
+                --ignore-errors mismatch,inconsistent
+
+            # Step 8: Generate HTML report
+            COMMAND ${GENHTML_PATH} ${COVERAGE_INFO_FILE}
+                --output-directory ${COVERAGE_HTML_DIR}
+                --title "YAMY Code Coverage"
+                --legend --show-details
+                --ignore-errors inconsistent
+
+            # Step 9: Print summary
+            COMMAND ${LCOV_PATH} --summary ${COVERAGE_INFO_FILE}
+                --ignore-errors mismatch,inconsistent
+
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Generating code coverage report in ${COVERAGE_HTML_DIR}/index.html"
+            VERBATIM
+        )
+
+        # Add coverage_check target that fails if coverage is below threshold
+        set(COVERAGE_THRESHOLD 80)
+        add_custom_target(coverage_check
+            DEPENDS coverage
+            COMMAND ${CMAKE_COMMAND} -E echo "Checking coverage threshold (${COVERAGE_THRESHOLD}%)..."
+            COMMAND sh -c "COVERAGE=$$(${LCOV_PATH} --summary ${COVERAGE_INFO_FILE} 2>&1 | grep 'lines' | grep -oP '[0-9.]+(?=%)' | head -1) && echo \"Line coverage: $${COVERAGE}%\" && if [ $$(echo \"$${COVERAGE} < ${COVERAGE_THRESHOLD}\" | bc -l) -eq 1 ]; then echo \"FAILED: Coverage $${COVERAGE}% is below threshold ${COVERAGE_THRESHOLD}%\" && exit 1; else echo \"PASSED: Coverage meets threshold\"; fi"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Verifying coverage meets ${COVERAGE_THRESHOLD}% threshold"
+            VERBATIM
+        )
+
+        # Add target for cleaning coverage data
+        add_custom_target(coverage_clean
+            COMMAND ${CMAKE_COMMAND} -E remove_directory ${COVERAGE_OUTPUT_DIR}
+            COMMAND find ${CMAKE_BINARY_DIR} -name "*.gcda" -delete || true
+            COMMAND find ${CMAKE_BINARY_DIR} -name "*.gcno" -delete || true
+            COMMENT "Cleaning coverage data"
+            VERBATIM
+        )
+    endif()
 endif()
