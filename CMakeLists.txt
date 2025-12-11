@@ -125,6 +125,7 @@ set(ENGINE_SOURCES
     src/utils/compiler_specific_func.cpp
     src/core/engine/engine.cpp
     src/core/engine/engine_lifecycle.cpp
+    src/core/notification_dispatcher.cpp
     src/core/engine/engine_input.cpp
     src/core/engine/engine_modifier.cpp
     src/core/engine/engine_generator.cpp

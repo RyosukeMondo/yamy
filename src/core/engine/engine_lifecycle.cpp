@@ -26,6 +26,7 @@
 #include <thread>
 #include <thread>
 #include "../platform/ipc_defs.h"
+#include "../notification_dispatcher.h"
 
 #if defined(QT_CORE_LIB)
 void Engine::playSound(yamy::audio::NotificationType type)
@@ -300,6 +301,9 @@ void Engine::setState(yamy::EngineState i_newState)
 
 void Engine::notifyGUI(yamy::MessageType i_type, const std::string &i_data)
 {
+    // Dispatch to registered callbacks (plugin/extension support)
+    yamy::core::NotificationDispatcher::instance().dispatch(i_type, i_data);
+
     if (!m_windowSystem || !m_hwndAssocWindow)
         return;
 
