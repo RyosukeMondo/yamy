@@ -1113,7 +1113,7 @@
   - _Requirements: FR-6.5_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add preferences to menu - Step 1: Add Preferences action to tray menu after Configurations submenu, Step 2: Connect action to slot creating and showing PreferencesDialog, Step 3: Use standard Preferences icon or gear icon, Step 4: Add keyboard shortcut hint in menu text, Step 5: Ensure dialog is modal or single-instance (don't open multiple) | Restrictions: Show only one preferences dialog at a time, Place logically in menu (near top or bottom section), Use standard icon, Make easily discoverable | Success: Preferences action in tray menu, Opens dialog on click, Only one dialog open at a time, Icon appropriate, Keyboard shortcut shown, Menu placement logical and discoverable | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.14 Implement crash reporting infrastructure
+- [x] 6.14 Implement crash reporting infrastructure
   - File: src/utils/crash_handler.h, src/utils/crash_handler.cpp
   - Catch crashes and generate reports
   - Save crash dump and logs
