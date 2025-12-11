@@ -1017,7 +1017,7 @@
   - _Requirements: FR-6.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Create SessionManager - Step 1: Create SessionManager class with methods: saveSession, restoreSession, enableAutoStart, disableAutoStart, isAutoStartEnabled, Step 2: Store session data: active config path, last window positions (dialogs), engine running state, Step 3: Serialize to JSON file in ~/.config/yamy/session.json, Step 4: On saveSession write all state, on restoreSession read and apply, Step 5: Call saveSession on clean shutdown, restoreSession on startup | Restrictions: Handle file errors gracefully, Use JSON format, Store minimal essential state, Don't save transient data, Validate session data on restore | Success: SessionManager saves/restores state, Active config persisted, Window positions restored, Engine state remembered, JSON format readable, File errors handled, Validates data on restore | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.2 Implement Linux autostart support
+- [x] 6.2 Implement Linux autostart support
   - File: src/core/settings/session_manager.cpp
   - Create .desktop file in ~/.config/autostart
   - Enable/disable autostart
