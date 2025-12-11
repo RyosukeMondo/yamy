@@ -1065,7 +1065,7 @@
   - _Requirements: FR-9.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Create help menu - Step 1: Add Help submenu to tray icon menu, Step 2: Add actions: Online Documentation (opens browser), Keyboard Shortcuts (opens dialog), Configuration Examples (opens dialog), Report Bug (opens GitHub issues in browser), separator, About YAMY (opens about dialog), Step 3: Connect actions to slots, Step 4: Use QDesktopServices::openUrl for external links | Restrictions: Handle browser launch failures, Use appropriate icons for each action, Disable actions if resources unavailable, Follow standard help menu conventions | Success: Help menu appears in tray, All actions functional, Documentation opens in browser, Shortcuts dialog opens, Examples dialog opens, Bug report opens GitHub, About dialog shows version/license, Browser failures handled | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.8 Create Keyboard Shortcuts reference dialog
+- [x] 6.8 Create Keyboard Shortcuts reference dialog
   - File: src/ui/qt/dialog_shortcuts.h, src/ui/qt/dialog_shortcuts.cpp
   - Show table of keyboard shortcuts
   - List global hotkeys and dialog shortcuts
