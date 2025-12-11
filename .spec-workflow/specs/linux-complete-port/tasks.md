@@ -987,7 +987,7 @@
   - _Requirements: FR-5.13_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add notification filtering - Step 1: Add preferences section "Notifications" with checkboxes for each type: Show engine state changes, Show config changes, Show keymap switches, Show focus changes, Show errors (always enabled), Show performance metrics, Step 2: Store preferences in ConfigStore, Step 3: In handleEngineMessage check preferences before processing, Step 4: Default: errors, state changes, config changes enabled; others disabled, Step 5: Add "Reset to defaults" button | Restrictions: Errors always shown (checkbox disabled), Preferences apply immediately, Store per-notification-type not global, Provide sensible defaults, Don't require restart | Success: Preferences allow fine-grained filtering, Each notification type toggleable, Errors always shown, Preferences persist, Apply immediately without restart, Defaults sensible, Reset button works | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.14 Add notification callback system for extensions
+- [x] 5.14 Add notification callback system for extensions
   - File: src/core/notification_dispatcher.h, src/core/notification_dispatcher.cpp
   - Allow registering callbacks for notification events
   - Support plugin/extension use cases
