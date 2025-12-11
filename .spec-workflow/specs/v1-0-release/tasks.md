@@ -134,7 +134,7 @@ Validate YAMY works across major Linux distributions and desktop environments
 
 ---
 
-- [ ] 4.1 Test on Ubuntu 24.04 LTS with GNOME (Wayland via XWayland)
+- [x] 4.1 Test on Ubuntu 24.04 LTS with GNOME (Wayland via XWayland)
   - Environment: Ubuntu 24.04, GNOME 46, XWayland
   - Install from .deb package and run functional test checklist
   - Measure performance benchmarks (latency, memory, CPU)
