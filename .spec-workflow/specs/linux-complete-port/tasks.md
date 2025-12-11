@@ -1041,7 +1041,7 @@
   - _Requirements: FR-7.1_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer | Task: Create yamy-ctl tool - Step 1: Create main function parsing command: reload, stop, start, status, Step 2: Connect to YAMY via createIPCChannel("yamy-engine"), Step 3: Send appropriate message type based on command, Step 4: For reload with --config: include config name in message data, Step 5: Wait for response and print to stdout, Step 6: Exit with code 0 on success, 1 if YAMY not running, 2 on command failure | Restrictions: Check YAMY running before sending, Handle connection failures, Format output clearly, Support --help flag, Use descriptive error messages, Don't hang waiting for response (timeout 5s) | Success: yamy-ctl connects to running YAMY, reload command works, stop/start/status work, --config flag functional, Errors clearly reported, Help text available, Timeout prevents hangs, Exit codes correct | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.5 Extend IPC with query commands
+- [x] 6.5 Extend IPC with query commands
   - File: src/platform/ipc.h, src/core/engine.cpp
   - Add query commands: get-status, get-config, get-keymaps, get-metrics
   - Return structured data via IPC
