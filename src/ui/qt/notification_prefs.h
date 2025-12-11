@@ -79,6 +79,26 @@ public:
     void setKeymapSwitchNotificationEnabled(bool enabled);
 
     /**
+     * @brief Check if notifications are enabled for focus changes
+     */
+    bool isFocusChangeNotificationEnabled() const;
+
+    /**
+     * @brief Enable or disable focus change notifications
+     */
+    void setFocusChangeNotificationEnabled(bool enabled);
+
+    /**
+     * @brief Check if notifications are enabled for performance metrics
+     */
+    bool isPerformanceNotificationEnabled() const;
+
+    /**
+     * @brief Enable or disable performance metric notifications
+     */
+    void setPerformanceNotificationEnabled(bool enabled);
+
+    /**
      * @brief Get timeout for error notifications in milliseconds
      */
     int errorTimeout() const;
@@ -110,6 +130,14 @@ public:
      */
     void saveSettings();
 
+    /**
+     * @brief Reset all preferences to defaults
+     *
+     * Defaults: errors enabled (always), state changes enabled,
+     * config loaded enabled, others disabled.
+     */
+    void resetToDefaults();
+
 signals:
     /**
      * @brief Emitted when any preference changes
@@ -130,6 +158,8 @@ private:
     bool m_configLoadedNotificationEnabled;
     bool m_stateChangeNotificationEnabled;
     bool m_keymapSwitchNotificationEnabled;
+    bool m_focusChangeNotificationEnabled;
+    bool m_performanceNotificationEnabled;
     int m_errorTimeout;
     int m_infoTimeout;
 };

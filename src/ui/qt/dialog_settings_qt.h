@@ -151,6 +151,16 @@ private:
     QLabel* m_labelVolumeValue;
     QPushButton* m_btnTestSound;
 
+    // Desktop notification components
+    QCheckBox* m_chkDesktopNotifEnabled;
+    QCheckBox* m_chkNotifOnError;
+    QCheckBox* m_chkNotifOnConfigLoaded;
+    QCheckBox* m_chkNotifOnStateChange;
+    QCheckBox* m_chkNotifOnKeymapSwitch;
+    QCheckBox* m_chkNotifOnFocusChange;
+    QCheckBox* m_chkNotifOnPerformance;
+    QPushButton* m_btnResetNotifDefaults;
+
     // Data
     QStringList m_keymapFiles;
 };

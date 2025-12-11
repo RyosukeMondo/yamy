@@ -1,5 +1,6 @@
 #include "dialog_settings_qt.h"
 #include "notification_sound.h"
+#include "notification_prefs.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSettings>
@@ -32,6 +33,14 @@ DialogSettingsQt::DialogSettingsQt(QWidget* parent)
     , m_sliderVolume(nullptr)
     , m_labelVolumeValue(nullptr)
     , m_btnTestSound(nullptr)
+    , m_chkDesktopNotifEnabled(nullptr)
+    , m_chkNotifOnError(nullptr)
+    , m_chkNotifOnConfigLoaded(nullptr)
+    , m_chkNotifOnStateChange(nullptr)
+    , m_chkNotifOnKeymapSwitch(nullptr)
+    , m_chkNotifOnFocusChange(nullptr)
+    , m_chkNotifOnPerformance(nullptr)
+    , m_btnResetNotifDefaults(nullptr)
 {
     setWindowTitle("YAMY Settings");
     setMinimumSize(600, 500);
@@ -504,6 +513,96 @@ void DialogSettingsQt::setupUI()
 
     mainLayout->addWidget(soundGroup);
 
+    // Desktop notifications group
+    QGroupBox* desktopNotifGroup = new QGroupBox("Desktop Notifications");
+    QVBoxLayout* desktopNotifLayout = new QVBoxLayout(desktopNotifGroup);
+
+    m_chkDesktopNotifEnabled = new QCheckBox("Enable desktop notifications");
+    m_chkDesktopNotifEnabled->setChecked(true);
+    desktopNotifLayout->addWidget(m_chkDesktopNotifEnabled);
+
+    // Notification type checkboxes - first row
+    QHBoxLayout* notifTypesRow1 = new QHBoxLayout();
+
+    m_chkNotifOnError = new QCheckBox("Show errors (always)");
+    m_chkNotifOnError->setChecked(true);
+    m_chkNotifOnError->setEnabled(false);  // Always enabled
+    m_chkNotifOnError->setToolTip("Error notifications are always shown for safety");
+    notifTypesRow1->addWidget(m_chkNotifOnError);
+
+    m_chkNotifOnStateChange = new QCheckBox("Engine state changes");
+    m_chkNotifOnStateChange->setChecked(true);
+    m_chkNotifOnStateChange->setToolTip("Show when engine starts/stops");
+    notifTypesRow1->addWidget(m_chkNotifOnStateChange);
+
+    m_chkNotifOnConfigLoaded = new QCheckBox("Config changes");
+    m_chkNotifOnConfigLoaded->setChecked(true);
+    m_chkNotifOnConfigLoaded->setToolTip("Show when configuration is loaded");
+    notifTypesRow1->addWidget(m_chkNotifOnConfigLoaded);
+
+    notifTypesRow1->addStretch();
+    desktopNotifLayout->addLayout(notifTypesRow1);
+
+    // Notification type checkboxes - second row
+    QHBoxLayout* notifTypesRow2 = new QHBoxLayout();
+
+    m_chkNotifOnKeymapSwitch = new QCheckBox("Keymap switches");
+    m_chkNotifOnKeymapSwitch->setChecked(false);
+    m_chkNotifOnKeymapSwitch->setToolTip("Show when keymap is switched");
+    notifTypesRow2->addWidget(m_chkNotifOnKeymapSwitch);
+
+    m_chkNotifOnFocusChange = new QCheckBox("Focus changes");
+    m_chkNotifOnFocusChange->setChecked(false);
+    m_chkNotifOnFocusChange->setToolTip("Show when active window changes (verbose)");
+    notifTypesRow2->addWidget(m_chkNotifOnFocusChange);
+
+    m_chkNotifOnPerformance = new QCheckBox("Performance metrics");
+    m_chkNotifOnPerformance->setChecked(false);
+    m_chkNotifOnPerformance->setToolTip("Show latency and CPU usage reports (verbose)");
+    notifTypesRow2->addWidget(m_chkNotifOnPerformance);
+
+    notifTypesRow2->addStretch();
+    desktopNotifLayout->addLayout(notifTypesRow2);
+
+    // Reset to defaults button
+    QHBoxLayout* resetLayout = new QHBoxLayout();
+    resetLayout->addStretch();
+    m_btnResetNotifDefaults = new QPushButton("Reset to Defaults");
+    m_btnResetNotifDefaults->setToolTip("Reset notification preferences to defaults");
+    connect(m_btnResetNotifDefaults, &QPushButton::clicked, this, [this]() {
+        m_chkDesktopNotifEnabled->setChecked(true);
+        m_chkNotifOnError->setChecked(true);
+        m_chkNotifOnStateChange->setChecked(true);
+        m_chkNotifOnConfigLoaded->setChecked(true);
+        m_chkNotifOnKeymapSwitch->setChecked(false);
+        m_chkNotifOnFocusChange->setChecked(false);
+        m_chkNotifOnPerformance->setChecked(false);
+        m_labelStatus->setText("Notification preferences reset to defaults");
+    });
+    resetLayout->addWidget(m_btnResetNotifDefaults);
+    desktopNotifLayout->addLayout(resetLayout);
+
+    // Connect master checkbox to enable/disable individual checkboxes
+    connect(m_chkDesktopNotifEnabled, &QCheckBox::toggled, this, [this](bool checked) {
+        // Error is always enabled but checkbox is always disabled
+        m_chkNotifOnStateChange->setEnabled(checked);
+        m_chkNotifOnConfigLoaded->setEnabled(checked);
+        m_chkNotifOnKeymapSwitch->setEnabled(checked);
+        m_chkNotifOnFocusChange->setEnabled(checked);
+        m_chkNotifOnPerformance->setEnabled(checked);
+        m_btnResetNotifDefaults->setEnabled(checked);
+    });
+
+    QLabel* desktopNotifHelp = new QLabel(
+        "Desktop notifications appear in your system notification area.\n"
+        "Errors are always shown (10s timeout). Other notifications use 3s timeout."
+    );
+    desktopNotifHelp->setStyleSheet("QLabel { color: #666; font-size: 11px; }");
+    desktopNotifHelp->setWordWrap(true);
+    desktopNotifLayout->addWidget(desktopNotifHelp);
+
+    mainLayout->addWidget(desktopNotifGroup);
+
     // Status label
     m_labelStatus = new QLabel();
     m_labelStatus->setStyleSheet("QLabel { color: #666; }");
@@ -574,6 +673,25 @@ void DialogSettingsQt::loadSettings()
     m_sliderVolume->setEnabled(soundsEnabled);
     m_btnTestSound->setEnabled(soundsEnabled);
 
+    // Load desktop notification settings from NotificationPrefs
+    auto& notifPrefs = yamy::ui::NotificationPrefs::instance();
+    bool desktopNotifEnabled = notifPrefs.isEnabled();
+    m_chkDesktopNotifEnabled->setChecked(desktopNotifEnabled);
+    m_chkNotifOnError->setChecked(notifPrefs.isErrorNotificationEnabled());
+    m_chkNotifOnConfigLoaded->setChecked(notifPrefs.isConfigLoadedNotificationEnabled());
+    m_chkNotifOnStateChange->setChecked(notifPrefs.isStateChangeNotificationEnabled());
+    m_chkNotifOnKeymapSwitch->setChecked(notifPrefs.isKeymapSwitchNotificationEnabled());
+    m_chkNotifOnFocusChange->setChecked(notifPrefs.isFocusChangeNotificationEnabled());
+    m_chkNotifOnPerformance->setChecked(notifPrefs.isPerformanceNotificationEnabled());
+
+    // Enable/disable controls based on master switch
+    m_chkNotifOnStateChange->setEnabled(desktopNotifEnabled);
+    m_chkNotifOnConfigLoaded->setEnabled(desktopNotifEnabled);
+    m_chkNotifOnKeymapSwitch->setEnabled(desktopNotifEnabled);
+    m_chkNotifOnFocusChange->setEnabled(desktopNotifEnabled);
+    m_chkNotifOnPerformance->setEnabled(desktopNotifEnabled);
+    m_btnResetNotifDefaults->setEnabled(desktopNotifEnabled);
+
     m_labelStatus->setText("Settings loaded");
 }
 
@@ -611,4 +729,15 @@ void DialogSettingsQt::saveSettings()
     soundMgr.setConfigLoadedSoundEnabled(m_chkSoundOnConfigLoaded->isChecked());
     soundMgr.setStateChangeSoundEnabled(m_chkSoundOnStateChange->isChecked());
     soundMgr.setVolume(m_sliderVolume->value());
+
+    // Save desktop notification settings to NotificationPrefs
+    auto& notifPrefs = yamy::ui::NotificationPrefs::instance();
+    notifPrefs.setEnabled(m_chkDesktopNotifEnabled->isChecked());
+    notifPrefs.setErrorNotificationEnabled(m_chkNotifOnError->isChecked());
+    notifPrefs.setConfigLoadedNotificationEnabled(m_chkNotifOnConfigLoaded->isChecked());
+    notifPrefs.setStateChangeNotificationEnabled(m_chkNotifOnStateChange->isChecked());
+    notifPrefs.setKeymapSwitchNotificationEnabled(m_chkNotifOnKeymapSwitch->isChecked());
+    notifPrefs.setFocusChangeNotificationEnabled(m_chkNotifOnFocusChange->isChecked());
+    notifPrefs.setPerformanceNotificationEnabled(m_chkNotifOnPerformance->isChecked());
+    notifPrefs.saveSettings();
 }
