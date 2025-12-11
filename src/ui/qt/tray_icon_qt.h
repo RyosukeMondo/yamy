@@ -103,6 +103,11 @@ private slots:
     void onInvestigate();
 
     /**
+     * @brief Show notification history dialog
+     */
+    void onNotificationHistory();
+
+    /**
      * @brief Show about dialog
      */
     void onAbout();
@@ -190,6 +195,7 @@ private:
     QAction* m_actionSettings;
     QAction* m_actionLog;
     QAction* m_actionInvestigate;
+    QAction* m_actionNotificationHistory;
     QAction* m_actionAbout;
     QAction* m_actionExit;
 

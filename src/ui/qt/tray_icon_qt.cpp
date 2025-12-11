@@ -5,6 +5,7 @@
 #include "dialog_investigate_qt.h"
 #include "config_manager_dialog.h"
 #include "global_hotkey.h"
+#include "notification_history.h"
 #include "../../core/settings/config_manager.h"
 #include "../../core/engine/engine.h"
 #include <QApplication>
@@ -27,6 +28,7 @@ TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     , m_actionSettings(nullptr)
     , m_actionLog(nullptr)
     , m_actionInvestigate(nullptr)
+    , m_actionNotificationHistory(nullptr)
     , m_actionAbout(nullptr)
     , m_actionExit(nullptr)
     , m_enabled(true)
@@ -186,6 +188,13 @@ void TrayIconQt::onInvestigate()
     dialog->show();
 }
 
+void TrayIconQt::onNotificationHistory()
+{
+    auto* dialog = new yamy::ui::NotificationHistoryDialog();
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
+}
+
 void TrayIconQt::onAbout()
 {
     DialogAboutQt* dialog = new DialogAboutQt();
@@ -239,6 +248,10 @@ void TrayIconQt::createMenu()
     // Investigate
     m_actionInvestigate = m_menu->addAction("Investigate...");
     connect(m_actionInvestigate, &QAction::triggered, this, &TrayIconQt::onInvestigate);
+
+    // Notification History
+    m_actionNotificationHistory = m_menu->addAction("Notification History...");
+    connect(m_actionNotificationHistory, &QAction::triggered, this, &TrayIconQt::onNotificationHistory);
 
     // About
     m_actionAbout = m_menu->addAction("About...");
@@ -503,6 +516,9 @@ void TrayIconQt::setupGlobalHotkey()
 
 void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data)
 {
+    // Store notification in history
+    yamy::ui::NotificationHistory::instance().addNotification(type, data);
+
     m_currentState = type;
 
     switch (type) {
