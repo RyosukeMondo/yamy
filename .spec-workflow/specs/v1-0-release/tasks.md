@@ -70,7 +70,7 @@ Integration tests exist but cannot compile due to:
   - _Requirements: FR-4, NF-1_
   - _Prompt: Implement the task for spec v1-0-release, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Platform abstraction developer | Task: Replace Windows types with standard integer types - Step 1: In config_store.h replace all BYTE with uint8_t, DWORD with uint32_t, Step 2: Add #include <cstdint> if not present, Step 3: Update config_store_win32.cpp implementations (cast to Windows types internally if needed), Step 4: Update config_store_linux.cpp implementations (no changes likely needed), Step 5: Find all callers of read()/write() methods and update variable types, Step 6: Rebuild and verify no type mismatch warnings | Restrictions: Interface must remain binary compatible, Don't change method signatures (parameter order/count), Keep Windows implementation functional | Success: No BYTE or DWORD types in config_store.h, Windows build compiles without warnings, Linux build compiles without warnings, Config read/write tests pass on both platforms | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 2.3 Add mutex protection for m_readerThreads vector in input_hook_linux.cpp
+- [x] 2.3 Add mutex protection for m_readerThreads vector in input_hook_linux.cpp
   - File: src/platform/linux/input_hook_linux.cpp
   - Add `std::mutex m_readerThreadsMutex` member variable
   - Protect all vector operations (push_back, clear, iteration, size) with std::lock_guard
