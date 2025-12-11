@@ -939,7 +939,7 @@
   - _Requirements: FR-5.7_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with performance monitoring | Task: Add performance notifications - Step 1: Instrument Engine::processKey with timing measurement, Step 2: Calculate running average, p95, p99 latencies over 60 second windows, Step 3: Every 60 seconds send LatencyReport with stats in data field, Step 4: Track CPU usage (platform-specific /proc/self/stat on Linux), Step 5: Send CpuUsageReport periodically with percentage, Step 6: Make reporting interval configurable | Restrictions: Keep instrumentation overhead <1%, Use efficient stat calculation, Don't block processing for metrics, Report in background thread if needed, Format stats clearly | Success: Latency measured for all key events, Average/p95/p99 calculated correctly, LatencyReport sent every 60s with stats, CPU usage tracked, CpuUsageReport sent periodically, Overhead <1%, Metrics accurate | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 5.8 Update TrayIconQt to handle notifications
+- [x] 5.8 Update TrayIconQt to handle notifications
   - File: src/ui/qt/tray_icon_qt.h, src/ui/qt/tray_icon_qt.cpp
   - Handle engine notification messages
   - Update tray icon and tooltip based on state
