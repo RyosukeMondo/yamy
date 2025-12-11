@@ -1121,7 +1121,7 @@
   - _Requirements: NF-4 Reliability_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Senior C++ developer with Linux systems programming | Task: Implement crash handler - Step 1: Register signal handlers for SIGSEGV, SIGABRT, SIGFPE, SIGILL, Step 2: In handler: capture backtrace using backtrace(), backtrace_symbols(), Step 3: Write crash report to ~/.local/share/yamy/crashes/crash_TIMESTAMP.txt including: signal number, backtrace, YAMY version, system info, loaded config, recent log entries, Step 4: Use writev for async-signal-safe output, Step 5: Call default handler to generate core dump if enabled | Restrictions: Use async-signal-safe functions only in handler, Don't allocate memory in handler, Keep handler minimal, Generate core dump for debugger, Don't prevent default crash behavior entirely | Success: Crash handler catches signals, Backtrace captured, Report written to file with timestamp, Includes version and system info, Recent logs included, Core dump still generated, Handler is async-signal-safe | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 6.15 Add crash report dialog on restart
+- [x] 6.15 Add crash report dialog on restart
   - File: src/app/main.cpp, src/ui/qt/crash_report_dialog.h
   - Detect crash reports on startup
   - Offer to view and report
