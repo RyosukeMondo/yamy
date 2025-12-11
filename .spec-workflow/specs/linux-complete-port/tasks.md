@@ -1009,7 +1009,7 @@
 
 **Purpose**: Session management, IPC API, help menu (FR-6, FR-7, FR-9)
 
-- [ ] 6.1 Create SessionManager class
+- [-] 6.1 Create SessionManager class
   - File: src/core/settings/session_manager.h, src/core/settings/session_manager.cpp
   - Manage session state: active config, engine state, window positions
   - Save and restore sessions
