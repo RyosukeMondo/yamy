@@ -845,7 +845,7 @@
   - _Requirements: FR-4.7_
   - _Prompt: Implement the task for spec linux-complete-port, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Qt GUI developer | Task: Add export functionality - Step 1: Add Export button opening QFileDialog for save location, Step 2: Implement export writing QTextEdit contents to file, Step 3: Option to export all or only filtered logs, Step 4: Use UTF-8 encoding, Step 5: Include timestamp in filename: logs_YYYYMMDD_HHMMSS.txt, Step 6: Show success/error notification after export | Restrictions: Handle file write errors, Use UTF-8 encoding, Suggest timestamped filename, Don't block UI during export, Export respects current filters if "filtered" option selected | Success: Export button opens save dialog, Logs written to file correctly, UTF-8 encoding preserved, Filtered export respects filters, Timestamped filename suggested, Success notification shown, Errors handled gracefully | After completion: 1) Mark task as in-progress [-] in tasks.md before starting, 2) Log implementation using log-implementation tool with detailed artifacts, 3) Mark task as complete [x] in tasks.md_
 
-- [ ] 4.9 Implement log buffer size limit
+- [x] 4.9 Implement log buffer size limit
   - File: src/ui/qt/dialog_log_qt.cpp
   - Limit QTextEdit to maximum number of lines
   - Remove oldest entries when limit reached
