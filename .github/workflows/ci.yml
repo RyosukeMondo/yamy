@@ -84,7 +84,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake g++ make
+        sudo apt-get install -y cmake g++ make \
+          libx11-dev libxrandr-dev
 
     - name: Configure CMake
       run: cmake -B build -DBUILD_LINUX_STUB=ON
@@ -144,7 +145,7 @@ jobs:
         DISPLAY: :99
 
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results
@@ -210,7 +211,7 @@ jobs:
         echo "Full HTML report available in artifacts." >> $GITHUB_STEP_SUMMARY
 
     - name: Upload coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: build/coverage/
