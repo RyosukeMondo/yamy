@@ -14,12 +14,10 @@
 #include "../../utils/metrics.h"
 
 #include <iomanip>
-#ifdef _WIN32
-#include <process.h>
-#endif
-
 
 #ifdef _WIN32
+#include <process.h>  // For _endthreadex
+
 // keyboard handler thread - Windows implementation
 unsigned int WINAPI Engine::keyboardHandler(void *i_this)
 {
