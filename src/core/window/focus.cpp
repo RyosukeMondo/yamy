@@ -63,7 +63,7 @@ uint16_t Register_focus()
     wc.hCursor       = LoadCursor(nullptr, IDC_IBEAM);
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     wc.lpszMenuName  = nullptr;
-    wc.lpszClassName = "mayuFocus";
+    wc.lpszClassName = L"mayuFocus";  // Wide string literal for UNICODE
     return RegisterClass(&wc);
 }
 

@@ -85,10 +85,20 @@ void Engine::describeBindings()
     Acquire a(&m_log, 0);
 
     Keymap::DescribeParam dp;
+#ifdef _WIN32
+    // Windows: use stringstream and convert to wide
+    std::stringstream ss;
+    for (KeymapPtrList::iterator i = m_currentFocusOfThread->m_keymaps.begin();
+            i != m_currentFocusOfThread->m_keymaps.end(); ++ i)
+        (*i)->describe(ss, &dp);
+    m_log << to_tstring(ss.str()) << std::endl;
+#else
+    // Linux: direct output
     for (KeymapPtrList::iterator i = m_currentFocusOfThread->m_keymaps.begin();
             i != m_currentFocusOfThread->m_keymaps.end(); ++ i)
         (*i)->describe(m_log, &dp);
     m_log << std::endl;
+#endif
 }
 
 
