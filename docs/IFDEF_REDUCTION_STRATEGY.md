@@ -1,10 +1,12 @@
 # #ifdef Reduction Strategy
 
 ## Current Status
-- **Total #ifdef _WIN32**: 33 (was 75)
+- **Total #ifdef _WIN32**: 30 (was 75, -60%)
 - **Inline conditionals**: 0 ✓ (good!)
 - **Top offenders**: engine_lifecycle.cpp (12), setting_loader.cpp (5)
 - **Recent progress** (this session):
+  - Created ConfigWatcher Windows stub, eliminated #ifdefs from config_manager (-2)
+  - Removed unused windowstool.h include from engine.cpp (-1)
   - Batch eliminated include guards in 4 engine files (-8)
   - Eliminated include guards in engine_log.cpp (-2)
   - Eliminated include guards in setting_loader.cpp (-3)
@@ -17,7 +19,7 @@
   - Replaced Sleep/usleep with std::this_thread::sleep_for (-2)
   - Used strcasecmp_platform macro (-2)
   - Always use to_tstring() for stream conversions (-1)
-- **Files with ZERO #ifdefs**: setting.cpp ✓, vkeytable.cpp ✓, engine_log.cpp ✓, engine_modifier.cpp ✓, engine_input.cpp ✓, engine_generator.cpp ✓, engine_focus.cpp ✓, config_validator.cpp ✓
+- **Files with ZERO #ifdefs**: setting.cpp ✓, vkeytable.cpp ✓, engine_log.cpp ✓, engine_modifier.cpp ✓, engine_input.cpp ✓, engine_generator.cpp ✓, engine_focus.cpp ✓, config_validator.cpp ✓, config_manager.h ✓, config_manager.cpp ✓
 
 ## Categories of #ifdef Usage
 
@@ -133,13 +135,13 @@ Add to `.github/workflows/ci.yml`:
 
 ## Monitoring
 
-### Baseline (2025-12-12)
+### Baseline (2025-12-13)
 ```
 Initial: 75
-Current: 33 (-42 total, -56%)
+Current: 30 (-45 total, -60%)
 Inline: 0
-Files with ZERO #ifdefs: 8
-Should refactor: ~20 (mainly engine_lifecycle.cpp: 12, setting_loader.cpp: 5)
+Files with ZERO #ifdefs: 10
+Should refactor: ~18 (mainly engine_lifecycle.cpp: 12, setting_loader.cpp: 5)
 ```
 
 ### Target (v2.0)
