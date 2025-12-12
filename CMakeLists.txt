@@ -230,6 +230,7 @@ set(ENGINE_SOURCES
     src/platform/windows/utf_conversion.cpp
     src/platform/windows/window_system_win32.cpp
     src/platform/windows/windowstool.cpp
+    src/platform/windows/platform_paths_win32.cpp
     src/core/settings/setting.cpp
     src/core/settings/setting_loader.cpp
     src/core/settings/config_backup.cpp
@@ -417,6 +418,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/platform/linux/hook_data_linux.cpp
         src/platform/linux/ipc_linux.cpp
         src/platform/linux/ipc_control_server.cpp
+        src/platform/linux/platform_paths_linux.cpp
     )
 
     # Combine Core and platform sources for Linux build
@@ -1024,6 +1026,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/x11_connection.cpp
             src/platform/linux/input_injector_linux.cpp
             src/platform/linux/keycode_mapping.cpp
+            src/platform/linux/platform_paths_linux.cpp
         )
 
         # Command sources needed for function_creator linkage
@@ -1248,6 +1251,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/thread_linux.cpp
             src/platform/linux/hook_data_linux.cpp
             src/platform/linux/ipc_linux.cpp
+            src/platform/linux/platform_paths_linux.cpp
             src/utils/metrics.cpp
         )
 

@@ -4,9 +4,7 @@
 #include "misc.h"
 #include "mayu.h"
 #include "stringtool.h"
-#ifdef _WIN32
-#include "windowstool.h"
-#endif
+#include "platform_paths.h"
 #include "setting.h"
 #include <filesystem>
 
@@ -97,21 +95,7 @@ void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
 #endif //USE_INI
 
     // Get executable directory
-#ifdef _WIN32
-    char buf[GANA_MAX_PATH];
-    if (GetModuleFileName(GetModuleHandle(nullptr), buf, NUMBER_OF(buf)))
-        o_pathes->push_back(pathRemoveFileSpec(buf));
-#else
-    char buf[GANA_MAX_PATH];
-    ssize_t count = readlink("/proc/self/exe", buf, NUMBER_OF(buf) - 1);
-    if (count > 0) {
-        buf[count] = '\0';
-        // Remove filename to get directory
-        char *lastSlash = strrchr(buf, '/');
-        if (lastSlash) {
-            *lastSlash = '\0';
-            o_pathes->push_back(buf);
-        }
-    }
-#endif
+    std::string execDir = yamy::platform::getExecutableDirectory();
+    if (!execDir.empty())
+        o_pathes->push_back(execDir);
 }
