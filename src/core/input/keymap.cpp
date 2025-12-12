@@ -68,7 +68,7 @@ Action *ActionKeySeq::clone() const
 // stream output
 tostream &ActionKeySeq::output(tostream &i_ost) const
 {
-    return i_ost << "$" << m_keySeq->getName();
+    return i_ost << "$" << to_tstring(m_keySeq->getName());
 }
 
 //
@@ -502,7 +502,7 @@ bool Keymap::setIfNotYet(KeySeq *i_keySeq, Keymap *i_parentKeymap)
 // stream output
 extern tostream &operator<<(tostream &i_ost, const Keymap *i_keymap)
 {
-    return i_ost << i_keymap->getName();
+    return i_ost << to_tstring(i_keymap->getName());
 }
 
 
