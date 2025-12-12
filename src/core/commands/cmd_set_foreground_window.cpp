@@ -1,6 +1,7 @@
 #include "cmd_set_foreground_window.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#include "../utils/stringtool.h"
 
 Command_SetForegroundWindow::Command_SetForegroundWindow()
     : m_logicalOp(LogicalOperatorType_and)
@@ -72,7 +73,7 @@ void Command_SetForegroundWindow::exec(Engine *i_engine, FunctionParam *i_param)
     } else {
         // log warning
         Acquire a(&i_engine->m_log, 0);
-        i_engine->m_log << "Window not found: class='" << classNameUtf8 << "', title='" << titleNameUtf8 << "'" << std::endl;
+        i_engine->m_log << "Window not found: class='" << to_tstring(classNameUtf8) << "', title='" << to_tstring(titleNameUtf8) << "'" << std::endl;
     }
 }
 

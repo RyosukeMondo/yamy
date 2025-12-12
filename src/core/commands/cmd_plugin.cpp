@@ -1,6 +1,7 @@
 #include "cmd_plugin.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#include "../utils/stringtool.h"
 #ifdef _WIN32
 #include <process.h>
 #endif
@@ -41,7 +42,7 @@ public:
                 if (!m_dll) {
                     Acquire a(&i_log);
                     i_log << std::endl;
-                    i_log << "error: &PlugIn() failed to load " << i_dllName << std::endl;
+                    i_log << "error: &PlugIn() failed to load " << to_tstring(i_dllName) << std::endl;
                     return false;
                 }
             }
@@ -64,7 +65,7 @@ public:
                         Acquire a(&i_log);
                         i_log << std::endl;
                         i_log << "error: &PlugIn() failed to find function: "
-                        << baseName << std::endl;
+                        << to_tstring(baseName) << std::endl;
                         return false;
                     }
                 }

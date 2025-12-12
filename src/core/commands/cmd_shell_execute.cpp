@@ -1,6 +1,7 @@
 #include "cmd_shell_execute.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#include "../utils/stringtool.h"
 #ifdef _WIN32
 #include <shellapi.h> // For ShellExecute and error constants
 #else
@@ -120,5 +121,5 @@ void Command_ShellExecute::executeOnMainThread(Engine *i_engine)
         }
 
     Acquire b(&i_engine->m_log, 0);
-    i_engine->m_log << "error: " << fd << ": " << errorMessage << std::endl;
+    i_engine->m_log << "error: " << fd << ": " << to_tstring(errorMessage) << std::endl;
 }

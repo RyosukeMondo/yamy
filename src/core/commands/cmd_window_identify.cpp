@@ -1,6 +1,7 @@
 #include "cmd_window_identify.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
+#include "../utils/stringtool.h"
 #ifdef _WIN32
 #include "../../platform/windows/hook.h" // For WM_MAYU_MESSAGE_NAME
 #else
@@ -21,8 +22,8 @@ void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) cons
 
         Acquire a(&i_engine->m_log, 1);
         i_engine->m_log << "WindowHandle:\t0x" << std::hex << (uintptr_t)i_param->m_hwnd << std::dec << std::endl;
-        i_engine->m_log << "CLASS:\t" << className << std::endl;
-        i_engine->m_log << "TITLE:\t" << titleName << std::endl;
+        i_engine->m_log << "CLASS:\t" << to_tstring(className) << std::endl;
+        i_engine->m_log << "TITLE:\t" << to_tstring(titleName) << std::endl;
 
         std::string msgName = addSessionId(WM_MAYU_MESSAGE_NAME);
         unsigned int message = i_engine->getWindowSystem()->registerWindowMessage(msgName);

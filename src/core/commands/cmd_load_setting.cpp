@@ -1,5 +1,6 @@
 #include "cmd_load_setting.h"
 #include "../engine/engine.h"
+#include "../utils/stringtool.h"
 #include <regex>
 
 #ifndef MAX_MAYU_REGISTRY_ENTRIES
@@ -37,7 +38,7 @@ void Command_LoadSetting::exec(Engine *i_engine, FunctionParam *i_param) const
 
         {
             Acquire a(&i_engine->m_log, 0);
-            i_engine->m_log << "unknown setting name: " << i_name;
+            i_engine->m_log << "unknown setting name: " << to_tstring(i_name.eval());
         }
         return;
 
