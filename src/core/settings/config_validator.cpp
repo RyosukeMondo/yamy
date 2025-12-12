@@ -160,17 +160,11 @@ bool ConfigValidator::resolveIncludePath(const std::string& includeName,
 {
     // First try relative to current file
     if (!currentFile.empty()) {
-        size_t pos = currentFile.rfind('/');
-#ifdef _WIN32
-        size_t posBackslash = currentFile.rfind('\\');
-        if (posBackslash != std::string::npos &&
-            (pos == std::string::npos || posBackslash > pos)) {
-            pos = posBackslash;
-        }
-#endif
-        if (pos != std::string::npos) {
-            std::string dir = currentFile.substr(0, pos + 1);
-            resolvedPath = dir + includeName;
+        // Use std::filesystem to handle path separators cross-platform
+        std::filesystem::path currentPath(currentFile);
+        std::filesystem::path dirPath = currentPath.parent_path();
+        if (!dirPath.empty()) {
+            resolvedPath = (dirPath / includeName).string();
             struct stat st;
             if (stat(resolvedPath.c_str(), &st) == 0) {
                 return true;
