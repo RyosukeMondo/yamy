@@ -4,10 +4,7 @@
 
 #include "misc.h"
 #include "stringtool.h"
-#ifdef _WIN32
 #include "utf_conversion.h"
-#endif
-
 #include "dlgsetting.h"
 #include "errormessage.h"
 #include "mayu.h"
@@ -15,9 +12,7 @@
 #include "setting.h"
 #include "setting_loader.h"
 #include <filesystem>
-#ifdef _WIN32
 #include "windowstool.h"
-#endif
 #include "vkeytable.h"
 #include "array.h"
 
@@ -26,9 +21,7 @@
 #include <iomanip>
 #include <climits>
 #include <sys/stat.h>
-#ifndef _WIN32
-#include <cstdio>  // for fopen
-#endif
+#include <cstdio>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // SettingLoader
