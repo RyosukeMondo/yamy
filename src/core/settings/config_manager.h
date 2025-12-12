@@ -14,12 +14,8 @@
 #include <functional>
 #include <memory>
 
-// ConfigWatcher requires Qt (QObject), only available on Linux builds
-#ifdef _WIN32
-class ConfigWatcher;  // Forward declaration only on Windows
-#else
+// ConfigWatcher is available on all platforms (stub on Windows, Qt-based on Linux)
 #include "config_watcher.h"
-#endif
 
 /// Configuration file entry with path and optional metadata
 struct ConfigEntry {

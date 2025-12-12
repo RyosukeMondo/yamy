@@ -32,20 +32,14 @@ ConfigManager::ConfigManager()
     : m_configStore(nullptr)
     , m_activeIndex(-1)
     , m_changeCallback(nullptr)
-#ifndef _WIN32
     , m_configWatcher(std::make_unique<ConfigWatcher>())
-#else
-    , m_configWatcher(nullptr)  // ConfigWatcher not available on Windows
-#endif
 {
-#ifndef _WIN32
-    // Set up the callback from the watcher to the manager (Linux only)
+    // Set up the callback from the watcher to the manager
     if (m_configWatcher) {
         m_configWatcher->setChangeCallback([this](const std::string& path) {
             this->onActiveConfigChanged(path);
         });
     }
-#endif
 }
 
 ConfigManager::~ConfigManager()

@@ -6,14 +6,17 @@
 #ifndef _CONFIG_WATCHER_H
 #define _CONFIG_WATCHER_H
 
-#include <QObject>
-#include <QFileSystemWatcher>
-#include <QTimer>
 #include <string>
 #include <functional>
 
 /// Callback type for config file changes
 using ConfigFileChangedCallback = std::function<void(const std::string& configPath)>;
+
+#ifndef _WIN32
+// Linux implementation using Qt
+#include <QObject>
+#include <QFileSystemWatcher>
+#include <QTimer>
 
 /// Watches active config file for changes and triggers auto-reload
 /// Uses QFileSystemWatcher internally with debouncing to avoid excessive reloads
@@ -86,5 +89,33 @@ private:
     bool m_fileExisted;  /// Track file existence for deletion detection
     ConfigFileChangedCallback m_changeCallback;
 };
+
+#else
+// Windows stub implementation (no file watching)
+/// Stub config watcher for Windows (no-op, file watching not supported)
+class ConfigWatcher
+{
+public:
+    static constexpr int DEBOUNCE_DELAY_MS = 300;
+
+    ConfigWatcher() : m_watching(false), m_autoReloadEnabled(false) {}
+    ~ConfigWatcher() {}
+
+    void setConfigPath(const std::string& path) { m_configPath = path; }
+    std::string configPath() const { return m_configPath; }
+    void start() {}
+    void stop() {}
+    bool isWatching() const { return false; }
+    void setChangeCallback(ConfigFileChangedCallback callback) { m_changeCallback = callback; }
+    void setAutoReloadEnabled(bool enabled) { m_autoReloadEnabled = enabled; }
+    bool isAutoReloadEnabled() const { return m_autoReloadEnabled; }
+
+private:
+    std::string m_configPath;
+    bool m_watching;
+    bool m_autoReloadEnabled;
+    ConfigFileChangedCallback m_changeCallback;
+};
+#endif
 
 #endif // !_CONFIG_WATCHER_H
