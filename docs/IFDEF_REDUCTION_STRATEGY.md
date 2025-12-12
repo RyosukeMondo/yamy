@@ -1,13 +1,15 @@
 # #ifdef Reduction Strategy
 
 ## Current Status
-- **Total #ifdef _WIN32**: 29 (was 75, -61%)
+- **Total #ifdef _WIN32**: 26 (was 75, -65%)
 - **Inline conditionals**: 0 ✓ (excellent!)
-- **Top offenders**: engine_lifecycle.cpp (12, 41%), setting_loader (6, 21%), engine.cpp (2, 7%)
+- **Top offenders**: engine_lifecycle.cpp (9, 35%), setting_loader (6, 23%)
 - **Recent progress** (this session):
+  - Consolidated #ifdef blocks in engine.cpp and engine_lifecycle.cpp (-4)
+  - Removed unused windowstool.h includes (-2)
   - Removed switchConfiguration #ifdef guard from engine.h (-1)
   - Created ConfigWatcher Windows stub, eliminated #ifdefs from config_manager (-2)
-  - Removed unused windowstool.h include from engine.cpp (-1)
+  - Fixed build errors and added platform compatibility (+1 for engine_setting.cpp stub)
   - Batch eliminated include guards in 4 engine files (-8)
   - Eliminated include guards in engine_log.cpp (-2)
   - Eliminated include guards in setting_loader.cpp (-3)
@@ -139,11 +141,11 @@ Add to `.github/workflows/ci.yml`:
 ### Baseline (2025-12-13)
 ```
 Initial: 75
-Current: 29 (-46 total, -61%)
+Current: 26 (-49 total, -65%)
 Inline: 0
 Files with ZERO #ifdefs: 11
-Should refactor: 21 (engine_lifecycle.cpp: 12, setting_loader: 6, engine.cpp: 2, engine_window.cpp: 1)
-Acceptable pattern: 8 (platform abstraction headers + Windows-only files)
+Should refactor: 17 (engine_lifecycle.cpp: 9, setting_loader: 6, engine.cpp: 1, engine_window.cpp: 1, engine_setting.cpp: 1)
+Acceptable pattern: 9 (platform abstraction headers + Windows-only files + VK fallbacks)
 ```
 
 ### Target (v2.0)
