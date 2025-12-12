@@ -35,11 +35,11 @@ public:
     /// create clone
     virtual Action *clone() const = 0;
     /// stream output
-    virtual std::ostream &output(std::ostream &i_ost) const = 0;
+    virtual tostream &output(tostream &i_ost) const = 0;
 };
 
 ///
-std::ostream &operator<<(std::ostream &i_ost, const Action &i_action);
+tostream &operator<<(tostream &i_ost, const Action &i_action);
 
 ///
 class ActionKey : public Action
@@ -59,7 +59,7 @@ public:
     /// create clone
     virtual Action *clone() const;
     /// stream output
-    virtual std::ostream &output(std::ostream &i_ost) const;
+    virtual tostream &output(tostream &i_ost) const;
 };
 
 
@@ -81,7 +81,7 @@ public:
     /// create clone
     virtual Action *clone() const;
     /// stream output
-    virtual std::ostream &output(std::ostream &i_ost) const;
+    virtual tostream &output(tostream &i_ost) const;
 };
 
 
@@ -106,7 +106,7 @@ public:
     /// create clone
     virtual Action *clone() const;
     /// stream output
-    virtual std::ostream &output(std::ostream &i_ost) const;
+    virtual tostream &output(tostream &i_ost) const;
 };
 
 
@@ -342,7 +342,7 @@ public:
     }
 
     /// describe
-    void describe(std::ostream &i_ost, DescribeParam *i_dp) const;
+    void describe(tostream &i_ost, DescribeParam *i_dp) const;
 
     /// set default keySeq and parent keymap if default keySeq has not been set
     bool setIfNotYet(KeySeq *i_keySeq, Keymap *i_parentKeymap);
@@ -350,7 +350,7 @@ public:
 
 
 /// stream output
-extern std::ostream &operator<<(std::ostream &i_ost, const Keymap *i_keymap);
+extern tostream &operator<<(tostream &i_ost, const Keymap *i_keymap);
 
 
 ///

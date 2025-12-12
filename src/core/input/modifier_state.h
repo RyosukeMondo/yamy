@@ -29,11 +29,11 @@ enum ModifierFlag : uint32_t {
     MOD_NUMLOCK    = 1 << 9,
     MOD_SCROLLLOCK = 1 << 10,
 
-    // Combined flags for convenience
-    MOD_SHIFT      = MOD_LSHIFT | MOD_RSHIFT,
-    MOD_CTRL       = MOD_LCTRL | MOD_RCTRL,
-    MOD_ALT        = MOD_LALT | MOD_RALT,
-    MOD_WIN        = MOD_LWIN | MOD_RWIN,
+    // Combined flags for convenience (renamed to avoid Windows macro conflicts)
+    MODFLAG_SHIFT  = MOD_LSHIFT | MOD_RSHIFT,
+    MODFLAG_CTRL   = MOD_LCTRL | MOD_RCTRL,
+    MODFLAG_ALT    = MOD_LALT | MOD_RALT,
+    MODFLAG_WIN    = MOD_LWIN | MOD_RWIN,
 };
 
 /// Platform-agnostic modifier state tracker
@@ -58,16 +58,16 @@ public:
     uint32_t getFlags() const { return m_flags; }
 
     /// Check if any shift key is pressed
-    bool isShiftPressed() const { return (m_flags & MOD_SHIFT) != 0; }
+    bool isShiftPressed() const { return (m_flags & MODFLAG_SHIFT) != 0; }
 
     /// Check if any control key is pressed
-    bool isCtrlPressed() const { return (m_flags & MOD_CTRL) != 0; }
+    bool isCtrlPressed() const { return (m_flags & MODFLAG_CTRL) != 0; }
 
     /// Check if any alt key is pressed
-    bool isAltPressed() const { return (m_flags & MOD_ALT) != 0; }
+    bool isAltPressed() const { return (m_flags & MODFLAG_ALT) != 0; }
 
     /// Check if any windows/super key is pressed
-    bool isWinPressed() const { return (m_flags & MOD_WIN) != 0; }
+    bool isWinPressed() const { return (m_flags & MODFLAG_WIN) != 0; }
 
     /// Check if left shift is pressed
     bool isLShiftPressed() const { return (m_flags & MOD_LSHIFT) != 0; }
