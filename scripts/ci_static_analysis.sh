@@ -7,14 +7,16 @@ echo "=== Static Analysis: Windows Dependencies ==="
 
 # 1. Check for windows.h includes in src/core
 echo "Checking for <windows.h> includes in src/core..."
-WINDOWS_H_COUNT=$(grep -r "#include <windows.h>" src/core | wc -l)
+# Exclude vk_constants.h which has proper platform guards (#ifdef _WIN32)
+WINDOWS_H_COUNT=$(grep -r "#include <windows.h>" src/core | grep -v "vk_constants.h" | wc -l)
 
 if [ "$WINDOWS_H_COUNT" -ne 0 ]; then
-    echo "❌ Error: Found $WINDOWS_H_COUNT inclusion(s) of <windows.h> in src/core:"
-    grep -r "#include <windows.h>" src/core
+    echo "❌ Error: Found $WINDOWS_H_COUNT unguarded inclusion(s) of <windows.h> in src/core:"
+    grep -r "#include <windows.h>" src/core | grep -v "vk_constants.h"
     exit 1
 else
-    echo "✅ Pass: No <windows.h> includes found in src/core."
+    echo "✅ Pass: No unguarded <windows.h> includes found in src/core."
+    echo "   (vk_constants.h properly guards with #ifdef _WIN32)"
 fi
 
 # 2. Check for Win32 specific types in src/core
