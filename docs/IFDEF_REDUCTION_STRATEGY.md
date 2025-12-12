@@ -1,12 +1,13 @@
 # #ifdef Reduction Strategy
 
 ## Current Status
-- **Total #ifdef _WIN32**: 64 (was 75)
+- **Total #ifdef _WIN32**: 61 (was 75)
 - **Inline conditionals**: 0 ✓ (good!)
-- **Top offenders**: engine_lifecycle.cpp (12), setting_loader.cpp (9)
+- **Top offenders**: engine_lifecycle.cpp (12), setting_loader.cpp (7)
 - **Recent progress**:
   - Eliminated registerWindowMessage conditionals in command files (-3)
   - Refactored stream handling in engine_log.cpp (-3)
+  - Used std::filesystem for path operations (-3)
   - Replaced Sleep/usleep with std::this_thread::sleep_for (-2)
   - Used strcasecmp_platform macro (-2)
   - Always use to_tstring() for stream conversions (-1)
@@ -128,10 +129,10 @@ Add to `.github/workflows/ci.yml`:
 ### Baseline (2025-12-12)
 ```
 Initial: 75
-Current: 64 (-11 total, -15%)
+Current: 61 (-14 total, -19%)
 Inline: 0
 Acceptable: ~40 (include guards + type defs)
-Should refactor: ~24
+Should refactor: ~21
 ```
 
 ### Target (v2.0)
