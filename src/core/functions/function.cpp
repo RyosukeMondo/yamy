@@ -14,12 +14,9 @@
 
 #include "function_data.h"
 #include "../../platform/windows/utf_conversion.h" // For conversion if needed (but prefer std::string)
+#include "stringtool.h" // For strcasecmp_platform
 #include <cstring>
 #include <ostream>
-
-#ifndef _WIN32
-#include <strings.h> // for strcasecmp
-#endif
 
 using namespace yamy::platform;
 
@@ -46,11 +43,7 @@ bool getTypeName(std::string *o_name, T i_type,
 }
 
 static bool iequals(const char* a, const std::string& b) {
-#ifdef _WIN32
-    return _stricmp(a, b.c_str()) == 0;
-#else
-    return strcasecmp(a, b.c_str()) == 0;
-#endif
+    return strcasecmp_platform(a, b.c_str()) == 0;
 }
 
 template <class T> static inline
