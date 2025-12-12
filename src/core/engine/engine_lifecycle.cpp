@@ -94,9 +94,8 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
     // create event for sync
 #ifdef _WIN32
     CHECK_TRUE( m_eSync = CreateEvent(nullptr, FALSE, FALSE, nullptr) );
-#endif
+
     // create named pipe for &SetImeString
-#ifdef _WIN32
     m_hookPipe = CreateNamedPipe(addSessionId(HOOK_PIPE_NAME).c_str(),
                                  PIPE_ACCESS_OUTBOUND,
                                  PIPE_TYPE_BYTE, 1,
@@ -144,8 +143,7 @@ void Engine::start() {
 #ifdef _WIN32
     CHECK_TRUE( m_queueMutex = CreateMutex(nullptr, FALSE, nullptr) );
     CHECK_TRUE( m_readEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr) );
-#endif
-#ifdef _WIN32
+
     OVERLAPPED* pOl = reinterpret_cast<OVERLAPPED*>(m_ol);
     pOl->Offset = 0;
     pOl->OffsetHigh = 0;
