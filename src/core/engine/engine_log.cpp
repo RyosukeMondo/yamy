@@ -9,14 +9,9 @@
 #include "hook.h"
 #include "mayurc.h"
 #include "stringtool.h"
-#ifdef _WIN32
 #include "windowstool.h"
-#endif
 
 #include <iomanip>
-#ifdef _WIN32
-#include <process.h>
-#endif
 #include <string>
 #include <sstream>
 
