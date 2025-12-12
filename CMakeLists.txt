@@ -677,7 +677,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_linux_test COMMAND yamy_linux_test)
 
         # Qt5 GUI-dependent tests (only build if Qt5 GUI components are available)
-        if(Qt5Widgets_FOUND AND Qt5Gui_FOUND)
+        if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND)
             message(STATUS "Building Qt5 GUI-dependent tests")
 
         # -----------------------------------------------------------------------------
@@ -1183,8 +1183,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         endif()
 
         else()
-            message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui not found)")
-        endif() # Qt5Widgets_FOUND AND Qt5Gui_FOUND
+            message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/X11Extras not found)")
+        endif() # Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND
 
         # -----------------------------------------------------------------------------
         # Target: yamy_regression_test (Comprehensive Regression Test Suite)
