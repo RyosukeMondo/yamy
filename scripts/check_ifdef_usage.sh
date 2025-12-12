@@ -84,8 +84,8 @@ echo "  ✗ Single statement switches scattered everywhere"
 echo "  ✗ Nested #ifdef blocks"
 echo ""
 
-# Generate metric for CI tracking
+# Generate metric for CI tracking (save total count, not inline count)
 METRIC_FILE="$REPO_ROOT/.github/metrics/ifdef_count.txt"
 mkdir -p "$(dirname "$METRIC_FILE")"
-echo "$INLINE_COUNT" > "$METRIC_FILE"
-echo "Metric saved to: $METRIC_FILE (inline #ifdef count: $INLINE_COUNT)"
+echo "$TOTAL" > "$METRIC_FILE"
+echo "Metric saved to: $METRIC_FILE (total: $TOTAL, inline: $INLINE_COUNT)"
