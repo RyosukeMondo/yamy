@@ -118,6 +118,21 @@ jobs:
           exit 1
         fi
 
+    - name: Check #ifdef usage
+      run: |
+        bash scripts/check_ifdef_usage.sh > /dev/null 2>&1
+        IFDEF_COUNT=$(cat .github/metrics/ifdef_count.txt)
+        BASELINE=75
+        echo "#ifdef _WIN32 total count: $IFDEF_COUNT (baseline: $BASELINE)"
+        # Fail if count increases - we want to reduce over time, not add more
+        if [ "$IFDEF_COUNT" -gt "$BASELINE" ]; then
+          echo "ERROR: #ifdef count increased from $BASELINE to $IFDEF_COUNT"
+          echo "Goal: Reduce platform conditionals, not add more"
+          echo "See docs/IFDEF_REDUCTION_STRATEGY.md for refactoring guidance"
+          exit 1
+        fi
+        echo "✓ #ifdef count acceptable (reducing over time)"
+
   regression-tests:
     name: Linux Regression Tests
     runs-on: ubuntu-latest
