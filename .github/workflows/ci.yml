@@ -91,7 +91,7 @@ jobs:
       run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=OFF
 
     - name: Build
-      run: cmake --build build --parallel
+      run: cmake --build build -j2
 
     - name: Run Static Analysis
       run: ./scripts/ci_static_analysis.sh
@@ -260,4 +260,4 @@ jobs:
       run: cmake -B build_mingw -DCMAKE_TOOLCHAIN_FILE=scripts/mingw_toolchain.cmake
 
     - name: Build
-      run: cmake --build build_mingw --parallel
+      run: cmake --build build_mingw -j2
