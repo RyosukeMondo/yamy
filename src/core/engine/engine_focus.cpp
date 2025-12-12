@@ -8,6 +8,7 @@
 #include "errormessage.h"
 #include "hook.h"
 #include "mayurc.h"
+#include "stringtool.h"
 #ifdef _WIN32
 #include "windowstool.h"
 #endif
@@ -52,8 +53,8 @@ restart:
                         m_log << "\tHWND:\t" << std::hex << reinterpret_cast<uintptr_t>(fot->m_hwndFocus)
                         << std::dec << std::endl;
                         m_log << "\tTHREADID:" << fot->m_threadId << std::endl;
-                        m_log << "\tCLASS:\t" << fot->m_className << std::endl;
-                        m_log << "\tTITLE:\t" << fot->m_titleName << std::endl;
+                        m_log << "\tCLASS:\t" << to_tstring(fot->m_className) << std::endl;
+                        m_log << "\tTITLE:\t" << to_tstring(fot->m_titleName) << std::endl;
                         m_log << std::endl;
                         m_focusOfThreads.erase(j);
                     }

@@ -8,6 +8,7 @@
 #include "errormessage.h"
 #include "hook.h"
 #include "mayurc.h"
+#include "stringtool.h"
 #ifdef _WIN32
 #include "windowstool.h"
 #endif
@@ -86,7 +87,7 @@ void Engine::generateEvents(Current i_c, const Keymap *i_keymap, Key *i_event)
         {
             Acquire a(&m_log, 1);
             m_log << std::endl << "           "
-            << i_event->getName() << std::endl;
+            << to_tstring(i_event->getName()) << std::endl;
         }
         generateKeySeqEvents(i_c, keyAssign->m_keySeq, Part_all);
     }
