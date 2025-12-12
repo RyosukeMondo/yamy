@@ -100,7 +100,11 @@ Action *ActionFunction::clone() const
 // stream output
 tostream &ActionFunction::output(tostream &i_ost) const
 {
-    return i_ost << m_modifier << m_functionData;
+    // Modifier operator<< is only defined for narrow streams
+    std::stringstream ss;
+    ss << m_modifier;
+    i_ost << to_tstring(ss.str()) << m_functionData;
+    return i_ost;
 }
 
 
