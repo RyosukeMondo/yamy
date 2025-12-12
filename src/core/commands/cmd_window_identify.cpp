@@ -25,8 +25,8 @@ void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) cons
         i_engine->m_log << "CLASS:\t" << to_tstring(className) << std::endl;
         i_engine->m_log << "TITLE:\t" << to_tstring(titleName) << std::endl;
 
-        std::string msgName = addSessionId(WM_MAYU_MESSAGE_NAME);
-        unsigned int message = i_engine->getWindowSystem()->registerWindowMessage(msgName);
+        auto msgName = addSessionId(WM_MAYU_MESSAGE_NAME);  // Returns tstring (wstring on Windows, string on Linux)
+        unsigned int message = i_engine->getWindowSystem()->registerWindowMessage(to_string(msgName));
         uintptr_t result;
         if (i_engine->getWindowSystem()->sendMessageTimeout(
                     i_param->m_hwnd, message, 0, 0,
