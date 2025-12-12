@@ -420,15 +420,19 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     # Combine Core and platform sources for Linux build
     list(APPEND STUB_SOURCES ${CORE_SOURCES})
 
+    # Qt5 Core is required for all builds (config_watcher uses QObject)
+    find_package(Qt5 REQUIRED COMPONENTS Core)
+    message(STATUS "Qt5 Core found - version ${Qt5Core_VERSION}")
+
     # Qt5 GUI for Linux (optional)
     option(BUILD_QT_GUI "Build Qt5 GUI for Linux" ON)
 
     if(BUILD_QT_GUI)
-        # Find Qt5 packages
-        find_package(Qt5 COMPONENTS Core Widgets Gui X11Extras Test)
+        # Find optional Qt5 GUI packages
+        find_package(Qt5 COMPONENTS Widgets Gui X11Extras Test)
 
-        if(Qt5_FOUND)
-            message(STATUS "Qt5 found - building with GUI support")
+        if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND)
+            message(STATUS "Qt5 GUI components found - building with GUI support")
             add_subdirectory(src/ui/qt)
 
             # Use Qt main instead of headless main
@@ -439,19 +443,26 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
             target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
             target_link_libraries(yamy_stub PRIVATE
                 pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
+                Qt5::Core
                 yamy_qt_gui
             )
         else()
-            message(WARNING "Qt5 not found - building headless version")
+            message(WARNING "Qt5 GUI components not found - building headless version")
             add_executable(yamy_stub ${STUB_SOURCES})
             target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
-            target_link_libraries(yamy_stub PRIVATE pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES})
+            target_link_libraries(yamy_stub PRIVATE
+                pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
+                Qt5::Core
+            )
         endif()
     else()
         message(STATUS "Building without Qt5 GUI (headless mode)")
         add_executable(yamy_stub ${STUB_SOURCES})
         target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
-        target_link_libraries(yamy_stub PRIVATE pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES})
+        target_link_libraries(yamy_stub PRIVATE
+            pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
+            Qt5::Core
+        )
     endif()
 
     target_include_directories(yamy_stub PRIVATE
