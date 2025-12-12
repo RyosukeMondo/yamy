@@ -195,7 +195,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build regression tests only
-      run: cmake --build build --target yamy_regression_test --parallel
+      run: cmake --build build --target yamy_regression_test -j2
 
     - name: Run tests with coverage (Xvfb)
       run: |
