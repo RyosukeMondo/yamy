@@ -104,8 +104,16 @@ private:
 #endif
     void load_ARGUMENT(stringq *o_arg);        /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(std::string *o_arg);    /// &lt;ARGUMENT&gt;
+#ifdef _WIN32
+    // On Windows with _UNICODE, tstring is wstring
+    void load_ARGUMENT(tstring *o_arg);        /// &lt;ARGUMENT&gt;
+#endif
     void load_ARGUMENT(std::list<stringq> *o_arg); /// &lt;ARGUMENT&gt;
     void load_ARGUMENT(std::list<std::string> *o_arg); /// &lt;ARGUMENT&gt;
+#ifdef _WIN32
+    // On Windows with _UNICODE, list<tstring> is list<wstring>
+    void load_ARGUMENT(std::list<tstring> *o_arg); /// &lt;ARGUMENT&gt;
+#endif
     void load_ARGUMENT(Regex *o_arg);        /// &lt;ARGUMENT&gt;
     // Note: tregex is an alias for Regex, so no separate overload needed
     void load_ARGUMENT(VKey *o_arg);        /// &lt;ARGUMENT_VK&gt;

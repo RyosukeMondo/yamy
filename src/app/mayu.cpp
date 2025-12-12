@@ -169,7 +169,7 @@ private:
 
             if (n->m_type == Notify::Type_setFocus)
                 m_engine.setFocus((HWND)(ULONG_PTR)n->m_hwnd, n->m_threadId,
-                                  n->m_className, n->m_titleName, false);
+                                  to_string(n->m_className), to_string(n->m_titleName), false);
 
             {
                 Acquire a(&m_log, 1);
@@ -184,7 +184,7 @@ private:
             m_log << _T("TITLE:\t") << n->m_titleName << std::endl;
 
             bool isMDI = true;
-            HWND hwnd = getToplevelWindow((HWND)(ULONG_PTR)n->m_hwnd, &isMDI);
+            HWND hwnd = getToplevelWindow(static_cast<HWND>((HWND)(ULONG_PTR)n->m_hwnd), &isMDI);
             RECT rc;
             if (isMDI) {
                 getChildWindowRect(hwnd, &rc);
@@ -192,7 +192,7 @@ private:
                 << rc.left << _T(", ") << rc.top << _T(") / (")
                 << rcWidth(&rc) << _T("x") << rcHeight(&rc) << _T(")")
                 << std::endl;
-                hwnd = getToplevelWindow((HWND)(ULONG_PTR)n->m_hwnd, nullptr);
+                hwnd = getToplevelWindow(static_cast<HWND>((HWND)(ULONG_PTR)n->m_hwnd), nullptr);
             }
 
             GetWindowRect(hwnd, &rc);

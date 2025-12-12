@@ -645,7 +645,7 @@ void SettingLoader::load_ARGUMENT(__int64 *o_arg)
 // &lt;ARGUMENT&gt;
 void SettingLoader::load_ARGUMENT(tstring *o_arg)
 {
-    *o_arg = getToken()->getString();
+    *o_arg = to_tstring(getToken()->getString());
 }
 #endif
 
@@ -668,7 +668,7 @@ void SettingLoader::load_ARGUMENT(std::list<tstring> *o_arg)
     while (true) {
         if (!lookToken()->isString())
             return;
-        o_arg->push_back(getToken()->getString());
+        o_arg->push_back(to_tstring(getToken()->getString()));
 
         if (!lookToken()->isComma())
             return;
@@ -1277,7 +1277,7 @@ static bool readFile(std::string *o_data, const std::string &i_filename)
 #endif
 
     // open
-    FILE *fp = _tfopen(tFilename.c_str(), "rb");
+    FILE *fp = _tfopen(tFilename.c_str(), _T("rb"));
 #else // Linux
     const std::string &tFilename = i_filename;
     struct stat sbuf;
@@ -1380,10 +1380,12 @@ static bool readFile(std::string *o_data, const std::string &i_filename)
                 break;
             }
         }
-        std::wstring wdata(wbuf.get(), d);
-        *o_data = yamy::platform::wstring_to_utf8(wdata);
-        fclose(fp);
-        return true;
+        {
+            std::wstring wdata(wbuf.get(), d);
+            *o_data = yamy::platform::wstring_to_utf8(wdata);
+            fclose(fp);
+            return true;
+        }
 
 not_UTF_8:
         ;
@@ -1625,7 +1627,7 @@ add_symbols:
 
 
 // constructor
-SettingLoader::SettingLoader(SyncObject *i_soLog, tostream *i_log, const ConfigStore *i_config)
+SettingLoader::SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config)
         : m_setting(nullptr),
         m_config(i_config),
         m_isThereAnyError(false),
