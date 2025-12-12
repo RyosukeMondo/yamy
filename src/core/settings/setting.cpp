@@ -4,7 +4,7 @@
 #include "misc.h"
 #include "mayu.h"
 #include "stringtool.h"
-#include "platform_paths.h"
+#include "../platform/platform_paths.h"
 #include "setting.h"
 #include <filesystem>
 

@@ -89,7 +89,7 @@ yamy::platform::Rect LayoutManager::calculateRect(const yamy::platform::Rect& or
                                   const yamy::platform::Rect& currentParentRect,
                                   const Origin origins[4])
 {
-    yamy::platform::Rect outRect = {0};
+    yamy::platform::Rect outRect; // Default constructor initializes to (0,0,0,0)
     int32_t* outPtrs[4] = { &outRect.left, &outRect.top, &outRect.right, &outRect.bottom };
     int32_t originalChildPos[4] = { originalChildRect.left, originalChildRect.top, originalChildRect.right, originalChildRect.bottom };
     

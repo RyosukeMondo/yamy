@@ -25,7 +25,7 @@ class Target
         int rop2 = SetROP2(hdc, R2_XORPEN);
         if (rop2) {
             RECT rc;
-            CHECK_TRUE( GetWindowRect(hwnd, &rc) );
+            CHECK_TRUE( GetWindowRect(static_cast<HWND>(i_hwnd), &rc) );
             int width = rcWidth(&rc);
             int height = rcHeight(&rc);
 
@@ -216,7 +216,7 @@ uint16_t Register_target()
     wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszMenuName  = nullptr;
-    wc.lpszClassName = "mayuTarget";
+    wc.lpszClassName = _T("mayuTarget");
     return RegisterClass(&wc);
 }
 

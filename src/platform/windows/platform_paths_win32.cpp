@@ -1,6 +1,6 @@
 // platform_paths_win32.cpp - Windows implementation of path utilities
 
-#include "platform_paths.h"
+#include "../../core/platform/platform_paths.h"
 #include "windowstool.h"
 #include "misc.h"
 #include <windows.h>

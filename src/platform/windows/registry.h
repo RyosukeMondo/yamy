@@ -80,16 +80,19 @@ public:
 #endif //!USE_INI
 
     /// read binary data
-    bool read(const std::string &i_name, BYTE *o_value, DWORD *i_valueSize,
-              const BYTE *i_defaultValue = nullptr, DWORD i_defaultValueSize = 0)
+    bool read(const std::string &i_name, uint8_t *o_value, uint32_t *i_valueSize,
+              const uint8_t *i_defaultValue = nullptr, uint32_t i_defaultValueSize = 0)
     const override {
-        return read(m_root, m_path, i_name, o_value, i_valueSize, i_defaultValue,
-                    i_defaultValueSize);
+        return read(m_root, m_path, i_name, reinterpret_cast<BYTE*>(o_value),
+                    reinterpret_cast<DWORD*>(i_valueSize),
+                    reinterpret_cast<const BYTE*>(i_defaultValue),
+                    static_cast<DWORD>(i_defaultValueSize));
     }
     /// write binary data
-    bool write(const std::string &i_name, const BYTE *i_value,
-               DWORD i_valueSize) const override {
-        return write(m_root, m_path, i_name, i_value, i_valueSize);
+    bool write(const std::string &i_name, const uint8_t *i_value,
+               uint32_t i_valueSize) const override {
+        return write(m_root, m_path, i_name, reinterpret_cast<const BYTE*>(i_value),
+                     static_cast<DWORD>(i_valueSize));
     }
 
 public:

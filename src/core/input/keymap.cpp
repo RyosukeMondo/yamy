@@ -479,11 +479,15 @@ void Keymap::describe(tostream &i_ost, DescribeParam *i_dp) const
         for (e = Event::events; *e; ++ e)
             if (i->m_modifiedKey.m_key == *e)
                 break;
+
+        // Convert Key/ModifiedKey to string using narrow stream, then to tstring
+        std::ostringstream oss;
         if (*e)
-            i_ost << " event " << *i->m_modifiedKey.m_key;
+            oss << " event " << *i->m_modifiedKey.m_key;
         else
-            i_ost << " key " << i->m_modifiedKey;
-        i_ost << "\t= " << *i->m_keySeq << std::endl;
+            oss << " key " << i->m_modifiedKey;
+        oss << "\t= " << *i->m_keySeq;
+        i_ost << to_tstring(oss.str()) << std::endl;
         i_dp->m_dk.push_back(i->m_modifiedKey);
     }
 
