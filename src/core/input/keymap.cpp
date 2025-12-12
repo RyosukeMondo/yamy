@@ -197,7 +197,7 @@ ModifiedKey KeySeq::getFirstModifiedKey() const
 tostream &operator<<(tostream &i_ost, const KeySeq &i_ks)
 {
     for (KeySeq::Actions::const_iterator
-            i = i_ks.m_actions.begin(); i != i_ks.m_actions.end(); ++ i)
+            i = i_ks.getActions().begin(); i != i_ks.getActions().end(); ++ i)
         i_ost << **i << " ";
     return i_ost;
 }
@@ -451,7 +451,7 @@ void Keymap::describe(tostream &i_ost, DescribeParam *i_dp) const
                     default:
                         break;
                     }
-                    i_ost << *j->m_key << " ";
+                    i_ost << to_tstring(j->m_key->getName()) << " ";
                 }
                 i_ost << std::endl;
             }
