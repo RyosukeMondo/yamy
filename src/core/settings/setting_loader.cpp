@@ -14,6 +14,7 @@
 #include "mayurc.h"
 #include "setting.h"
 #include "setting_loader.h"
+#include <filesystem>
 #ifdef _WIN32
 #include "windowstool.h"
 #endif

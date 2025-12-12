@@ -96,11 +96,13 @@ void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
     char buf[GANA_MAX_PATH];
 #endif //USE_INI
 
+    // Get executable directory
 #ifdef _WIN32
+    char buf[GANA_MAX_PATH];
     if (GetModuleFileName(GetModuleHandle(nullptr), buf, NUMBER_OF(buf)))
         o_pathes->push_back(pathRemoveFileSpec(buf));
 #else
-    // On Linux, use /proc/self/exe to get executable path
+    char buf[GANA_MAX_PATH];
     ssize_t count = readlink("/proc/self/exe", buf, NUMBER_OF(buf) - 1);
     if (count > 0) {
         buf[count] = '\0';
