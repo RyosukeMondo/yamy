@@ -7,7 +7,7 @@
 #  define _WINDOWSTOOL_H
 
 
-#  include "stringtool.h"
+#  include "../../utils/stringtool.h"
 #  include <windows.h>
 #  include <string>
 #  include "utf_conversion.h"

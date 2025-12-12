@@ -120,6 +120,17 @@ std::wstring to_wstring(const std::string& i_str);
 /// converter
 std::string to_string(const std::wstring& i_str);
 
+// Alias for tstring conversion (tstring is wstring on Windows)
+#ifdef UNICODE
+inline std::wstring to_tstring(const std::string& i_str) {
+    return to_wstring(i_str);
+}
+#else
+inline std::string to_tstring(const std::string& i_str) {
+    return i_str;  // tstring is string when UNICODE is not defined
+}
+#endif
+
 // convert wstring to UTF-8
 std::string to_UTF_8(const std::wstring& i_str);
 
