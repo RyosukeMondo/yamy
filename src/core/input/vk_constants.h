@@ -9,6 +9,25 @@
 
 #ifdef _WIN32
 #include <windows.h>
+
+// MinGW might not define all IME-related VK constants, so define them if missing
+#ifndef VK_DBE_ALPHANUMERIC
+#define VK_DBE_ALPHANUMERIC           0xF0
+#define VK_DBE_KATAKANA               0xF1
+#define VK_DBE_HIRAGANA               0xF2
+#define VK_DBE_SBCSCHAR               0xF3
+#define VK_DBE_DBCSCHAR               0xF4
+#define VK_DBE_ROMAN                  0xF5
+#define VK_DBE_NOROMAN                0xF6
+#define VK_DBE_ENTERWORDREGISTERMODE  0xF7
+#define VK_DBE_ENTERIMECONFIGMODE     0xF8
+#define VK_DBE_FLUSHSTRING            0xF9
+#define VK_DBE_CODEINPUT              0xFA
+#define VK_DBE_NOCODEINPUT            0xFB
+#define VK_DBE_DETERMINESTRING        0xFC
+#define VK_DBE_ENTERDLGCONVERSIONMODE 0xFD
+#endif
+
 #else
 
 // Mouse buttons
