@@ -7,6 +7,7 @@
 #include "errormessage.h"
 #include "stringtool.h"
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <chrono>

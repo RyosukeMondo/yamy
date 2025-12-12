@@ -2,7 +2,7 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/stringtool.h"
-#include "shell_constants.h"
+#include "../platform/shell_constants.h"
 #ifndef NUMBER_OF
 #define NUMBER_OF(array) (sizeof(array) / sizeof((array)[0]))
 #endif

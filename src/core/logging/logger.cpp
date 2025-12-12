@@ -1,6 +1,6 @@
 #include "logger.h"
 #include "log_entry.h"
-#include "platform_time.h"
+#include "../platform/platform_time.h"
 #include <iostream>
 #include <iomanip>
 

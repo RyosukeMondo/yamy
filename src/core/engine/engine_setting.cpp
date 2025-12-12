@@ -81,6 +81,18 @@ bool Engine::setSetting(Setting *i_setting) {
 // Switch to a different configuration file
 // Properly handles string conversions via to_tstring() for cross-platform compatibility
 bool Engine::switchConfiguration(const std::string& configPath) {
+#ifdef _WIN32
+    // Windows stub - not yet implemented due to wide stream incompatibility
+    // SettingLoader expects std::ostream* but m_log is std::wostream-based on Windows
+    Acquire a(&m_log, 0);
+    m_log << "switchConfiguration: not supported on Windows yet" << std::endl;
+    notifyGUI(yamy::MessageType::ConfigError, "Configuration switching not supported on Windows");
+    if (m_configSwitchCallback) {
+        m_configSwitchCallback(false, configPath);
+    }
+    return false;
+#else
+    // Linux implementation
     namespace fs = std::filesystem;
 
     notifyGUI(yamy::MessageType::ConfigLoading, configPath);
@@ -174,4 +186,5 @@ bool Engine::switchConfiguration(const std::string& configPath) {
 
     notifyGUI(yamy::MessageType::ConfigLoaded, configPath);
     return true;
+#endif // _WIN32
 }
