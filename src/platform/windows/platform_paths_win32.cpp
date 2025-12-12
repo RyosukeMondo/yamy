@@ -10,9 +10,10 @@ namespace platform {
 
 std::string getExecutableDirectory()
 {
-    char buf[GANA_MAX_PATH];
+    TCHAR buf[GANA_MAX_PATH];
     if (GetModuleFileName(GetModuleHandle(nullptr), buf, NUMBER_OF(buf))) {
-        return pathRemoveFileSpec(buf);
+        tstring tpath = pathRemoveFileSpec(buf);
+        return to_string(tpath);
     }
     return "";
 }
