@@ -130,6 +130,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y cmake g++ make \
           libx11-dev libxrandr-dev libudev-dev \
+          qtbase5-dev \
           xvfb
 
     - name: Configure CMake
@@ -179,6 +180,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y cmake g++ make \
           libx11-dev libxrandr-dev libudev-dev \
+          qtbase5-dev \
           xvfb lcov bc
 
     - name: Configure CMake with coverage
