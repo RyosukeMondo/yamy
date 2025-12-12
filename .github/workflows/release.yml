@@ -54,6 +54,8 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=/usr \
           -DBUILD_LINUX_STUB=ON \
+          -DBUILD_REGRESSION_TESTS=OFF \
+          -DBUILD_LINUX_TESTING=OFF \
           -DCPACK_PACKAGE_VERSION=${{ steps.version.outputs.version }}
 
     - name: Build
@@ -124,6 +126,8 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=/usr \
           -DBUILD_LINUX_STUB=ON \
+          -DBUILD_REGRESSION_TESTS=OFF \
+          -DBUILD_LINUX_TESTING=OFF \
           -DCPACK_PACKAGE_VERSION=${{ steps.version.outputs.version }}
 
     - name: Build
