@@ -8,6 +8,7 @@
 #include "windowstool.h"
 #endif
 #include "setting.h"
+#include <filesystem>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -86,16 +87,11 @@ void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
     if (userprofile)
         o_pathes->push_back(userprofile);
 
-    char buf[GANA_MAX_PATH];
-#ifdef _WIN32
-    uint32_t len = GetCurrentDirectory(NUMBER_OF(buf), buf);
-    if (0 < len && len < NUMBER_OF(buf))
-        o_pathes->push_back(buf);
-#else
-    // Use POSIX getcwd on Linux
-    if (getcwd(buf, NUMBER_OF(buf)))
-        o_pathes->push_back(buf);
-#endif
+    // Get current working directory using C++17 filesystem
+    std::error_code ec;
+    auto currentPath = std::filesystem::current_path(ec);
+    if (!ec)
+        o_pathes->push_back(currentPath.string());
 #else //USE_INI
     char buf[GANA_MAX_PATH];
 #endif //USE_INI
