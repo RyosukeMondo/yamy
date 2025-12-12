@@ -20,9 +20,8 @@
 #endif
 #include <string>
 #include <filesystem>
-#ifndef _WIN32
-#include <unistd.h>
-#endif
+#include <thread>
+#include <chrono>
 
 
 // manageTs4mayu removed (moved to InputDriver)
@@ -145,11 +144,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     const int maxRetries = 10;
     while (!setSetting(newSetting) && retryCount < maxRetries) {
         // Brief sleep to allow synchronization to complete
-#ifdef _WIN32
-        Sleep(100);
-#else
-        usleep(100000);
-#endif
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         retryCount++;
     }
 
