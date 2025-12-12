@@ -199,6 +199,22 @@
 #define VK_PA1        0xFD
 #define VK_OEM_CLEAR  0xFE
 
+// IME-specific keys (from ime.h on Windows)
+#define VK_DBE_ALPHANUMERIC           0xF0
+#define VK_DBE_KATAKANA               0xF1
+#define VK_DBE_HIRAGANA               0xF2
+#define VK_DBE_SBCSCHAR               0xF3
+#define VK_DBE_DBCSCHAR               0xF4
+#define VK_DBE_ROMAN                  0xF5
+#define VK_DBE_NOROMAN                0xF6
+#define VK_DBE_ENTERWORDREGISTERMODE  0xF7
+#define VK_DBE_ENTERIMECONFIGMODE     0xF8
+#define VK_DBE_FLUSHSTRING            0xF9
+#define VK_DBE_CODEINPUT              0xFA
+#define VK_DBE_NOCODEINPUT            0xFB
+#define VK_DBE_DETERMINESTRING        0xFC
+#define VK_DBE_ENTERDLGCONVERSIONMODE 0xFD
+
 #endif // _WIN32
 
 #endif // _VK_CONSTANTS_H
