@@ -9,15 +9,10 @@
 #include "hook.h"
 #include "mayurc.h"
 #include "stringtool.h"
-#ifdef _WIN32
 #include "windowstool.h"
-#endif
 
 #include <iomanip>
 #include <string>
-#ifdef _WIN32
-#include <process.h>
-#endif
 
 
 // check focus window

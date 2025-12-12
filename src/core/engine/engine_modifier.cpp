@@ -8,14 +8,9 @@
 #include "errormessage.h"
 #include "hook.h"
 #include "mayurc.h"
-#ifdef _WIN32
 #include "windowstool.h"
-#endif
 
 #include <iomanip>
-#ifdef _WIN32
-#include <process.h>
-#endif
 
 
 // is modifier pressed ?
