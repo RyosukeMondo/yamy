@@ -1,7 +1,7 @@
 # #ifdef Reduction Strategy
 
 ## Current Status
-- **Total #ifdef _WIN32**: 43 (was 75)
+- **Total #ifdef _WIN32**: 33 (was 75)
 - **Inline conditionals**: 0 ✓ (good!)
 - **Top offenders**: engine_lifecycle.cpp (12), setting_loader.cpp (5)
 - **Recent progress** (this session):
@@ -136,7 +136,7 @@ Add to `.github/workflows/ci.yml`:
 ### Baseline (2025-12-12)
 ```
 Initial: 75
-Current: 43 (-32 total, -43%)
+Current: 33 (-42 total, -56%)
 Inline: 0
 Files with ZERO #ifdefs: 8
 Should refactor: ~20 (mainly engine_lifecycle.cpp: 12, setting_loader.cpp: 5)
