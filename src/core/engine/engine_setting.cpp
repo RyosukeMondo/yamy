@@ -9,6 +9,7 @@
 #include "../platform/hook_interface.h"
 #include "mayurc.h"
 #include "setting_loader.h"
+#include "stringtool.h"
 #ifdef _WIN32
 #include "windowstool.h"
 #endif
@@ -92,7 +93,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     // Validate config path exists
     if (!fs::exists(configPath) || !fs::is_regular_file(configPath)) {
         Acquire a(&m_log, 0);
-        m_log << "switchConfiguration: file not found: " << configPath << std::endl;
+        m_log << "switchConfiguration: file not found: " << to_tstring(configPath) << std::endl;
         if (m_configSwitchCallback) {
             m_configSwitchCallback(false, configPath);
         }
@@ -124,7 +125,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
         // Rollback: delete the failed setting and keep current
         delete newSetting;
         Acquire a(&m_log, 0);
-        m_log << "switchConfiguration: failed to parse config: " << configPath << std::endl;
+        m_log << "switchConfiguration: failed to parse config: " << to_tstring(configPath) << std::endl;
         if (m_configSwitchCallback) {
             m_configSwitchCallback(false, configPath);
         }
@@ -155,7 +156,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
         delete newSetting;
         Acquire a(&m_log, 0);
         m_log << "switchConfiguration: failed to apply setting (engine busy): "
-              << configPath << std::endl;
+              << to_tstring(configPath) << std::endl;
         if (m_configSwitchCallback) {
             m_configSwitchCallback(false, configPath);
         }
@@ -172,7 +173,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     // Log success
     {
         Acquire a(&m_log, 0);
-        m_log << "switchConfiguration: successfully switched to: " << configPath << std::endl;
+        m_log << "switchConfiguration: successfully switched to: " << to_tstring(configPath) << std::endl;
     }
 
     // Notify callback
