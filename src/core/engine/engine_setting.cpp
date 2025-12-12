@@ -10,14 +10,9 @@
 #include "mayurc.h"
 #include "setting_loader.h"
 #include "stringtool.h"
-#ifdef _WIN32
 #include "windowstool.h"
-#endif
 
 #include <iomanip>
-#ifdef _WIN32
-#include <process.h>
-#endif
 #include <string>
 #include <filesystem>
 #include <thread>
@@ -84,8 +79,7 @@ bool Engine::setSetting(Setting *i_setting) {
 
 
 // Switch to a different configuration file
-// Note: This function is only used by Qt GUI on Linux and is incompatible with Windows wide streams
-#ifndef _WIN32
+// Properly handles string conversions via to_tstring() for cross-platform compatibility
 bool Engine::switchConfiguration(const std::string& configPath) {
     namespace fs = std::filesystem;
 
@@ -181,4 +175,3 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     notifyGUI(yamy::MessageType::ConfigLoaded, configPath);
     return true;
 }
-#endif // !_WIN32
