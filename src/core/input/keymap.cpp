@@ -40,7 +40,11 @@ Action *ActionKey::clone() const
 // stream output
 tostream &ActionKey::output(tostream &i_ost) const
 {
-    return i_ost << m_modifiedKey;
+    // ModifiedKey operator<< is only defined for narrow streams
+    std::stringstream ss;
+    ss << m_modifiedKey;
+    i_ost << to_tstring(ss.str());
+    return i_ost;
 }
 
 //
