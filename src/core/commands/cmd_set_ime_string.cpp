@@ -24,12 +24,8 @@ void Command_SetImeString::exec(Engine *i_engine, FunctionParam *i_param) const
     if (!i_param->m_isPressed)
         return;
     if (i_engine->m_hwndFocus) {
-        auto msgName = addSessionId(WM_MAYU_MESSAGE_NAME);
-#ifdef _WIN32
-        UINT WM_MAYU_MESSAGE = i_engine->getWindowSystem()->registerWindowMessage(to_string(msgName));
-#else
+        auto msgName = addSessionId(WM_MAYU_MESSAGE_NAME);  // Returns std::string on both platforms
         UINT WM_MAYU_MESSAGE = i_engine->getWindowSystem()->registerWindowMessage(msgName);
-#endif
         i_engine->getWindowSystem()->postMessage(i_engine->m_hwndFocus, WM_MAYU_MESSAGE, MayuMessage_funcSetImeString, m_data.eval().size() * sizeof(char));
 
         unsigned int len = 0;

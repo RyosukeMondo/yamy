@@ -2,12 +2,9 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/stringtool.h"
-#ifdef _WIN32
-#include "../../platform/windows/hook.h" // For WM_MAYU_MESSAGE_NAME
-#else
-// Define the message name for Linux
+
+// Use narrow string for cross-platform compatibility with registerWindowMessage
 #define WM_MAYU_MESSAGE_NAME "YAMY_MAYU_MESSAGE"
-#endif
 
 void Command_WindowIdentify::load(SettingLoader *i_sl)
 {
@@ -25,12 +22,8 @@ void Command_WindowIdentify::exec(Engine *i_engine, FunctionParam *i_param) cons
         i_engine->m_log << "CLASS:\t" << to_tstring(className) << std::endl;
         i_engine->m_log << "TITLE:\t" << to_tstring(titleName) << std::endl;
 
-        auto msgName = addSessionId(WM_MAYU_MESSAGE_NAME);  // Returns tstring (wstring on Windows, string on Linux)
-#ifdef _WIN32
-        unsigned int message = i_engine->getWindowSystem()->registerWindowMessage(to_string(msgName));
-#else
+        auto msgName = addSessionId(WM_MAYU_MESSAGE_NAME);  // Returns std::string on both platforms
         unsigned int message = i_engine->getWindowSystem()->registerWindowMessage(msgName);
-#endif
         uintptr_t result;
         if (i_engine->getWindowSystem()->sendMessageTimeout(
                     i_param->m_hwnd, message, 0, 0,
