@@ -3,6 +3,7 @@
 
 #include "config_manager.h"
 #include "config_metadata.h"
+#include "platform_time.h"
 #include <filesystem>
 #include <algorithm>
 #include <cstdlib>
@@ -420,11 +421,7 @@ std::string ConfigManager::generateTimestamp()
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         now.time_since_epoch()) % 1000;
     std::tm tm_now;
-#ifdef _WIN32
-    localtime_s(&tm_now, &time_t_now);
-#else
-    localtime_r(&time_t_now, &tm_now);
-#endif
+    yamy::platform::localtime_safe(&time_t_now, &tm_now);
 
     std::ostringstream oss;
     oss << std::put_time(&tm_now, "%Y%m%d_%H%M%S")

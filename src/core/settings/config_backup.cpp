@@ -1,4 +1,5 @@
 #include "config_backup.h"
+#include "platform_time.h"
 #include <iostream>
 #include <chrono>
 #include <iomanip>
@@ -27,11 +28,7 @@ bool ConfigBackup::createBackup(const std::string& configPath) {
         const auto now = std::chrono::system_clock::now();
         const auto time_t = std::chrono::system_clock::to_time_t(now);
         std::tm tm;
-        #ifdef _WIN32
-        localtime_s(&tm, &time_t);
-        #else
-        localtime_r(&time_t, &tm);
-        #endif
+        yamy::platform::localtime_safe(&time_t, &tm);
 
         std::stringstream ss;
         ss << std::put_time(&tm, "%Y%m%d%H%M%S");
