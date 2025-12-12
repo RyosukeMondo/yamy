@@ -3,9 +3,9 @@
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/stringtool.h"
 
-#ifndef WM_MAYU_MESSAGE_NAME
+// Override hook.h's wide string definition with narrow string for cross-platform compatibility
+#undef WM_MAYU_MESSAGE_NAME
 #define WM_MAYU_MESSAGE_NAME "YAMY_MAYU_MESSAGE"
-#endif
 #ifndef MayuMessage_funcSetImeString
 #define MayuMessage_funcSetImeString 3
 #endif
