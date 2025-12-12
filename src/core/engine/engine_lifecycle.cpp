@@ -9,9 +9,6 @@
 #include "../platform/ipc_channel_factory.h"
 #include "hook.h"
 #include "mayurc.h"
-#ifdef _WIN32
-#include "windowstool.h"
-#endif
 #include "../platform/message_constants.h"
 #include "../platform/sync.h"
 #include "core/logging/logger.h"
