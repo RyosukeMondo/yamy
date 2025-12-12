@@ -3,6 +3,7 @@
 #include "../functions/function.h"
 #include "../input/keymap.h"
 #include <iostream>
+#include "../utils/stringtool.h"
 
 void Command_Keymap::exec(Engine *i_engine, FunctionParam *i_param) const
 {
@@ -12,7 +13,7 @@ void Command_Keymap::exec(Engine *i_engine, FunctionParam *i_param) const
     c.m_keymap = i_keymap;
     {
         Acquire a(&i_engine->m_log, 1);
-        i_engine->m_log << "(" << c.m_keymap->getName() << ")" << std::endl;
+        i_engine->m_log << "(" << to_tstring(c.m_keymap->getName()) << ")" << std::endl;
         i_param->m_doesNeedEndl = false;
     }
     i_engine->generateKeyboardEvents(c);

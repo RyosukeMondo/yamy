@@ -3,6 +3,7 @@
 #include "../functions/function.h"
 #include "../input/keymap.h"
 #include <iostream>
+#include "../utils/stringtool.h"
 
 void Command_Prefix::exec(Engine *i_engine, FunctionParam *i_param) const
 {
@@ -23,7 +24,7 @@ void Command_Prefix::exec(Engine *i_engine, FunctionParam *i_param) const
 
     {
         Acquire a(&i_engine->m_log, 1);
-        i_engine->m_log << "(" << i_keymap->getName() << ", "
+        i_engine->m_log << "(" << to_tstring(i_keymap->getName()) << ", "
                         << (i_doesIgnoreModifiers ? "true" : "false") << ")";
     }
 }
