@@ -1,5 +1,6 @@
 #include "logger.h"
 #include "log_entry.h"
+#include "platform_time.h"
 #include <iostream>
 #include <iomanip>
 
@@ -13,11 +14,7 @@ LogEntry::LogEntry(LogLevel level, std::string category, std::string message)
 std::string LogEntry::format() const {
   std::time_t time = clock::to_time_t(timestamp);
   std::tm tm;
-#ifdef _WIN32
-  localtime_s(&tm, &time);
-#else
-  localtime_r(&time, &tm);
-#endif
+  yamy::platform::localtime_safe(&time, &tm);
 
   char level_char;
   switch (level) {
