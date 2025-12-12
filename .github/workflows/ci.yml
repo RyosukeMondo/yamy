@@ -179,7 +179,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y cmake g++ make \
           libx11-dev libxrandr-dev libudev-dev \
-          qtbase5-dev qttools5-dev qtx11extras5-dev \
           xvfb lcov bc
 
     - name: Configure CMake with coverage
@@ -187,6 +186,7 @@ jobs:
         cmake -B build \
           -DBUILD_LINUX_STUB=ON \
           -DBUILD_REGRESSION_TESTS=ON \
+          -DBUILD_QT_GUI=OFF \
           -DENABLE_COVERAGE=ON \
           -DCMAKE_BUILD_TYPE=Debug
 
