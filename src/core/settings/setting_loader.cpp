@@ -1599,26 +1599,18 @@ add_symbols:
 
         // check relative to current file
         if (!m_currentFilename.empty()) {
-#ifdef _WIN32
-            std::string dir = pathRemoveFileSpec(m_currentFilename);
-#else
-            // Linux: extract directory from path
-            std::string dir;
-            size_t pos = m_currentFilename.rfind('/');
-            if (pos != std::string::npos)
-                dir = m_currentFilename.substr(0, pos);
-#endif
+            // Use filesystem::path to extract directory
+            std::filesystem::path filePath(m_currentFilename);
+            std::string dir = filePath.parent_path().string();
             if (!dir.empty())
                 pathes.push_back(dir);
         }
 
         getHomeDirectories(m_config, &pathes);
         for (HomeDirectories::iterator i = pathes.begin(); i != pathes.end(); ++ i) {
-#ifdef _WIN32
-            *o_path = to_UTF_8(*i) + "\\" + name;
-#else
-            *o_path = to_UTF_8(*i) + "/" + name;
-#endif
+            // Use filesystem::path to handle path separators automatically
+            std::filesystem::path fullPath = std::filesystem::path(to_UTF_8(*i)) / name;
+            *o_path = fullPath.string();
             if (isReadable(*o_path, i_debugLevel))
                 return true;
         }
