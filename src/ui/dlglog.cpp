@@ -29,9 +29,9 @@ public:
     ///
     DlgLog(HWND i_hwnd)
             : LayoutManager(i_hwnd),
-            m_hwndEdit(GetDlgItem(m_hwnd, IDC_EDIT_log)),
+            m_hwndEdit(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_EDIT_log)),
             m_hwndTaskTray(nullptr),
-            m_hfontOriginal(GetWindowFont(m_hwnd)),
+            m_hfontOriginal(GetWindowFont(static_cast<HWND>(m_hwnd))),
             m_hfont(nullptr),
             m_windowSystem(nullptr) {
     }
@@ -46,48 +46,53 @@ public:
         m_windowSystem = dld->m_windowSystem;
 
         // set icons
-        setSmallIcon(m_hwnd, IDI_ICON_mayu);
-        setBigIcon(m_hwnd, IDI_ICON_mayu);
+        setSmallIcon(static_cast<HWND>(m_hwnd), IDI_ICON_mayu);
+        setBigIcon(static_cast<HWND>(m_hwnd), IDI_ICON_mayu);
 
         // set font
-        Registry::read(MAYU_REGISTRY_ROOT, _T("logFont"), &m_lf,
-                       to_tstring(loadString(IDS_logFont)));
+#ifdef USE_INI
+        Registry::read(0, to_string(_T("yamy")), to_string(_T("logFont")), &m_lf,
+                       loadString(IDS_logFont));
+#else
+        Registry::read(HKEY_CURRENT_USER, to_string(_T("Software\\gimy.net\\yamy")), to_string(_T("logFont")), &m_lf,
+                       loadString(IDS_logFont));
+#endif
         m_hfont = CreateFontIndirect(&m_lf);
         SetWindowFont(m_hwndEdit, m_hfont, false);
 
         // resize
         RECT rc;
-        CHECK_TRUE( GetClientRect(m_hwnd, &rc) );
+        CHECK_TRUE( GetClientRect(static_cast<HWND>(m_hwnd), &rc) );
         wmSize(0, (short)rc.right, (short)rc.bottom);
 
         // debug level
         bool isChecked =
-            (IsDlgButtonChecked(m_hwnd, IDC_CHECK_detail) == BST_CHECKED);
+            (IsDlgButtonChecked(static_cast<HWND>(m_hwnd), IDC_CHECK_detail) == BST_CHECKED);
         m_log->setDebugLevel(isChecked ? 1 : 0);
 
         // set layout manager
         typedef LayoutManager LM;
-        addItem(GetDlgItem(m_hwnd, IDOK),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDOK),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_BOTTOM_EDGE,
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_EDIT_log),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_EDIT_log),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_BUTTON_clearLog),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_BUTTON_clearLog),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_BOTTOM_EDGE,
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_BUTTON_changeFont),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_BUTTON_changeFont),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_BOTTOM_EDGE,
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_CHECK_detail),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_CHECK_detail),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_BOTTOM_EDGE,
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_BOTTOM_EDGE);
         restrictSmallestSize();
 
         // enlarge window
-        GetWindowRect(m_hwnd, &rc);
+        GetWindowRect(static_cast<HWND>(m_hwnd), &rc);
         rc.bottom += (rc.bottom - rc.top) * 3;
-        MoveWindow(m_hwnd, rc.left, rc.top,
+        MoveWindow(static_cast<HWND>(m_hwnd), rc.left, rc.top,
                    rc.right - rc.left, rc.bottom - rc.top, true);
         return TRUE;
     }
@@ -99,8 +104,8 @@ public:
         DeleteObject(m_hfont);
 
         // unset icons
-        unsetBigIcon(m_hwnd);
-        unsetSmallIcon(m_hwnd);
+        unsetBigIcon(static_cast<HWND>(m_hwnd));
+        unsetSmallIcon(static_cast<HWND>(m_hwnd));
         return TRUE;
     }
 
@@ -109,7 +114,7 @@ public:
         if (m_windowSystem) {
             m_windowSystem->showWindow(m_hwnd, SW_HIDE);
         } else {
-            ShowWindow(m_hwnd, SW_HIDE);
+            ShowWindow(static_cast<HWND>(m_hwnd), SW_HIDE);
         }
         return TRUE;
     }
@@ -121,7 +126,7 @@ public:
             if (m_windowSystem) {
                 m_windowSystem->showWindow(m_hwnd, SW_HIDE);
             } else {
-                ShowWindow(m_hwnd, SW_HIDE);
+                ShowWindow(static_cast<HWND>(m_hwnd), SW_HIDE);
             }
             return TRUE;
         }
@@ -138,22 +143,26 @@ public:
             CHOOSEFONT cf;
             memset(&cf, 0, sizeof(cf));
             cf.lStructSize = sizeof(cf);
-            cf.hwndOwner = m_hwnd;
+            cf.hwndOwner = static_cast<HWND>(m_hwnd);
             cf.lpLogFont = &m_lf;
             cf.Flags = CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
             if (ChooseFont(&cf)) {
                 HFONT hfontNew = CreateFontIndirect(&m_lf);
-                SetWindowFont(m_hwnd, hfontNew, true);
+                SetWindowFont(static_cast<HWND>(m_hwnd), hfontNew, true);
                 DeleteObject(m_hfont);
                 m_hfont = hfontNew;
-                Registry::write(MAYU_REGISTRY_ROOT, _T("logFont"), m_lf);
+#ifdef USE_INI
+                Registry::write(0, to_string(_T("yamy")), to_string(_T("logFont")), m_lf);
+#else
+                Registry::write(HKEY_CURRENT_USER, to_string(_T("Software\\gimy.net\\yamy")), to_string(_T("logFont")), m_lf);
+#endif
             }
             return TRUE;
         }
 
         case IDC_CHECK_detail: {
             bool isChecked =
-                (IsDlgButtonChecked(m_hwnd, IDC_CHECK_detail) == BST_CHECKED);
+                (IsDlgButtonChecked(static_cast<HWND>(m_hwnd), IDC_CHECK_detail) == BST_CHECKED);
             m_log->setDebugLevel(isChecked ? 1 : 0);
             return TRUE;
         }

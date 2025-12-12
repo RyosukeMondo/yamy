@@ -318,7 +318,7 @@ int FixScancodeMap::fix()
     int result = 0;
 
     // save original Scancode Map
-    ret = m_pReg->read(_T("Scancode Map"), nullptr, &origSize, nullptr, 0);
+    ret = m_pReg->read(to_string(_T("Scancode Map")), nullptr, reinterpret_cast<uint32_t*>(&origSize), nullptr, 0);
     if (ret) {
         origMap = reinterpret_cast<ScancodeMap*>(malloc(origSize));
         if (origMap == nullptr) {
@@ -326,7 +326,7 @@ int FixScancodeMap::fix()
             goto exit;
         }
 
-        ret = m_pReg->read(_T("Scancode Map"), reinterpret_cast<BYTE*>(origMap), &origSize, nullptr, 0);
+        ret = m_pReg->read(to_string(_T("Scancode Map")), reinterpret_cast<uint8_t*>(origMap), reinterpret_cast<uint32_t*>(&origSize), nullptr, 0);
         if (ret == false) {
             result = YAMY_ERROR_ON_READ_SCANCODE_MAP;
             goto exit;
@@ -380,7 +380,7 @@ int FixScancodeMap::fix()
         fixSize += 4;
     }
 
-    ret = m_pReg->write(_T("Scancode Map"), reinterpret_cast<BYTE*>(fixMap), fixSize);
+    ret = m_pReg->write(to_string(_T("Scancode Map")), reinterpret_cast<BYTE*>(fixMap), fixSize);
     if (ret == false) {
         result = YAMY_ERROR_ON_WRITE_SCANCODE_MAP;
         goto exit;
@@ -389,9 +389,9 @@ int FixScancodeMap::fix()
     result = update();
 
     if (origMap) {
-        ret = m_pReg->write(_T("Scancode Map"), reinterpret_cast<BYTE*>(origMap), origSize);
+        ret = m_pReg->write(to_string(_T("Scancode Map")), reinterpret_cast<BYTE*>(origMap), origSize);
     } else {
-        ret = m_pReg->remove(_T("Scancode Map"));
+        ret = m_pReg->remove(to_string(_T("Scancode Map")));
     }
     if (ret == false) {
         result = YAMY_ERROR_ON_WRITE_SCANCODE_MAP;
@@ -465,8 +465,8 @@ FixScancodeMap::FixScancodeMap() :
     m_messageOnFail(WM_NULL),
     m_errorOnConstruct(0),
     m_winlogonPid(0),
-    m_regHKCU(HKEY_CURRENT_USER, _T("Keyboard Layout")),
-    m_regHKLM(HKEY_LOCAL_MACHINE, _T("SYSTEM\\CurrentControlSet\\Control\\Keyboard Layout")),
+    m_regHKCU(HKEY_CURRENT_USER, to_string(_T("Keyboard Layout"))),
+    m_regHKLM(HKEY_LOCAL_MACHINE, to_string(_T("SYSTEM\\CurrentControlSet\\Control\\Keyboard Layout"))),
     m_pReg(nullptr)
 {
     HMODULE hMod;

@@ -217,6 +217,8 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_set_ime_string.cpp
     src/core/commands/cmd_mouse_hook.cpp
     src/core/commands/cmd_cancel_prefix.cpp
+    src/core/commands/cmd_metrics.cpp
+    src/utils/metrics.cpp
     src/core/input/keyboard.cpp
     src/core/input/keymap.cpp
     src/core/input/modifier_state.cpp

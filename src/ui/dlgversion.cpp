@@ -51,8 +51,8 @@ public:
         std::string modulebuf_str = yamy::platform::wstring_to_utf8(modulebuf);
         std::string version_fmt = loadString(IDS_version);
         std::string homepage = loadString(IDS_homepage);
-        std::string built_by = std::string(LOGNAME) + "@" + yamy::platform::wstring_to_utf8(toLower(_T(COMPUTERNAME)));
-        std::string compiler_ver = yamy::platform::wstring_to_utf8(getCompilerVersionString());
+        std::string built_by = std::string(LOGNAME) + "@" + toLower(to_string(_T(COMPUTERNAME)));
+        std::string compiler_ver = getCompilerVersionString();
 
         std::string version = VERSION;
 #ifndef NDEBUG

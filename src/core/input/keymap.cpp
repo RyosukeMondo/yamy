@@ -193,7 +193,25 @@ ModifiedKey KeySeq::getFirstModifiedKey() const
 }
 
 
-// stream output
+// stream output (narrow)
+std::ostream &operator<<(std::ostream &i_ost, const KeySeq &i_ks)
+{
+    tstringstream tss;
+    for (KeySeq::Actions::const_iterator
+            i = i_ks.getActions().begin(); i != i_ks.getActions().end(); ++ i)
+        tss << **i << " ";
+#ifdef _WIN32
+    // On Windows, tstring is wstring, need to convert to narrow
+    i_ost << to_string(tss.str());
+#else
+    // On Linux, tstring is std::string, use directly
+    i_ost << tss.str();
+#endif
+    return i_ost;
+}
+
+#ifdef _WIN32
+// stream output (wide, for Windows UI)
 tostream &operator<<(tostream &i_ost, const KeySeq &i_ks)
 {
     for (KeySeq::Actions::const_iterator
@@ -201,6 +219,7 @@ tostream &operator<<(tostream &i_ost, const KeySeq &i_ks)
         i_ost << **i << " ";
     return i_ost;
 }
+#endif
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

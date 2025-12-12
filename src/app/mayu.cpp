@@ -184,7 +184,7 @@ private:
             m_log << _T("TITLE:\t") << n->m_titleName << std::endl;
 
             bool isMDI = true;
-            HWND hwnd = getToplevelWindow(static_cast<HWND>((HWND)(ULONG_PTR)n->m_hwnd), &isMDI);
+            HWND hwnd = static_cast<HWND>(getToplevelWindow((HWND)(ULONG_PTR)n->m_hwnd, &isMDI));
             RECT rc;
             if (isMDI) {
                 getChildWindowRect(hwnd, &rc);
@@ -192,7 +192,7 @@ private:
                 << rc.left << _T(", ") << rc.top << _T(") / (")
                 << rcWidth(&rc) << _T("x") << rcHeight(&rc) << _T(")")
                 << std::endl;
-                hwnd = getToplevelWindow(static_cast<HWND>((HWND)(ULONG_PTR)n->m_hwnd), nullptr);
+                hwnd = static_cast<HWND>(getToplevelWindow((HWND)(ULONG_PTR)n->m_hwnd, nullptr));
             }
 
             GetWindowRect(hwnd, &rc);
@@ -457,17 +457,17 @@ private:
                         // create reload menu
                         HMENU hMenuSubSub = GetSubMenu(hMenuSub, 1);
                         int mayuIndex;
-                        This->m_configStore->read(_T(".mayuIndex"), &mayuIndex, 0);
+                        This->m_configStore->read(to_string(_T(".mayuIndex")), &mayuIndex, 0);
                         while (DeleteMenu(hMenuSubSub, 0, MF_BYPOSITION))
                             ;
-                        tregex getName(_T("^([^;]*);"));
+                        Regex getName(to_string(_T("^([^;]*);")));
                         for (int index = 0; ; index ++) {
                             _TCHAR buf[100];
                             _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
-                            tstringi dot_mayu;
-                            if (!This->m_configStore->read(buf, &dot_mayu))
+                            std::string dot_mayu;
+                            if (!This->m_configStore->read(to_string(buf), &dot_mayu))
                                 break;
-                            tsmatch what;
+                            std::smatch what;
                             if (std::regex_search(dot_mayu, what, getName)) {
                                 MENUITEMINFO mii;
                                 std::memset(&mii, 0, sizeof(mii));
@@ -477,7 +477,7 @@ private:
                                 mii.fState =
                                     MFS_ENABLED | ((mayuIndex == index) ? MFS_CHECKED : 0);
                                 mii.wID = ID_MENUITEM_reloadBegin + index;
-                                tstringi name(what.str(1));
+                                tstringi name = to_tstring(what.str(1));
                                 mii.dwTypeData = const_cast<_TCHAR *>(name.c_str());
                                 mii.cch = (UINT)name.size();
 
@@ -533,7 +533,7 @@ private:
                     switch (id) {
                     default:
                         if (ID_MENUITEM_reloadBegin <= id) {
-                            This->m_configStore->write(_T(".mayuIndex"), id - ID_MENUITEM_reloadBegin);
+                            This->m_configStore->write(to_string(_T(".mayuIndex")), id - ID_MENUITEM_reloadBegin);
                             This->load();
                         }
                         break;
@@ -764,10 +764,11 @@ private:
         // set symbol
         for (int i = 1; i < __argc; ++ i) {
             if (__targv[i][0] == _T('-') && __targv[i][1] == _T('D'))
-                newSetting->m_symbols.insert(__targv[i] + 2);
+                newSetting->m_symbols.insert(to_string(__targv[i] + 2));
         }
 
-        if (!SettingLoader(&m_log, &m_log, m_configStore).load(newSetting)) {
+        std::ostringstream narrowLog;
+        if (!SettingLoader(&m_log, &narrowLog, m_configStore).load(newSetting)) {
             m_windowSystem->showWindow(m_hwndLog, SW_SHOW);
             m_windowSystem->setForegroundWindow(m_hwndLog);
             delete newSetting;
@@ -788,10 +789,12 @@ private:
     void showHelpMessage(bool i_doesShow = true) {
         if (m_canUseTasktrayBaloon) {
             if (i_doesShow) {
-                tstring helpMessage, helpTitle;
+                std::string helpMessage, helpTitle;
                 m_engine.getHelpMessages(&helpMessage, &helpTitle);
-                tcslcpy(m_ni.szInfo, helpMessage.c_str(), NUMBER_OF(m_ni.szInfo));
-                tcslcpy(m_ni.szInfoTitle, helpTitle.c_str(),
+                tstring helpMessageW = to_tstring(helpMessage);
+                tstring helpTitleW = to_tstring(helpTitle);
+                tcslcpy(m_ni.szInfo, helpMessageW.c_str(), NUMBER_OF(m_ni.szInfo));
+                tcslcpy(m_ni.szInfoTitle, helpTitleW.c_str(),
                         NUMBER_OF(m_ni.szInfoTitle));
                 m_ni.dwInfoFlags = NIIF_INFO;
             } else
@@ -858,10 +861,10 @@ private:
 #define COMPUTERNAME "unknown"
 #endif
         m_log << _T("  built by ")
-        << _T(LOGNAME) << _T("@") << toLower(_T(COMPUTERNAME))
+        << _T(LOGNAME) << _T("@") << to_tstring(toLower(to_string(_T(COMPUTERNAME))))
         << _T(" (") << _T(__DATE__) <<  _T(" ")
         << _T(__TIME__) << _T(", ")
-        << getCompilerVersionString() << _T(")") << std::endl;
+        << to_tstring(getCompilerVersionString()) << _T(")") << std::endl;
         _TCHAR modulebuf[1024];
         CHECK_TRUE( GetModuleFileName(g_hInst, modulebuf,
                                       NUMBER_OF(modulebuf)) );
@@ -1056,7 +1059,11 @@ public:
             m_setting(nullptr),
             m_isSettingDialogOpened(false),
             m_windowSystem(new yamy::platform::WindowSystemWin32),
-            m_configStore(new Registry(MAYU_REGISTRY_ROOT)),
+#ifdef USE_INI
+            m_configStore(new Registry(0, to_string(_T("yamy")))),
+#else
+            m_configStore(new Registry(HKEY_CURRENT_USER, to_string(_T("Software\\gimy.net\\yamy")))),
+#endif
             m_inputInjector(new yamy::platform::InputInjectorWin32(m_windowSystem)),
             m_inputHook(new yamy::platform::InputHookWin32),
             m_inputDriver(new yamy::platform::InputDriverWin32),
@@ -1064,7 +1071,7 @@ public:
             m_usingSN(false),
             m_startTime(time(nullptr))
     {
-        m_configStore->read(_T("escapeNLSKeys"), &m_escapeNlsKeys, 0);
+        m_configStore->read(to_string(_T("escapeNLSKeys")), &m_escapeNlsKeys, 0);
         m_hNotifyMailslot = CreateMailslot(NOTIFY_MAILSLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, (SECURITY_ATTRIBUTES *)nullptr);
         ASSERT(m_hNotifyMailslot != INVALID_HANDLE_VALUE);
         int err;
@@ -1316,46 +1323,50 @@ public:
 /// convert registry
 void convertRegistry()
 {
-    Registry reg(MAYU_REGISTRY_ROOT);
-    tstringi dot_mayu;
+#ifdef USE_INI
+    Registry reg(0, to_string(_T("yamy")));
+#else
+    Registry reg(HKEY_CURRENT_USER, to_string(_T("Software\\gimy.net\\yamy")));
+#endif
+    std::string dot_mayu;
     bool doesAdd = false;
     DWORD index;
-    if (reg.read(_T(".mayu"), &dot_mayu)) {
-        reg.write(_T(".mayu0"), _T(";") + dot_mayu + _T(";"));
-        reg.remove(_T(".mayu"));
+    if (reg.read(to_string(_T(".mayu")), &dot_mayu)) {
+        reg.write(to_string(_T(".mayu0")), to_string(_T(";")) + dot_mayu + to_string(_T(";")));
+        reg.remove(to_string(_T(".mayu")));
         doesAdd = true;
         index = 0;
-    } else if (!reg.read(_T(".mayu0"), &dot_mayu)) {
-        reg.write(_T(".mayu0"), to_tstring(loadString(IDS_readFromHomeDirectory)) + _T(";;"));
+    } else if (!reg.read(to_string(_T(".mayu0")), &dot_mayu)) {
+        reg.write(to_string(_T(".mayu0")), loadString(IDS_readFromHomeDirectory) + to_string(_T(";;")));
         doesAdd = true;
         index = 1;
     }
     if (doesAdd) {
-        Registry commonreg(HKEY_LOCAL_MACHINE, _T("Software\\GANAware\\mayu"));
-        tstringi dir, layout;
-        if (commonreg.read(_T("dir"), &dir) &&
-                commonreg.read(_T("layout"), &layout)) {
-            tstringi tmp = _T(";") + dir + _T("\\dot.mayu");
-            if (layout == _T("109")) {
-                reg.write(_T(".mayu1"), to_tstring(loadString(IDS_109Emacs)) + tmp
-                          + _T(";-DUSE109") _T(";-DUSEdefault"));
-                reg.write(_T(".mayu2"), to_tstring(loadString(IDS_104on109Emacs)) + tmp
-                          + _T(";-DUSE109") _T(";-DUSEdefault") _T(";-DUSE104on109"));
-                reg.write(_T(".mayu3"), to_tstring(loadString(IDS_109)) + tmp
-                          + _T(";-DUSE109"));
-                reg.write(_T(".mayu4"), to_tstring(loadString(IDS_104on109)) + tmp
-                          + _T(";-DUSE109") _T(";-DUSE104on109"));
+        Registry commonreg(HKEY_LOCAL_MACHINE, to_string(_T("Software\\GANAware\\mayu")));
+        std::string dir, layout;
+        if (commonreg.read(to_string(_T("dir")), &dir) &&
+                commonreg.read(to_string(_T("layout")), &layout)) {
+            std::string tmp = to_string(_T(";")) + dir + to_string(_T("\\dot.mayu"));
+            if (layout == to_string(_T("109"))) {
+                reg.write(to_string(_T(".mayu1")), loadString(IDS_109Emacs) + tmp
+                          + to_string(_T(";-DUSE109")) + to_string(_T(";-DUSEdefault")));
+                reg.write(to_string(_T(".mayu2")), loadString(IDS_104on109Emacs) + tmp
+                          + to_string(_T(";-DUSE109")) + to_string(_T(";-DUSEdefault")) + to_string(_T(";-DUSE104on109")));
+                reg.write(to_string(_T(".mayu3")), loadString(IDS_109) + tmp
+                          + to_string(_T(";-DUSE109")));
+                reg.write(to_string(_T(".mayu4")), loadString(IDS_104on109) + tmp
+                          + to_string(_T(";-DUSE109")) + to_string(_T(";-DUSE104on109")));
             } else {
-                reg.write(_T(".mayu1"), to_tstring(loadString(IDS_104Emacs)) + tmp
-                          + _T(";-DUSE104") _T(";-DUSEdefault"));
-                reg.write(_T(".mayu2"), to_tstring(loadString(IDS_109on104Emacs)) + tmp
-                          + _T(";-DUSE104") _T(";-DUSEdefault") _T(";-DUSE109on104"));
-                reg.write(_T(".mayu3"), to_tstring(loadString(IDS_104)) + tmp
-                          + _T(";-DUSE104"));
-                reg.write(_T(".mayu4"), to_tstring(loadString(IDS_109on104)) + tmp
-                          + _T(";-DUSE104") _T(";-DUSE109on104"));
+                reg.write(to_string(_T(".mayu1")), loadString(IDS_104Emacs) + tmp
+                          + to_string(_T(";-DUSE104")) + to_string(_T(";-DUSEdefault")));
+                reg.write(to_string(_T(".mayu2")), loadString(IDS_109on104Emacs) + tmp
+                          + to_string(_T(";-DUSE104")) + to_string(_T(";-DUSEdefault")) + to_string(_T(";-DUSE109on104")));
+                reg.write(to_string(_T(".mayu3")), loadString(IDS_104) + tmp
+                          + to_string(_T(";-DUSE104")));
+                reg.write(to_string(_T(".mayu4")), loadString(IDS_109on104) + tmp
+                          + to_string(_T(";-DUSE104")) + to_string(_T(";-DUSE109on104")));
             }
-            reg.write(_T(".mayuIndex"), index);
+            reg.write(to_string(_T(".mayuIndex")), index);
         }
     }
 }

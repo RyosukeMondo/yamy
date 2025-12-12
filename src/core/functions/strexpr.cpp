@@ -151,10 +151,18 @@ void StrExprArg::setSystem(const StrExprSystem *i_system)
     StrExpr::setSystem(i_system);
 }
 
-// stream output
+// stream output (narrow)
+std::ostream &operator<<(std::ostream &i_ost, const StrExprArg &i_data)
+{
+    i_ost << i_data.eval();
+    return i_ost;
+}
+
+#ifdef _WIN32
+// stream output (wide, for Windows UI)
 tostream &operator<<(tostream &i_ost, const StrExprArg &i_data)
 {
-    // to_tstring() is a no-op on Linux, converts to wstring on Windows
     i_ost << to_tstring(i_data.eval());
     return i_ost;
 }
+#endif

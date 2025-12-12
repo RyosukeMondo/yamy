@@ -155,8 +155,12 @@ public:
         return m_name;
     }
 
-    /// stream output
+    /// stream output (narrow)
     friend std::ostream &operator<<(std::ostream &i_ost, const KeySeq &i_ks);
+#ifdef _WIN32
+    /// stream output (wide, for Windows UI)
+    friend tostream &operator<<(tostream &i_ost, const KeySeq &i_ks);
+#endif
 
     ///
     bool isCorrectMode(Modifier::Type i_mode) {

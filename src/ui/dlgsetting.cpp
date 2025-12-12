@@ -105,17 +105,21 @@ public:
     DlgSetting(HWND i_hwnd)
             : LayoutManager(i_hwnd),
             m_hwndMayuPaths(nullptr),
-            m_reg(MAYU_REGISTRY_ROOT) {
+#ifdef USE_INI
+            m_reg(0, to_string(_T("yamy"))) {
+#else
+            m_reg(HKEY_CURRENT_USER, to_string(_T("Software\\gimy.net\\yamy"))) {
+#endif
     }
 
     virtual ~DlgSetting() {}
 
     /// WM_INITDIALOG
     BOOL wmInitDialog(HWND /* i_focus */, LPARAM /* i_lParam */) {
-        setSmallIcon(m_hwnd, IDI_ICON_mayu);
-        setBigIcon(m_hwnd, IDI_ICON_mayu);
+        setSmallIcon(static_cast<HWND>(m_hwnd), IDI_ICON_mayu);
+        setBigIcon(static_cast<HWND>(m_hwnd), IDI_ICON_mayu);
 
-        CHECK_TRUE( m_hwndMayuPaths = GetDlgItem(m_hwnd, IDC_LIST_mayuPaths) );
+        CHECK_TRUE( m_hwndMayuPaths = GetDlgItem(static_cast<HWND>(m_hwnd), IDC_LIST_mayuPaths) );
 
         // create list view colmn
         RECT rc;
@@ -149,16 +153,12 @@ public:
         for (i = 0; i < MAX_MAYU_REGISTRY_ENTRIES; ++ i) {
             _TCHAR buf[100];
             _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), i);
-            // Registry::read uses tstring/TCHAR currently (Branch 7 changes it).
-            // I should use temporary tstring if Registry is not updated.
-            // But I cannot change Registry here easily without breaking other things or doing Branch 7 work.
-            // Wait, I can't easily change `m_reg.read` signature.
-            // I'll read into tstring and convert.
-            tstring t_dot_mayu;
-            if (!m_reg.read(buf, &t_dot_mayu))
+            // Registry::read expects std::string
+            std::string std_dot_mayu;
+            if (!m_reg.read(to_string(buf), &std_dot_mayu))
                 break;
 
-            dot_mayu = yamy::platform::wstring_to_utf8(t_dot_mayu);
+            dot_mayu = std_dot_mayu;
 
             std::smatch what;
             if (std::regex_match(dot_mayu, what, split)) {
@@ -180,36 +180,36 @@ public:
 
         // set selection
         int index;
-        m_reg.read(_T(".mayuIndex"), &index, 0);
+        m_reg.read(to_string(_T(".mayuIndex")), &index, 0);
         setSelectedItem(index);
 
         // set layout manager
         typedef LayoutManager LM;
-        addItem(GetDlgItem(m_hwnd, IDC_STATIC_mayuPaths),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_STATIC_mayuPaths),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_LIST_mayuPaths),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_LIST_mayuPaths),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_BUTTON_up),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_BUTTON_up),
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_CENTER,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_CENTER);
-        addItem(GetDlgItem(m_hwnd, IDC_BUTTON_down),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_BUTTON_down),
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_CENTER,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_CENTER);
-        addItem(GetDlgItem(m_hwnd, IDC_BUTTON_add),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_BUTTON_add),
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE,
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_BUTTON_edit),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_BUTTON_edit),
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE,
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_BUTTON_delete),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_BUTTON_delete),
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE,
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDCANCEL),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDCANCEL),
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE,
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDOK),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDOK),
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE,
                 LM::ORIGIN_CENTER, LM::ORIGIN_BOTTOM_EDGE);
         restrictSmallestSize();
@@ -218,7 +218,7 @@ public:
 
     /// WM_CLOSE
     BOOL wmClose() {
-        EndDialog(m_hwnd, 0);
+        EndDialog(static_cast<HWND>(m_hwnd), 0);
         return TRUE;
     }
 
@@ -227,7 +227,7 @@ public:
         switch (i_id) {
         case IDC_LIST_mayuPaths:
             if (i_nmh->code == NM_DBLCLK)
-                FORWARD_WM_COMMAND(m_hwnd, IDC_BUTTON_edit, nullptr, 0, SendMessage);
+                FORWARD_WM_COMMAND(static_cast<HWND>(m_hwnd), IDC_BUTTON_edit, nullptr, 0, SendMessage);
             return TRUE;
         }
         return TRUE;
@@ -266,7 +266,7 @@ public:
             if (0 <= index)
                 getItem(index, &data);
             if (DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_editSetting),
-                               m_hwnd, (DLGPROC)dlgEditSetting_dlgProc, (LPARAM)&data))
+                               static_cast<HWND>(m_hwnd), (DLGPROC)dlgEditSetting_dlgProc, (LPARAM)&data))
                 if (!data.m_name.empty()) {
                     insertItem(0, data);
                     setSelectedItem(0);
@@ -296,7 +296,7 @@ public:
                 return TRUE;
             getItem(index, &data);
             if (DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_editSetting),
-                               m_hwnd, (DLGPROC)dlgEditSetting_dlgProc, (LPARAM)&data)) {
+                               static_cast<HWND>(m_hwnd), (DLGPROC)dlgEditSetting_dlgProc, (LPARAM)&data)) {
                 setItem(index, data);
                 setSelectedItem(index);
             }
@@ -310,26 +310,25 @@ public:
                 _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
                 Data data;
                 getItem(index, &data);
-                // Convert back to tstring for Registry (until Branch 7)
-                tstring val = yamy::platform::utf8_to_wstring(data.m_name + ";" +
-                            data.m_filename + ";" + data.m_symbols);
-                m_reg.write(buf, val);
+                // Registry expects std::string
+                std::string val = data.m_name + ";" + data.m_filename + ";" + data.m_symbols;
+                m_reg.write(to_string(buf), val);
             }
             for (; ; ++ index) {
                 _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
-                if (!m_reg.remove(buf))
+                if (!m_reg.remove(to_string(buf)))
                     break;
             }
             index = getSelectedItem();
             if (index < 0)
                 index = 0;
-            m_reg.write(_T(".mayuIndex"), index);
-            EndDialog(m_hwnd, 1);
+            m_reg.write(to_string(_T(".mayuIndex")), index);
+            EndDialog(static_cast<HWND>(m_hwnd), 1);
             return TRUE;
         }
 
         case IDCANCEL: {
-            CHECK_TRUE( EndDialog(m_hwnd, 0) );
+            CHECK_TRUE( EndDialog(static_cast<HWND>(m_hwnd), 0) );
             return TRUE;
         }
         }

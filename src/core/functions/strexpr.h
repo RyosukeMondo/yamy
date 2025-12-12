@@ -74,8 +74,13 @@ public:
 };
 
 
-/// stream output
+/// stream output (narrow)
 std::ostream &operator<<(std::ostream &i_ost, const StrExprArg &i_data);
+
+#ifdef _WIN32
+/// stream output (wide, for Windows UI)
+tostream &operator<<(tostream &i_ost, const StrExprArg &i_data);
+#endif
 
 
 #endif // !_STREXPR_H

@@ -35,13 +35,13 @@ public:
     BOOL wmInitDialog(HWND /* focus */, LPARAM i_lParam) {
         m_data = reinterpret_cast<DlgEditSettingData *>(i_lParam);
 
-        setSmallIcon(m_hwnd, IDI_ICON_mayu);
-        setBigIcon(m_hwnd, IDI_ICON_mayu);
+        setSmallIcon(static_cast<HWND>(m_hwnd), IDI_ICON_mayu);
+        setBigIcon(static_cast<HWND>(m_hwnd), IDI_ICON_mayu);
 
         CHECK_TRUE( m_hwndMayuPathName
-                    = GetDlgItem(m_hwnd, IDC_EDIT_mayuPathName) );
-        CHECK_TRUE( m_hwndMayuPath = GetDlgItem(m_hwnd, IDC_EDIT_mayuPath) );
-        CHECK_TRUE( m_hwndSymbols = GetDlgItem(m_hwnd, IDC_EDIT_symbols) );
+                    = GetDlgItem(static_cast<HWND>(m_hwnd), IDC_EDIT_mayuPathName) );
+        CHECK_TRUE( m_hwndMayuPath = GetDlgItem(static_cast<HWND>(m_hwnd), IDC_EDIT_mayuPath) );
+        CHECK_TRUE( m_hwndSymbols = GetDlgItem(static_cast<HWND>(m_hwnd), IDC_EDIT_symbols) );
 
         yamy::windows::setWindowText(m_hwndMayuPathName, m_data->m_name);
         yamy::windows::setWindowText(m_hwndMayuPath, m_data->m_filename);
@@ -52,34 +52,34 @@ public:
         // set layout manager
         typedef LayoutManager LM;
 
-        addItem(GetDlgItem(m_hwnd, IDC_STATIC_mayuPathName));
-        addItem(GetDlgItem(m_hwnd, IDC_EDIT_mayuPathName),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_STATIC_mayuPathName));
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_EDIT_mayuPathName),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_TOP_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_STATIC_mayuPathNameComment),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_STATIC_mayuPathNameComment),
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_TOP_EDGE);
 
-        addItem(GetDlgItem(m_hwnd, IDC_STATIC_mayuPath));
-        addItem(GetDlgItem(m_hwnd, IDC_EDIT_mayuPath),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_STATIC_mayuPath));
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_EDIT_mayuPath),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_TOP_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_BUTTON_browse),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_BUTTON_browse),
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_TOP_EDGE);
 
-        addItem(GetDlgItem(m_hwnd, IDC_STATIC_symbols));
-        addItem(GetDlgItem(m_hwnd, IDC_EDIT_symbols),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_STATIC_symbols));
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_EDIT_symbols),
                 LM::ORIGIN_LEFT_EDGE, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_TOP_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDC_STATIC_symbolsComment),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDC_STATIC_symbolsComment),
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_RIGHT_EDGE, LM::ORIGIN_TOP_EDGE);
 
-        addItem(GetDlgItem(m_hwnd, IDOK),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDOK),
                 LM::ORIGIN_CENTER, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_CENTER, LM::ORIGIN_TOP_EDGE);
-        addItem(GetDlgItem(m_hwnd, IDCANCEL),
+        addItem(GetDlgItem(static_cast<HWND>(m_hwnd), IDCANCEL),
                 LM::ORIGIN_CENTER, LM::ORIGIN_TOP_EDGE,
                 LM::ORIGIN_CENTER, LM::ORIGIN_TOP_EDGE);
 
@@ -91,7 +91,7 @@ public:
 
     /// WM_CLOSE
     BOOL wmClose() {
-        CHECK_TRUE( EndDialog(m_hwnd, 0) );
+        CHECK_TRUE( EndDialog(static_cast<HWND>(m_hwnd), 0) );
         return TRUE;
     }
 
@@ -110,7 +110,7 @@ public:
             OPENFILENAME of;
             memset(&of, 0, sizeof(of));
             of.lStructSize = sizeof(of);
-            of.hwndOwner = m_hwnd;
+            of.hwndOwner = static_cast<HWND>(m_hwnd);
             of.lpstrFilter = filter.c_str();
             of.nFilterIndex = 1;
             of.lpstrFile = buf;
@@ -127,12 +127,12 @@ public:
             m_data->m_name = yamy::windows::getWindowText(m_hwndMayuPathName);
             m_data->m_filename = yamy::windows::getWindowText(m_hwndMayuPath);
             m_data->m_symbols = yamy::windows::getWindowText(m_hwndSymbols);
-            CHECK_TRUE( EndDialog(m_hwnd, 1) );
+            CHECK_TRUE( EndDialog(static_cast<HWND>(m_hwnd), 1) );
             return TRUE;
         }
 
         case IDCANCEL: {
-            CHECK_TRUE( EndDialog(m_hwnd, 0) );
+            CHECK_TRUE( EndDialog(static_cast<HWND>(m_hwnd), 0) );
             return TRUE;
         }
         }
