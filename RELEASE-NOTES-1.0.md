@@ -17,8 +17,13 @@ YAMY (Yet Another Mado tsukai no Yuutsu) v1.0.0 marks the first production-ready
 ### Ubuntu / Debian
 
 ```bash
-# Download the .deb package from GitHub Releases
-sudo dpkg -i yamy-1.0.0-Linux-x86_64.deb
+# Install Qt5 dependencies
+sudo apt update
+sudo apt install -y libqt5core5a libqt5widgets5 libqt5gui5 libx11-6
+
+# Download and install the .deb package
+wget https://github.com/RyosukeMondo/yamy/releases/download/v1.0.0/yamy-1.0.0-amd64.deb
+sudo apt install ./yamy-1.0.0-amd64.deb
 
 # Add your user to the input group (required for keyboard access)
 sudo usermod -aG input $USER
@@ -26,31 +31,25 @@ sudo usermod -aG input $USER
 # Log out and back in for group membership to take effect
 ```
 
-### Fedora / openSUSE
+**Note**: Using `apt install ./file.deb` automatically handles any missing dependencies. RPM and AUR packages are not yet available - use the source tarball for other distributions.
+
+### Other Distributions (Fedora, Arch, etc.)
 
 ```bash
-# Download the .rpm package from GitHub Releases
-sudo dnf install yamy-1.0.0-Linux-x86_64.rpm
+# Download and extract the source tarball
+wget https://github.com/RyosukeMondo/yamy/releases/download/v1.0.0/yamy-1.0.0-linux-x86_64.tar.gz
+tar -xzf yamy-1.0.0-linux-x86_64.tar.gz
+cd yamy-1.0.0
+
+# Copy binaries to system
+sudo cp yamy_stub /usr/local/bin/
+sudo cp yamy-ctl /usr/local/bin/
+sudo chmod +x /usr/local/bin/yamy_stub /usr/local/bin/yamy-ctl
 
 # Add your user to the input group
 sudo usermod -aG input $USER
 
 # Log out and back in for group membership to take effect
-```
-
-### Arch Linux (AUR)
-
-```bash
-# Using yay
-yay -S yamy
-
-# Or using paru
-paru -S yamy
-
-# Or manually with PKGBUILD
-git clone https://aur.archlinux.org/yamy.git
-cd yamy
-makepkg -si
 ```
 
 ### Building from Source

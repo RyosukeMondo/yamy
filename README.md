@@ -8,10 +8,35 @@ The original "Mado tsukai no Yuutsu" (Mayu) used a filter driver to replace key 
 
 ## Status
 
-This repository is a fork of the original Yamy project, reorganized for better maintainability.
+This repository is a fork of the original Yamy project, reorganized for better maintainability and extended with **full Linux support**.
 
 - **Original Mayu**: [http://mayu.sourceforge.net/](http://mayu.sourceforge.net/)
 - **Original Yamy**: [http://yamy.sourceforge.jp/](http://yamy.sourceforge.jp/)
+
+## Installation
+
+### Linux (Ubuntu/Debian)
+
+```bash
+# Install Qt5 dependencies
+sudo apt update
+sudo apt install -y libqt5core5a libqt5widgets5 libqt5gui5 libx11-6
+
+# Download and install the latest release
+wget https://github.com/RyosukeMondo/yamy/releases/download/v1.0.0/yamy-1.0.0-amd64.deb
+sudo apt install ./yamy-1.0.0-amd64.deb
+
+# Add your user to the input group (required for keyboard access)
+sudo usermod -aG input $USER
+
+# Log out and back in for group membership to take effect
+```
+
+See [RELEASE-NOTES-1.0.md](RELEASE-NOTES-1.0.md) for installation instructions for other distributions.
+
+### Windows
+
+Download the latest release from the [Releases page](https://github.com/RyosukeMondo/yamy/releases).
 
 ## Directory Structure
 
