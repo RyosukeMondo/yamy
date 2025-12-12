@@ -45,11 +45,11 @@ void Engine::outputToLog(const Key *i_key, const ModifiedKey &i_mkey,
         return;
     }
 
-    // Output ModifiedKey
+    // Output ModifiedKey (operator<< is defined for narrow streams only)
     {
-        tstringstream ss;
+        std::stringstream ss;
         ss << i_mkey;
-        m_log << "  " << ss.str() << std::endl;
+        m_log << "  " << to_tstring(ss.str()) << std::endl;
     }
 
     if (m_isInvestigateMode && m_ipcChannel && m_ipcChannel->isConnected()) {
