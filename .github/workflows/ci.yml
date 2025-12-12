@@ -88,7 +88,7 @@ jobs:
           libx11-dev libxrandr-dev
 
     - name: Configure CMake
-      run: cmake -B build -DBUILD_LINUX_STUB=ON
+      run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=OFF
 
     - name: Build
       run: cmake --build build --parallel
