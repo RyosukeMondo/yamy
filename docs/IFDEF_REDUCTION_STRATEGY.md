@@ -1,9 +1,10 @@
 # #ifdef Reduction Strategy
 
 ## Current Status
-- **Total #ifdef _WIN32**: 75
+- **Total #ifdef _WIN32**: 72 (was 75)
 - **Inline conditionals**: 0 ✓ (good!)
 - **Top offenders**: engine_lifecycle.cpp (12), setting_loader.cpp (9), engine_log.cpp (5)
+- **Recent progress**: Eliminated registerWindowMessage conditionals in command files (-3)
 
 ## Categories of #ifdef Usage
 
@@ -121,10 +122,11 @@ Add to `.github/workflows/ci.yml`:
 
 ### Baseline (2025-12-12)
 ```
-Total: 75
+Initial: 75
+Current: 72 (-3 from registerWindowMessage fixes)
 Inline: 0
 Acceptable: ~40 (include guards + type defs)
-Should refactor: ~35
+Should refactor: ~32
 ```
 
 ### Target (v2.0)

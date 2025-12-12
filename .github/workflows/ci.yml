@@ -122,7 +122,7 @@ jobs:
       run: |
         bash scripts/check_ifdef_usage.sh > /dev/null 2>&1
         IFDEF_COUNT=$(cat .github/metrics/ifdef_count.txt)
-        BASELINE=75
+        BASELINE=72
         echo "#ifdef _WIN32 total count: $IFDEF_COUNT (baseline: $BASELINE)"
         # Fail if count increases - we want to reduce over time, not add more
         if [ "$IFDEF_COUNT" -gt "$BASELINE" ]; then
