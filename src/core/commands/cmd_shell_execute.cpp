@@ -2,25 +2,7 @@
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/stringtool.h"
-#ifdef _WIN32
-#include <shellapi.h> // For ShellExecute and error constants
-#else
-// Shell error constants for Linux compatibility
-#define ERROR_FILE_NOT_FOUND    2
-#define ERROR_PATH_NOT_FOUND    3
-#define ERROR_BAD_FORMAT        11
-#define SE_ERR_ACCESSDENIED     5
-#define SE_ERR_ASSOCINCOMPLETE  27
-#define SE_ERR_DDEBUSY          30
-#define SE_ERR_DDEFAIL          29
-#define SE_ERR_DDETIMEOUT       28
-#define SE_ERR_DLLNOTFOUND      32
-#define SE_ERR_FNF              2
-#define SE_ERR_NOASSOC          31
-#define SE_ERR_OOM              8
-#define SE_ERR_PNF              3
-#define SE_ERR_SHARE            26
-#endif
+#include "shell_constants.h"
 #ifndef NUMBER_OF
 #define NUMBER_OF(array) (sizeof(array) / sizeof((array)[0]))
 #endif

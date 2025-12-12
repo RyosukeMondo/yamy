@@ -1,12 +1,7 @@
 #include "cmd_direct_sstp.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
-#ifdef _WIN32
-#include "../../platform/windows/windowstool.h" // For loadString
-#else
-// Linux stub for loadString - returns application name
-inline std::string loadString(unsigned int) { return "YAMY"; }
-#endif
+#include "windowstool.h" // For loadString (platform-specific)
 #include "../../ui/mayurc.h" // For IDS_mayu
 #include "../../utils/stringtool.h" // For strcasecmp_utf8
 #include "../platform/message_constants.h"
