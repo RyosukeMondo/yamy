@@ -282,14 +282,14 @@ private:
     unsigned int injectInput(const KEYBOARD_INPUT_DATA *i_kid, const void *i_kidRaw);
 
 private:
-    /// keyboard handler thread
-    static unsigned int WINAPI keyboardHandler(void *i_this);
-    ///
+    /// keyboard handler thread (static entry point)
+    static void* keyboardHandler(void *i_this);
+    /// keyboard handler thread (instance method)
     void keyboardHandler();
 
-    /// performance metrics thread
-    static unsigned int WINAPI perfMetricsHandler(void *i_this);
-    ///
+    /// performance metrics thread (static entry point)
+    static void* perfMetricsHandler(void *i_this);
+    /// performance metrics thread (instance method)
     void perfMetricsHandler();
 
     /// check focus window

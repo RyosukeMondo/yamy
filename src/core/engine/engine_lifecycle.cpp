@@ -11,16 +11,13 @@
 #include "mayurc.h"
 #include "../platform/message_constants.h"
 #include "../platform/sync.h"
+#include "../platform/thread.h"
 #include "core/logging/logger.h"
 #include "../../utils/metrics.h"
 
 #include <iomanip>
-#ifdef _WIN32
-#include <process.h>
-#endif
 #include <string>
 #include <chrono>
-#include <thread>
 #include <thread>
 #include "../platform/ipc_defs.h"
 #include "../notification_dispatcher.h"
@@ -92,10 +89,10 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_currentLock.release(static_cast<Modifier::Type>(i));
 
     // create event for sync
-#ifdef _WIN32
-    CHECK_TRUE( m_eSync = CreateEvent(nullptr, FALSE, FALSE, nullptr) );
+    CHECK_TRUE( m_eSync = yamy::platform::createEvent(false, false) );
 
-    // create named pipe for &SetImeString
+#ifdef _WIN32
+    // create named pipe for &SetImeString (Windows-only feature)
     m_hookPipe = CreateNamedPipe(addSessionId(HOOK_PIPE_NAME).c_str(),
                                  PIPE_ACCESS_OUTBOUND,
                                  PIPE_TYPE_BYTE, 1,
@@ -106,10 +103,10 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
 
 
 Engine::~Engine() {
-#ifdef _WIN32
-    CHECK_TRUE( CloseHandle(m_eSync) );
+    CHECK_TRUE( yamy::platform::destroyEvent(m_eSync) );
 
-    // destroy named pipe for &SetImeString
+#ifdef _WIN32
+    // destroy named pipe for &SetImeString (Windows-only feature)
     if (m_hookPipe && m_hookPipe != INVALID_HANDLE_VALUE) {
         DisconnectNamedPipe(m_hookPipe);
         CHECK_TRUE( CloseHandle(m_hookPipe) );
@@ -140,10 +137,10 @@ void Engine::start() {
     );
 
     CHECK_TRUE( m_inputQueue = new std::deque<yamy::platform::KeyEvent> );
-#ifdef _WIN32
-    CHECK_TRUE( m_queueMutex = CreateMutex(nullptr, FALSE, nullptr) );
-    CHECK_TRUE( m_readEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr) );
+    CHECK_TRUE( m_queueMutex = yamy::platform::createMutex() );
+    CHECK_TRUE( m_readEvent = yamy::platform::createEvent(true, false) );
 
+#ifdef _WIN32
     OVERLAPPED* pOl = reinterpret_cast<OVERLAPPED*>(m_ol);
     pOl->Offset = 0;
     pOl->OffsetHigh = 0;
@@ -152,11 +149,9 @@ void Engine::start() {
 
     m_inputDriver->open(m_readEvent);
 
-#ifdef _WIN32
-    CHECK_TRUE( m_threadHandle = reinterpret_cast<yamy::platform::ThreadHandle>(_beginthreadex(nullptr, 0, keyboardHandler, this, 0, &m_threadId)) );
+    CHECK_TRUE( m_threadHandle = yamy::platform::createThread(keyboardHandler, this) );
     m_isPerfThreadRunning = true;
-    CHECK_TRUE( m_perfThreadHandle = reinterpret_cast<yamy::platform::ThreadHandle>(_beginthreadex(nullptr, 0, perfMetricsHandler, this, 0, nullptr)) );
-#endif
+    CHECK_TRUE( m_perfThreadHandle = yamy::platform::createThread(perfMetricsHandler, this) );
 
     setState(yamy::EngineState::Running);
     notifyGUI(yamy::MessageType::EngineStarted);
@@ -172,36 +167,34 @@ void Engine::stop() {
     yamy::metrics::PerformanceMetrics::instance().stopPeriodicLogging();
 
     m_isPerfThreadRunning = false;
-#ifdef _WIN32
     if (m_perfThreadHandle) {
         yamy::platform::waitForObject(m_perfThreadHandle, 2000);
-        CHECK_TRUE( CloseHandle(m_perfThreadHandle) );
+        CHECK_TRUE( yamy::platform::destroyThread(m_perfThreadHandle) );
         m_perfThreadHandle = nullptr;
     }
-#endif
 
     m_inputHook->uninstall();
     m_inputDriver->close();
 
-#ifdef _WIN32
-    yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
+    yamy::platform::acquireMutex(m_queueMutex, yamy::platform::WAIT_INFINITE);
     delete m_inputQueue;
     m_inputQueue = nullptr;
-    SetEvent(m_readEvent);
-    ReleaseMutex(m_queueMutex);
+    yamy::platform::setEvent(m_readEvent);
+    yamy::platform::releaseMutex(m_queueMutex);
 
     yamy::platform::waitForObject(m_threadHandle, 2000);
-    CHECK_TRUE( CloseHandle(m_threadHandle) );
+    CHECK_TRUE( yamy::platform::destroyThread(m_threadHandle) );
     m_threadHandle = nullptr;
 
-    CHECK_TRUE( CloseHandle(m_readEvent) );
+    CHECK_TRUE( yamy::platform::destroyEvent(m_readEvent) );
     m_readEvent = nullptr;
-#endif
 
+#ifdef _WIN32
     for (ThreadIds::iterator i = m_attachedThreadIds.begin();
          i != m_attachedThreadIds.end(); i++) {
          PostThreadMessage(*i, WM_NULL, 0, 0);
     }
+#endif
 
     setState(yamy::EngineState::Stopped);
     notifyGUI(yamy::MessageType::EngineStopped);
@@ -223,9 +216,7 @@ bool Engine::syncNotify() {
     Acquire a(&m_cs);
     if (!m_isSynchronizing)
         return false;
-#ifdef _WIN32
-    CHECK_TRUE( SetEvent(m_eSync) );
-#endif
+    CHECK_TRUE( yamy::platform::setEvent(m_eSync) );
     return true;
 }
 
@@ -261,14 +252,12 @@ void Engine::setCurrentKeymap(const Keymap *i_keymap, bool i_doesAddToHistory)
 
 void Engine::pushInputEvent(const yamy::platform::KeyEvent &event)
 {
-#ifdef _WIN32
-    yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
+    yamy::platform::acquireMutex(m_queueMutex, yamy::platform::WAIT_INFINITE);
     if (m_inputQueue) {
         m_inputQueue->push_back(event);
-        SetEvent(m_readEvent);
+        yamy::platform::setEvent(m_readEvent);
     }
-    ReleaseMutex(m_queueMutex);
-#endif
+    yamy::platform::releaseMutex(m_queueMutex);
 }
 
 // Convert KeyEvent to KEYBOARD_INPUT_DATA for legacy code paths
@@ -310,10 +299,10 @@ void Engine::notifyGUI(yamy::MessageType i_type, const std::string &i_data)
     m_windowSystem->sendCopyData(nullptr, m_hwndAssocWindow, cd, yamy::platform::SendMessageFlags::NORMAL, 100, nullptr);
 }
 
-unsigned int WINAPI Engine::perfMetricsHandler(void *i_this)
+void* Engine::perfMetricsHandler(void *i_this)
 {
     reinterpret_cast<Engine *>(i_this)->perfMetricsHandler();
-    return 0;
+    return nullptr;
 }
 
 void Engine::perfMetricsHandler()

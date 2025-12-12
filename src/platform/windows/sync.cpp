@@ -28,6 +28,45 @@ WaitResult waitForObject(void* handle, uint32_t timeout_ms) {
     }
 }
 
+// ========== Event primitives ==========
+EventHandle createEvent(bool manual_reset, bool initial_state) {
+    return CreateEvent(nullptr, manual_reset ? TRUE : FALSE, initial_state ? TRUE : FALSE, nullptr);
+}
+
+bool setEvent(EventHandle event) {
+    if (!event) return false;
+    return SetEvent(static_cast<HANDLE>(event)) != 0;
+}
+
+bool resetEvent(EventHandle event) {
+    if (!event) return false;
+    return ResetEvent(static_cast<HANDLE>(event)) != 0;
+}
+
+bool destroyEvent(EventHandle event) {
+    if (!event) return false;
+    return CloseHandle(static_cast<HANDLE>(event)) != 0;
+}
+
+// ========== Mutex primitives ==========
+MutexHandle createMutex() {
+    return CreateMutex(nullptr, FALSE, nullptr);
+}
+
+WaitResult acquireMutex(MutexHandle mutex, uint32_t timeout_ms) {
+    return waitForObject(mutex, timeout_ms);
+}
+
+bool releaseMutex(MutexHandle mutex) {
+    if (!mutex) return false;
+    return ReleaseMutex(static_cast<HANDLE>(mutex)) != 0;
+}
+
+bool destroyMutex(MutexHandle mutex) {
+    if (!mutex) return false;
+    return CloseHandle(static_cast<HANDLE>(mutex)) != 0;
+}
+
 } // namespace yamy::platform
 
 #endif // _WIN32

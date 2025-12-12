@@ -30,6 +30,12 @@ bool detachThread(ThreadHandle handle) {
     return pthread_detach(thread) == 0;
 }
 
+bool destroyThread(ThreadHandle handle) {
+    // pthread handles don't need explicit destruction after join/detach
+    // This is a no-op for API consistency with Windows
+    return (handle != nullptr);
+}
+
 bool setThreadPriority(ThreadHandle handle, int priority) {
     pthread_t thread = (pthread_t)handle;
     struct sched_param param;

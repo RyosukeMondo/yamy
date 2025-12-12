@@ -1,9 +1,9 @@
 # #ifdef Reduction Strategy
 
 ## Current Status
-- **Total #ifdef _WIN32**: 26 (was 75, -65%)
+- **Total #ifdef _WIN32**: 21 (was 75, -72%)
 - **Inline conditionals**: 0 ✓ (excellent!)
-- **Top offenders**: engine_lifecycle.cpp (9, 35%), setting_loader (6, 23%)
+- **Top offenders**: setting_loader (5, 24%), engine_lifecycle.cpp (4, 19%)
 - **Recent progress** (this session):
   - Consolidated #ifdef blocks in engine.cpp and engine_lifecycle.cpp (-4)
   - Removed unused windowstool.h includes (-2)
@@ -22,6 +22,13 @@
   - Replaced Sleep/usleep with std::this_thread::sleep_for (-2)
   - Used strcasecmp_platform macro (-2)
   - Always use to_tstring() for stream conversions (-1)
+  - **Added comprehensive platform abstractions for sync primitives (-5)**:
+    - Created Event API (createEvent, setEvent, resetEvent, destroyEvent)
+    - Created Mutex API (createMutex, acquireMutex, releaseMutex, destroyMutex)
+    - Added destroyThread to thread API
+    - Replaced all Event/Mutex operations in engine_lifecycle.cpp
+    - Changed thread entry signatures from WINAPI to platform-agnostic
+    - Replaced _beginthreadex with yamy::platform::createThread()
 - **Files with ZERO #ifdefs**: setting.cpp ✓, vkeytable.cpp ✓, engine_log.cpp ✓, engine_modifier.cpp ✓, engine_input.cpp ✓, engine_generator.cpp ✓, engine_focus.cpp ✓, config_validator.cpp ✓, config_manager.h ✓, config_manager.cpp ✓, engine.h ✓
 
 ## Categories of #ifdef Usage
@@ -141,11 +148,11 @@ Add to `.github/workflows/ci.yml`:
 ### Baseline (2025-12-13)
 ```
 Initial: 75
-Current: 26 (-49 total, -65%)
+Current: 21 (-54 total, -72%)
 Inline: 0
 Files with ZERO #ifdefs: 11
-Should refactor: 17 (engine_lifecycle.cpp: 9, setting_loader: 6, engine.cpp: 1, engine_window.cpp: 1, engine_setting.cpp: 1)
-Acceptable pattern: 9 (platform abstraction headers + Windows-only files + VK fallbacks)
+Should refactor: 13 (setting_loader: 5, engine_lifecycle.cpp: 4, engine.cpp: 1, engine_window.cpp: 1, engine_setting.cpp: 1, target.cpp: 1)
+Acceptable pattern: 8 (platform abstraction headers + Windows-only files)
 ```
 
 ### Target (v2.0)

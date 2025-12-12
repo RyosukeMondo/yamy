@@ -23,6 +23,10 @@ bool joinThread(ThreadHandle handle);
 // returns true on success
 bool detachThread(ThreadHandle handle);
 
+// Destroys a thread handle (after joining or detaching)
+// returns true on success
+bool destroyThread(ThreadHandle handle);
+
 // Sets the priority of a thread
 // priority: platform dependent value
 bool setThreadPriority(ThreadHandle handle, int priority);

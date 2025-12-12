@@ -16,14 +16,11 @@
 #include <iomanip>
 
 #ifdef _WIN32
-#include <process.h>  // For _endthreadex
-
-// keyboard handler thread - Windows implementation
-unsigned int WINAPI Engine::keyboardHandler(void *i_this)
+// keyboard handler thread - Windows static entry point
+void* Engine::keyboardHandler(void *i_this)
 {
     reinterpret_cast<Engine *>(i_this)->keyboardHandler();
-    _endthreadex(0);
-    return 0;
+    return nullptr;
 }
 
 void Engine::keyboardHandler()
@@ -259,11 +256,11 @@ void Engine::keyboardHandler()
 
 #else // Linux implementation
 
-// keyboard handler thread - Linux stub
-unsigned int WINAPI Engine::keyboardHandler(void *i_this)
+// keyboard handler thread - Linux static entry point
+void* Engine::keyboardHandler(void *i_this)
 {
     reinterpret_cast<Engine *>(i_this)->keyboardHandler();
-    return 0;
+    return nullptr;
 }
 
 void Engine::keyboardHandler()
