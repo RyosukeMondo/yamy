@@ -426,6 +426,10 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     find_package(Qt5 REQUIRED COMPONENTS Core)
     message(STATUS "Qt5 Core found - version ${Qt5Core_VERSION}")
 
+    # Qt5 Test is required for test builds
+    find_package(Qt5 REQUIRED COMPONENTS Test)
+    message(STATUS "Qt5 Test found - version ${Qt5Test_VERSION}")
+
     # Qt5 GUI for Linux (optional)
     option(BUILD_QT_GUI "Build Qt5 GUI for Linux" ON)
 
