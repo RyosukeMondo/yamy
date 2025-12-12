@@ -187,7 +187,8 @@ jobs:
     - name: Configure CMake with coverage
       run: |
         cmake -B build \
-          -DBUILD_LINUX_STUB=ON \
+          -DBUILD_LINUX_STUB=OFF \
+          -DBUILD_LINUX_TESTING=OFF \
           -DBUILD_REGRESSION_TESTS=ON \
           -DBUILD_QT_GUI=OFF \
           -DENABLE_COVERAGE=ON \

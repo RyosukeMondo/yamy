@@ -614,12 +614,20 @@ endif()
 # -----------------------------------------------------------------------------
 if(UNIX AND NOT APPLE AND NOT WIN32)
     option(BUILD_LINUX_TESTING "Build Linux platform tests" ON)
+    option(BUILD_REGRESSION_TESTS "Build comprehensive regression test suite" ON)
+
+    # Enable CTest if any testing is enabled
+    if(BUILD_LINUX_TESTING OR BUILD_REGRESSION_TESTS)
+        enable_testing()
+        message(STATUS "CTest enabled for testing")
+    endif()
+
+    # GoogleTest directories (shared by all test targets)
+    set(GTEST_DIR src/tests/googletest)
+    set(GMOCK_DIR src/tests/googlemock)
 
     if(BUILD_LINUX_TESTING)
-        enable_testing()
-
-        set(GTEST_DIR src/tests/googletest)
-        set(GMOCK_DIR src/tests/googlemock)
+        message(STATUS "Building Linux platform tests")
 
         # Linux platform test sources
         set(LINUX_TEST_SOURCES
@@ -1189,17 +1197,18 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         else()
             message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/X11Extras not found)")
         endif() # Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND
+    endif() # BUILD_LINUX_TESTING
 
-        # -----------------------------------------------------------------------------
-        # Target: yamy_regression_test (Comprehensive Regression Test Suite)
-        # Aggregates all unit tests, integration tests, and platform tests
-        # Run in CI with: xvfb-run -a ./build/bin/yamy_regression_test
-        # -----------------------------------------------------------------------------
-        option(BUILD_REGRESSION_TESTS "Build comprehensive regression test suite" ON)
-
-        if(BUILD_REGRESSION_TESTS)
-            # Regression test includes all platform test sources
-            set(REGRESSION_TEST_SOURCES
+    # -----------------------------------------------------------------------------
+    # Target: yamy_regression_test (Comprehensive Regression Test Suite)
+    # Aggregates all unit tests, integration tests, and platform tests
+    # Run in CI with: xvfb-run -a ./build/bin/yamy_regression_test
+    # Independent of BUILD_LINUX_TESTING to allow coverage builds without individual tests
+    # -----------------------------------------------------------------------------
+    if(BUILD_REGRESSION_TESTS)
+        message(STATUS "Building comprehensive regression test suite")
+        # Regression test includes all platform test sources
+        set(REGRESSION_TEST_SOURCES
                 # Regression suite main entry point
                 tests/regression/regression_suite.cpp
                 # Platform unit tests
@@ -1217,197 +1226,196 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 # Integration tests
                 tests/integration/key_remapping_integration_test.cpp
                 tests/integration/integration_suite.cpp
-                # Leak tests (without their own main)
-                # Note: leak_test.cpp has its own main, so we include individual test cases separately
-            )
+            # Leak tests (without their own main)
+            # Note: leak_test.cpp has its own main, so we include individual test cases separately
+        )
 
-            # Platform sources needed for tests
-            set(REGRESSION_PLATFORM_SOURCES
-                src/platform/linux/window_system_linux.cpp
-                src/platform/linux/window_system_linux_queries.cpp
-                src/platform/linux/window_system_linux_manipulation.cpp
-                src/platform/linux/window_system_linux_hierarchy.cpp
-                src/platform/linux/window_system_linux_mouse.cpp
-                src/platform/linux/window_system_linux_monitor.cpp
-                src/platform/linux/x11_connection.cpp
-                src/platform/linux/input_injector_linux.cpp
-                src/platform/linux/input_hook_linux.cpp
-                src/platform/linux/input_driver_linux.cpp
-                src/platform/linux/device_manager_linux.cpp
-                src/platform/linux/keycode_mapping.cpp
-                src/platform/linux/sync_linux.cpp
-                src/platform/linux/thread_linux.cpp
-                src/platform/linux/hook_data_linux.cpp
-                src/platform/linux/ipc_linux.cpp
-                src/utils/metrics.cpp
-            )
+        # Platform sources needed for tests
+        set(REGRESSION_PLATFORM_SOURCES
+            src/platform/linux/window_system_linux.cpp
+            src/platform/linux/window_system_linux_queries.cpp
+            src/platform/linux/window_system_linux_manipulation.cpp
+            src/platform/linux/window_system_linux_hierarchy.cpp
+            src/platform/linux/window_system_linux_mouse.cpp
+            src/platform/linux/window_system_linux_monitor.cpp
+            src/platform/linux/x11_connection.cpp
+            src/platform/linux/input_injector_linux.cpp
+            src/platform/linux/input_hook_linux.cpp
+            src/platform/linux/input_driver_linux.cpp
+            src/platform/linux/device_manager_linux.cpp
+            src/platform/linux/keycode_mapping.cpp
+            src/platform/linux/sync_linux.cpp
+            src/platform/linux/thread_linux.cpp
+            src/platform/linux/hook_data_linux.cpp
+            src/platform/linux/ipc_linux.cpp
+            src/utils/metrics.cpp
+        )
 
-            # Core sources for integration tests
-            set(REGRESSION_CORE_SOURCES
-                src/core/input/keyboard.cpp
-                src/core/input/keymap.cpp
-                src/core/input/modifier_state.cpp
-                src/core/input/vkeytable.cpp
-                src/core/settings/parser.cpp
-                src/core/settings/setting.cpp
-                src/core/settings/setting_loader.cpp
-                src/core/settings/config_backup.cpp
-                src/core/settings/config_manager.cpp
-                src/core/settings/config_validator.cpp
-                src/core/settings/config_metadata.cpp
-                src/core/settings/session_manager.cpp
-                src/core/settings/config_watcher.cpp
-                src/core/functions/strexpr.cpp
-                src/core/functions/function.cpp
-                src/core/functions/function_creator.cpp
-                src/core/window/focus.cpp
-                src/core/window/layoutmanager.cpp
-                src/core/window/target.cpp
-                src/core/engine/engine.cpp
-                src/core/engine/engine_lifecycle.cpp
-                src/core/engine/engine_input.cpp
-                src/core/engine/engine_modifier.cpp
-                src/core/engine/engine_generator.cpp
-                src/core/engine/engine_focus.cpp
-                src/core/engine/engine_window.cpp
-                src/core/engine/engine_setting.cpp
-                src/core/engine/engine_log.cpp
-                src/core/notification_dispatcher.cpp
-                src/core/logging/logger.cpp
-                src/core/platform/ipc_channel_interface.cpp
-                src/utils/stringtool.cpp
-                src/utils/compiler_specific_func.cpp
-            )
+        # Core sources for integration tests
+        set(REGRESSION_CORE_SOURCES
+            src/core/input/keyboard.cpp
+            src/core/input/keymap.cpp
+            src/core/input/modifier_state.cpp
+            src/core/input/vkeytable.cpp
+            src/core/settings/parser.cpp
+            src/core/settings/setting.cpp
+            src/core/settings/setting_loader.cpp
+            src/core/settings/config_backup.cpp
+            src/core/settings/config_manager.cpp
+            src/core/settings/config_validator.cpp
+            src/core/settings/config_metadata.cpp
+            src/core/settings/session_manager.cpp
+            src/core/settings/config_watcher.cpp
+            src/core/functions/strexpr.cpp
+            src/core/functions/function.cpp
+            src/core/functions/function_creator.cpp
+            src/core/window/focus.cpp
+            src/core/window/layoutmanager.cpp
+            src/core/window/target.cpp
+            src/core/engine/engine.cpp
+            src/core/engine/engine_lifecycle.cpp
+            src/core/engine/engine_input.cpp
+            src/core/engine/engine_modifier.cpp
+            src/core/engine/engine_generator.cpp
+            src/core/engine/engine_focus.cpp
+            src/core/engine/engine_window.cpp
+            src/core/engine/engine_setting.cpp
+            src/core/engine/engine_log.cpp
+            src/core/notification_dispatcher.cpp
+            src/core/logging/logger.cpp
+            src/core/platform/ipc_channel_interface.cpp
+            src/utils/stringtool.cpp
+            src/utils/compiler_specific_func.cpp
+        )
 
-            # Command sources needed for function_creator linkage
-            set(REGRESSION_CMD_SOURCES
-                src/core/commands/cmd_keymap_parent.cpp
-                src/core/commands/cmd_keymap_window.cpp
-                src/core/commands/cmd_other_window_class.cpp
-                src/core/commands/cmd_prefix.cpp
-                src/core/commands/cmd_keymap.cpp
-                src/core/commands/cmd_sync.cpp
-                src/core/commands/cmd_toggle.cpp
-                src/core/commands/cmd_edit_next_modifier.cpp
-                src/core/commands/cmd_variable.cpp
-                src/core/commands/cmd_repeat.cpp
-                src/core/commands/cmd_undefined.cpp
-                src/core/commands/cmd_ignore.cpp
-                src/core/commands/cmd_post_message.cpp
-                src/core/commands/cmd_wait.cpp
-                src/core/commands/cmd_vk.cpp
-                src/core/commands/cmd_default.cpp
-                src/core/commands/cmd_keymap_prev_prefix.cpp
-                src/core/commands/cmd_load_setting.cpp
-                src/core/commands/cmd_shell_execute.cpp
-                src/core/commands/cmd_set_foreground_window.cpp
-                src/core/commands/cmd_investigate_command.cpp
-                src/core/commands/cmd_mayu_dialog.cpp
-                src/core/commands/cmd_describe_bindings.cpp
-                src/core/commands/cmd_help_message.cpp
-                src/core/commands/cmd_help_variable.cpp
-                src/core/commands/cmd_window_raise.cpp
-                src/core/commands/cmd_window_lower.cpp
-                src/core/commands/cmd_window_minimize.cpp
-                src/core/commands/cmd_window_maximize.cpp
-                src/core/commands/cmd_window_h_maximize.cpp
-                src/core/commands/cmd_window_v_maximize.cpp
-                src/core/commands/cmd_window_hv_maximize.cpp
-                src/core/commands/cmd_window_move.cpp
-                src/core/commands/cmd_window_move_to.cpp
-                src/core/commands/cmd_window_move_visibly.cpp
-                src/core/commands/cmd_window_monitor_to.cpp
-                src/core/commands/cmd_window_monitor.cpp
-                src/core/commands/cmd_window_cling_to_left.cpp
-                src/core/commands/cmd_window_cling_to_right.cpp
-                src/core/commands/cmd_window_cling_to_top.cpp
-                src/core/commands/cmd_window_cling_to_bottom.cpp
-                src/core/commands/cmd_window_close.cpp
-                src/core/commands/cmd_window_toggle_top_most.cpp
-                src/core/commands/cmd_window_identify.cpp
-                src/core/commands/cmd_window_set_alpha.cpp
-                src/core/commands/cmd_window_redraw.cpp
-                src/core/commands/cmd_window_resize_to.cpp
-                src/core/commands/cmd_mouse_move.cpp
-                src/core/commands/cmd_mouse_wheel.cpp
-                src/core/commands/cmd_clipboard_change_case.cpp
-                src/core/commands/cmd_clipboard_upcase_word.cpp
-                src/core/commands/cmd_clipboard_downcase_word.cpp
-                src/core/commands/cmd_clipboard_copy.cpp
-                src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
-                src/core/commands/cmd_emacs_edit_kill_line_func.cpp
-                src/core/commands/cmd_log_clear.cpp
-                src/core/commands/cmd_recenter.cpp
-                src/core/commands/cmd_direct_sstp.cpp
-                src/core/commands/cmd_plugin.cpp
-                src/core/commands/cmd_set_ime_status.cpp
-                src/core/commands/cmd_set_ime_string.cpp
-                src/core/commands/cmd_mouse_hook.cpp
-                src/core/commands/cmd_cancel_prefix.cpp
-                src/core/commands/cmd_metrics.cpp
-            )
+        # Command sources needed for function_creator linkage
+        set(REGRESSION_CMD_SOURCES
+            src/core/commands/cmd_keymap_parent.cpp
+            src/core/commands/cmd_keymap_window.cpp
+            src/core/commands/cmd_other_window_class.cpp
+            src/core/commands/cmd_prefix.cpp
+            src/core/commands/cmd_keymap.cpp
+            src/core/commands/cmd_sync.cpp
+            src/core/commands/cmd_toggle.cpp
+            src/core/commands/cmd_edit_next_modifier.cpp
+            src/core/commands/cmd_variable.cpp
+            src/core/commands/cmd_repeat.cpp
+            src/core/commands/cmd_undefined.cpp
+            src/core/commands/cmd_ignore.cpp
+            src/core/commands/cmd_post_message.cpp
+            src/core/commands/cmd_wait.cpp
+            src/core/commands/cmd_vk.cpp
+            src/core/commands/cmd_default.cpp
+            src/core/commands/cmd_keymap_prev_prefix.cpp
+            src/core/commands/cmd_load_setting.cpp
+            src/core/commands/cmd_shell_execute.cpp
+            src/core/commands/cmd_set_foreground_window.cpp
+            src/core/commands/cmd_investigate_command.cpp
+            src/core/commands/cmd_mayu_dialog.cpp
+            src/core/commands/cmd_describe_bindings.cpp
+            src/core/commands/cmd_help_message.cpp
+            src/core/commands/cmd_help_variable.cpp
+            src/core/commands/cmd_window_raise.cpp
+            src/core/commands/cmd_window_lower.cpp
+            src/core/commands/cmd_window_minimize.cpp
+            src/core/commands/cmd_window_maximize.cpp
+            src/core/commands/cmd_window_h_maximize.cpp
+            src/core/commands/cmd_window_v_maximize.cpp
+            src/core/commands/cmd_window_hv_maximize.cpp
+            src/core/commands/cmd_window_move.cpp
+            src/core/commands/cmd_window_move_to.cpp
+            src/core/commands/cmd_window_move_visibly.cpp
+            src/core/commands/cmd_window_monitor_to.cpp
+            src/core/commands/cmd_window_monitor.cpp
+            src/core/commands/cmd_window_cling_to_left.cpp
+            src/core/commands/cmd_window_cling_to_right.cpp
+            src/core/commands/cmd_window_cling_to_top.cpp
+            src/core/commands/cmd_window_cling_to_bottom.cpp
+            src/core/commands/cmd_window_close.cpp
+            src/core/commands/cmd_window_toggle_top_most.cpp
+            src/core/commands/cmd_window_identify.cpp
+            src/core/commands/cmd_window_set_alpha.cpp
+            src/core/commands/cmd_window_redraw.cpp
+            src/core/commands/cmd_window_resize_to.cpp
+            src/core/commands/cmd_mouse_move.cpp
+            src/core/commands/cmd_mouse_wheel.cpp
+            src/core/commands/cmd_clipboard_change_case.cpp
+            src/core/commands/cmd_clipboard_upcase_word.cpp
+            src/core/commands/cmd_clipboard_downcase_word.cpp
+            src/core/commands/cmd_clipboard_copy.cpp
+            src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
+            src/core/commands/cmd_emacs_edit_kill_line_func.cpp
+            src/core/commands/cmd_log_clear.cpp
+            src/core/commands/cmd_recenter.cpp
+            src/core/commands/cmd_direct_sstp.cpp
+            src/core/commands/cmd_plugin.cpp
+            src/core/commands/cmd_set_ime_status.cpp
+            src/core/commands/cmd_set_ime_string.cpp
+            src/core/commands/cmd_mouse_hook.cpp
+            src/core/commands/cmd_cancel_prefix.cpp
+            src/core/commands/cmd_metrics.cpp
+        )
 
-            add_executable(yamy_regression_test
-                ${REGRESSION_TEST_SOURCES}
-                ${REGRESSION_PLATFORM_SOURCES}
-                ${REGRESSION_CORE_SOURCES}
-                ${REGRESSION_CMD_SOURCES}
-                src/tests/googletest/src/gtest-all.cc
-            )
+        add_executable(yamy_regression_test
+            ${REGRESSION_TEST_SOURCES}
+            ${REGRESSION_PLATFORM_SOURCES}
+            ${REGRESSION_CORE_SOURCES}
+            ${REGRESSION_CMD_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
 
-            # Enable Qt MOC for regression tests
-            set_target_properties(yamy_regression_test PROPERTIES AUTOMOC ON)
+        # Enable Qt MOC for regression tests
+        set_target_properties(yamy_regression_test PROPERTIES AUTOMOC ON)
 
-            target_include_directories(yamy_regression_test PRIVATE
-                ${GTEST_DIR}/include
-                ${GTEST_DIR}
-                src
-                src/core
-                src/core/platform
-                src/core/engine
-                src/core/settings
-                src/core/input
-                src/core/window
-                src/core/functions
-                src/core/commands
-                src/sync
-                src/misc
-                src/utils
-                src/app
-                src/ui
-                src/platform/linux
-                tests/integration
-                tests/regression
-            )
+        target_include_directories(yamy_regression_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/core/engine
+            src/core/settings
+            src/core/input
+            src/core/window
+            src/core/functions
+            src/core/commands
+            src/sync
+            src/misc
+            src/utils
+            src/app
+            src/ui
+            src/platform/linux
+            tests/integration
+            tests/regression
+        )
 
-            target_link_libraries(yamy_regression_test PRIVATE
-                pthread
-                ${X11_LIBRARIES}
-                ${XRANDR_LIBRARIES}
-                ${UDEV_LIBRARIES}
-                Qt5::Core
-                Qt5::Test
-            )
+        target_link_libraries(yamy_regression_test PRIVATE
+            pthread
+            ${X11_LIBRARIES}
+            ${XRANDR_LIBRARIES}
+            ${UDEV_LIBRARIES}
+            Qt5::Core
+            Qt5::Test
+        )
 
-            # Register with CTest
-            add_test(NAME yamy_regression_test COMMAND yamy_regression_test)
+        # Register with CTest
+        add_test(NAME yamy_regression_test COMMAND yamy_regression_test)
 
-            # Custom target for running regression tests
-            add_custom_target(run_regression_tests
-                COMMAND ${CMAKE_CTEST_COMMAND} -R yamy_regression_test --output-on-failure -V
-                DEPENDS yamy_regression_test
-                COMMENT "Running comprehensive regression test suite"
-            )
+        # Custom target for running regression tests
+        add_custom_target(run_regression_tests
+            COMMAND ${CMAKE_CTEST_COMMAND} -R yamy_regression_test --output-on-failure -V
+            DEPENDS yamy_regression_test
+            COMMENT "Running comprehensive regression test suite"
+        )
 
-            # Custom target for running regression tests with Xvfb (for CI)
-            add_custom_target(run_regression_tests_xvfb
-                COMMAND xvfb-run -a ${CMAKE_CTEST_COMMAND} -R yamy_regression_test --output-on-failure -V
-                DEPENDS yamy_regression_test
-                COMMENT "Running regression tests with Xvfb virtual display"
-            )
-        endif()
-    endif()
-endif()
+        # Custom target for running regression tests with Xvfb (for CI)
+        add_custom_target(run_regression_tests_xvfb
+            COMMAND xvfb-run -a ${CMAKE_CTEST_COMMAND} -R yamy_regression_test --output-on-failure -V
+            DEPENDS yamy_regression_test
+            COMMENT "Running regression tests with Xvfb virtual display"
+        )
+    endif() # BUILD_REGRESSION_TESTS
+endif() # UNIX AND NOT APPLE AND NOT WIN32
 
 # -----------------------------------------------------------------------------
 # Example Plugins (optional, build with -DBUILD_EXAMPLES=ON)
