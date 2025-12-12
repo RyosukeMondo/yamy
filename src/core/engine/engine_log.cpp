@@ -35,11 +35,7 @@ void Engine::outputToLog(const Key *i_key, const ModifiedKey &i_mkey,
         if (!(i_key->getScanCodes()[i].m_flags & ScanCode::E0E1))
             m_log << "   ";
         m_log << "0x" << std::hex << std::setw(2)
-#ifdef _WIN32
-        << std::setfill(L'0')  // Wide character for Windows
-#else
-        << std::setfill('0')   // Narrow character for Linux
-#endif
+        << std::setfill(static_cast<tostream::char_type>('0'))
         << static_cast<int>(i_key->getScanCodes()[i].m_scan)
         << std::dec << " ";
     }
@@ -49,16 +45,12 @@ void Engine::outputToLog(const Key *i_key, const ModifiedKey &i_mkey,
         return;
     }
 
-    // Output ModifiedKey (needs conversion for wide streams on Windows)
-#ifdef _WIN32
+    // Output ModifiedKey
     {
-        std::stringstream ss;
+        tstringstream ss;
         ss << i_mkey;
-        m_log << "  " << to_tstring(ss.str()) << std::endl;
+        m_log << "  " << ss.str() << std::endl;
     }
-#else
-    m_log << "  " << i_mkey << std::endl;
-#endif
 
     if (m_isInvestigateMode && m_ipcChannel && m_ipcChannel->isConnected()) {
         std::stringstream ss;
@@ -85,20 +77,11 @@ void Engine::describeBindings()
     Acquire a(&m_log, 0);
 
     Keymap::DescribeParam dp;
-#ifdef _WIN32
-    // Windows: use stringstream and convert to wide
-    std::stringstream ss;
+    tstringstream ss;
     for (KeymapPtrList::iterator i = m_currentFocusOfThread->m_keymaps.begin();
             i != m_currentFocusOfThread->m_keymaps.end(); ++ i)
         (*i)->describe(ss, &dp);
-    m_log << to_tstring(ss.str()) << std::endl;
-#else
-    // Linux: direct output
-    for (KeymapPtrList::iterator i = m_currentFocusOfThread->m_keymaps.begin();
-            i != m_currentFocusOfThread->m_keymaps.end(); ++ i)
-        (*i)->describe(m_log, &dp);
-    m_log << std::endl;
-#endif
+    m_log << ss.str() << std::endl;
 }
 
 
