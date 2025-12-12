@@ -190,6 +190,8 @@ void Engine::stop() {
     m_readEvent = nullptr;
 
 #ifdef _WIN32
+    // Windows: Send null messages to attached threads to wake them on shutdown
+    // Linux: Not needed - threads are properly joined or detached
     for (ThreadIds::iterator i = m_attachedThreadIds.begin();
          i != m_attachedThreadIds.end(); i++) {
          PostThreadMessage(*i, WM_NULL, 0, 0);
