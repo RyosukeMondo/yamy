@@ -1482,7 +1482,7 @@ if(ENABLE_COVERAGE)
                 '*/gtest/*'
                 '*/Qt5/*'
                 --output-file ${COVERAGE_INFO_FILE}
-                --ignore-errors mismatch,inconsistent
+                --ignore-errors mismatch,inconsistent,unused
 
             # Step 8: Generate HTML report
             COMMAND ${GENHTML_PATH} ${COVERAGE_INFO_FILE}
