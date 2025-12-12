@@ -422,7 +422,10 @@ public:
     /// Switch to a different configuration file
     /// @param configPath Path to the .mayu configuration file
     /// @return true if switch was successful, false on parse errors
+    /// Note: Only available on Linux (incompatible with Windows wide streams)
+#ifndef _WIN32
     bool switchConfiguration(const std::string& configPath);
+#endif
 
     /// Set callback for configuration switch notifications
     void setConfigSwitchCallback(ConfigSwitchCallback callback) {

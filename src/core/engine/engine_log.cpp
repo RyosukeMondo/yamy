@@ -8,6 +8,7 @@
 #include "errormessage.h"
 #include "hook.h"
 #include "mayurc.h"
+#include "stringtool.h"
 #ifdef _WIN32
 #include "windowstool.h"
 #endif
@@ -33,7 +34,12 @@ void Engine::outputToLog(const Key *i_key, const ModifiedKey &i_mkey,
         if (i_key->getScanCodes()[i].m_flags & ScanCode::E1) m_log << "E1-";
         if (!(i_key->getScanCodes()[i].m_flags & ScanCode::E0E1))
             m_log << "   ";
-        m_log << "0x" << std::hex << std::setw(2) << std::setfill('0')
+        m_log << "0x" << std::hex << std::setw(2)
+#ifdef _WIN32
+        << std::setfill(L'0')  // Wide character for Windows
+#else
+        << std::setfill('0')   // Narrow character for Linux
+#endif
         << static_cast<int>(i_key->getScanCodes()[i].m_scan)
         << std::dec << " ";
     }
@@ -43,7 +49,16 @@ void Engine::outputToLog(const Key *i_key, const ModifiedKey &i_mkey,
         return;
     }
 
+    // Output ModifiedKey (needs conversion for wide streams on Windows)
+#ifdef _WIN32
+    {
+        std::stringstream ss;
+        ss << i_mkey;
+        m_log << "  " << to_tstring(ss.str()) << std::endl;
+    }
+#else
     m_log << "  " << i_mkey << std::endl;
+#endif
 
     if (m_isInvestigateMode && m_ipcChannel && m_ipcChannel->isConnected()) {
         std::stringstream ss;
