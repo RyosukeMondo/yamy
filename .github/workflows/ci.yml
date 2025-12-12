@@ -194,8 +194,8 @@ jobs:
           -DENABLE_COVERAGE=ON \
           -DCMAKE_BUILD_TYPE=Debug
 
-    - name: Build
-      run: cmake --build build --parallel
+    - name: Build regression tests only
+      run: cmake --build build --target yamy_regression_test --parallel
 
     - name: Run tests with coverage (Xvfb)
       run: |
