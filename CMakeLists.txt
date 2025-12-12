@@ -676,6 +676,10 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         # Add test to CTest
         add_test(NAME yamy_linux_test COMMAND yamy_linux_test)
 
+        # Qt5 GUI-dependent tests (only build if Qt5 GUI components are available)
+        if(Qt5Widgets_FOUND AND Qt5Gui_FOUND)
+            message(STATUS "Building Qt5 GUI-dependent tests")
+
         # -----------------------------------------------------------------------------
         # Target: yamy_ui_test (UI Unit Tests)
         # -----------------------------------------------------------------------------
@@ -1177,6 +1181,10 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 COMMENT "Running memory leak tests with AddressSanitizer"
             )
         endif()
+
+        else()
+            message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui not found)")
+        endif() # Qt5Widgets_FOUND AND Qt5Gui_FOUND
 
         # -----------------------------------------------------------------------------
         # Target: yamy_regression_test (Comprehensive Regression Test Suite)
