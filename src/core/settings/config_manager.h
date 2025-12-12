@@ -7,7 +7,6 @@
 #define _CONFIG_MANAGER_H
 
 #include "multithread.h"
-#include "config_watcher.h"
 #include "../utils/config_store.h"
 #include <string>
 #include <vector>
@@ -15,7 +14,12 @@
 #include <functional>
 #include <memory>
 
-class ConfigWatcher;
+// ConfigWatcher requires Qt (QObject), only available on Linux builds
+#ifdef _WIN32
+class ConfigWatcher;  // Forward declaration only on Windows
+#else
+#include "config_watcher.h"
+#endif
 
 /// Configuration file entry with path and optional metadata
 struct ConfigEntry {

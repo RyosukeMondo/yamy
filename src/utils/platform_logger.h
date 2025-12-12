@@ -72,7 +72,11 @@ private:
         // Get timestamp
         time_t now = time(nullptr);
         struct tm tm_buf;
-        localtime_r(&now, &tm_buf);
+#ifdef _WIN32
+        localtime_s(&tm_buf, &now);  // Windows uses localtime_s with swapped arguments
+#else
+        localtime_r(&now, &tm_buf);  // POSIX uses localtime_r
+#endif
 
         char timeBuf[32];
         strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", &tm_buf);
