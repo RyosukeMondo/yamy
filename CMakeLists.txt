@@ -387,7 +387,9 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/settings/config_manager.cpp
         src/core/settings/config_validator.cpp
         src/core/settings/config_metadata.cpp
+        src/core/settings/config_watcher.cpp
         src/core/settings/session_manager.cpp
+        src/core/platform/ipc_channel_interface.cpp
         src/resources/templates/template_manager.cpp
         src/core/functions/strexpr.cpp
         src/utils/stringtool.cpp
@@ -464,6 +466,9 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
             Qt5::Core
         )
     endif()
+
+    # Enable Qt MOC for Qt-based sources (ConfigWatcher, IIPCChannel)
+    set_target_properties(yamy_stub PROPERTIES AUTOMOC ON)
 
     target_include_directories(yamy_stub PRIVATE
         src
