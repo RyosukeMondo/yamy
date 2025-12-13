@@ -134,12 +134,40 @@ EOF
 echo_color "$CYAN" "Building 64-bit..."
 cmake -S "$ROOT" -B "$ROOT/build/x64" \
     -DCMAKE_TOOLCHAIN_FILE="$ROOT/build/toolchain/mingw-w64-x86_64.cmake" \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++"
 
 cmake --build "$ROOT/build/x64" --config Release > "$LOGS_DIR/build_log_x64.txt" 2>&1 || {
     echo_color "$RED" "CMake Build 64-bit failed. Check $LOGS_DIR/build_log_x64.txt"
     exit 1
 }
+
+# Check dependencies for missing DLLs
+echo_color "$CYAN" "Checking 64-bit dependencies..."
+check_deps() {
+    local file=$1
+    local arch=$2
+    echo_color "$YELLOW" "  Checking: $(basename $file)"
+
+    # Get DLL dependencies
+    local deps=$(x86_64-w64-mingw32-objdump -p "$file" 2>/dev/null | grep "DLL Name:" || true)
+
+    if echo "$deps" | grep -qi "libstdc++\|libgcc\|libwinpthread"; then
+        echo_color "$RED" "  ERROR: $file depends on MinGW runtime DLLs!"
+        echo "$deps" | grep -i "DLL Name:"
+        echo_color "$RED" "  These DLLs must be statically linked or bundled."
+        return 1
+    fi
+
+    echo_color "$GREEN" "  ✓ No MinGW runtime dependencies"
+    return 0
+}
+
+if ! check_deps "$ROOT/build/x64/bin/yamy64.exe" "x64"; then
+    echo_color "$RED" "Dependency check failed. Aborting."
+    exit 1
+fi
 
 # Copy 64-bit artifacts
 echo_color "$CYAN" "Copying 64-bit artifacts..."
@@ -153,7 +181,9 @@ cp "$ROOT/build/x64/bin/yamy64.dll" "$RELEASE_DIR/"
 echo_color "$CYAN" "Building 32-bit..."
 cmake -S "$ROOT" -B "$ROOT/build/x86" \
     -DCMAKE_TOOLCHAIN_FILE="$ROOT/build/toolchain/mingw-w64-i686.cmake" \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++"
 
 cmake --build "$ROOT/build/x86" --config Release > "$LOGS_DIR/build_log_x86.txt" 2>&1 || {
     echo_color "$RED" "CMake Build 32-bit failed. Check $LOGS_DIR/build_log_x86.txt"
