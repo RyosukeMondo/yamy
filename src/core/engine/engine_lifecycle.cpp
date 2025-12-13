@@ -153,11 +153,21 @@ void Engine::start() {
 
 #ifdef _WIN32
     yamy::debug::DebugConsole::LogInfo("Engine: Creating input queue and synchronization objects...");
+    yamy::debug::DebugConsole::LogInfo("Engine: Creating input queue (deque)...");
 #endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Creating input queue and synchronization objects...");
     CHECK_TRUE( m_inputQueue = new std::deque<yamy::platform::KeyEvent> );
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Creating mutex...");
+#endif
     CHECK_TRUE( m_queueMutex = yamy::platform::createMutex() );
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Creating event...");
+#endif
     CHECK_TRUE( m_readEvent = yamy::platform::createEvent(true, false) );
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Synchronization objects created successfully!");
+#endif
 
 #ifdef _WIN32
     OVERLAPPED* pOl = reinterpret_cast<OVERLAPPED*>(m_ol);
