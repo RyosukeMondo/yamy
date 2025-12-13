@@ -298,28 +298,16 @@ int main(int argc, char* argv[])
 
             case yamy::platform::ControlCommand::Stop:
                 std::cout << "IPC: Received stop command" << std::endl;
-                if (engine->isRunning()) {
-                    engine->stop();
-                    engine->disable();
-                    result.success = true;
-                    result.message = "Engine stopped";
-                } else {
-                    result.success = true;
-                    result.message = "Engine was already stopped";
-                }
+                engine->stop();
+                result.success = true;
+                result.message = "Engine stopped";
                 break;
 
             case yamy::platform::ControlCommand::Start:
                 std::cout << "IPC: Received start command" << std::endl;
-                if (!engine->isRunning()) {
-                    engine->enable();
-                    engine->start();
-                    result.success = true;
-                    result.message = "Engine started";
-                } else {
-                    result.success = true;
-                    result.message = "Engine was already running";
-                }
+                engine->start();
+                result.success = true;
+                result.message = "Engine started";
                 break;
 
             case yamy::platform::ControlCommand::GetStatus: {

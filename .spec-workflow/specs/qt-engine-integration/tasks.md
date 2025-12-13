@@ -77,7 +77,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-4, US-2_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ IPC developer. Task: In main_qt.cpp IPC handler lambda (around line 380), update ControlCommand::Reload case: if data not empty, call engine->loadConfig(data); else reload current config with engine->loadConfig(engine->getConfigPath()); set result.success and result.message based on return value; wrap in try-catch for exceptions. Restrictions: Do NOT change IPC protocol or CommandResult structure. Success: yamy-ctl reload works with real config loading, errors returned with clear messages._
 
-- [ ] 9. Update IPC start/stop command handlers
+- [x] 9. Update IPC start/stop command handlers
   - File: src/app/main_qt.cpp
   - Update start/stop commands to use adapter methods
   - Return proper success/error status
