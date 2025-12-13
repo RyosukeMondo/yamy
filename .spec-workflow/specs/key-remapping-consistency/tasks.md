@@ -304,7 +304,7 @@
   - _Requirements: 8_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Feature architect with expertise in input systems and state machines | Task: Design comprehensive number-to-modifier system in docs/NUMBER_MODIFIER_DESIGN.md following requirement 8. Design hold/tap detection, state machine, integration with Layer 2, mapping table structure, .mayu syntax. Ensure backward compatibility with existing number key substitutions. | Restrictions: Must not break existing number key substitutions, hold/tap threshold must be configurable, integration must not bypass EventProcessor architecture, maintain event type consistency, no special-case code paths (generalized solution) | _Leverage: Existing modal layer system with mod modX = !!_Y syntax in .mayu files | _Requirements: Requirement 8 (Number Keys as Custom Modifiers) | Success: Design document covers all aspects of feature, hold/tap logic clearly specified, state machine defined, integration point identified, .mayu syntax proposed, backward compatibility ensured, ready for implementation._
 
-- [ ] 4.2 Implement ModifierKeyHandler class
+- [-] 4.2 Implement ModifierKeyHandler class
   - Files: `src/core/engine/modifier_key_handler.h`, `src/core/engine/modifier_key_handler.cpp`
   - Implement hold/tap detection timer (200ms threshold)
   - Implement state machine for number key states
