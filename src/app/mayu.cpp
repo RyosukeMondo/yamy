@@ -1181,9 +1181,10 @@ public:
                               (DLGPROC)dlgLog_dlgProc, (LPARAM)&dld);
         if (!m_hwndLog) {
             DWORD error = GetLastError();
-            yamy::debug::DebugConsole::CriticalError("Failed to create log dialog. Error: " + std::to_string(error));
+            yamy::debug::DebugConsole::LogWarning("Failed to create log dialog. Error: " + std::to_string(error) + " (non-critical, continuing...)");
+        } else {
+            yamy::debug::DebugConsole::LogInfo("Mayu: Log dialog created successfully!");
         }
-        CHECK_TRUE( m_hwndLog );
 
         yamy::debug::DebugConsole::LogInfo("Mayu: Creating investigate dialog...");
         DlgInvestigateData did;
@@ -1195,9 +1196,10 @@ public:
                               (DLGPROC)dlgInvestigate_dlgProc, (LPARAM)&did);
         if (!m_hwndInvestigate) {
             DWORD error = GetLastError();
-            yamy::debug::DebugConsole::CriticalError("Failed to create investigate dialog. Error: " + std::to_string(error));
+            yamy::debug::DebugConsole::LogWarning("Failed to create investigate dialog. Error: " + std::to_string(error) + " (non-critical, continuing...)");
+        } else {
+            yamy::debug::DebugConsole::LogInfo("Mayu: Investigate dialog created successfully!");
         }
-        CHECK_TRUE( m_hwndInvestigate );
 
         yamy::debug::DebugConsole::LogInfo("Mayu: Creating version dialog...");
         m_hwndVersion =
@@ -1206,9 +1208,10 @@ public:
                               (LPARAM)_T(""));
         if (!m_hwndVersion) {
             DWORD error = GetLastError();
-            yamy::debug::DebugConsole::CriticalError("Failed to create version dialog. Error: " + std::to_string(error));
+            yamy::debug::DebugConsole::LogWarning("Failed to create version dialog. Error: " + std::to_string(error) + " (non-critical, continuing...)");
+        } else {
+            yamy::debug::DebugConsole::LogInfo("Mayu: Version dialog created successfully!");
         }
-        CHECK_TRUE( m_hwndVersion );
 
         // attach log
 #ifdef LOG_TO_FILE
@@ -1224,7 +1227,9 @@ public:
         m_logFile.open(path.c_str(), std::ios::app);
         m_logFile.imbue(std::locale("japanese"));
 #endif // LOG_TO_FILE
-        SendMessage(GetDlgItem(m_hwndLog, IDC_EDIT_log), EM_SETLIMITTEXT, 0, 0);
+        if (m_hwndLog) {
+            SendMessage(GetDlgItem(m_hwndLog, IDC_EDIT_log), EM_SETLIMITTEXT, 0, 0);
+        }
         m_log.attach(m_hwndTaskTray);
 
         yamy::debug::DebugConsole::LogInfo("Mayu: Starting engine...");
