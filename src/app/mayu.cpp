@@ -1082,8 +1082,17 @@ public:
         m_hNotifyMailslot = CreateMailslot(NOTIFY_MAILSLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, (SECURITY_ATTRIBUTES *)nullptr);
         if (m_hNotifyMailslot == INVALID_HANDLE_VALUE) {
             DWORD error = GetLastError();
-            yamy::debug::DebugConsole::CriticalError("Failed to create mailslot. Error: " + std::to_string(error));
-            ASSERT(false);
+            if (error == ERROR_ALREADY_EXISTS) {
+                yamy::debug::DebugConsole::LogError("YAMY is already running. Please close the existing instance first.");
+                MessageBoxA(NULL,
+                    "YAMY is already running.\n\nPlease close the existing instance before starting a new one.\n\nCheck the system tray for the YAMY icon.",
+                    "YAMY Already Running",
+                    MB_OK | MB_ICONWARNING);
+                throw std::runtime_error("YAMY already running");
+            } else {
+                yamy::debug::DebugConsole::CriticalError("Failed to create mailslot. Error: " + std::to_string(error));
+                ASSERT(false);
+            }
         }
 
         yamy::debug::DebugConsole::LogInfo("Mayu: Setting mailslot permissions...");

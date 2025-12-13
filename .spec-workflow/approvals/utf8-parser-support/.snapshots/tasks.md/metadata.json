@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/utf8-parser-support/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-13T04:44:49.122Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765601089116_wo6guv7mf",
+      "approvalTitle": "UTF-8 Parser Support - Tasks"
+    }
+  ]
+}
