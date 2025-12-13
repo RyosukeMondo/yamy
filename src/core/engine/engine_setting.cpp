@@ -11,6 +11,7 @@
 #include "setting_loader.h"
 #include "stringtool.h"
 #include "windowstool.h"
+#include "../../utils/platform_logger.h"
 
 #include <iomanip>
 #include <string>
@@ -260,6 +261,9 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
     // Enable debug logging if YAMY_DEBUG_KEYCODE env var is set
     const char* debugEnv = std::getenv("YAMY_DEBUG_KEYCODE");
     if (debugEnv && std::string(debugEnv) == "1") {
+        // Set platform logger to DEBUG level
+        yamy::platform::PlatformLogger::instance().setLevel(yamy::platform::LogLevel::DEBUG);
+
         m_eventProcessor->setDebugLogging(true);
         Acquire a(&m_log, 0);
         m_log << "EventProcessor debug logging enabled" << std::endl;
