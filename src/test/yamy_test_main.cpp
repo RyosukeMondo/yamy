@@ -263,13 +263,15 @@ public:
     void printUsage() {
         std::cout << "Usage: yamy-test <command> [options]\n\n";
         std::cout << "Commands:\n";
-        std::cout << "  inject <keycode>         - Inject a single key event\n";
+        std::cout << "  inject <keycode> [PRESS|RELEASE] - Inject a single key event\n";
         std::cout << "  sequence <keys>          - Inject a sequence of keys\n";
         std::cout << "  dry-run <keys>           - Show what would be injected (no actual injection)\n";
         std::cout << "  e2e <input> <expected>   - E2E test: inject input, verify output\n";
         std::cout << "  e2e-auto <input> <expected> - E2E test with auto YAMY restart\n";
         std::cout << "\nExamples:\n";
-        std::cout << "  yamy-test inject 30                   # Inject KEY_A\n";
+        std::cout << "  yamy-test inject 30                   # Inject KEY_A (press+release)\n";
+        std::cout << "  yamy-test inject 30 PRESS             # Inject KEY_A press only\n";
+        std::cout << "  yamy-test inject 30 RELEASE           # Inject KEY_A release only\n";
         std::cout << "  yamy-test sequence 30,48,46           # Inject A, B, C\n";
         std::cout << "  yamy-test dry-run 30,48,46            # Show A, B, C injection plan\n";
         std::cout << "  yamy-test e2e-auto 30,48,46 30,48,46  # Auto E2E: abc → abc\n";
@@ -538,6 +540,33 @@ public:
         std::cout << "[DRY-RUN] No actual injection performed (dry-run mode)\n";
     }
 
+    bool injectSingleEvent(uint16_t keycode, const std::string& eventType) {
+        VirtualKeyboard keyboard;
+
+        if (!keyboard.initialize()) {
+            return false;
+        }
+
+        bool isPress = (eventType == "PRESS");
+        bool isRelease = (eventType == "RELEASE");
+
+        if (!isPress && !isRelease) {
+            std::cerr << "Error: Event type must be PRESS or RELEASE\n";
+            return false;
+        }
+
+        std::cout << "Injecting evdev " << keycode << " (" << keyCodeToName(keycode)
+                  << ") " << eventType << " event...\n";
+
+        keyboard.sendKey(keycode, isPress);
+
+        std::cout << "✓ Event injected successfully\n";
+        std::cout << "\nCheck YAMY debug logs (YAMY_DEBUG_KEYCODE=1):\n";
+        std::cout << "  Should show [LAYER1:IN] → [LAYER2:IN/SUBST/PASSTHROUGH] → [LAYER3:OUT]\n";
+
+        return true;
+    }
+
     bool injectKeys(const std::vector<uint16_t>& keycodes) {
         VirtualKeyboard keyboard;
 
@@ -593,7 +622,15 @@ int main(int argc, char* argv[]) {
 
     if (command == "inject" && argc >= 3) {
         uint16_t keycode = std::stoi(argv[2]);
-        return tool.injectKeys({keycode}) ? 0 : 1;
+
+        if (argc >= 4) {
+            // New format: inject <keycode> <PRESS|RELEASE>
+            std::string eventType = argv[3];
+            return tool.injectSingleEvent(keycode, eventType) ? 0 : 1;
+        } else {
+            // Legacy format: inject <keycode> (press+release)
+            return tool.injectKeys({keycode}) ? 0 : 1;
+        }
 
     } else if (command == "sequence" && argc >= 3) {
         auto keycodes = tool.parseKeycodes(argv[2]);
