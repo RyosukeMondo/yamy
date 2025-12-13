@@ -496,12 +496,21 @@ private:
                                                        ID_MENUITEM_investigate, FALSE) );
 
                         // create reload menu
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Building reload submenu...");
+#endif
                         HMENU hMenuSubSub = GetSubMenu(hMenuSub, 1);
                         int mayuIndex;
                         This->m_configStore->read(to_string(_T(".mayuIndex")), &mayuIndex, 0);
                         while (DeleteMenu(hMenuSubSub, 0, MF_BYPOSITION))
                             ;
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Compiling regex pattern...");
+#endif
                         Regex getName(to_string(_T("^([^;]*);")));
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Regex compiled, scanning config entries...");
+#endif
                         for (int index = 0; ; index ++) {
                             _TCHAR buf[100];
                             _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
@@ -525,6 +534,9 @@ private:
                                 InsertMenuItem(hMenuSubSub, index, TRUE, &mii);
                             }
                         }
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Reload submenu built successfully");
+#endif
 
                         // show popup menu
 #ifdef _WIN32
