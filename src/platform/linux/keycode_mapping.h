@@ -41,4 +41,10 @@ void clearLayoutOverride();
 /// @return Layout string ("us", "jp", etc.)
 std::string detectKeyboardLayout();
 
+/// Get hardware modifier evdev code for a number key
+/// Used by ModifierKeyHandler for number-to-modifier feature (Task 4.3)
+/// @param yamy_scancode YAMY scan code for number key (e.g., 0x0002 for _1)
+/// @return Hardware modifier evdev code (e.g., KEY_LEFTSHIFT), or 0 if not registered
+uint16_t getModifierForNumberKey(uint16_t yamy_scancode);
+
 } // namespace yamy::platform

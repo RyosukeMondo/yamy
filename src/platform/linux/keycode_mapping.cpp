@@ -463,6 +463,33 @@ const std::unordered_map<uint16_t, uint16_t> g_scanToEvdevMap_JP = {
     {0xE05F, KEY_SLEEP}        // Sleep
 };
 
+// Number-to-modifier mapping table
+// Maps YAMY scan codes for number keys (0-9) to hardware modifier evdev codes
+// Used by ModifierKeyHandler for hold-vs-tap detection (Task 4.3)
+// Default mappings:
+//   _1 → KEY_LEFTSHIFT
+//   _2 → KEY_RIGHTSHIFT
+//   _3 → KEY_LEFTCTRL
+//   _4 → KEY_RIGHTCTRL
+//   _5 → KEY_LEFTALT
+//   _6 → KEY_RIGHTALT
+//   _7 → KEY_LEFTMETA (LWin)
+//   _8 → KEY_RIGHTMETA (RWin)
+//   _9 → KEY_LEFTSHIFT (alternate)
+//   _0 → KEY_RIGHTSHIFT (alternate)
+const std::unordered_map<uint16_t, uint16_t> g_numberToModifierMap = {
+    {0x0002, KEY_LEFTSHIFT},   // _1 → LShift
+    {0x0003, KEY_RIGHTSHIFT},  // _2 → RShift
+    {0x0004, KEY_LEFTCTRL},    // _3 → LCtrl
+    {0x0005, KEY_RIGHTCTRL},   // _4 → RCtrl
+    {0x0006, KEY_LEFTALT},     // _5 → LAlt
+    {0x0007, KEY_RIGHTALT},    // _6 → RAlt
+    {0x0008, KEY_LEFTMETA},    // _7 → LWin
+    {0x0009, KEY_RIGHTMETA},   // _8 → RWin
+    {0x000A, KEY_LEFTSHIFT},   // _9 → LShift (alternate)
+    {0x000B, KEY_RIGHTSHIFT}   // _0 → RShift (alternate)
+};
+
 } // anonymous namespace
 
 // Global layout override (set from config file)
@@ -681,6 +708,15 @@ const char* getKeyName(uint16_t evdev_code) {
         case KEY_F12: return "F12";
         default: return "UNKNOWN";
     }
+}
+
+uint16_t getModifierForNumberKey(uint16_t yamy_scancode) {
+    // Look up number key in modifier mapping table
+    auto it = g_numberToModifierMap.find(yamy_scancode);
+    if (it != g_numberToModifierMap.end()) {
+        return it->second;  // Return evdev code for hardware modifier
+    }
+    return 0;  // Not a registered number modifier
 }
 
 } // namespace yamy::platform
