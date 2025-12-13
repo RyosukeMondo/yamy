@@ -260,17 +260,38 @@ int main(int argc, char* argv[])
                 }
                 std::cout << std::endl;
 
-                // TODO: Task 6 will implement loadConfig()
-                // If config name provided, load it
-                // if (!data.empty()) {
-                //     engine->loadConfig(data);
-                // }
+                try {
+                    bool loadSuccess = false;
+                    std::string configPath;
 
-                // For now, just report success
-                result.success = true;
-                result.message = "Configuration reload requested";
-                if (!engine->getConfigPath().empty()) {
-                    result.message += " (current config: " + engine->getConfigPath() + ")";
+                    // If config name provided, load it; otherwise reload current config
+                    if (!data.empty()) {
+                        configPath = data;
+                        loadSuccess = engine->loadConfig(data);
+                    } else {
+                        configPath = engine->getConfigPath();
+                        if (!configPath.empty()) {
+                            loadSuccess = engine->loadConfig(configPath);
+                        } else {
+                            result.success = false;
+                            result.message = "No configuration loaded. Provide a config path to load.";
+                            break;
+                        }
+                    }
+
+                    if (loadSuccess) {
+                        result.success = true;
+                        result.message = "Configuration loaded successfully: " + configPath;
+                    } else {
+                        result.success = false;
+                        result.message = "Failed to load configuration: " + configPath;
+                    }
+                } catch (const std::exception& e) {
+                    result.success = false;
+                    result.message = std::string("Error loading configuration: ") + e.what();
+                } catch (...) {
+                    result.success = false;
+                    result.message = "Unknown error loading configuration";
                 }
                 break;
             }

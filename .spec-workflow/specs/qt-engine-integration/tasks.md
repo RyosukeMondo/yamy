@@ -68,7 +68,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-4, US-4_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ API developer specializing in JSON serialization. Task: Implement getStatusJson() returning JSON with state, uptime, config, key_count, current_keymap from real Engine; getConfigJson() with config_path, config_name, loaded_time; getKeymapsJson() iterating m_engine->getKeymaps() with name/window_class/window_title; getMetricsJson() from m_engine->getMetrics(); keyCount() returning m_engine->getKeyCount(). Use QJsonObject/QJsonDocument for serialization. Restrictions: Match exact JSON format of stub, handle null/empty cases. Success: All methods return valid JSON from real Engine, yamy-ctl commands show real data._
 
-- [ ] 8. Update IPC reload command handler
+- [x] 8. Update IPC reload command handler
   - File: src/app/main_qt.cpp
   - Update reload command to call adapter->loadConfig()
   - Add error handling with proper result status
