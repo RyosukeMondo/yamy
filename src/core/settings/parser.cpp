@@ -270,8 +270,9 @@ static bool isSymbolChar(char i_c)
 
     unsigned char uc = static_cast<unsigned char>(i_c);
 
-    // Check for multi-byte UTF-8 lead byte
-    if (uc >= 0x80)
+    // Check for UTF-8 lead byte (0xC0-0xFF starts a multi-byte sequence)
+    // Continuation bytes (0x80-0xBF) are not valid symbol-starting characters
+    if (uc >= 0xC0)
         return true;
 
     if (std::isalpha(uc) || std::isdigit(uc))
