@@ -117,13 +117,16 @@ Engine::~Engine() {
 
 // start keyboard handler thread
 void Engine::start() {
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Engine::start() called");
     setState(yamy::EngineState::Loading);
     notifyGUI(yamy::MessageType::EngineStarting);
 
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Starting engine...");
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Starting performance metrics...");
     // Start performance metrics collection with 60-second reporting interval
     yamy::metrics::PerformanceMetrics::instance().startPeriodicLogging(60);
 
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Installing input hook...");
     m_inputHook->install(
         [this](const yamy::platform::KeyEvent& event) {
             // Pass KeyEvent directly to the queue
@@ -136,6 +139,7 @@ void Engine::start() {
         }
     );
 
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Creating input queue and synchronization objects...");
     CHECK_TRUE( m_inputQueue = new std::deque<yamy::platform::KeyEvent> );
     CHECK_TRUE( m_queueMutex = yamy::platform::createMutex() );
     CHECK_TRUE( m_readEvent = yamy::platform::createEvent(true, false) );
@@ -147,12 +151,16 @@ void Engine::start() {
     pOl->hEvent = m_readEvent;
 #endif
 
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Opening input driver...");
     m_inputDriver->open(m_readEvent);
 
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Creating keyboard handler thread...");
     CHECK_TRUE( m_threadHandle = yamy::platform::createThread(keyboardHandler, this) );
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Creating performance metrics thread...");
     m_isPerfThreadRunning = true;
     CHECK_TRUE( m_perfThreadHandle = yamy::platform::createThread(perfMetricsHandler, this) );
 
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Engine started successfully!");
     setState(yamy::EngineState::Running);
     notifyGUI(yamy::MessageType::EngineStarted);
 }

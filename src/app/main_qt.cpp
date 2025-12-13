@@ -7,6 +7,7 @@
 #include <QJsonArray>
 #include <QDateTime>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <vector>
 #include <sys/stat.h>
@@ -362,10 +363,17 @@ int main(int argc, char* argv[])
     });
 
     // Start IPC control server
-    std::cerr << "DEBUG: About to start IPC control server" << std::endl;
+    {
+        std::ofstream debugLog("/tmp/yamy-debug.log", std::ios::app);
+        debugLog << "DEBUG: About to start IPC control server" << std::endl;
+    }
     if (controlServer.start()) {
+        std::ofstream debugLog("/tmp/yamy-debug.log", std::ios::app);
+        debugLog << "IPC control server started at: " << controlServer.socketPath() << std::endl;
         std::cout << "IPC control server started at: " << controlServer.socketPath() << std::endl;
     } else {
+        std::ofstream debugLog("/tmp/yamy-debug.log", std::ios::app);
+        debugLog << "Warning: Failed to start IPC control server" << std::endl;
         std::cerr << "Warning: Failed to start IPC control server" << std::endl;
     }
 
