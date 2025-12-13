@@ -146,7 +146,7 @@
 
 ## Phase 3: Automated Testing Framework (Week 3)
 
-- [ ] 3.1 Create unit tests for Layer 1 (evdevToYamyKeyCode)
+- [x] 3.1 Create unit tests for Layer 1 (evdevToYamyKeyCode)
   - Files: `tests/test_event_processor_ut.cpp`
   - Set up GoogleTest framework for C++ unit tests
   - Test known evdev codes map to correct YAMY scan codes (e.g., 17→0x0011 for W)

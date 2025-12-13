@@ -1291,6 +1291,37 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             )
         endif()
 
+        # -----------------------------------------------------------------------------
+        # Target: yamy_event_processor_ut (EventProcessor Unit Tests)
+        # Unit tests for Layer 1 (evdevToYamyKeyCode) keycode mapping
+        # Part of task 3.1 in key-remapping-consistency spec
+        # -----------------------------------------------------------------------------
+        set(EVENT_PROCESSOR_UT_SOURCES
+            tests/test_event_processor_ut.cpp
+            src/platform/linux/keycode_mapping.cpp
+        )
+
+        add_executable(yamy_event_processor_ut
+            ${EVENT_PROCESSOR_UT_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_event_processor_ut PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/engine
+            src/platform/linux
+            src/utils
+        )
+
+        target_link_libraries(yamy_event_processor_ut PRIVATE
+            pthread
+        )
+
+        add_test(NAME yamy_event_processor_ut COMMAND yamy_event_processor_ut)
+
         else()
             message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/X11Extras not found)")
         endif() # Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND
