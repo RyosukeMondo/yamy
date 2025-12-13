@@ -3,6 +3,7 @@
 // keycode_mapping.h - Key code translation (Track 11)
 
 #include <cstdint>
+#include <string>
 
 namespace yamy::platform {
 
@@ -10,8 +11,9 @@ namespace yamy::platform {
 
 /// Convert evdev keycode to YAMY key code
 /// @param evdev_code Linux evdev keycode (from linux/input-event-codes.h)
+/// @param event_type Event type: 0=RELEASE, 1=PRESS, 2=REPEAT
 /// @return YAMY key code
-uint16_t evdevToYamyKeyCode(uint16_t evdev_code);
+uint16_t evdevToYamyKeyCode(uint16_t evdev_code, int event_type = -1);
 
 /// Convert YAMY key code to evdev keycode
 /// @param yamy_code YAMY key code
@@ -27,5 +29,16 @@ bool isModifierKey(uint16_t evdev_code);
 /// @param evdev_code Linux evdev keycode
 /// @return Key name string
 const char* getKeyName(uint16_t evdev_code);
+
+/// Set keyboard layout override from config file
+/// @param layout Layout string ("us", "jp", etc.)
+void setLayoutOverride(const std::string& layout);
+
+/// Clear layout override (use auto-detection)
+void clearLayoutOverride();
+
+/// Detect current keyboard layout
+/// @return Layout string ("us", "jp", etc.)
+std::string detectKeyboardLayout();
 
 } // namespace yamy::platform

@@ -100,8 +100,15 @@ void EventReaderThread::run()
             continue;
         }
 
+        // DEBUG: Log that we're about to call callback (first 10 events)
+        static int callbackDebugCounter = 0;
+        if (callbackDebugCounter++ < 10) {
+            PLATFORM_LOG_INFO("input", "DEBUG: Calling callback #%d for key event code=%d value=%d",
+                              callbackDebugCounter, ev.code, ev.value);
+        }
+
         // Convert evdev code to YAMY code
-        uint16_t yamyCode = evdevToYamyKeyCode(ev.code);
+        uint16_t yamyCode = evdevToYamyKeyCode(ev.code, ev.value);
         if (yamyCode == 0) {
             // Unknown key, skip
             continue;
@@ -218,6 +225,17 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
 
     // Open and grab each keyboard
     for (const auto& kbInfo : keyboards) {
+        // Skip devices we should never grab
+        if (kbInfo.name.find("Yamy Virtual") != std::string::npos ||
+            kbInfo.name.find("mouse-button-passthrough") != std::string::npos ||
+            kbInfo.name.find("Mouse") != std::string::npos ||
+            kbInfo.name.find("TrackBall") != std::string::npos ||
+            kbInfo.name.find("Touchpad") != std::string::npos) {
+            PLATFORM_LOG_INFO("input", "Skipping device (mouse/internal): %s (%s)",
+                              kbInfo.devNode.c_str(), kbInfo.name.c_str());
+            continue;
+        }
+
         PLATFORM_LOG_INFO("input", "Opening: %s (%s)", kbInfo.devNode.c_str(), kbInfo.name.c_str());
 
         // Open device
@@ -228,9 +246,7 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
             continue;
         }
 
-        // Grab device (TEMPORARILY DISABLED - allows keyboard to work while debugging injection)
-        // TODO: Re-enable once event injection is working properly
-        /*
+        // Grab device for exclusive access (blocks original events)
         if (!DeviceManager::grabDevice(fd, true)) {
             int err = errno;
             PLATFORM_LOG_WARN("input", "Failed to grab %s: %s", kbInfo.devNode.c_str(), std::strerror(err));
@@ -239,15 +255,14 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
             grabFailures++;
             continue;
         }
-        */
-        PLATFORM_LOG_INFO("input", "Grab disabled for testing - keyboard passthrough mode");
+        PLATFORM_LOG_INFO("input", "Exclusively grabbed %s", kbInfo.devNode.c_str());
 
         // Store device
         OpenDevice dev;
         dev.fd = fd;
         dev.devNode = kbInfo.devNode;
         dev.name = kbInfo.name;
-        dev.grabbed = false;  // Grab disabled
+        dev.grabbed = true;
         m_openDevices.push_back(dev);
 
         // Create reader thread
