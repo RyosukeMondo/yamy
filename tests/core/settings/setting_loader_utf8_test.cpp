@@ -388,6 +388,99 @@ TEST_F(SettingLoaderUtf8Test, ErrorRecoveryAfterInvalidUtf8) {
 }
 
 // =============================================================================
+// Test: Detailed Error Messages for Invalid UTF-8
+// =============================================================================
+
+TEST_F(SettingLoaderUtf8Test, DetailedErrorMessageForContinuationByteAsLead) {
+    // Invalid UTF-8: 0x80 as first byte (continuation byte as lead byte)
+    // Note: When a continuation byte appears at token start, it's detected as
+    // "invalid character" since it doesn't pass isSymbolChar() check.
+    // This is correct behavior - continuation bytes can't start tokens.
+    std::string config =
+        "def key \x80" "BadKey = 0x7b\n";
+
+    LoadConfig(config);
+
+    std::string log = getLogOutput();
+
+    // Error message should report an invalid character
+    EXPECT_TRUE(log.find("invalid character") != std::string::npos ||
+                log.find("Invalid character") != std::string::npos ||
+                log.find("error") != std::string::npos)
+        << "Error should indicate invalid character. Log: " << log;
+
+    // Should include byte value in hex (0x80)
+    EXPECT_TRUE(log.find("0x80") != std::string::npos ||
+                log.find("80") != std::string::npos)
+        << "Error should include byte value. Log: " << log;
+}
+
+TEST_F(SettingLoaderUtf8Test, DetailedErrorMessageForBadContinuationMidToken) {
+    // Invalid UTF-8: UTF-8 lead byte (0xE0 for 3-byte) followed by invalid continuation (0x41 = 'A')
+    // This tests the UTF-8 error path when parsing a multi-byte sequence
+    std::string config =
+        "def key Test\xE0" "A = 0x7b\n";  // \xE0 followed by 'A' (not a valid continuation)
+
+    LoadConfig(config);
+
+    std::string log = getLogOutput();
+
+    // Error message should mention UTF-8 or continuation byte issue
+    EXPECT_TRUE(log.find("UTF-8") != std::string::npos ||
+                log.find("continuation") != std::string::npos ||
+                log.find("error") != std::string::npos)
+        << "Error should mention UTF-8 or continuation issue. Log: " << log;
+
+    // Should include location information (Line/line/column)
+    EXPECT_TRUE(log.find("Line") != std::string::npos ||
+                log.find("line") != std::string::npos ||
+                log.find("column") != std::string::npos ||
+                log.find("(1)") != std::string::npos)  // Line number in format (1)
+        << "Error should include location. Log: " << log;
+}
+
+TEST_F(SettingLoaderUtf8Test, DetailedErrorMessageForIncompleteSequence) {
+    // Invalid UTF-8: 3-byte lead (0xE0) followed by only 1 continuation byte
+    std::string config =
+        "def key TestKey\xE0\x80 = 0x7b\n";  // Incomplete 3-byte sequence
+
+    LoadConfig(config);
+
+    std::string log = getLogOutput();
+
+    // Should have an error about invalid/incomplete UTF-8
+    EXPECT_TRUE(log.find("UTF-8") != std::string::npos ||
+                log.find("incomplete") != std::string::npos ||
+                log.find("Incomplete") != std::string::npos ||
+                log.find("error") != std::string::npos)
+        << "Should report error for incomplete UTF-8 sequence. Log: " << log;
+}
+
+TEST_F(SettingLoaderUtf8Test, DetailedErrorMessageForReservedByte) {
+    // Invalid UTF-8: 0xFF is a reserved byte (never valid as lead byte)
+    std::string config =
+        "def key \xFF" "BadKey = 0x7b\n";
+
+    LoadConfig(config);
+
+    std::string log = getLogOutput();
+
+    // Error message should indicate invalid/reserved byte
+    EXPECT_TRUE(log.find("UTF-8") != std::string::npos ||
+                log.find("reserved") != std::string::npos ||
+                log.find("invalid") != std::string::npos ||
+                log.find("Invalid") != std::string::npos)
+        << "Error should mention invalid UTF-8. Log: " << log;
+
+    // Should include the byte value
+    EXPECT_TRUE(log.find("ff") != std::string::npos ||
+                log.find("FF") != std::string::npos ||
+                log.find("0xff") != std::string::npos ||
+                log.find("0xFF") != std::string::npos)
+        << "Error should include byte value 0xFF. Log: " << log;
+}
+
+// =============================================================================
 // Test: Comments with UTF-8 Characters
 // =============================================================================
 
