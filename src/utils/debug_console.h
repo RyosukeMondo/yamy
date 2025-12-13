@@ -3,6 +3,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <shlobj.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -129,11 +130,11 @@ private:
     }
 };
 
-// Static member initialization
-bool DebugConsole::s_consoleAllocated = false;
-std::ofstream DebugConsole::s_logFile;
-bool DebugConsole::s_fileLoggingEnabled = false;
-std::string DebugConsole::s_logPath;
+// Static member initialization (inline to avoid multiple definition errors)
+inline bool DebugConsole::s_consoleAllocated = false;
+inline std::ofstream DebugConsole::s_logFile;
+inline bool DebugConsole::s_fileLoggingEnabled = false;
+inline std::string DebugConsole::s_logPath;
 
 } // namespace debug
 } // namespace yamy

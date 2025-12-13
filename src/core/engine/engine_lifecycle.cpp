@@ -14,6 +14,9 @@
 #include "../platform/thread.h"
 #include "core/logging/logger.h"
 #include "../../utils/metrics.h"
+#ifdef _WIN32
+#include "../../utils/debug_console.h"
+#endif
 
 #include <iomanip>
 #include <string>
@@ -117,15 +120,24 @@ Engine::~Engine() {
 
 // start keyboard handler thread
 void Engine::start() {
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine::start() called");
+#endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Engine::start() called");
     setState(yamy::EngineState::Loading);
     notifyGUI(yamy::MessageType::EngineStarting);
 
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Starting engine...");
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Starting performance metrics...");
+#endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Starting performance metrics...");
     // Start performance metrics collection with 60-second reporting interval
     yamy::metrics::PerformanceMetrics::instance().startPeriodicLogging(60);
 
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Installing input hook...");
+#endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Installing input hook...");
     m_inputHook->install(
         [this](const yamy::platform::KeyEvent& event) {
@@ -139,6 +151,9 @@ void Engine::start() {
         }
     );
 
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Creating input queue and synchronization objects...");
+#endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Creating input queue and synchronization objects...");
     CHECK_TRUE( m_inputQueue = new std::deque<yamy::platform::KeyEvent> );
     CHECK_TRUE( m_queueMutex = yamy::platform::createMutex() );
@@ -149,17 +164,27 @@ void Engine::start() {
     pOl->Offset = 0;
     pOl->OffsetHigh = 0;
     pOl->hEvent = m_readEvent;
-#endif
 
+    yamy::debug::DebugConsole::LogInfo("Engine: Opening input driver...");
+#endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Opening input driver...");
     m_inputDriver->open(m_readEvent);
 
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Creating keyboard handler thread...");
+#endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Creating keyboard handler thread...");
     CHECK_TRUE( m_threadHandle = yamy::platform::createThread(keyboardHandler, this) );
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Creating performance metrics thread...");
+#endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Creating performance metrics thread...");
     m_isPerfThreadRunning = true;
     CHECK_TRUE( m_perfThreadHandle = yamy::platform::createThread(perfMetricsHandler, this) );
 
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Engine started successfully!");
+#endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Engine started successfully!");
     setState(yamy::EngineState::Running);
     notifyGUI(yamy::MessageType::EngineStarted);

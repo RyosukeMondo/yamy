@@ -159,10 +159,13 @@ static void saveWindowPosition(QWidget* widget, const std::string& windowName) {
  */
 int main(int argc, char* argv[])
 {
+    std::ofstream("/tmp/yamy-debug.log") << "MAIN: Entry point" << std::endl;
+
     // Install crash handler as early as possible
     yamy::CrashHandler::install();
     yamy::CrashHandler::setVersion("0.04");
 
+    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Creating QApplication" << std::endl;
     QApplication app(argc, argv);
 
     // Set application metadata
@@ -187,9 +190,11 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Starting YAMY" << std::endl;
     std::cout << "Starting YAMY on Linux (Qt GUI)" << std::endl;
 
     // Create platform implementations using factory functions
+    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Creating platform implementations" << std::endl;
     std::cout << "Initializing platform implementations..." << std::endl;
     yamy::platform::IWindowSystem* windowSystem = yamy::platform::createWindowSystem();
     yamy::platform::IInputInjector* inputInjector = yamy::platform::createInputInjector(windowSystem);
@@ -230,6 +235,7 @@ int main(int argc, char* argv[])
     );
 
     // Initialize plugin system
+    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Initializing plugin system" << std::endl;
     std::cout << "Initializing plugin system..." << std::endl;
     yamy::core::PluginManager& pluginManager = yamy::core::PluginManager::instance();
     if (pluginManager.initialize(realEngine)) {
@@ -245,6 +251,7 @@ int main(int argc, char* argv[])
     }
 
     // Check for crash reports from previous session
+    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Checking crash reports" << std::endl;
     if (yamy::CrashReportDialog::shouldShowCrashDialog()) {
         std::vector<std::string> crashReports = yamy::CrashHandler::getCrashReports();
         if (!crashReports.empty()) {
@@ -261,6 +268,7 @@ int main(int argc, char* argv[])
     }
 
     // Create IPC control server for yamy-ctl commands
+    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Creating IPC control server" << std::endl;
     yamy::platform::IPCControlServer controlServer;
     controlServer.setCommandCallback(
         [engine, &trayIcon](yamy::platform::ControlCommand cmd, const std::string& data)
