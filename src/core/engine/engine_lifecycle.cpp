@@ -150,7 +150,9 @@ void Engine::start() {
         [this](const yamy::platform::KeyEvent& event) {
             // Pass KeyEvent directly to the queue
             this->pushInputEvent(event);
-            return true;
+            // Only block events if we have a configuration loaded
+            // Otherwise pass through to allow normal keyboard operation
+            return (this->m_setting != nullptr);
         },
         [this](const yamy::platform::MouseEvent& e) {
             // Mouse event handler (currently unused)

@@ -94,8 +94,8 @@ unsigned int WINAPI InputHookWin32::keyboardDetour(void *i_context, WPARAM i_wPa
         event.timestamp = kid->time;
         event.extraInfo = kid->dwExtraInfo;
 
-        This->m_keyCallback(event);
-        return 1;
+        bool handled = This->m_keyCallback(event);
+        return handled ? 1 : 0;
     }
 }
 
