@@ -211,11 +211,16 @@ bool DeviceManager::isKeyboardDevice(const std::string& devNode)
         unsigned long keyBits[NBITS(KEY_MAX)] = {0};
         if (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keyBits)), keyBits) >= 0) {
             // Check for typical keyboard keys
+            // Check for letters, numbers, or common keys
             bool hasKeyboardKeys =
                 test_bit(KEY_A, keyBits) ||
                 test_bit(KEY_Z, keyBits) ||
                 test_bit(KEY_ENTER, keyBits) ||
-                test_bit(KEY_SPACE, keyBits);
+                test_bit(KEY_SPACE, keyBits) ||
+                test_bit(KEY_ESC, keyBits) ||
+                test_bit(KEY_1, keyBits) ||
+                test_bit(KEY_2, keyBits) ||
+                test_bit(KEY_TAB, keyBits);
 
             close(fd);
             return hasKeyboardKeys;

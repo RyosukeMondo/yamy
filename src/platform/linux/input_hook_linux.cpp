@@ -228,7 +228,9 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
             continue;
         }
 
-        // Grab device
+        // Grab device (TEMPORARILY DISABLED - allows keyboard to work while debugging injection)
+        // TODO: Re-enable once event injection is working properly
+        /*
         if (!DeviceManager::grabDevice(fd, true)) {
             int err = errno;
             PLATFORM_LOG_WARN("input", "Failed to grab %s: %s", kbInfo.devNode.c_str(), std::strerror(err));
@@ -237,13 +239,15 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
             grabFailures++;
             continue;
         }
+        */
+        PLATFORM_LOG_INFO("input", "Grab disabled for testing - keyboard passthrough mode");
 
         // Store device
         OpenDevice dev;
         dev.fd = fd;
         dev.devNode = kbInfo.devNode;
         dev.name = kbInfo.name;
-        dev.grabbed = true;
+        dev.grabbed = false;  // Grab disabled
         m_openDevices.push_back(dev);
 
         // Create reader thread

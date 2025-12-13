@@ -15,6 +15,7 @@
 #include "ui/qt/tray_icon_qt.h"
 #include "ui/qt/crash_report_dialog.h"
 #include "core/settings/session_manager.h"
+#include "core/settings/config_manager.h"
 #include "core/plugin_manager.h"
 #include "platform/linux/ipc_control_server.h"
 #include "utils/crash_handler.h"
@@ -91,6 +92,12 @@ static bool restoreSessionState(EngineAdapter* engine, const CommandLineOptions&
             std::cout << "Loading previous config: " << data.activeConfigPath << std::endl;
             if (engine->loadConfig(data.activeConfigPath)) {
                 std::cout << "Config loaded successfully" << std::endl;
+
+                // Sync ConfigManager with the loaded config
+                ConfigManager& configMgr = ConfigManager::instance();
+                configMgr.addConfig(data.activeConfigPath);
+                configMgr.setActiveConfig(data.activeConfigPath);
+
                 restored = true;
             } else {
                 std::cout << "Warning: Failed to load previous config: "
@@ -305,6 +312,11 @@ int main(int argc, char* argv[])
                     }
 
                     if (loadSuccess) {
+                        // Sync ConfigManager with the loaded config
+                        ConfigManager& configMgr = ConfigManager::instance();
+                        configMgr.addConfig(configPath);
+                        configMgr.setActiveConfig(configPath);
+
                         result.success = true;
                         result.message = "Configuration loaded successfully: " + configPath;
                     } else {
