@@ -88,8 +88,12 @@ private:
         ModifiedKey m_mkey;        /// current processing key that user inputed
         /// index in currentFocusOfThread-&gt;keymaps
         Keymaps::KeymapPtrList::iterator m_i;
+        /// Original evdev code for EventProcessor (0 if not available)
+        uint16_t m_evdev_code;
 
     public:
+        ///
+        Current() : m_keymap(nullptr), m_evdev_code(0) { }
         ///
         bool isPressed() const {
             return m_mkey.m_modifier.isOn(Modifier::Type_Down);

@@ -107,6 +107,7 @@ void Engine::keyboardHandler()
         Current c;
         c.m_keymap = m_currentKeymap;
         c.m_i = m_currentFocusOfThread->m_keymaps.begin();
+        c.m_evdev_code = static_cast<uint16_t>(event.scanCode); // Preserve evdev code for EventProcessor
 
         // Detect mouse events via special extraInfo marker
         const uint32_t MOUSE_EVENT_MARKER = 0x59414D59; // "YAMY" in hex
@@ -407,6 +408,7 @@ void Engine::keyboardHandler()
         Current c;
         c.m_keymap = m_currentKeymap;
         c.m_i = m_currentFocusOfThread->m_keymaps.begin();
+        c.m_evdev_code = static_cast<uint16_t>(event.scanCode); // Preserve evdev code for EventProcessor
 
         // Detect mouse events via special extraInfo marker
         const uint32_t MOUSE_EVENT_MARKER = 0x59414D59; // "YAMY" in hex

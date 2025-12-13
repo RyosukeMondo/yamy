@@ -29,14 +29,15 @@ public:
     /// Result of event processing
     struct ProcessedEvent {
         uint16_t output_evdev;  ///< Output evdev code
+        uint16_t output_yamy;   ///< Output YAMY scan code (after Layer 2 substitution)
         EventType type;         ///< Event type (PRESS/RELEASE)
         bool valid;             ///< false if unmapped at any layer
 
         ProcessedEvent()
-            : output_evdev(0), type(EventType::RELEASE), valid(false) {}
+            : output_evdev(0), output_yamy(0), type(EventType::RELEASE), valid(false) {}
 
-        ProcessedEvent(uint16_t evdev, EventType t, bool v)
-            : output_evdev(evdev), type(t), valid(v) {}
+        ProcessedEvent(uint16_t evdev, uint16_t yamy, EventType t, bool v)
+            : output_evdev(evdev), output_yamy(yamy), type(t), valid(v) {}
     };
 
     /// Constructor

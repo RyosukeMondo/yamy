@@ -33,7 +33,7 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
         if (m_debugLogging) {
             PLATFORM_LOG_DEBUG("EventProcessor", "[EVENT:END] Invalid (Layer 1 failed)");
         }
-        return ProcessedEvent(0, type, false);
+        return ProcessedEvent(0, 0, type, false);
     }
 
     // Layer 2: Apply substitution
@@ -45,7 +45,7 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
         if (m_debugLogging) {
             PLATFORM_LOG_DEBUG("EventProcessor", "[EVENT:END] Invalid (Layer 3 failed)");
         }
-        return ProcessedEvent(0, type, false);
+        return ProcessedEvent(0, 0, type, false);
     }
 
     if (m_debugLogging) {
@@ -54,7 +54,8 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
     }
 
     // Event type is ALWAYS preserved: PRESS in = PRESS out, RELEASE in = RELEASE out
-    return ProcessedEvent(output_evdev, type, true);
+    // Return both output evdev and output YAMY scan code (for engine compatibility)
+    return ProcessedEvent(output_evdev, yamy_l2, type, true);
 }
 
 uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)

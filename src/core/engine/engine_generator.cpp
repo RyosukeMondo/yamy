@@ -304,9 +304,61 @@ void Engine::beginGeneratingKeyboardEvents(
     bool isPhysicallyPressed
     = cnew.m_mkey.m_modifier.isPressed(Modifier::Type_Down);
 
-    // Layer 2: Apply substitution using EventProcessor substitution table
-    // This ensures consistent substitution logic for all keys (no special cases)
-    if (cnew.m_mkey.m_key && cnew.m_mkey.m_key->getScanCodesSize() > 0 && !m_substitutionTable.empty()) {
+    // FULL 3-LAYER EVENT PROCESSING via EventProcessor
+    // Call EventProcessor::processEvent() for complete Layer1→Layer2→Layer3 flow
+    if (m_eventProcessor && i_c.m_evdev_code != 0) {
+        // Determine event type from modifier state
+        yamy::EventType event_type = isPhysicallyPressed ? yamy::EventType::PRESS : yamy::EventType::RELEASE;
+
+        // Process through all 3 layers
+        yamy::EventProcessor::ProcessedEvent result = m_eventProcessor->processEvent(i_c.m_evdev_code, event_type);
+
+        if (result.valid && result.output_yamy != 0) {
+            // Get the original YAMY scan code for comparison
+            const ScanCode *input_sc = cnew.m_mkey.m_key ? cnew.m_mkey.m_key->getScanCodes() : nullptr;
+            uint16_t input_yamy = (input_sc && cnew.m_mkey.m_key->getScanCodesSize() > 0) ? input_sc[0].m_scan : 0;
+
+            // Check if substitution occurred (output differs from input)
+            if (result.output_yamy != input_yamy) {
+                // Find the key object for the substituted YAMY scan code
+                Key* substituted_key = nullptr;
+                for (Keyboard::KeyIterator it = m_setting->m_keyboard.getKeyIterator(); *it; ++it) {
+                    const ScanCode *sc = (*it)->getScanCodes();
+                    if ((*it)->getScanCodesSize() > 0 && sc[0].m_scan == result.output_yamy) {
+                        substituted_key = *it;
+                        break;
+                    }
+                }
+
+                if (substituted_key) {
+                    ModifiedKey mkey(substituted_key);
+                    cnew.m_mkey = mkey;
+                    if (isPhysicallyPressed) {
+                        cnew.m_mkey.m_modifier.off(Modifier::Type_Up);
+                        cnew.m_mkey.m_modifier.on(Modifier::Type_Down);
+                    } else {
+                        cnew.m_mkey.m_modifier.on(Modifier::Type_Up);
+                        cnew.m_mkey.m_modifier.off(Modifier::Type_Down);
+                    }
+                    for (int i = Modifier::Type_begin; i != Modifier::Type_end; ++ i) {
+                        Modifier::Type type = static_cast<Modifier::Type>(i);
+                        if (cnew.m_mkey.m_modifier.isDontcare(type) &&
+                                !i_c.m_mkey.m_modifier.isDontcare(type))
+                            cnew.m_mkey.m_modifier.press(
+                                type, i_c.m_mkey.m_modifier.isPressed(type));
+                    }
+
+                    {
+                        Acquire a(&m_log, 1);
+                        m_log << "* substitute (via EventProcessor 3-layer)" << std::endl;
+                    }
+                    outputToLog(substituted_key, cnew.m_mkey, 1);
+                }
+            }
+            // If no substitution (input == output), passthrough - no change to cnew.m_mkey
+        }
+    } else if (cnew.m_mkey.m_key && cnew.m_mkey.m_key->getScanCodesSize() > 0 && !m_substitutionTable.empty()) {
+        // Fallback: Direct substitution table access (if EventProcessor not available or no evdev code)
         const ScanCode *input_sc = cnew.m_mkey.m_key->getScanCodes();
         uint16_t input_yamy = input_sc[0].m_scan;
 
@@ -315,17 +367,16 @@ void Engine::beginGeneratingKeyboardEvents(
         auto it = m_substitutionTable.find(input_yamy);
         if (it != m_substitutionTable.end()) {
             output_yamy = it->second; // Substitution found
-            PLATFORM_LOG_INFO("Layer2", "[LAYER2:SUBST] 0x%04X -> 0x%04X",
+            PLATFORM_LOG_INFO("Layer2", "[LAYER2:SUBST:FALLBACK] 0x%04X -> 0x%04X",
                 input_yamy, output_yamy);
         } else {
-            PLATFORM_LOG_INFO("Layer2", "[LAYER2:PASSTHROUGH] 0x%04X (no substitution)",
+            PLATFORM_LOG_INFO("Layer2", "[LAYER2:PASSTHROUGH:FALLBACK] 0x%04X (no substitution)",
                 input_yamy);
         }
 
         // If substitution occurred (output differs from input)
         if (output_yamy != input_yamy) {
             // Find the key object for the substituted scan code
-            // We need to search in the keyboard for a key with this scan code
             Key* substituted_key = nullptr;
             for (Keyboard::KeyIterator it = m_setting->m_keyboard.getKeyIterator(); *it; ++it) {
                 const ScanCode *sc = (*it)->getScanCodes();
@@ -355,13 +406,13 @@ void Engine::beginGeneratingKeyboardEvents(
 
                 {
                     Acquire a(&m_log, 1);
-                    m_log << "* substitute (via EventProcessor)" << std::endl;
+                    m_log << "* substitute (fallback direct table)" << std::endl;
                 }
                 outputToLog(substituted_key, cnew.m_mkey, 1);
             }
         }
     } else {
-        // Fallback to old substitution logic if EventProcessor not available
+        // No EventProcessor and no substitution table - use old logic
         // Layer 2: Log input to substitution lookup
         if (cnew.m_mkey.m_key && cnew.m_mkey.m_key->getScanCodesSize() > 0) {
             const ScanCode *sc = cnew.m_mkey.m_key->getScanCodes();
