@@ -4,6 +4,7 @@
 #include <thread>
 #include <iostream>
 #include <stdexcept>
+#include <filesystem>
 
 EngineAdapter::EngineAdapter(Engine* engine)
     : m_engine(engine)
@@ -94,8 +95,56 @@ void EngineAdapter::stop()
 
 bool EngineAdapter::loadConfig(const std::string& path)
 {
-    // Stub: Return false (not implemented)
-    return false;
+    if (!m_engine) {
+        std::cerr << "EngineAdapter::loadConfig() - No engine instance" << std::endl;
+        return false;
+    }
+
+    // Validate file existence
+    namespace fs = std::filesystem;
+    if (!fs::exists(path)) {
+        std::cerr << "EngineAdapter::loadConfig() - File not found: " << path << std::endl;
+        return false;
+    }
+
+    if (!fs::is_regular_file(path)) {
+        std::cerr << "EngineAdapter::loadConfig() - Not a regular file: " << path << std::endl;
+        return false;
+    }
+
+    // Remember if engine was running before config load
+    bool wasRunning = isRunning();
+
+    // Stop engine if running (required for safe config reload)
+    if (wasRunning) {
+        stop();
+    }
+
+    // Use Engine's switchConfiguration method which handles parsing and applying
+    bool success = false;
+    try {
+        success = m_engine->switchConfiguration(path);
+    } catch (const std::exception& e) {
+        std::cerr << "EngineAdapter::loadConfig() - Exception: " << e.what() << std::endl;
+        success = false;
+    } catch (...) {
+        std::cerr << "EngineAdapter::loadConfig() - Unknown exception" << std::endl;
+        success = false;
+    }
+
+    // Save config path on success
+    if (success) {
+        m_configPath = path;
+    } else {
+        std::cerr << "EngineAdapter::loadConfig() - Failed to load config: " << path << std::endl;
+    }
+
+    // Restart engine if it was running before
+    if (wasRunning) {
+        start();
+    }
+
+    return success;
 }
 
 const std::string& EngineAdapter::getConfigPath() const

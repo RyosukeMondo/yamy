@@ -48,7 +48,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-1, US-3_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ concurrency expert. Task: Implement EngineAdapter::start() to create thread running m_engine->start(); stop() to call m_engine->stop() and join thread; enable()/disable() to call m_engine->enable/disable(); destructor to call stop(). Update getIsEnabled() to return m_engine->m_isEnabled and isRunning() to check thread.joinable(). Add sleep_for(100ms) after thread creation. Handle exceptions in engine thread. Restrictions: Use RAII for thread lifecycle, no mutex needed yet. Success: Engine runs in separate thread, stop() cleanly shuts down, no memory leaks or deadlocks._
 
-- [ ] 6. Implement EngineAdapter configuration loading
+- [x] 6. Implement EngineAdapter configuration loading
   - File: src/app/engine_adapter.cpp
   - Implement loadConfig() to parse .mayu files
   - Validate file existence
