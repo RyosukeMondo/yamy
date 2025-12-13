@@ -185,6 +185,83 @@ got_line_end:
     return true;
 }
 
+// Determine the byte length of a UTF-8 character and validate the sequence
+// Returns 1-4 for valid UTF-8, 0 for invalid (with is_valid set to false)
+static inline int utf8_char_length(const char* str, size_t max_len, bool& is_valid) {
+    if (max_len == 0) {
+        is_valid = false;
+        return 0;
+    }
+
+    unsigned char lead = static_cast<unsigned char>(*str);
+
+    // 1-byte ASCII (0x00-0x7F)
+    if (lead < 0x80) {
+        is_valid = true;
+        return 1;
+    }
+
+    // Invalid: continuation byte as first byte (0x80-0xBF)
+    if (lead < 0xC0) {
+        is_valid = false;
+        return 0;
+    }
+
+    // 2-byte UTF-8 (0xC0-0xDF)
+    if (lead < 0xE0) {
+        if (max_len < 2) {
+            is_valid = false;
+            return 0;
+        }
+        unsigned char cont1 = static_cast<unsigned char>(str[1]);
+        if (cont1 < 0x80 || cont1 > 0xBF) {
+            is_valid = false;
+            return 0;
+        }
+        is_valid = true;
+        return 2;
+    }
+
+    // 3-byte UTF-8 (0xE0-0xEF) - Japanese characters use this range
+    if (lead < 0xF0) {
+        if (max_len < 3) {
+            is_valid = false;
+            return 0;
+        }
+        unsigned char cont1 = static_cast<unsigned char>(str[1]);
+        unsigned char cont2 = static_cast<unsigned char>(str[2]);
+        if ((cont1 < 0x80 || cont1 > 0xBF) || (cont2 < 0x80 || cont2 > 0xBF)) {
+            is_valid = false;
+            return 0;
+        }
+        is_valid = true;
+        return 3;
+    }
+
+    // 4-byte UTF-8 (0xF0-0xF7)
+    if (lead < 0xF8) {
+        if (max_len < 4) {
+            is_valid = false;
+            return 0;
+        }
+        unsigned char cont1 = static_cast<unsigned char>(str[1]);
+        unsigned char cont2 = static_cast<unsigned char>(str[2]);
+        unsigned char cont3 = static_cast<unsigned char>(str[3]);
+        if ((cont1 < 0x80 || cont1 > 0xBF) ||
+            (cont2 < 0x80 || cont2 > 0xBF) ||
+            (cont3 < 0x80 || cont3 > 0xBF)) {
+            is_valid = false;
+            return 0;
+        }
+        is_valid = true;
+        return 4;
+    }
+
+    // Invalid: lead byte >= 0xF8 (reserved range)
+    is_valid = false;
+    return 0;
+}
+
 // symbol test
 static bool isSymbolChar(char i_c)
 {
