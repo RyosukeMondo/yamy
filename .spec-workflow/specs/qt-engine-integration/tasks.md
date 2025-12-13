@@ -103,7 +103,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: US-2, US-5_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: Qt GUI developer. Task: In engine_adapter.h add NotificationCallback typedef and setNotificationCallback() method; in loadConfig() call callback with ConfigLoaded or ConfigLoadError and data; in main_qt.cpp after creating trayIcon, call engine->setNotificationCallback([&trayIcon](type, data) { trayIcon->handleMessage(type, qdata); }). Restrictions: Use existing notification infrastructure. Success: Config load success shows notification, errors show with details, tray icon updates._
 
-- [ ] 12. Update CMakeLists.txt for EngineAdapter
+- [x] 12. Update CMakeLists.txt for EngineAdapter
   - File: CMakeLists.txt
   - Add engine_adapter.cpp to yamy target sources
   - Verify build configuration
