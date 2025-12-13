@@ -39,6 +39,8 @@
 #include <wtsapi32.h>
 #include <aclapi.h>
 #include <cstring>
+#include <shlobj.h>
+#include "../utils/debug_console.h"
 
 
 ///
@@ -1384,40 +1386,110 @@ extern "C" int WINAPI wWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstan
 {
     g_hInst = i_hInstance;
 
-    if (_tsetlocale(LC_ALL, _T("")) == nullptr) {
-    }
-
-    InitCommonControls();
-    if (FAILED(OleInitialize(nullptr))) {
-        return 0;
-    }
-
     // Convert command line to UTF-8
     std::string cmdLine = yamy::platform::wstring_to_utf8(i_lpszCmdLine);
 
+    // Check for debug flags EARLY
+    bool debugMode = (cmdLine.find("--debug") != std::string::npos ||
+                      cmdLine.find("-d") != std::string::npos ||
+                      GetEnvironmentVariableA("YAMY_DEBUG", nullptr, 0) > 0);
+
+    bool showVersion = (cmdLine.find("--version") != std::string::npos ||
+                        cmdLine.find("-v") != std::string::npos);
+
+    bool showHelp = (cmdLine.find("--help") != std::string::npos ||
+                     cmdLine.find("-h") != std::string::npos);
+
+    // Always enable file logging
+    yamy::debug::DebugConsole::EnableFileLogging();
+    yamy::debug::DebugConsole::LogInfo("YAMY starting...");
+    yamy::debug::DebugConsole::LogInfo("Command line: " + cmdLine);
+
+    // Enable console in debug mode
+    if (debugMode) {
+        yamy::debug::DebugConsole::AllocateConsole();
+        yamy::debug::DebugConsole::LogInfo("Debug mode enabled");
+    }
+
+    if (showVersion) {
+        yamy::debug::DebugConsole::LogInfo("YAMY version 1.0.1");
+        MessageBoxA(NULL, "YAMY version 1.0.1\nKeyboard remapper for Windows",
+                    "YAMY Version", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
+
+    if (showHelp) {
+        std::string helpText =
+            "YAMY - Keyboard Remapper\n\n"
+            "Usage: yamy.exe [options]\n\n"
+            "Options:\n"
+            "  --debug, -d       Enable debug console and verbose logging\n"
+            "  --version, -v     Show version information\n"
+            "  --help, -h        Show this help message\n\n"
+            "Log file location: " + yamy::debug::DebugConsole::GetLogPath();
+        yamy::debug::DebugConsole::LogInfo(helpText);
+        MessageBoxA(NULL, helpText.c_str(), "YAMY Help", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
+
+    if (_tsetlocale(LC_ALL, _T("")) == nullptr) {
+        yamy::debug::DebugConsole::LogWarning("Failed to set locale");
+    }
+
+    yamy::debug::DebugConsole::LogInfo("Initializing common controls...");
+    InitCommonControls();
+
+    yamy::debug::DebugConsole::LogInfo("Initializing OLE...");
+    if (FAILED(OleInitialize(nullptr))) {
+        yamy::debug::DebugConsole::CriticalError("Failed to initialize OLE");
+        return 0;
+    }
+
     // Rest of application uses UTF-8 internally
+    yamy::debug::DebugConsole::LogInfo("Entering main application...");
     int result = appMain(cmdLine);
+
+    yamy::debug::DebugConsole::LogInfo("Application exited with code: " + std::to_string(result));
+    yamy::debug::DebugConsole::Shutdown();
 
     OleUninitialize();
     return result;
 }
 
 int appMain(const std::string& /*cmdLine*/) {
+    yamy::debug::DebugConsole::LogInfo("Checking for existing instance...");
+
     // Mutex
     HANDLE hMutex = CreateMutexW(nullptr, TRUE, L"Ctl_Mayu_Mutex");
-    if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        // Should activate existing window
+    DWORD lastError = GetLastError();
+
+    if (lastError == ERROR_ALREADY_EXISTS) {
+        yamy::debug::DebugConsole::LogWarning("YAMY is already running. Exiting.");
+        MessageBoxW(nullptr, L"YAMY is already running.\n\nCheck the system tray for the YAMY icon.",
+                    L"YAMY Already Running", MB_OK | MB_ICONINFORMATION);
         return 0;
     }
 
+    yamy::debug::DebugConsole::LogInfo("No existing instance found. Starting YAMY...");
+
     int result = 0;
     try {
+        yamy::debug::DebugConsole::LogInfo("Creating Mayu object...");
         Mayu mayu(hMutex); // Pass mutex ownership to Mayu
-        
+
+        yamy::debug::DebugConsole::LogInfo("Mayu object created successfully");
+        yamy::debug::DebugConsole::LogInfo("Entering message loop...");
+
         result = (int)mayu.messageLoop();
+
+        yamy::debug::DebugConsole::LogInfo("Message loop exited");
+    }
+    catch (const std::exception& e) {
+        std::string errorMsg = "Exception caught: " + std::string(e.what());
+        yamy::debug::DebugConsole::CriticalError(errorMsg);
     }
     catch (...) {
-        MessageBoxW(nullptr, L"Exception caught!", L"Mayu Error", MB_OK | MB_ICONSTOP);
+        yamy::debug::DebugConsole::CriticalError("Unknown exception caught!");
     }
 
     return result;
