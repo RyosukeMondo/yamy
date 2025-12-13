@@ -409,16 +409,31 @@
   - _Leverage: Existing test frameworks from Phase 3_
   - _Requirements: 8, 6_
 
-- [ ] 4.7 Document advanced feature and update user guide
+- [x] 4.7 Document advanced feature and update user guide
   - Files: `docs/NUMBER_MODIFIER_USER_GUIDE.md`, update `README.md`
-  - Document .mayu syntax for number modifiers
-  - Provide examples for small keyboard users
-  - Explain hold vs tap behavior and threshold
-  - Document how to configure custom mappings
-  - Update README with feature overview
+  - **STATUS**: COMPLETED
+  - **IMPLEMENTATION**:
+    - Created comprehensive NUMBER_MODIFIER_USER_GUIDE.md (807 lines)
+    - Covers all aspects: overview, configuration, use cases, troubleshooting, best practices
+    - 5 example configurations: minimal, maximal, Vim users, programmers, Japanese layouts
+    - Detailed troubleshooting section with solutions for common issues
+    - Testing procedures with step-by-step instructions
+    - Performance characteristics and timing details explained
+    - Migration guide from QMK, AutoHotkey, xmodmap
+    - FAQ covering 10+ common questions
+    - Updated README.md with Features section and number modifier overview
+    - Added example configuration showing hold-tap behavior
+    - Link to comprehensive user guide
+  - **DOCUMENTATION QUALITY**:
+    - Beginner-friendly with clear examples and explanations
+    - Visual timelines and diagrams for hold-tap behavior
+    - Actionable best practices for choosing mappings
+    - Step-by-step testing procedures
+    - Troubleshooting with root causes and solutions
+    - Real-world use cases for small keyboard users
   - _Leverage: Design from task 4.1_
   - _Requirements: 8_
-  - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Technical writer with expertise in user documentation | Task: Create comprehensive user documentation for number modifier feature in docs/NUMBER_MODIFIER_USER_GUIDE.md following requirement 8. Document syntax, provide examples, explain behavior, configuration. Update README overview. Make documentation clear and user-friendly. | Restrictions: Must be beginner-friendly, include concrete examples for small keyboard users, explain hold/tap threshold clearly, provide troubleshooting tips, show how to customize mappings, consistent with project documentation style | _Leverage: Design document from task 4.1, existing .mayu syntax patterns | _Requirements: Requirement 8 (Number Keys as Custom Modifiers) | Success: Documentation is clear and comprehensive, examples work correctly, hold/tap behavior well-explained, configuration instructions complete, README updated with feature summary, user-friendly and actionable._
+  - _Commit: 322a0de "feat(spec): document number modifier feature for users (task 4.7)"_
 
 - [ ] 4.8 Validate advanced feature end-to-end
   - Files: `docs/ADVANCED_FEATURE_VALIDATION.md`
