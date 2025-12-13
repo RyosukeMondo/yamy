@@ -64,6 +64,11 @@ public:
     /// @param enabled true to enable debug logging
     void setDebugLogging(bool enabled) { m_debugLogging = enabled; }
 
+    /// Register a number key as a hardware modifier
+    /// @param yamy_scancode YAMY scan code for number key
+    /// @param modifier_yamy_code YAMY scan code for hardware modifier key
+    void registerNumberModifier(uint16_t yamy_scancode, uint16_t modifier_yamy_code);
+
 private:
     /// Layer 1: Map evdev code to YAMY scan code
     /// @param evdev Input evdev code

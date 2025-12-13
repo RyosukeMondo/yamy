@@ -21,38 +21,8 @@ EventProcessor::EventProcessor(const SubstitutionTable& subst_table)
         PLATFORM_LOG_INFO("EventProcessor", "Debug logging enabled via YAMY_DEBUG_KEYCODE");
     }
 
-    // Initialize number modifier mappings using the mapping table
-    // Number keys: _1 through _0 (YAMY scan codes 0x0002-0x000B)
-    // The mapping table in keycode_mapping.cpp defines which modifier each number maps to
-    for (uint16_t yamy_num = 0x0002; yamy_num <= 0x000B; ++yamy_num) {
-        uint16_t modifier_evdev = yamy::platform::getModifierForNumberKey(yamy_num);
-        if (modifier_evdev != 0) {
-            // Convert evdev modifier code to HardwareModifier enum
-            engine::HardwareModifier hw_mod = engine::HardwareModifier::NONE;
-
-            // Map evdev codes to HardwareModifier enum
-            // KEY_LEFTSHIFT (42), KEY_RIGHTSHIFT (54)
-            // KEY_LEFTCTRL (29), KEY_RIGHTCTRL (97)
-            // KEY_LEFTALT (56), KEY_RIGHTALT (100)
-            // KEY_LEFTMETA (125), KEY_RIGHTMETA (126)
-            switch (modifier_evdev) {
-                case 42:  hw_mod = engine::HardwareModifier::LSHIFT; break;
-                case 54:  hw_mod = engine::HardwareModifier::RSHIFT; break;
-                case 29:  hw_mod = engine::HardwareModifier::LCTRL; break;
-                case 97:  hw_mod = engine::HardwareModifier::RCTRL; break;
-                case 56:  hw_mod = engine::HardwareModifier::LALT; break;
-                case 100: hw_mod = engine::HardwareModifier::RALT; break;
-                case 125: hw_mod = engine::HardwareModifier::LWIN; break;
-                case 126: hw_mod = engine::HardwareModifier::RWIN; break;
-                default:
-                    PLATFORM_LOG_INFO("EventProcessor", "WARNING: Unknown modifier evdev code %u for number key 0x%04X",
-                                      modifier_evdev, yamy_num);
-                    continue;
-            }
-
-            m_modifierHandler->registerNumberModifier(yamy_num, hw_mod);
-        }
-    }
+    // Number modifiers will be registered dynamically from .mayu configuration
+    // via registerNumberModifier() called from Engine::buildSubstitutionTable()
 }
 
 EventProcessor::~EventProcessor() = default;
@@ -196,6 +166,43 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
     }
 
     return evdev;
+}
+
+void EventProcessor::registerNumberModifier(uint16_t yamy_scancode, uint16_t modifier_yamy_code)
+{
+    // Convert modifier YAMY scan code to evdev code to determine HardwareModifier enum
+    uint16_t modifier_evdev = yamy::platform::yamyToEvdevKeyCode(modifier_yamy_code);
+
+    if (modifier_evdev == 0) {
+        PLATFORM_LOG_INFO("EventProcessor", "WARNING: Cannot map modifier YAMY code 0x%04X to evdev",
+                          modifier_yamy_code);
+        return;
+    }
+
+    // Map evdev codes to HardwareModifier enum
+    // KEY_LEFTSHIFT (42), KEY_RIGHTSHIFT (54)
+    // KEY_LEFTCTRL (29), KEY_RIGHTCTRL (97)
+    // KEY_LEFTALT (56), KEY_RIGHTALT (100)
+    // KEY_LEFTMETA (125), KEY_RIGHTMETA (126)
+    engine::HardwareModifier hw_mod = engine::HardwareModifier::NONE;
+    switch (modifier_evdev) {
+        case 42:  hw_mod = engine::HardwareModifier::LSHIFT; break;
+        case 54:  hw_mod = engine::HardwareModifier::RSHIFT; break;
+        case 29:  hw_mod = engine::HardwareModifier::LCTRL; break;
+        case 97:  hw_mod = engine::HardwareModifier::RCTRL; break;
+        case 56:  hw_mod = engine::HardwareModifier::LALT; break;
+        case 100: hw_mod = engine::HardwareModifier::RALT; break;
+        case 125: hw_mod = engine::HardwareModifier::LWIN; break;
+        case 126: hw_mod = engine::HardwareModifier::RWIN; break;
+        default:
+            PLATFORM_LOG_INFO("EventProcessor", "WARNING: Unknown modifier evdev code %u for number key 0x%04X",
+                              modifier_evdev, yamy_scancode);
+            return;
+    }
+
+    m_modifierHandler->registerNumberModifier(yamy_scancode, hw_mod);
+    PLATFORM_LOG_INFO("EventProcessor", "Registered number modifier: 0x%04X → 0x%04X (evdev %u)",
+                      yamy_scancode, modifier_yamy_code, modifier_evdev);
 }
 
 } // namespace yamy

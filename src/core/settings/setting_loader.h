@@ -84,6 +84,7 @@ private:
     void load_DEFINE_SYNC_KEY();            /// &lt;DEFINE_SYNC_KEY&gt;
     void load_DEFINE_ALIAS();            /// &lt;DEFINE_ALIAS&gt;
     void load_DEFINE_SUBSTITUTE();        /// &lt;DEFINE_SUBSTITUTE&gt;
+    void load_DEFINE_NUMBER_MODIFIER();    /// &lt;DEFINE_NUMBER_MODIFIER&gt;
     void load_DEFINE_OPTION();            /// &lt;DEFINE_OPTION&gt;
     void load_KEYBOARD_DEFINITION();        /// &lt;KEYBOARD_DEFINITION&gt;
     Modifier load_MODIFIER(Modifier::Type i_mode, Modifier i_modifier,

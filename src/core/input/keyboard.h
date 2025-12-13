@@ -379,10 +379,24 @@ private:
     };
     typedef std::list<Substitute> Substitutes;    /// substitutes
 
+    /// Number modifier mapping: number key -> hardware modifier key
+    class NumberModifier
+    {
+    public:
+        Key *m_numberKey;       /// Number key (_1 through _0)
+        Key *m_modifierKey;     /// Hardware modifier key (LShift, RShift, etc.)
+    public:
+        NumberModifier(Key *i_numberKey, Key *i_modifierKey)
+                : m_numberKey(i_numberKey), m_modifierKey(i_modifierKey) {
+        }
+    };
+    typedef std::list<NumberModifier> NumberModifiers;    /// number modifiers
+
 private:
     std::array<Keys, HASHED_KEYS_SIZE> m_hashedKeys;        ///
     Aliases m_aliases;                ///
     Substitutes m_substitutes;            ///
+    NumberModifiers m_numberModifiers;    /// number key -> modifier mappings
     Key m_syncKey;                /// key used to synchronize
 
 private:
@@ -429,6 +443,9 @@ public:
     void addSubstitute(const ModifiedKey &i_mkeyFrom,
                        const ModifiedKey &i_mkeyTo);
 
+    /// add number modifier
+    void addNumberModifier(Key *i_numberKey, Key *i_modifierKey);
+
     /// get a sync key
     Key *getSyncKey() {
         return &m_syncKey;
@@ -465,6 +482,11 @@ public:
     /// get substitutes list (for EventProcessor integration)
     const Substitutes& getSubstitutes() const {
         return m_substitutes;
+    }
+
+    /// get number modifiers list (for EventProcessor integration)
+    const NumberModifiers& getNumberModifiers() const {
+        return m_numberModifiers;
     }
 };
 

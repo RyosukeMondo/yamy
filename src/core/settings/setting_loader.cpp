@@ -236,6 +236,56 @@ void SettingLoader::load_DEFINE_SUBSTITUTE()
 }
 
 
+// <DEFINE_NUMBER_MODIFIER>
+// Syntax: def numbermod *_1 = *LShift
+void SettingLoader::load_DEFINE_NUMBER_MODIFIER()
+{
+    // Get the number key name (e.g., *_1)
+    Token *numberKeyToken = getToken();
+    std::string numberKeyName = numberKeyToken->getString();
+
+    // Look up the number key
+    Key *numberKey = m_setting->m_keyboard.searchKeyByNonAliasName(numberKeyName);
+    if (!numberKey)
+        throw ErrorMessage() << "`" << numberKeyName << "': invalid number key name.";
+
+    // Expect '='
+    if (*getToken() != "=")
+        throw ErrorMessage() << "there must be `=' after number key name in `def numbermod'.";
+
+    // Get the modifier key name (e.g., *LShift)
+    Token *modifierKeyToken = getToken();
+    std::string modifierKeyName = modifierKeyToken->getString();
+
+    // Validate that it's a valid hardware modifier
+    static const char* validModifiers[] = {
+        "LShift", "RShift", "LCtrl", "RCtrl",
+        "LAlt", "RAlt", "LWin", "RWin"
+    };
+    bool isValidModifier = false;
+    for (const char* validMod : validModifiers) {
+        if (strcasecmp_utf8(modifierKeyName.c_str(), validMod) == 0) {
+            isValidModifier = true;
+            break;
+        }
+    }
+    if (!isValidModifier) {
+        ErrorMessage e;
+        e << "`" << modifierKeyName << "': invalid modifier key. ";
+        e << "Valid modifiers: LShift, RShift, LCtrl, RCtrl, LAlt, RAlt, LWin, RWin.";
+        throw e;
+    }
+
+    // Look up the modifier key
+    Key *modifierKey = m_setting->m_keyboard.searchKeyByNonAliasName(modifierKeyName);
+    if (!modifierKey)
+        throw ErrorMessage() << "`" << modifierKeyName << "': invalid modifier key name.";
+
+    // Add the number modifier mapping
+    m_setting->m_keyboard.addNumberModifier(numberKey, modifierKey);
+}
+
+
 // <DEFINE_OPTION>
 void SettingLoader::load_DEFINE_OPTION()
 {
@@ -318,6 +368,9 @@ void SettingLoader::load_KEYBOARD_DEFINITION()
 
     // <DEFINE_SUBSTITUTE>
     else if (*t == "subst") load_DEFINE_SUBSTITUTE();
+
+    // <DEFINE_NUMBER_MODIFIER>
+    else if (*t == "numbermod") load_DEFINE_NUMBER_MODIFIER();
 
     // <DEFINE_OPTION>
     else if (*t == "option") load_DEFINE_OPTION();

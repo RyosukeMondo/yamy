@@ -320,6 +320,13 @@ void Keyboard::addSubstitute(const ModifiedKey &i_mkeyFrom,
 }
 
 
+// add number modifier
+void Keyboard::addNumberModifier(Key *i_numberKey, Key *i_modifierKey)
+{
+    m_numberModifiers.push_front(NumberModifier(i_numberKey, i_modifierKey));
+}
+
+
 // add a modifier key
 void Keyboard::addModifier(Modifier::Type i_mt, Key *i_key)
 {

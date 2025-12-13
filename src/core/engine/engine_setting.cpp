@@ -258,6 +258,46 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
     // Create or recreate EventProcessor with new substitution table
     m_eventProcessor = std::make_unique<yamy::EventProcessor>(m_substitutionTable);
 
+    // Register number modifiers from .mayu configuration
+    for (const auto& numberMod : keyboard.getNumberModifiers()) {
+        const Key* numberKey = numberMod.m_numberKey;
+        const Key* modifierKey = numberMod.m_modifierKey;
+
+        if (!numberKey || !modifierKey) {
+            continue;
+        }
+
+        // Get YAMY scan codes
+        const ScanCode* numberScans = numberKey->getScanCodes();
+        const ScanCode* modifierScans = modifierKey->getScanCodes();
+        size_t numberSize = numberKey->getScanCodesSize();
+        size_t modifierSize = modifierKey->getScanCodesSize();
+
+        if (numberSize == 0 || modifierSize == 0) {
+            continue;
+        }
+
+        uint16_t numberYamyScan = numberScans[0].m_scan;
+        uint16_t modifierYamyScan = modifierScans[0].m_scan;
+
+        m_eventProcessor->registerNumberModifier(numberYamyScan, modifierYamyScan);
+
+        // Log the number modifier registration
+        {
+            Acquire a(&m_log, 1);
+            m_log << "Number Modifier: 0x" << std::hex << std::setfill('0')
+                  << std::setw(4) << numberYamyScan
+                  << " → 0x" << std::setw(4) << modifierYamyScan
+                  << std::dec << std::endl;
+        }
+    }
+
+    {
+        Acquire a(&m_log, 0);
+        m_log << "Registered " << keyboard.getNumberModifiers().size()
+              << " number modifiers" << std::endl;
+    }
+
     // Enable debug logging if YAMY_DEBUG_KEYCODE env var is set
     const char* debugEnv = std::getenv("YAMY_DEBUG_KEYCODE");
     if (debugEnv && std::string(debugEnv) == "1") {
