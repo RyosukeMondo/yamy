@@ -1,4 +1,4 @@
-﻿def key E0RightShift E0RShift		= E0-0x36
+def key E0RightShift E0RShift		= E0-0x36
 mod shift += E0RShift
 key *E0RShift = *LShift
 

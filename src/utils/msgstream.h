@@ -9,6 +9,8 @@
 #  include "misc.h"
 #  include "stringtool.h"
 #  include "multithread.h"
+#  include <fstream>
+#  include <iostream>
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,6 +53,12 @@ private:
     */
     int m_debugLevel;
     int m_msgDebugLevel;                ///
+
+#ifndef _WIN32
+    // Linux: Use file logging instead of PostMessage
+    static std::ofstream* s_logFile;
+    static bool s_logFileInitialized;
+#endif
 
 private:
     basic_msgbuf(const basic_msgbuf &);        /// disable copy constructor
@@ -179,8 +187,22 @@ public:
 
     /// end writing
     virtual void release() {
-        if (!m_str.empty())
+        if (!m_str.empty()) {
+#ifdef _WIN32
             PostMessage(m_hwnd, m_messageId, 0, reinterpret_cast<LPARAM>(this));
+#else
+            // Linux: Write to log file instead of PostMessage
+            if (!s_logFileInitialized) {
+                s_logFile = new std::ofstream("/tmp/yamy-engine.log", std::ios::app);
+                s_logFileInitialized = true;
+            }
+            if (s_logFile && s_logFile->is_open()) {
+                *s_logFile << m_str << std::flush;
+            }
+            // Also output to stderr for immediate visibility
+            std::cerr << m_str << std::flush;
+#endif
+        }
         m_msgDebugLevel = m_debugLevel;
         m_cs.release();
     }
@@ -275,6 +297,15 @@ public:
 
 ///
 typedef basic_omsgstream<_TCHAR> tomsgstream;
+
+#ifndef _WIN32
+// Linux: Initialize static members for file logging
+template<class T, size_t SIZE, class TR, class A>
+std::ofstream* basic_msgbuf<T, SIZE, TR, A>::s_logFile = nullptr;
+
+template<class T, size_t SIZE, class TR, class A>
+bool basic_msgbuf<T, SIZE, TR, A>::s_logFileInitialized = false;
+#endif
 
 
 #endif // !_MSGSTREAM_H

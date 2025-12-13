@@ -49,6 +49,7 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_inputQueue(nullptr),
         m_queueMutex(nullptr),
         m_readEvent(nullptr),
+        m_ol(nullptr),
         m_sts4mayu(nullptr),
         m_cts4mayu(nullptr),
         m_isLogMode(false),
@@ -109,6 +110,12 @@ Engine::~Engine() {
     CHECK_TRUE( yamy::platform::destroyEvent(m_eSync) );
 
 #ifdef _WIN32
+    // Clean up OVERLAPPED structure
+    if (m_ol) {
+        delete reinterpret_cast<OVERLAPPED*>(m_ol);
+        m_ol = nullptr;
+    }
+
     // destroy named pipe for &SetImeString (Windows-only feature)
     if (m_hookPipe && m_hookPipe != INVALID_HANDLE_VALUE) {
         DisconnectNamedPipe(m_hookPipe);
@@ -167,12 +174,19 @@ void Engine::start() {
     CHECK_TRUE( m_readEvent = yamy::platform::createEvent(true, false) );
 #ifdef _WIN32
     yamy::debug::DebugConsole::LogInfo("Engine: Synchronization objects created successfully!");
-    yamy::debug::DebugConsole::LogInfo("Engine: Skipping OVERLAPPED structure setup (causes crash in admin mode)...");
-    // Skip OVERLAPPED setup entirely - it's causing a crash and not essential for core functionality
-    // TODO: Investigate why m_ol is null or invalid in administrator mode
-#endif
+    yamy::debug::DebugConsole::LogInfo("Engine: Allocating OVERLAPPED structure...");
 
-#ifdef _WIN32
+    // Allocate OVERLAPPED structure for async I/O
+    m_ol = new OVERLAPPED();
+    if (m_ol) {
+        OVERLAPPED* pOl = reinterpret_cast<OVERLAPPED*>(m_ol);
+        ZeroMemory(pOl, sizeof(OVERLAPPED));
+        pOl->hEvent = m_readEvent;
+        yamy::debug::DebugConsole::LogInfo("Engine: OVERLAPPED structure allocated and configured!");
+    } else {
+        yamy::debug::DebugConsole::LogError("Engine: Failed to allocate OVERLAPPED structure!");
+    }
+
     yamy::debug::DebugConsole::LogInfo("Engine: Opening input driver...");
 #endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Opening input driver...");

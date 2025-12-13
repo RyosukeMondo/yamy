@@ -201,7 +201,9 @@ int main(int argc, char* argv[])
     yamy::platform::IInputHook* inputHook = yamy::platform::createInputHook();
     yamy::platform::IInputDriver* inputDriver = yamy::platform::createInputDriver();
 
-    // Create log stream (nullptr for hwnd since we don't have a logging window yet)
+    // Create log stream
+    // tomsgstream is designed for Windows PostMessage, but on Linux it doesn't output anywhere
+    // TODO: Create a Linux-friendly log mechanism
     static tomsgstream logStream(0, nullptr);
 
     // Create real Engine with platform dependencies

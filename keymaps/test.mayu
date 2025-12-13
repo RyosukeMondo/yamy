@@ -1,0 +1,9 @@
+# Working minimal yamy configuration
+
+# Include the base keyboard definitions
+include "109.mayu"
+
+# Create a simple keymap
+keymap Global
+    # Map CapsLock (英数) to Escape
+    key 英数 = Esc

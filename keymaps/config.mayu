@@ -1,4 +1,4 @@
-﻿# subst
+# subst
 def subst *Del = *_4                               # <- Del
 def subst *A = *Tab                                # <- A
 def subst *Kanji = *Kanji                          # <- Kanji

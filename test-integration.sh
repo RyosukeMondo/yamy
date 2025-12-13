@@ -33,7 +33,7 @@ cleanup() {
     echo "Cleaning up..."
     pkill -f "$YAMY_BIN" 2>/dev/null || true
     sleep 1
-    rm -f /tmp/yamy-control.sock
+    rm -f /tmp/yamy-engine.sock
     echo "Cleanup complete"
 }
 
@@ -67,7 +67,7 @@ fi
 # Test 3: IPC socket creation
 echo ""
 echo "Test 3: IPC socket verification"
-if [ -S /tmp/yamy-control.sock ]; then
+if [ -S /tmp/yamy-engine.sock ]; then
     test_result 0 "IPC control socket exists"
 else
     test_result 1 "IPC socket creation" "Socket not found"
