@@ -369,9 +369,20 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
                         t ++;
                     // Handle UTF-8 multi-byte sequences
                     unsigned char uc = static_cast<unsigned char>(*t);
-                    if (uc >= 0x80 && *(t + 1))
+                    if (uc >= 0x80) {
+                        size_t remaining = line.c_str() + line.size() - t;
+                        bool is_valid = false;
+                        int char_len = utf8_char_length(t, remaining, is_valid);
+                        if (!is_valid) {
+                            ErrorMessage e;
+                            e << "invalid UTF-8 sequence at line " << m_lineNumber;
+                            e << ", byte value 0x" << std::hex << static_cast<int>(uc) << std::dec;
+                            throw e;
+                        }
+                        t += char_len;
+                    } else {
                         t ++;
-                    t ++;
+                    }
                 }
 
                 std::string str =
@@ -399,9 +410,20 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
                     }
                     // Handle UTF-8 multi-byte sequences
                     unsigned char uc = static_cast<unsigned char>(*t);
-                    if (uc >= 0x80 && *(t + 1))
+                    if (uc >= 0x80) {
+                        size_t remaining = line.c_str() + line.size() - t;
+                        bool is_valid = false;
+                        int char_len = utf8_char_length(t, remaining, is_valid);
+                        if (!is_valid) {
+                            ErrorMessage e;
+                            e << "invalid UTF-8 sequence at line " << m_lineNumber;
+                            e << ", byte value 0x" << std::hex << static_cast<int>(uc) << std::dec;
+                            throw e;
+                        }
+                        t += char_len;
+                    } else {
                         t ++;
-                    t ++;
+                    }
                 }
                 if (t == tokenStart) {
                     ErrorMessage e;
