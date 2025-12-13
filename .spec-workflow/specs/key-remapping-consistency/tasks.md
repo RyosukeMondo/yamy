@@ -345,15 +345,41 @@
   - _Requirements: 8, 7_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Integration engineer with expertise in event processing | Task: Integrate ModifierKeyHandler into EventProcessor Layer 2 in src/core/engine/engine_event_processor.cpp following requirements 8 and 7. Check for number modifiers before substitution lookup, delegate to handler, maintain code consistency (no special-case branching pattern). | Restrictions: Must maintain Layer 2 function purity (handler is just another table lookup conceptually), no complex branching (keep code clean), TAP falls through to normal substitution, HOLD outputs modifier directly, maintain performance, event type consistency preserved | _Leverage: ModifierKeyHandler from task 4.2, existing layer2_applySubstitution() function, modifier mapping table from task 4.3 | _Requirements: Requirement 8 (Number Keys as Custom Modifiers), Requirement 7 (Code Consistency) | Success: ModifierKeyHandler integrated cleanly, number keys processed before substitution, HOLD activates modifier, TAP proceeds to substitution, code remains clean and consistent, no performance regression, event type preserved._
 
-- [ ] 4.5 Extend .mayu parser to support number modifier syntax
-  - Files: `src/core/settings/mayu_parser.cpp` or equivalent
-  - Add parsing for syntax: `def modifier *_1 = *LShift` or similar
-  - Register number-to-modifier mappings with ModifierKeyHandler during config load
-  - Validate modifier targets (must be valid hardware modifiers)
-  - Maintain backward compatibility with existing .mayu files
+- [x] 4.5 Extend .mayu parser to support number modifier syntax
+  - Files: `src/core/settings/setting_loader.cpp`, `src/core/input/keyboard.h`, `src/core/input/keyboard.cpp`
+  - **STATUS**: COMPLETED - Full parser implementation verified
+  - **IMPLEMENTATION**:
+    - Added `load_DEFINE_NUMBER_MODIFIER()` function in setting_loader.cpp (lines 239-286)
+    - Syntax: `def numbermod *_1 = *LShift` (intuitive and consistent with existing .mayu patterns)
+    - Validates number key name and modifier key target against whitelist
+    - Clear error messages: "invalid modifier key. Valid modifiers: LShift, RShift, LCtrl, RCtrl, LAlt, RAlt, LWin, RWin"
+    - Integrated into parser dispatch at setting_loader.cpp:373: `else if (*t == "numbermod") load_DEFINE_NUMBER_MODIFIER();`
+    - Calls `m_setting->m_keyboard.addNumberModifier(numberKey, modifierKey)` to register mapping
+    - Full backward compatibility maintained - existing .mayu files work unchanged
+  - **KEYBOARD STORAGE**:
+    - `NumberModifier` class defined in keyboard.h:383-392 with m_numberKey and m_modifierKey
+    - `m_numberModifiers` list in Keyboard class (keyboard.h:399)
+    - `addNumberModifier()` method (keyboard.cpp:324-327) stores mappings
+    - `getNumberModifiers()` accessor (keyboard.h:488-490) for retrieval
+  - **ENGINE INTEGRATION**:
+    - engine_setting.cpp:261-299 reads number modifiers from configuration
+    - Converts Key objects to YAMY scan codes
+    - Registers with EventProcessor via `registerNumberModifier(numberYamyScan, modifierYamyScan)`
+    - Logs registration: "Number Modifier: 0x0002 → 0x002a" format
+    - Reports total count: "Registered N number modifiers"
+  - **VALIDATION**:
+    - Whitelist validation for modifier targets (only hardware modifiers allowed)
+    - Error handling for invalid number keys, missing '=', invalid modifiers, unknown key names
+    - Comprehensive error messages guide users to correct syntax
+  - **DOCUMENTATION**:
+    - Created docs/NUMBER_MODIFIER_SYNTAX.md with complete syntax reference
+    - Created test_numbermod.mayu example file demonstrating syntax
+    - Documented all error cases and messages
+    - Backward compatibility explicitly documented
+    - Integration with hold/tap detection explained
   - _Leverage: Existing .mayu parser, modifier definitions_
   - _Requirements: 8_
-  - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Parser developer with expertise in configuration file parsing | Task: Extend .mayu parser to support number modifier syntax in src/core/settings/mayu_parser.cpp following requirement 8. Parse new syntax, register with ModifierKeyHandler, validate targets, maintain backward compatibility. | Restrictions: Must not break existing .mayu files, syntax must be intuitive and consistent with existing .mayu patterns, validation must reject invalid modifiers, parser errors must be clear and helpful, integrate with existing config loading pipeline | _Leverage: Existing .mayu parser structure, modifier definitions (LShift, RShift, etc.), config loading pipeline | _Requirements: Requirement 8 (Number Keys as Custom Modifiers) | Success: Parser correctly handles new modifier syntax, registers mappings with ModifierKeyHandler, validates modifier targets, maintains backward compatibility, clear error messages, existing configs still work._
+  - _Commit: [Next commit after verification]_
 
 - [ ] 4.6 Create tests for number-to-modifier feature
   - Files: `tests/test_number_modifiers.cpp`, `tests/test_number_modifiers_e2e.py`

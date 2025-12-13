@@ -1,0 +1,16 @@
+# Test file for number modifier syntax
+# This demonstrates the new "def numbermod" syntax added in task 4.5
+
+# Map number keys to hardware modifiers
+def numbermod *_1 = *LShift
+def numbermod *_2 = *RShift
+def numbermod *_3 = *LCtrl
+def numbermod *_4 = *RCtrl
+def numbermod *_5 = *LAlt
+def numbermod *_6 = *RAlt
+def numbermod *_7 = *LWin
+def numbermod *_8 = *RWin
+
+# These can be used in combination with hold/tap detection
+# When you HOLD the number key (>200ms), it acts as the modifier
+# When you TAP the number key (<200ms), it performs normal substitution
