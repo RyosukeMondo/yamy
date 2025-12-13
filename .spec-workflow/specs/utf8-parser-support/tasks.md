@@ -140,7 +140,7 @@
     - **Success**: E2E test successfully loads actual 109.mayu without errors. Test verifies key count is correct (169+ keys). Test confirms Japanese key names are accessible (無変換, 変換, 英数, etc.). Test confirms English aliases work (NonConvert, Convert, Eisuu, etc.). Test confirms arrow keys (Up, Down, Left, Right) work. Test runs consistently and passes.
     - **Instructions**: Mark in-progress [-]. This test validates the entire fix works in production conditions. When complete, log with log-implementation tool including test coverage and validation results. Mark complete [x]. This is the final validation before considering the spec complete.
 
-- [ ] 8. Update error logging to include UTF-8 context in engine log
+- [-] 8. Update error logging to include UTF-8 context in engine log
   - **File**: `src/core/settings/parser.cpp` (extend error reporting in `readToken()`)
   - **Description**: Ensure UTF-8 parsing errors are written to the engine log with sufficient context for debugging
   - **Purpose**: Help users diagnose UTF-8 encoding issues in their configuration files

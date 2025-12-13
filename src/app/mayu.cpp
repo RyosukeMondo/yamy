@@ -450,9 +450,42 @@ private:
                         yamy::debug::DebugConsole::LogInfo("Tray icon: Right-click detected, showing menu...");
 #endif
                         POINT p;
-                        CHECK_TRUE( GetCursorPos(&p) );
-                        SetForegroundWindow(i_hwnd);
+                        if (!GetCursorPos(&p)) {
+#ifdef _WIN32
+                            yamy::debug::DebugConsole::LogError("GetCursorPos failed! Error: " + std::to_string(GetLastError()));
+#endif
+                            break;
+                        }
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Cursor position: " + std::to_string(p.x) + ", " + std::to_string(p.y));
+#endif
+
+                        if (!SetForegroundWindow(i_hwnd)) {
+#ifdef _WIN32
+                            yamy::debug::DebugConsole::LogWarning("SetForegroundWindow failed! Error: " + std::to_string(GetLastError()));
+#endif
+                        }
+
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Menu handle: " + std::to_string((uintptr_t)This->m_hMenuTaskTray));
+#endif
+                        if (!This->m_hMenuTaskTray) {
+#ifdef _WIN32
+                            yamy::debug::DebugConsole::LogError("m_hMenuTaskTray is NULL! Menu not loaded!");
+#endif
+                            break;
+                        }
+
                         HMENU hMenuSub = GetSubMenu(This->m_hMenuTaskTray, 0);
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Submenu handle: " + std::to_string((uintptr_t)hMenuSub));
+#endif
+                        if (!hMenuSub) {
+#ifdef _WIN32
+                            yamy::debug::DebugConsole::LogError("GetSubMenu failed! Menu has no submenu at index 0!");
+#endif
+                            break;
+                        }
                         if (This->m_engine.getIsEnabled())
                             CheckMenuItem(hMenuSub, ID_MENUITEM_disable,
                                           MF_UNCHECKED | MF_BYCOMMAND);
@@ -494,9 +527,23 @@ private:
                         }
 
                         // show popup menu
-                        TrackPopupMenu(hMenuSub, TPM_LEFTALIGN,
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Calling TrackPopupMenu...");
+#endif
+                        BOOL menuResult = TrackPopupMenu(hMenuSub, TPM_LEFTALIGN | TPM_RIGHTBUTTON,
                                        p.x, p.y, 0, i_hwnd, nullptr);
-                        // TrackPopupMenu may fail (ERROR_POPUP_ALREADY_ACTIVE)
+#ifdef _WIN32
+                        if (!menuResult) {
+                            DWORD error = GetLastError();
+                            yamy::debug::DebugConsole::LogError("TrackPopupMenu failed! Error: " + std::to_string(error));
+                            // ERROR_POPUP_ALREADY_ACTIVE = 1400
+                            if (error == 1400) {
+                                yamy::debug::DebugConsole::LogWarning("Another popup menu is already active");
+                            }
+                        } else {
+                            yamy::debug::DebugConsole::LogInfo("TrackPopupMenu succeeded!");
+                        }
+#endif
                         break;
                     }
 
