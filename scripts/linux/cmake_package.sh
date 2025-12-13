@@ -9,7 +9,7 @@ if [[ "${1:-}" == "--clean" ]]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(dirname "$SCRIPT_DIR")"
+ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 DIST_DIR="$ROOT/dist"
 RELEASE_DIR="$ROOT/dist/yamy-release"
 LOGS_DIR="$ROOT/logs"
@@ -173,10 +173,10 @@ echo_color "$CYAN" "Copying Assets..."
 
 cp -r "$ROOT/keymaps" "$RELEASE_DIR/"
 # Copy only launch scripts to root
-cp "$ROOT/scripts/launch_yamy.bat" "$RELEASE_DIR/"
-cp "$ROOT/scripts/launch_yamy_admin.bat" "$RELEASE_DIR/"
-cp -r "$ROOT/docs" "$RELEASE_DIR/"
-cp "$ROOT/docs/readme.txt" "$RELEASE_DIR/readme.txt"
+cp "$ROOT/scripts/windows/launch_yamy.bat" "$RELEASE_DIR/"
+cp "$ROOT/scripts/windows/launch_yamy_admin.bat" "$RELEASE_DIR/"
+cp -r "$ROOT/docs" "$RELEASE_DIR/" || true
+cp "$ROOT/docs/readme.txt" "$RELEASE_DIR/readme.txt" || true
 
 # -----------------------------------------------------------------------------
 # Create Zip
