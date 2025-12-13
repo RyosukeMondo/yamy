@@ -113,16 +113,21 @@
   - _Requirements: 1, 2, 3, 7_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Systems architect with expertise in event-driven systems | Task: Implement processEvent() main entry point in src/core/engine/engine_event_processor.cpp following requirements 1, 2, 3, and 7. Compose layer functions: output = f₃(f₂(f₁(input))). CRITICAL: Preserve event type - PRESS in must produce PRESS out, RELEASE in must produce RELEASE out. No branching based on event type except to preserve the flag. | Restrictions: Must call all 3 layers for every event (no layer skipping), event type preservation is mandatory, no special cases for any key, return ProcessedEvent struct with all fields populated, add event start/end logging | _Leverage: Layer functions from tasks 2.2 (layer1_evdevToYamy), 2.3 (layer2_applySubstitution), 2.4 (layer3_yamyToEvdev) | _Requirements: Requirements 1 (Universal Event Processing), 2 (Event Type Consistency), 3 (Layer Completeness), 7 (Code Consistency) | Success: All events processed through all 3 layers, event type preserved correctly, ProcessedEvent returns output evdev + original event type, logs show complete EVENT:START → LAYER1 → LAYER2 → LAYER3 → EVENT:END sequence, no event type branching._
 
-- [-] 2.6 Integrate EventProcessor into engine.cpp main event loop [NEEDS COMPLETION]
-  - Files: `src/core/engine/engine.cpp`, `src/core/engine/engine.h`, `src/core/engine/engine_setting.cpp`, `src/core/engine/engine_generator.cpp`, `src/core/input/keyboard.h`
-  - **STATUS**: Substitution table integrated but EventProcessor::processEvent() NOT called
-  - **DONE**: Built substitution table from .mayu, passed to EventProcessor constructor
-  - **TODO**: Replace direct m_substitutionTable access with EventProcessor::processEvent() call
-  - **TODO**: Preserve evdev codes through event pipeline (currently lost)
-  - **TODO**: Pass event_type (PRESS/RELEASE) to processEvent()
-  - _See: docs/REFACTORING_VALIDATION.md for detailed analysis_
+- [x] 2.6 Integrate EventProcessor into engine.cpp main event loop
+  - Files: `src/core/engine/engine.cpp`, `src/core/engine/engine.h`, `src/core/engine/engine_setting.cpp`, `src/core/engine/engine_generator.cpp`, `src/core/engine/engine_event_processor.h`, `src/core/engine/engine_event_processor.cpp`
+  - **STATUS**: COMPLETED - Full 3-layer EventProcessor integration active
+  - **IMPLEMENTATION**:
+    - Added `m_evdev_code` field to Current class to preserve evdev through pipeline
+    - Set evdev_code in engine.cpp keyboardHandler when creating Current object
+    - Extended ProcessedEvent to return both output_evdev and output_yamy
+    - Replaced direct m_substitutionTable access with EventProcessor::processEvent() call
+    - Complete Layer1→Layer2→Layer3 flow now executed for every event
+    - Event type (PRESS/RELEASE) passed to processEvent() and preserved throughout
+    - Fallback path maintained for compatibility when evdev code unavailable
+  - **LOGGING**: All events now show [EVENT:START] → [LAYER1:IN] → [LAYER2:SUBST/PASSTHROUGH] → [LAYER3:OUT] → [EVENT:END]
   - _Leverage: Existing event loop structure, EventProcessor substitution table_
   - _Requirements: 1, 2, 7_
+  - _Commit: 2bb0fca "feat(spec): complete EventProcessor integration into engine (task 2.6)"_
 
 - [x] 2.7 Verify refactoring with manual testing
   - Files: `docs/REFACTORING_VALIDATION.md`
