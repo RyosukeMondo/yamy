@@ -381,16 +381,33 @@
   - _Requirements: 8_
   - _Commit: [Next commit after verification]_
 
-- [ ] 4.6 Create tests for number-to-modifier feature
+- [x] 4.6 Create tests for number-to-modifier feature
   - Files: `tests/test_number_modifiers.cpp`, `tests/test_number_modifiers_e2e.py`
-  - Unit tests: Test hold/tap detection with mocked timer
-  - Unit tests: Test state machine transitions
-  - Integration tests: Test number key HOLD → modifier activation
-  - Integration tests: Test number key TAP → normal substitution
-  - E2E tests: Test number key combinations (e.g., hold 1 + press A = Shift+A)
+  - **STATUS**: COMPLETED
+  - **IMPLEMENTATION**:
+    - Created comprehensive C++ unit tests in `tests/test_number_modifiers.cpp`
+    - Tests cover hold/tap detection, state machine transitions, all hardware modifiers
+    - Includes edge case tests: spurious events, system suspend/resume, repeated press
+    - Custom threshold tests (50ms, 500ms) verify configurability
+    - All 8 hardware modifiers tested (LSHIFT, RSHIFT, LCTRL, RCTRL, LALT, RALT, LWIN, RWIN)
+    - Created Python E2E tests in `tests/test_number_modifiers_e2e.py`
+    - E2E tests verify TAP detection, HOLD detection, HOLD+RELEASE, combinations
+    - Tests use yamy-test inject utility for autonomous testing
+    - Added test target `yamy_number_modifiers_test` to CMakeLists.txt
+  - **TEST COVERAGE**:
+    - Unit tests: 20+ test cases covering all ModifierKeyHandler functionality
+    - State machine: IDLE → WAITING → MODIFIER_ACTIVE/TAP_DETECTED transitions
+    - Edge cases: spurious RELEASE, repeated PRESS, already active, system suspend
+    - Reset functionality and query methods (isNumberModifier, isModifierHeld)
+    - E2E tests: TAP, HOLD, RELEASE, combinations with real timing
+  - **FEATURES TESTED**:
+    - Hold/tap detection with 200ms default threshold
+    - Custom threshold configuration (tested with 50ms and 500ms)
+    - All 8 hardware modifier types return correct VK codes
+    - State machine correctness and graceful degradation
+    - Number key combinations (hold number + press letter)
   - _Leverage: Existing test frameworks from Phase 3_
   - _Requirements: 8, 6_
-  - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Test engineer with expertise in state machine and timing tests | Task: Create comprehensive tests for number modifier feature in tests/test_number_modifiers.cpp and tests/test_number_modifiers_e2e.py following requirements 8 and 6. Test hold/tap detection, state machine, HOLD→modifier, TAP→substitution, combinations. | Restrictions: Must mock timer for unit tests (fast execution), integration tests use real components, E2E tests use real timing, test edge cases (e.g., hold threshold boundary), test combinations thoroughly, maintain test autonomy (no user interaction) | _Leverage: GoogleTest framework from Phase 3, automated test framework from task 3.5, ModifierKeyHandler state machine | _Requirements: Requirement 8 (Number Keys as Custom Modifiers), Requirement 6 (Test Coverage) | Success: Comprehensive test coverage for number modifier feature, hold/tap detection tested, state machine verified, HOLD and TAP behaviors correct, combinations work, tests autonomous and fast, edge cases covered._
 
 - [ ] 4.7 Document advanced feature and update user guide
   - Files: `docs/NUMBER_MODIFIER_USER_GUIDE.md`, update `README.md`

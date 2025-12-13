@@ -1368,6 +1368,40 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         add_test(NAME yamy_event_processor_it COMMAND yamy_event_processor_it)
 
+        # -----------------------------------------------------------------------------
+        # Target: yamy_number_modifiers_test (Number Modifiers Unit Tests)
+        # Unit tests for ModifierKeyHandler hold/tap detection and state machine
+        # Part of task 4.6 in key-remapping-consistency spec
+        # -----------------------------------------------------------------------------
+        set(NUMBER_MODIFIERS_TEST_SOURCES
+            tests/test_number_modifiers.cpp
+            src/core/engine/modifier_key_handler.cpp
+        )
+
+        add_executable(yamy_number_modifiers_test
+            ${NUMBER_MODIFIERS_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_number_modifiers_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/engine
+            src/utils
+        )
+
+        target_compile_definitions(yamy_number_modifiers_test PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(yamy_number_modifiers_test PRIVATE
+            pthread
+        )
+
+        add_test(NAME yamy_number_modifiers_test COMMAND yamy_number_modifiers_test)
+
         else()
             message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/X11Extras not found)")
         endif() # Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND
