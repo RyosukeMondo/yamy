@@ -39,12 +39,12 @@
   - _Requirements: 3, 4_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: DevOps engineer with expertise in log analysis and Python scripting | Task: Create automated log analysis tool in tests/analyze_event_flow.py following requirements 3 and 4. Parse debug logs to extract event sequences, identify missing layers, and generate comprehensive flow report. Highlight keys with asymmetric behavior (RELEASE-only, layer skipping). | Restrictions: Must handle large log files efficiently, robust regex parsing for all log formats, output human-readable and machine-parseable formats (JSON option), no external dependencies beyond Python stdlib | _Leverage: Existing log format from PLATFORM_LOG_INFO with [LAYER:DIRECTION] markers | _Requirements: Requirements 3 (Layer Completeness), 4 (Comprehensive Logging) | Success: Tool successfully parses logs, identifies all event flows, reports missing layers, highlights asymmetries, generates clear report with examples. Handles edge cases gracefully._
 
-- [ ] 1.5 Create test event injection utility
-  - Files: `src/tests/test_inject_key.cpp`, update CMakeLists.txt
+- [x] 1.5 Create test event injection utility
+  - Files: `src/test/yamy_test_main.cpp` (enhanced existing utility)
   - Create standalone utility `yamy-test inject <evdev> <PRESS|RELEASE>`
   - Inject synthetic key event into YAMY engine for testing
   - Supports both PRESS and RELEASE event types
-  - _Leverage: Existing IPC channel to engine, input_injector interface_
+  - _Leverage: Existing virtual keyboard implementation via uinput_
   - _Requirements: 5, 6_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Test infrastructure engineer with expertise in C++ and input event injection | Task: Create test utility src/tests/test_inject_key.cpp that can inject synthetic key events into running YAMY engine for autonomous testing following requirements 5 and 6. CLI: yamy-test inject <evdev_code> <PRESS|RELEASE>. Events must flow through all 3 layers identically to real keypresses. | Restrictions: Must not require user to actually press keys, use existing IPC/injection infrastructure, events must be indistinguishable from real hardware events to engine, proper error handling for YAMY not running | _Leverage: Existing IPC channel in src/platform/linux/ipc_channel_linux.cpp, input_injector_linux.cpp for virtual device | _Requirements: Requirements 5 (Automated Testing), 6 (Test Coverage) | Success: Utility successfully injects PRESS and RELEASE events, events appear in debug logs with all 3 layers, engine processes synthetic events identically to real keys, can be called from test scripts._
 
