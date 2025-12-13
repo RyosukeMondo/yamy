@@ -1327,6 +1327,42 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         add_test(NAME yamy_event_processor_ut COMMAND yamy_event_processor_ut)
 
+        # -----------------------------------------------------------------------------
+        # Target: yamy_event_processor_it (EventProcessor Integration Tests)
+        # Integration tests for complete Layer 1→2→3 composition
+        # Part of task 3.4 in key-remapping-consistency spec
+        # -----------------------------------------------------------------------------
+        set(EVENT_PROCESSOR_IT_SOURCES
+            tests/test_event_processor_it.cpp
+            src/platform/linux/keycode_mapping.cpp
+            src/core/engine/engine_event_processor.cpp
+        )
+
+        add_executable(yamy_event_processor_it
+            ${EVENT_PROCESSOR_IT_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_event_processor_it PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/engine
+            src/platform/linux
+            src/utils
+        )
+
+        target_compile_definitions(yamy_event_processor_it PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(yamy_event_processor_it PRIVATE
+            pthread
+        )
+
+        add_test(NAME yamy_event_processor_it COMMAND yamy_event_processor_it)
+
         else()
             message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/X11Extras not found)")
         endif() # Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND

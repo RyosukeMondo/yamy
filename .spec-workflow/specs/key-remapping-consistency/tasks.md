@@ -176,7 +176,7 @@
   - _Requirements: 6_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Test engineer with expertise in keycode mapping testing | Task: Create unit tests for Layer 3 in tests/test_event_processor_ut.cpp following requirement 6. Verify yamyToEvdevKeyCode() correctness, test scan map priority over VK map (critical test: 0x0014 → KEY_T not KEY_CAPSLOCK), test VK fallback, test unmapped keys. | Restrictions: Must specifically test scan map priority fix, verify no VK/scan conflicts, test both US and JP scan maps, test VK map fallback for special keys, fast execution, isolated tests | _Leverage: GoogleTest framework, g_scanToEvdevMap_US/JP and g_yamyToEvdevMap from keycode_mapping.cpp | _Requirements: Requirement 6 (Test Coverage) | Success: Tests verify Layer 3 correctness, scan map priority confirmed (0x0014 test passes), VK fallback works, unmapped keys return 0, > 95% code coverage for Layer 3 function._
 
-- [ ] 3.4 Create integration tests for Layer 1→2→3 composition
+- [x] 3.4 Create integration tests for Layer 1→2→3 composition
   - Files: `tests/test_event_processor_it.cpp`
   - Test complete event flow: evdev input → YAMY scan → substitution → output evdev
   - Test W→A: evdev 17 → 0x0011 → 0x001E → evdev 30
