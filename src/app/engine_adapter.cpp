@@ -1,14 +1,25 @@
 #include "engine_adapter.h"
 #include "../core/engine/engine.h"
+#include "../core/settings/setting.h"
+#include "../utils/metrics.h"
 #include <chrono>
 #include <thread>
 #include <iostream>
 #include <stdexcept>
 #include <filesystem>
+#include <sstream>
+#include <iomanip>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QString>
+#include <QDateTime>
 
 EngineAdapter::EngineAdapter(Engine* engine)
     : m_engine(engine)
     , m_configPath("")
+    , m_startTime(std::chrono::steady_clock::now())
+    , m_configLoadedTime(std::chrono::system_clock::now())
 {
     // Engine pointer ownership transferred to adapter
 }
@@ -62,6 +73,9 @@ void EngineAdapter::start()
         std::cerr << "EngineAdapter::start() - Engine thread already running" << std::endl;
         return;
     }
+
+    // Reset start time
+    m_startTime = std::chrono::steady_clock::now();
 
     // Create thread to run the engine
     m_engineThread = std::thread([this]() {
@@ -132,9 +146,10 @@ bool EngineAdapter::loadConfig(const std::string& path)
         success = false;
     }
 
-    // Save config path on success
+    // Save config path and loaded time on success
     if (success) {
         m_configPath = path;
+        m_configLoadedTime = std::chrono::system_clock::now();
     } else {
         std::cerr << "EngineAdapter::loadConfig() - Failed to load config: " << path << std::endl;
     }
@@ -154,30 +169,149 @@ const std::string& EngineAdapter::getConfigPath() const
 
 uint64_t EngineAdapter::keyCount() const
 {
-    // Stub: Return zero
-    return 0;
+    // Get key count from metrics
+    auto& metrics = yamy::metrics::PerformanceMetrics::instance();
+    auto keyProcStats = metrics.getStats(yamy::metrics::Operations::KEY_PROCESSING);
+    return keyProcStats.count;
 }
 
 std::string EngineAdapter::getStatusJson() const
 {
-    // Stub: Return empty JSON object
-    return "{}";
+    QJsonObject obj;
+
+    if (!m_engine) {
+        obj["state"] = "error";
+        obj["uptime"] = 0;
+        obj["config"] = "";
+        obj["key_count"] = 0;
+        obj["current_keymap"] = "none";
+        return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
+    }
+
+    // Get state from engine
+    auto state = m_engine->getState();
+    std::string stateStr;
+    switch (state) {
+        case yamy::EngineState::Running:
+            stateStr = "running";
+            break;
+        case yamy::EngineState::Stopped:
+            stateStr = "stopped";
+            break;
+        case yamy::EngineState::Loading:
+            stateStr = "loading";
+            break;
+        case yamy::EngineState::Error:
+            stateStr = "error";
+            break;
+    }
+    obj["state"] = QString::fromStdString(stateStr);
+
+    // Calculate uptime in seconds
+    auto now = std::chrono::steady_clock::now();
+    auto uptime = std::chrono::duration_cast<std::chrono::seconds>(now - m_startTime).count();
+    obj["uptime"] = static_cast<qint64>(uptime);
+
+    // Config path
+    obj["config"] = QString::fromStdString(m_configPath);
+
+    // Key count from metrics
+    obj["key_count"] = static_cast<qint64>(keyCount());
+
+    // Current keymap - get from engine's current window
+    std::string currentKeymap = "default";
+    const Setting* setting = m_engine->getSetting();
+    if (setting) {
+        std::string className = m_engine->getCurrentWindowClassName();
+        std::string titleName = m_engine->getCurrentWindowTitleName();
+
+        // Search for matching keymap
+        Keymaps::KeymapPtrList keymaps;
+        const_cast<Keymaps&>(setting->m_keymaps).searchWindow(&keymaps, className, titleName);
+
+        if (!keymaps.empty() && keymaps.front()) {
+            currentKeymap = keymaps.front()->getName();
+        }
+    }
+    obj["current_keymap"] = QString::fromStdString(currentKeymap);
+
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
 }
 
 std::string EngineAdapter::getConfigJson() const
 {
-    // Stub: Return empty JSON object
-    return "{}";
+    QJsonObject obj;
+
+    obj["config_path"] = QString::fromStdString(m_configPath);
+
+    // Extract config name from path
+    std::string configName = m_configPath;
+    size_t lastSlash = m_configPath.find_last_of('/');
+    if (lastSlash != std::string::npos) {
+        configName = m_configPath.substr(lastSlash + 1);
+    }
+    obj["config_name"] = QString::fromStdString(configName);
+
+    // Convert loaded time to ISO8601 format
+    auto time_t_val = std::chrono::system_clock::to_time_t(m_configLoadedTime);
+    QDateTime qdt = QDateTime::fromSecsSinceEpoch(time_t_val);
+    obj["loaded_time"] = qdt.toString(Qt::ISODate);
+
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
 }
 
 std::string EngineAdapter::getKeymapsJson() const
 {
-    // Stub: Return empty JSON object
-    return "{}";
+    QJsonObject obj;
+    QJsonArray keymapsArray;
+
+    if (m_engine) {
+        const Setting* setting = m_engine->getSetting();
+        if (setting) {
+            // Iterate through all keymaps
+            const auto& keymapList = setting->m_keymaps.getKeymapList();
+            for (const auto& keymap : keymapList) {
+                QJsonObject kmObj;
+                kmObj["name"] = QString::fromStdString(keymap.getName());
+                kmObj["window_class"] = QString::fromStdString(keymap.getWindowClassStr());
+                kmObj["window_title"] = QString::fromStdString(keymap.getWindowTitleStr());
+                keymapsArray.append(kmObj);
+            }
+        }
+    }
+
+    obj["keymaps"] = keymapsArray;
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
 }
 
 std::string EngineAdapter::getMetricsJson() const
 {
-    // Stub: Return empty JSON object
-    return "{}";
+    QJsonObject obj;
+
+    // Get metrics from the global PerformanceMetrics instance
+    auto& metrics = yamy::metrics::PerformanceMetrics::instance();
+
+    // Get key processing metrics (primary metric for yamy)
+    auto keyProcStats = metrics.getStats(yamy::metrics::Operations::KEY_PROCESSING);
+
+    // Populate JSON with metrics matching the expected format
+    obj["latency_avg_ns"] = static_cast<qint64>(keyProcStats.averageNs);
+    obj["latency_p99_ns"] = static_cast<qint64>(keyProcStats.p99Ns);
+    obj["latency_max_ns"] = static_cast<qint64>(keyProcStats.maxNs);
+
+    // CPU usage - not currently tracked, return 0.0 for now
+    // This could be enhanced later with actual CPU monitoring
+    obj["cpu_usage_percent"] = 0.0;
+
+    // Keys per second calculation
+    double keysPerSecond = 0.0;
+    if (keyProcStats.periodEnd > keyProcStats.periodStart) {
+        uint64_t periodMs = keyProcStats.periodEnd - keyProcStats.periodStart;
+        if (periodMs > 0) {
+            keysPerSecond = (keyProcStats.count * 1000.0) / periodMs;
+        }
+    }
+    obj["keys_per_second"] = keysPerSecond;
+
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
 }

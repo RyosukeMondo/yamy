@@ -58,7 +58,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-3, US-2, US-5_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ configuration management specialist. Task: Implement loadConfig(path): validate file exists with std::filesystem; stop engine if running; call loadSetting(path.c_str()) to parse .mayu file; call m_engine->setSetting(setting); save m_configPath; restart engine if was running; return success/failure. Log errors to stderr. Implement getConfigPath() to return m_configPath. Restrictions: Do NOT modify Parser, handle all exceptions gracefully. Success: Valid .mayu files load successfully, invalid files return false with error log, no crashes on parse errors._
 
-- [ ] 7. Implement EngineAdapter JSON status methods
+- [-] 7. Implement EngineAdapter JSON status methods
   - File: src/app/engine_adapter.cpp
   - Implement getStatusJson() with real engine state
   - Implement getConfigJson() with actual config info

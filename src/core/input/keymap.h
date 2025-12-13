@@ -387,6 +387,11 @@ public:
 
     /// adjust modifier
     void adjustModifier(Keyboard &i_keyboard);
+
+    /// get const reference to keymap list (for iteration)
+    const KeymapList& getKeymapList() const {
+        return m_keymapList;
+    }
 };
 
 

@@ -85,4 +85,6 @@ private:
     Engine* m_engine;                           ///< Real Engine instance (owned)
     std::string m_configPath;                   ///< Path to loaded configuration
     std::thread m_engineThread;                 ///< Thread running the engine
+    std::chrono::steady_clock::time_point m_startTime;  ///< Time when engine was started
+    std::chrono::system_clock::time_point m_configLoadedTime; ///< Time when config was loaded
 };
