@@ -126,3 +126,5 @@ int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+#include "dialog_investigate_test.moc"
