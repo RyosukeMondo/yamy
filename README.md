@@ -64,12 +64,12 @@ The project structure has been reorganized for better clarity and maintainabilit
 To build the project using Visual Studio (or MSVC toolchain), run the packaging script from the `scripts` directory:
 
 ```powershell
-scripts/cmake_package.ps1
+scripts/windows/cmake_package.ps1
 ```
 
 **Options:**
 - **Default**: Incremental build. Uses existing `build/` directory if present for faster compilation.
-- **Clean Build**: Use `-Clean` switch to force a full rebuild (e.g., `scripts/cmake_package.ps1 -Clean`).
+- **Clean Build**: Use `-Clean` switch to force a full rebuild (e.g., `scripts/windows/cmake_package.ps1 -Clean`).
 
 The script will:
 1.  Run quality checks (anti-patterns, missing sources, encoding).
@@ -100,7 +100,7 @@ The script automatically detects if the 32-bit toolchain is installed (e.g., at 
 To track the progress of modernization efforts (legacy string usage, Win32 type leakage), run:
 
 ```bash
-bash scripts/track_legacy_strings.sh
+bash scripts/linux/track_legacy_strings.sh
 ```
 
 This script provides metrics on:

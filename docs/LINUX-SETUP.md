@@ -9,7 +9,7 @@ YAMY on Linux uses **evdev** (event device) for keyboard capture and **uinput** 
 Run the automated setup script:
 
 ```bash
-sudo ./linux_setup.sh
+sudo ./scripts/linux/linux_setup.sh
 ```
 
 Then **log out and log back in** for group changes to take effect.
@@ -147,7 +147,7 @@ echo "uinput" | sudo tee /etc/modules-load.d/uinput.conf
 **Fix:**
 ```bash
 # Recreate udev rule
-sudo ./linux_setup.sh
+sudo ./scripts/linux/linux_setup.sh
 
 # Or manually trigger:
 sudo udevadm control --reload-rules

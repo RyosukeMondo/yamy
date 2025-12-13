@@ -124,7 +124,7 @@ If pre-built binaries are available:
 YAMY needs special permissions to capture keyboard input and inject key events. Run the setup script:
 
 ```bash
-sudo ./linux_setup.sh
+sudo ./scripts/linux/linux_setup.sh
 ```
 
 This script:

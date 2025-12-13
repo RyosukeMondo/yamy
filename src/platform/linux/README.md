@@ -46,7 +46,7 @@ sudo apt install linux-headers-$(uname -r)
 ### Permission Setup (REQUIRED for input capture)
 **Use the automated setup script:**
 ```bash
-sudo ./linux_setup.sh
+sudo ./scripts/linux/linux_setup.sh
 # Then LOG OUT and LOG BACK IN for group changes to take effect
 ```
 

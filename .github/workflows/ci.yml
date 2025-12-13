@@ -39,7 +39,7 @@ jobs:
             echo "- $FILE" >> $GITHUB_STEP_SUMMARY
           done
           echo ""
-          echo "Run 'clang-format -i <file>' or './scripts/format-code.sh' to fix."
+          echo "Run 'clang-format -i <file>' or './scripts/linux/format-code.sh' to fix."
           # Report but don't fail initially (set exit 1 to enforce)
           echo "::warning::Code formatting issues found in $(echo $UNFORMATTED | wc -w) files"
         else
@@ -94,7 +94,7 @@ jobs:
       run: cmake --build build -j2
 
     - name: Run Static Analysis
-      run: ./scripts/ci_static_analysis.sh
+      run: ./scripts/linux/ci_static_analysis.sh
 
     - name: Check for Win32 type leakage in core
       run: |
@@ -109,7 +109,7 @@ jobs:
 
     - name: Check legacy string usage
       run: |
-        bash scripts/track_legacy_strings.sh > metrics.txt
+        bash scripts/linux/track_legacy_strings.sh > metrics.txt
         LEGACY_COUNT=$(grep "TOTAL legacy string usages:" metrics.txt | awk '{print $5}')
         echo "Legacy string usages: $LEGACY_COUNT"
         # Fail if count increases (baseline: 971)
@@ -120,7 +120,7 @@ jobs:
 
     - name: Check #ifdef usage
       run: |
-        bash scripts/check_ifdef_usage.sh > /dev/null 2>&1
+        bash scripts/linux/check_ifdef_usage.sh > /dev/null 2>&1
         IFDEF_COUNT=$(cat .github/metrics/ifdef_count.txt)
         BASELINE=28
         echo "#ifdef _WIN32 total count: $IFDEF_COUNT (baseline: $BASELINE)"
