@@ -166,7 +166,7 @@
   - _Requirements: 6, 7_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Test engineer with expertise in unit testing and mocking | Task: Create unit tests for Layer 2 substitution in tests/test_event_processor_ut.cpp following requirements 6 and 7. Test with mock substitution tables, verify both substitution and passthrough cases, ensure modifier substitutions tested identically to regular substitutions. | Restrictions: Use mock substitution tables not real .mayu files, test pure function behavior (no side effects), verify modifier keys have no special treatment, cover all code paths, fast execution | _Leverage: GoogleTest mocking capabilities, substitution table structure from EventProcessor | _Requirements: Requirement 6 (Test Coverage), Requirement 7 (Code Consistency - no modifier special cases) | Success: Tests verify substitution lookup correctness, passthrough works when no substitution, modifier substitutions tested same as regular, no special cases detected, > 95% code coverage for Layer 2 function._
 
-- [ ] 3.3 Create unit tests for Layer 3 (yamyToEvdevKeyCode)
+- [x] 3.3 Create unit tests for Layer 3 (yamyToEvdevKeyCode)
   - Files: `tests/test_event_processor_ut.cpp`
   - Test YAMY scan codes map to correct evdev output codes
   - Test scan map is checked BEFORE VK map (scan code 0x0014 → evdev 20 for T, NOT evdev 58 for CAPSLOCK)
