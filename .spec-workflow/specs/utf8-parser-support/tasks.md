@@ -60,7 +60,7 @@
     - **Success**: Function returns true only for valid UTF-8 lead bytes (0xC0-0xFF), not continuation bytes (0x80-0xBF). ASCII handling remains unchanged. Code includes clear comment explaining the UTF-8 lead byte range.
     - **Instructions**: Mark task in-progress [-] in tasks.md. This is a small change but critical for correctness. When complete, log with log-implementation tool (filesModified field). Mark complete [x] in tasks.md.
 
-- [ ] 4. Update Key::operator== to use UTF-8-aware comparison
+- [x] 4. Update Key::operator== to use UTF-8-aware comparison
   - **File**: `src/core/input/keyboard.cpp` (modify existing `Key::operator==` around line 40)
   - **Description**: Replace byte-exact `std::find` with UTF-8-aware case-insensitive comparison using `strcasecmp_utf8()` from stringtool.h
   - **Purpose**: Allow key lookups to work with UTF-8 names using case-insensitive comparison, matching the Token class behavior
