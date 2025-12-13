@@ -20,7 +20,7 @@
   - _Requirements: 1, 3, 4_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Systems programmer with expertise in C++ and keycode mapping | Task: Enhance yamyToEvdevKeyCode() in src/platform/linux/keycode_mapping.cpp with detailed logging following requirements 1, 3, and 4. Log format: [LAYER3:OUT] yamy 0xYYYY → evdev Z (KEY_NAME). Indicate which map (US scan, JP scan, or VK) was used. | Restrictions: Do not modify the scan-map-first priority fix already applied, maintain < 1ms performance, use existing getKeyName() helper for key names, no breaking changes | _Leverage: Existing PLATFORM_LOG_INFO macro, getKeyName() function in keycode_mapping.cpp | _Requirements: Requirements 1 (Universal Event Processing), 3 (Layer Completeness), 4 (Comprehensive Logging) | Success: All Layer 3 outputs logged with YAMY code, evdev code, key name, and source map. Clear indication when key is unmapped. No performance impact._
 
-- [ ] 1.3 Add Layer 2 substitution logging to engine.cpp
+- [x] 1.3 Add Layer 2 substitution logging to engine.cpp
   - Files: `src/core/engine/engine.cpp`
   - Add logging before substitution lookup: `[LAYER2:IN] Processing yamy 0xYYYY`
   - Add logging after substitution: `[LAYER2:SUBST] 0xAAAA → 0xBBBB` or `[LAYER2:PASSTHROUGH] 0xAAAA (no substitution)`

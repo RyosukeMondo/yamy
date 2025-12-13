@@ -10,6 +10,7 @@
 #include "mayurc.h"
 #include "stringtool.h"
 #include "windowstool.h"
+#include "../utils/platform_logger.h"
 
 #include <iomanip>
 
@@ -303,9 +304,24 @@ void Engine::beginGeneratingKeyboardEvents(
     bool isPhysicallyPressed
     = cnew.m_mkey.m_modifier.isPressed(Modifier::Type_Down);
 
+    // Layer 2: Log input to substitution lookup
+    if (cnew.m_mkey.m_key && cnew.m_mkey.m_key->getScanCodesSize() > 0) {
+        const ScanCode *sc = cnew.m_mkey.m_key->getScanCodes();
+        PLATFORM_LOG_INFO("Layer2", "[LAYER2:IN] Processing yamy 0x%04X", sc[0].m_scan);
+    }
+
     // substitute
     ModifiedKey mkey = m_setting->m_keyboard.searchSubstitute(cnew.m_mkey);
     if (mkey.m_key) {
+        // Layer 2: Log substitution occurred
+        if (cnew.m_mkey.m_key && cnew.m_mkey.m_key->getScanCodesSize() > 0 &&
+            mkey.m_key && mkey.m_key->getScanCodesSize() > 0) {
+            const ScanCode *input_sc = cnew.m_mkey.m_key->getScanCodes();
+            const ScanCode *output_sc = mkey.m_key->getScanCodes();
+            PLATFORM_LOG_INFO("Layer2", "[LAYER2:SUBST] 0x%04X -> 0x%04X",
+                input_sc[0].m_scan, output_sc[0].m_scan);
+        }
+
         cnew.m_mkey = mkey;
         if (isPhysicallyPressed) {
             cnew.m_mkey.m_modifier.off(Modifier::Type_Up);
@@ -327,6 +343,13 @@ void Engine::beginGeneratingKeyboardEvents(
             m_log << "* substitute" << std::endl;
         }
         outputToLog(mkey.m_key, cnew.m_mkey, 1);
+    } else {
+        // Layer 2: Log passthrough (no substitution)
+        if (cnew.m_mkey.m_key && cnew.m_mkey.m_key->getScanCodesSize() > 0) {
+            const ScanCode *sc = cnew.m_mkey.m_key->getScanCodes();
+            PLATFORM_LOG_INFO("Layer2", "[LAYER2:PASSTHROUGH] 0x%04X (no substitution)",
+                sc[0].m_scan);
+        }
     }
 
     // for prefix key
