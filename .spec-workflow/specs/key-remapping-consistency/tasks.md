@@ -187,17 +187,30 @@
   - _Requirements: 1, 2, 6_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Integration test engineer with expertise in end-to-end test scenarios | Task: Create integration tests for complete layer composition in tests/test_event_processor_it.cpp following requirements 1, 2, and 6. Test EventProcessor with real substitution table, verify complete transformations, test event type preservation, test known working and previously broken keys. | Restrictions: Use real EventProcessor class, load actual substitution table from config_clean.mayu, test both PRESS and RELEASE events, verify complete transformation pipeline, no mocking of layer functions (integration test) | _Leverage: EventProcessor class from Phase 2, config_clean.mayu for real substitution table, GoogleTest for integration testing | _Requirements: Requirement 1 (Universal Event Processing), Requirement 2 (Event Type Consistency), Requirement 6 (Test Coverage) | Success: Integration tests verify end-to-end transformations, W→A works, N→LShift works, event types preserved, passthrough works, tests use real components not mocks, all critical substitutions tested._
 
-- [ ] 3.5 Create Python automated test framework
-  - Files: `tests/automated_keymap_test.py`
-  - Implement `AutomatedKeymapTest` class as designed
-  - Parse config_clean.mayu to extract all 87 substitutions
-  - Implement `inject_key()` using yamy-test utility from task 1.5
-  - Implement `verify_output()` by parsing debug log [LAYER3:OUT] entries
-  - Implement `test_substitution()` to test PRESS and RELEASE for one key
-  - Implement `test_all_substitutions()` to run all 174 tests (87 keys × 2 event types)
+- [x] 3.5 Create Python automated test framework
+  - Files: `tests/automated_keymap_test.py`, `tests/README_AUTOMATED_TESTING.md`
+  - **STATUS**: COMPLETED
+  - **IMPLEMENTATION**:
+    - Implemented `AutomatedKeymapTest` class with full autonomous testing capabilities
+    - `MayuParser`: Parses .mayu config files, extracts 82 substitutions from config_clean.mayu
+    - `KeyCodeMapper`: Maps 80+ YAMY key names to/from evdev codes (letters, numbers, F-keys, JP-specific keys)
+    - `inject_key()`: Injects synthetic PRESS/RELEASE events via yamy-test utility
+    - `verify_output()`: Parses debug logs for [LAYER3:OUT] entries to verify output evdev codes
+    - `test_substitution()`: Tests single substitution for both PRESS and RELEASE events
+    - `test_all_substitutions()`: Tests all 82 substitutions × 2 event types = 164 total tests
+    - Zero user interaction - fully autonomous testing framework
+    - Comprehensive error handling and graceful degradation
+    - Clear pass/fail reporting with statistics and failure details
+  - **FEATURES**:
+    - Command-line interface with --config, --yamy-test, --log options
+    - Auto-detects yamy-test binary location
+    - Warns if YAMY not running before starting tests
+    - Generates detailed reports with pass rate percentage
+    - Lists all failures with expected vs actual evdev codes
+    - Python 3 stdlib only - no external dependencies
   - _Leverage: yamy-test inject utility, log parsing patterns_
   - _Requirements: 5, 6_
-  - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Test automation engineer with expertise in Python and test frameworks | Task: Create autonomous test framework in tests/automated_keymap_test.py following requirements 5 and 6. Implement AutomatedKeymapTest class with methods to parse .mayu config, inject synthetic events, verify output from logs, test all substitutions without user interaction. Follow exact design from design.md Component 4. | Restrictions: Zero user interaction required, must parse .mayu files to extract substitutions, use yamy-test inject for event injection, parse logs for verification, handle YAMY not running gracefully, Python 3 only (no external dependencies), robust error handling | _Leverage: yamy-test inject utility from task 1.5, log format with [LAYER3:OUT] markers, config_clean.mayu structure | _Requirements: Requirement 5 (Automated Testing - Zero User Interaction), Requirement 6 (Test Coverage) | Success: Framework successfully parses .mayu files, injects events autonomously, verifies output from logs, tests all 87 substitutions × 2 event types, runs without user interaction, generates clear pass/fail report._
+  - _Commit: ba63824 "feat(spec): create Python automated test framework (task 3.5)"_
 
 - [ ] 3.6 Create test report generator
   - Files: `tests/generate_test_report.py`
