@@ -120,7 +120,7 @@
     - **Success**: Integration tests verify complete UTF-8 key definition flow works end-to-end. Tests confirm Japanese key names can be defined and looked up. Tests verify English aliases work after Japanese primary names. Tests confirm error recovery when one definition is invalid. All tests pass consistently.
     - **Instructions**: Mark in-progress [-]. Create realistic test .mayu files with Japanese key names. When complete, log with log-implementation tool including filesCreated, test scenarios covered. Mark complete [x].
 
-- [ ] 7. Add end-to-end test with actual Japanese keyboard layout (109.mayu)
+- [x] 7. Add end-to-end test with actual Japanese keyboard layout (109.mayu)
   - **Files**: `tests/e2e/japanese_keyboard_layout_test.cpp` (new file), test with actual `keymaps/109.mayu`
   - **Description**: Create end-to-end test that loads the real 109.mayu file with all 169 Japanese key definitions and verifies they all parse correctly
   - **Purpose**: Validate the fix works with the actual production Japanese keyboard layout file
