@@ -362,6 +362,7 @@ int main(int argc, char* argv[])
     });
 
     // Start IPC control server
+    std::cerr << "DEBUG: About to start IPC control server" << std::endl;
     if (controlServer.start()) {
         std::cout << "IPC control server started at: " << controlServer.socketPath() << std::endl;
     } else {

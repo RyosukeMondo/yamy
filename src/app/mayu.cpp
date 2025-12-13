@@ -1171,47 +1171,13 @@ public:
         m_usingSN = wtsRegisterSessionNotification(m_hwndTaskTray,
                     NOTIFY_FOR_THIS_SESSION);
 
-        yamy::debug::DebugConsole::LogInfo("Mayu: Creating log dialog...");
-        DlgLogData dld;
-        dld.m_log = &m_log;
-        dld.m_hwndTaskTray = m_hwndTaskTray;
-        dld.m_windowSystem = m_windowSystem;
-        m_hwndLog =
-            CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_log), nullptr,
-                              (DLGPROC)dlgLog_dlgProc, (LPARAM)&dld);
-        if (!m_hwndLog) {
-            DWORD error = GetLastError();
-            yamy::debug::DebugConsole::LogWarning("Failed to create log dialog. Error: " + std::to_string(error) + " (non-critical, continuing...)");
-        } else {
-            yamy::debug::DebugConsole::LogInfo("Mayu: Log dialog created successfully!");
-        }
-
-        yamy::debug::DebugConsole::LogInfo("Mayu: Creating investigate dialog...");
-        DlgInvestigateData did;
-        did.m_engine = &m_engine;
-        did.m_hwndLog = m_hwndLog;
-        did.m_windowSystem = m_windowSystem;
-        m_hwndInvestigate =
-            CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_investigate), nullptr,
-                              (DLGPROC)dlgInvestigate_dlgProc, (LPARAM)&did);
-        if (!m_hwndInvestigate) {
-            DWORD error = GetLastError();
-            yamy::debug::DebugConsole::LogWarning("Failed to create investigate dialog. Error: " + std::to_string(error) + " (non-critical, continuing...)");
-        } else {
-            yamy::debug::DebugConsole::LogInfo("Mayu: Investigate dialog created successfully!");
-        }
-
-        yamy::debug::DebugConsole::LogInfo("Mayu: Creating version dialog...");
-        m_hwndVersion =
-            CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_version),
-                              nullptr, (DLGPROC)dlgVersion_dlgProc,
-                              (LPARAM)_T(""));
-        if (!m_hwndVersion) {
-            DWORD error = GetLastError();
-            yamy::debug::DebugConsole::LogWarning("Failed to create version dialog. Error: " + std::to_string(error) + " (non-critical, continuing...)");
-        } else {
-            yamy::debug::DebugConsole::LogInfo("Mayu: Version dialog created successfully!");
-        }
+        // Skip dialog creation - these dialogs crash in administrator mode
+        // They are not essential for core keyboard remapping functionality
+        yamy::debug::DebugConsole::LogInfo("Mayu: Skipping debug dialog creation (not needed for core functionality)...");
+        m_hwndLog = nullptr;
+        m_hwndInvestigate = nullptr;
+        m_hwndVersion = nullptr;
+        yamy::debug::DebugConsole::LogInfo("Mayu: Debug dialogs skipped, continuing with core initialization...");
 
         // attach log
 #ifdef LOG_TO_FILE
