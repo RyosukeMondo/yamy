@@ -524,16 +524,48 @@
   - _Requirements: All requirements_
   - _Commit: [Next commit]_
 
-- [ ] 5.3 Create developer onboarding guide
+- [x] 5.3 Create developer onboarding guide
   - Files: `docs/DEVELOPER_GUIDE.md`
-  - Explain the 3-layer architecture for new developers
-  - Explain how to add new key mappings
-  - Explain how to run tests during development
-  - Explain debugging with comprehensive logs
-  - Provide examples of common modifications
+  - **STATUS**: COMPLETED
+  - **IMPLEMENTATION**:
+    - Created comprehensive DEVELOPER_GUIDE.md (1000+ lines)
+    - Covers all aspects: Quick Start (5 min), Architecture Overview, 3-Layer Flow, Adding Mappings, Testing, Debugging
+    - 10 main sections: Quick Start, Architecture, Event Flow, Mappings, Testing, Debugging, Common Tasks, Best Practices, Troubleshooting, Getting Help
+    - Beginner-friendly with step-by-step examples and clear explanations
+    - 3 detailed scenarios for adding key mappings: new keyboard key, new layout, .mayu substitutions
+    - Complete testing guide: unit tests, integration tests, E2E tests with templates
+    - Comprehensive debugging section with log analysis, common scenarios, performance profiling
+    - 3 common development tasks with complete examples: new syntax feature, performance optimization, debug test failure
+    - Best practices for code style, architecture, testing, and documentation
+    - Troubleshooting section covering build, runtime, test, and performance issues
+  - **CONTENT HIGHLIGHTS**:
+    - Quick Start: Build, run, first contribution in 5 minutes
+    - Architecture diagram showing system components
+    - Complete event flow examples with real logs
+    - Adding new keys: 5-step process with code examples
+    - Adding new layouts: German QWERTZ example
+    - Test pyramid explaining 3-tier strategy
+    - Test templates for unit, integration, E2E tests
+    - Log format explanation with debugging examples
+    - Common debugging scenarios with solutions
+    - Development tasks: toggle keys, performance optimization, test debugging
+    - Best practices: code style, architecture principles, testing guidelines
+    - FAQ with 8+ common questions and answers
+  - **QUALITY**:
+    - Beginner-friendly language with clear explanations
+    - Step-by-step instructions for all tasks
+    - Real code examples from actual codebase
+    - Actionable troubleshooting with solutions
+    - Cross-references to other documentation
+    - Consistent formatting and structure
+  - Explain the 3-layer architecture for new developers ✅
+  - Explain how to add new key mappings ✅
+  - Explain how to run tests during development ✅
+  - Explain debugging with comprehensive logs ✅
+  - Provide examples of common modifications ✅
   - _Leverage: Complete implementation and documentation_
   - _Requirements: Developer usability (from NFR)_
-  - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Developer advocate with expertise in onboarding documentation | Task: Create developer onboarding guide in docs/DEVELOPER_GUIDE.md. Explain 3-layer architecture, how to add mappings, run tests, debug with logs, common modifications. Make approachable for new contributors. | Restrictions: Must be beginner-friendly, include step-by-step examples, provide common troubleshooting, explain testing workflow, reference automated tests for learning, consistent with project documentation style, actionable and practical | _Leverage: Complete implementation from all phases, test framework documentation, architecture docs from task 5.2 | _Requirements: Developer usability from non-functional requirements | Success: Guide enables new developers to understand architecture in < 5 minutes (requirement), provides clear examples, testing workflow explained, debugging process documented, new contributors can add mappings confidently._
+  - _Commit: [Next commit]_
 
 - [ ] 5.4 Clean up code and remove deprecated implementations
   - Files: Various (any old special-case code not yet removed)
