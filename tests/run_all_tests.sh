@@ -42,7 +42,8 @@ AUTOMATED_TEST="$SCRIPT_DIR/automated_keymap_test.py"
 REPORT_GENERATOR="$SCRIPT_DIR/generate_test_report.py"
 
 # Log files
-YAMY_LOG="$LOG_DIR/yamy_test.log"
+# YAMY writes its debug output to /tmp/yamy-debug.log by default
+YAMY_LOG="$LOG_DIR/yamy-debug.log"
 TEST_RESULTS_JSON="$LOG_DIR/test_results.json"
 TEST_REPORT_HTML="$LOG_DIR/test_report.html"
 
@@ -145,6 +146,14 @@ cleanup() {
     # Stop any stray YAMY processes we might have started
     pkill -x yamy 2>/dev/null || true
 
+    # Restore session backup if it exists
+    local session_file="$HOME/.config/yamy/session.json"
+    local session_backup="$HOME/.config/yamy/session.json.backup"
+    if [ -f "$session_backup" ]; then
+        mv "$session_backup" "$session_file"
+        print_info "Restored session backup"
+    fi
+
     print_info "Cleanup complete"
 }
 
@@ -231,15 +240,40 @@ preflight_checks() {
 start_yamy() {
     print_header "Starting YAMY in Test Mode"
 
-    # Clear old log file
+    # Clear old log file (YAMY will recreate it)
     rm -f "$YAMY_LOG"
-    touch "$YAMY_LOG"
+
+    # Setup session file to load the test config
+    local session_file="$HOME/.config/yamy/session.json"
+    local session_backup="$HOME/.config/yamy/session.json.backup"
+
+    # Backup existing session if it exists
+    if [ -f "$session_file" ]; then
+        cp "$session_file" "$session_backup"
+        print_info "Backed up existing session file"
+    fi
+
+    # Create session directory if it doesn't exist
+    mkdir -p "$(dirname "$session_file")"
+
+    # Create test session file pointing to test config with engine running
+    cat > "$session_file" << EOF
+{
+  "activeConfigPath": "$MAYU_CONFIG",
+  "engineWasRunning": true,
+  "savedTimestamp": $(date +%s),
+  "windowPositions": {}
+}
+EOF
+    print_info "Created test session file with config: $MAYU_CONFIG"
 
     # Start YAMY with debug logging
+    # Engine logs (keycode processing) go to stderr
+    # GUI logs go to /tmp/yamy-debug.log internally
     print_info "Starting YAMY with debug logging enabled..."
-    print_info "Log file: $YAMY_LOG"
+    print_info "Engine log file (stderr): $YAMY_LOG"
 
-    YAMY_DEBUG_KEYCODE=1 "$YAMY_BIN" --config "$MAYU_CONFIG" > "$YAMY_LOG" 2>&1 &
+    YAMY_DEBUG_KEYCODE=1 "$YAMY_BIN" 2> "$YAMY_LOG" &
     YAMY_PID=$!
 
     print_info "YAMY PID: $YAMY_PID"
@@ -252,6 +286,13 @@ start_yamy() {
             print_error "YAMY process died during startup"
             print_info "Log output:"
             cat "$YAMY_LOG"
+
+            # Restore session backup
+            if [ -f "$session_backup" ]; then
+                mv "$session_backup" "$session_file"
+                print_info "Restored session backup"
+            fi
+
             return 1
         fi
 
@@ -274,6 +315,13 @@ start_yamy() {
     # Verify YAMY is still running
     if ! kill -0 "$YAMY_PID" 2>/dev/null; then
         print_error "YAMY process not running after startup"
+
+        # Restore session backup
+        if [ -f "$session_backup" ]; then
+            mv "$session_backup" "$session_file"
+            print_info "Restored session backup"
+        fi
+
         return 1
     fi
 
