@@ -1,4 +1,4 @@
-#include "config_search_panel.h"
+﻿#include "config_search_panel.h"
 
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QHBoxLayout>

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "core/ipc_messages.h"
 #include <memory>

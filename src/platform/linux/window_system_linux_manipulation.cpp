@@ -1,4 +1,4 @@
-#include "window_system_linux_manipulation.h"
+﻿#include "window_system_linux_manipulation.h"
 #include "x11_connection.h"
 #include "../../utils/platform_logger.h"
 #include <X11/Xlib.h>

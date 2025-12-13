@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // stringtool.h
 // Cross-platform string utilities using UTF-8 std::string
@@ -20,8 +20,10 @@
 
 // Platform-independent case-insensitive string comparison
 #ifdef _WIN32
+#  include <tchar.h>
 #  include <string.h>
 #  define strcasecmp_platform _stricmp
+#  define strncasecmp _strnicmp
 #  define tcslcpy wcslcpy
 
 // On Windows, these are wide-character types

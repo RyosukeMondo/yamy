@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // window_system_linux_monitor.h - Monitor support (Track 5)
 

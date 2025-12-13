@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_WINDOW_CLING_TO_RIGHT_H
 #define _CMD_WINDOW_CLING_TO_RIGHT_H
 

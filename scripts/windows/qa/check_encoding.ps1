@@ -5,7 +5,7 @@
 
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$RepoRoot = Split-Path -Parent $ScriptDir
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 $SrcDir = Join-Path $RepoRoot "src"
 
 Write-Host "Checking for UTF-8 BOM in source files..." -ForegroundColor Cyan

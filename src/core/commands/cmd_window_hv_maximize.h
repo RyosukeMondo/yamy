@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_WINDOW_HV_MAXIMIZE_H
 #define _CMD_WINDOW_HV_MAXIMIZE_H
 

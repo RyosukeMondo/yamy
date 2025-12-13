@@ -1,4 +1,4 @@
-#include "sound_manager.h"
+﻿#include "sound_manager.h"
 
 #if defined(QT_CORE_LIB)
 #include <QUrl>

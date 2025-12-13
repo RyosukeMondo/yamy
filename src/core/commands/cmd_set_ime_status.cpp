@@ -1,4 +1,4 @@
-#include "cmd_set_ime_status.h"
+﻿#include "cmd_set_ime_status.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 

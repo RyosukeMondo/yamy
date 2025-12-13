@@ -1,4 +1,4 @@
-#include "cmd_emacs_edit_kill_line_func.h"
+﻿#include "cmd_emacs_edit_kill_line_func.h"
 #include "../engine/engine.h"
 
 void Command_EmacsEditKillLineFunc::exec(Engine *i_engine, FunctionParam *i_param) const

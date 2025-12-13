@@ -1,4 +1,4 @@
-#include "cmd_log_clear.h"
+﻿#include "cmd_log_clear.h"
 #include "../engine/engine.h"
 
 void Command_LogClear::exec(Engine *i_engine, FunctionParam *i_param) const

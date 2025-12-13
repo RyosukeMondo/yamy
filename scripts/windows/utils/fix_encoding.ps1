@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$RepoRoot = Resolve-Path "$PSScriptRoot/.."
+$RepoRoot = Resolve-Path "$PSScriptRoot/../.."
 $SrcRoot = "$RepoRoot/src"
 
 Write-Host "Fixing UTF-8 BOM in source files: $SrcRoot" -ForegroundColor Cyan
@@ -35,7 +35,13 @@ foreach ($file in $Files) {
     # logic to check if needs fix or just force fix?
     # Forcing fix is safer to ensure consistency, but let's check first to avoid unnecessary writes
     
-    $bytes = Get-Content -Path $file.FullName -Encoding Byte -TotalCount 3
+    $bytes = $null
+    if ($PSVersionTable.PSVersion.Major -ge 6) {
+        $bytes = Get-Content -Path $file.FullName -AsByteStream -TotalCount 3
+    }
+    else {
+        $bytes = Get-Content -Path $file.FullName -Encoding Byte -TotalCount 3
+    }
     $hasBom = ($null -ne $bytes -and $bytes.Count -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)
     
     if (-not $hasBom) {

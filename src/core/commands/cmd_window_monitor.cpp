@@ -1,4 +1,4 @@
-#include "cmd_window_monitor.h"
+﻿#include "cmd_window_monitor.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "cmd_window_monitor_to.h" // Reuse logic

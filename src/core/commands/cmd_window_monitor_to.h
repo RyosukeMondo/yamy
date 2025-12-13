@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_WINDOW_MONITOR_TO_H
 #define _CMD_WINDOW_MONITOR_TO_H
 

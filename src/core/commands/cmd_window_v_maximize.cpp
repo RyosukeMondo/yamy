@@ -1,4 +1,4 @@
-#include "cmd_window_v_maximize.h"
+﻿#include "cmd_window_v_maximize.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "cmd_window_hv_maximize.h" // Reuse logic

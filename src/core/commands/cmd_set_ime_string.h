@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_SET_IME_STRING_H
 #define _CMD_SET_IME_STRING_H
 

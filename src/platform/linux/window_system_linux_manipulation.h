@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // window_system_linux_manipulation.h - Window manipulation (Track 2)
 

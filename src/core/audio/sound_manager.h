@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if defined(QT_MULTIMEDIA_AVAILABLE)
 #include <QSoundEffect>

@@ -1,4 +1,4 @@
-#include "cmd_plugin.h"
+﻿#include "cmd_plugin.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/stringtool.h"

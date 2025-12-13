@@ -1,4 +1,4 @@
-#include "dialog_investigate_qt.h"
+﻿#include "dialog_investigate_qt.h"
 #include "crosshair_widget_qt.h"
 #include "dialog_condition_generator_qt.h"
 #include "../../core/engine/engine.h"

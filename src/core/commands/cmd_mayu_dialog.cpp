@@ -1,4 +1,4 @@
-#include "cmd_mayu_dialog.h"
+﻿#include "cmd_mayu_dialog.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 

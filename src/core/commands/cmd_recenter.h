@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_RECENTER_H
 #define _CMD_RECENTER_H
 

@@ -4,7 +4,7 @@
 
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$RepoRoot = Split-Path -Parent $ScriptDir
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 $CMakeFile = Join-Path $RepoRoot "CMakeLists.txt"
 $SrcDir = Join-Path $RepoRoot "src"
 
@@ -25,12 +25,12 @@ foreach ($file in $allCppFiles) {
     # Check if this path exists in CMakeLists.txt
     # We do a simple string check. Ideally we'd parse the cmake file, but this is a heuristic.
     if ($cmakeContent -notmatch [regex]::Escape($relativePath)) {
-    # Exclude known non-build files
-    # - tests/: Test sources are handled separately or in yamy_test
-    # - ts4mayu/: Legacy touchpad support, not currently in CMake build
-    if ($relativePath -match "^src/tests/" -or $relativePath -match "^src/ts4mayu/") {
-        continue
-    }
+        # Exclude known non-build files
+        # - tests/: Test sources are handled separately or in yamy_test
+        # - ts4mayu/: Legacy touchpad support, not currently in CMake build
+        if ($relativePath -match "^src/tests/" -or $relativePath -match "^src/ts4mayu/") {
+            continue
+        }
     }
 }
 
@@ -41,7 +41,8 @@ if ($missingFiles.Count -gt 0) {
     }
     Write-Host "`nPlease add these files to CMakeLists.txt to avoid linker errors." -ForegroundColor Yellow
     exit 1
-} else {
+}
+else {
     Write-Host "All .cpp files appear to be included in CMakeLists.txt." -ForegroundColor Green
     exit 0
 }

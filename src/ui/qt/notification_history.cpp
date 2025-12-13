@@ -1,4 +1,4 @@
-#include "notification_history.h"
+﻿#include "notification_history.h"
 #include <QLabel>
 #include <QMetaObject>
 

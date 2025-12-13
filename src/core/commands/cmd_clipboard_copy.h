@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_CLIPBOARD_COPY_H
 #define _CMD_CLIPBOARD_COPY_H
 

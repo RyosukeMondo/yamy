@@ -1,4 +1,4 @@
-#include "dialog_condition_generator_qt.h"
+﻿#include "dialog_condition_generator_qt.h"
 #include <QClipboard>
 #include <QApplication>
 #include <QGridLayout>

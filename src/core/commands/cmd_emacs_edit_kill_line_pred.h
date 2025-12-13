@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_EMACS_EDIT_KILL_LINE_PRED_H
 #define _CMD_EMACS_EDIT_KILL_LINE_PRED_H
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_MOUSE_HOOK_H
 #define _CMD_MOUSE_HOOK_H
 

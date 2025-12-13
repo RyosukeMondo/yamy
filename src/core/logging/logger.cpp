@@ -1,8 +1,9 @@
-#include "logger.h"
+﻿#include "logger.h"
 #include "log_entry.h"
 #include "../platform/platform_time.h"
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
 namespace yamy {
 namespace logging {

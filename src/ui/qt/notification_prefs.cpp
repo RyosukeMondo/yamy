@@ -1,4 +1,4 @@
-#include "notification_prefs.h"
+﻿#include "notification_prefs.h"
 #include <QDebug>
 
 namespace yamy::ui {

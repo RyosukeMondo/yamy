@@ -1,4 +1,4 @@
-#include "engine_adapter.h"
+﻿#include "engine_adapter.h"
 #include "../core/engine/engine.h"
 #include "../core/settings/setting.h"
 #include "../core/settings/session_manager.h"

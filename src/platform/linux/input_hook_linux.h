@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // input_hook_linux.h - evdev input capture (Track 9 Phase 4-5)
 

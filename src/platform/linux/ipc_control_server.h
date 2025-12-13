@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ipc_control_server.h - IPC server for yamy-ctl control commands
 //

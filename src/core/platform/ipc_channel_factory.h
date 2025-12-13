@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "ipc_channel_interface.h"
 #include "ipc_channel_null.h"

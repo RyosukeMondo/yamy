@@ -1,4 +1,4 @@
-#include "cmd_describe_bindings.h"
+﻿#include "cmd_describe_bindings.h"
 #include "../engine/engine.h"
 
 void Command_DescribeBindings::exec(Engine *i_engine, FunctionParam *i_param) const

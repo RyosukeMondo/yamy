@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifndef _ENGINE_STATE_H
 #define _ENGINE_STATE_H

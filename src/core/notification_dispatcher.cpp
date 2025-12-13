@@ -1,4 +1,4 @@
-#include "notification_dispatcher.h"
+﻿#include "notification_dispatcher.h"
 #include "../utils/platform_logger.h"
 #include <algorithm>
 

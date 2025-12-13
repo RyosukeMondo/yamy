@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_SHELL_EXECUTE_H
 #define _CMD_SHELL_EXECUTE_H
 

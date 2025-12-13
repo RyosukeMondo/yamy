@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifndef _PLATFORM_IPC_DEFS_H
 #define _PLATFORM_IPC_DEFS_H

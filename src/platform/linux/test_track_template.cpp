@@ -1,4 +1,4 @@
-// Template for testing individual tracks
+﻿// Template for testing individual tracks
 // Copy and modify for each track
 
 #include <iostream>

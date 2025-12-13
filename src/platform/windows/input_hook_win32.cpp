@@ -1,4 +1,4 @@
-#include "input_hook_win32.h"
+﻿#include "input_hook_win32.h"
 #include "../../core/input/input_event.h" // Needed for constants if we used them, but we use raw values mostly
 #include "hook.h"
 #include "misc.h"

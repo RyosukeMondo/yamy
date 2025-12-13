@@ -1,4 +1,4 @@
-#include "cmd_mouse_hook.h"
+﻿#include "cmd_mouse_hook.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../window/window_system.h" // For WindowPoint

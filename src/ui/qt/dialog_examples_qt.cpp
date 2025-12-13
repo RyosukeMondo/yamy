@@ -1,4 +1,4 @@
-#include "dialog_examples_qt.h"
+﻿#include "dialog_examples_qt.h"
 #include <QClipboard>
 #include <QApplication>
 #include <QFileDialog>

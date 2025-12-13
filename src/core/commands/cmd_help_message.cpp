@@ -1,4 +1,4 @@
-#include "cmd_help_message.h"
+﻿#include "cmd_help_message.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 

@@ -529,9 +529,9 @@ endif()
 if(WIN32)
     if(CMAKE_HOST_WIN32)
         add_custom_command(TARGET yamy_engine_new PRE_BUILD
-            COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/windows/check_missing_sources.ps1
-            COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/windows/check_header_guards.ps1
-            COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/windows/check_encoding.ps1
+            COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/windows/qa/check_missing_sources.ps1
+            COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/windows/qa/check_header_guards.ps1
+            COMMAND powershell -ExecutionPolicy Bypass -File ${CMAKE_SOURCE_DIR}/scripts/windows/qa/check_antipatterns.ps1
             COMMENT "Running QA Checks: Sources, Header Guards, Encoding..."
             VERBATIM
         )
@@ -1621,6 +1621,57 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
     )
 endif()
 
+if(WIN32)
+    # Install main executable (Launcher)
+    install(TARGETS yamy_launcher
+        RUNTIME DESTINATION .
+        COMPONENT runtime
+    )
+
+    # Install Engine (if built separately, though currently linked or same as launcher depending on config)
+    # yamy_engine_new is the main logic
+    install(TARGETS yamy_engine_new
+        RUNTIME DESTINATION .
+        COMPONENT runtime
+    )
+
+    # Install Hook DLL
+    install(TARGETS yamy_hook
+        RUNTIME DESTINATION .
+        COMPONENT runtime
+    )
+
+    # Install Helper (32-bit on 64-bit OS)
+    if(TARGET yamyd)
+        install(TARGETS yamyd
+            RUNTIME DESTINATION .
+            COMPONENT runtime
+        )
+    endif()
+
+    # Install keymaps
+    install(DIRECTORY keymaps/
+        DESTINATION keymaps
+        COMPONENT configuration
+        FILES_MATCHING PATTERN "*.mayu"
+    )
+
+    # Install docs
+    install(DIRECTORY docs/
+        DESTINATION docs
+        COMPONENT documentation
+    )
+    install(FILES docs/readme.txt DESTINATION .)
+
+    # Install scripts (launchers)
+    install(FILES 
+        scripts/windows/launch_yamy.bat
+        scripts/windows/launch_yamy_admin.bat
+        DESTINATION .
+        COMPONENT runtime
+    )
+endif()
+
 # -----------------------------------------------------------------------------
 # CPack Configuration for Package Generation
 # -----------------------------------------------------------------------------
@@ -1734,6 +1785,8 @@ set(CPACK_RPM_DEFAULT_GROUP "root")
 # Enable the generators
 if(UNIX AND NOT APPLE)
     set(CPACK_GENERATOR "DEB;RPM;TGZ")
+elseif(WIN32)
+    set(CPACK_GENERATOR "ZIP")
 endif()
 
 # Include CPack module

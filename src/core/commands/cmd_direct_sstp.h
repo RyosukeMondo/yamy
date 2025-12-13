@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_DIRECT_SSTP_H
 #define _CMD_DIRECT_SSTP_H
 

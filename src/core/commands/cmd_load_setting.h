@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_LOAD_SETTING_H
 #define _CMD_LOAD_SETTING_H
 

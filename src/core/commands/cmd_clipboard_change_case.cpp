@@ -1,4 +1,4 @@
-#include "cmd_clipboard_change_case.h"
+﻿#include "cmd_clipboard_change_case.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 

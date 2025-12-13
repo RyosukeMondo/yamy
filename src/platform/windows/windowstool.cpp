@@ -1,4 +1,4 @@
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // windowstool.cpp
 
 
@@ -516,7 +516,7 @@ std::string pathRemoveFileSpec(const std::string &i_path)
     const char *b = strrchr(str, '\\');
     const char *s = strrchr(str, '/');
     if (b && s) {
-        size_t len = std::min(b - str, s - str);
+        size_t len = (std::min)(b - str, s - str);
         return i_path.substr(0, len);
     }
     if (b) {

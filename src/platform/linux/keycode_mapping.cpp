@@ -1,4 +1,4 @@
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // keycode_mapping.cpp - evdev ↔ YAMY keycode translation (Track 11)
 // Optimized with std::unordered_map for O(1) constant-time lookups
 

@@ -1,4 +1,4 @@
-#include "dialog_about_qt.h"
+﻿#include "dialog_about_qt.h"
 #include <QPixmap>
 #include <QApplication>
 #include <QDesktopServices>

@@ -1,4 +1,4 @@
-#include "plugin_manager.h"
+﻿#include "plugin_manager.h"
 #include "utils/platform_logger.h"
 
 #include <dlfcn.h>

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _INPUT_DRIVER_WIN32_H
 #define _INPUT_DRIVER_WIN32_H
 

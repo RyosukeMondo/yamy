@@ -1,4 +1,4 @@
-#include "cmd_emacs_edit_kill_line_pred.h"
+﻿#include "cmd_emacs_edit_kill_line_pred.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 

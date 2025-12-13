@@ -1,4 +1,4 @@
-#include "config_manager_dialog.h"
+﻿#include "config_manager_dialog.h"
 #include "config_metadata_dialog.h"
 #include "../../core/settings/config_manager.h"
 #include "../../core/settings/config_validator.h"

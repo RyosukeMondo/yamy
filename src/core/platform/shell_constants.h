@@ -1,7 +1,6 @@
-// shell_constants.h - Cross-platform shell error constants
+﻿// shell_constants.h - Cross-platform shell error constants
 
-#ifndef _SHELL_CONSTANTS_H
-#define _SHELL_CONSTANTS_H
+#pragma once
 
 #ifdef _WIN32
 #include <shellapi.h> // Provides all the constants on Windows
@@ -22,5 +21,3 @@
 #define SE_ERR_PNF              3
 #define SE_ERR_SHARE            26
 #endif
-
-#endif // _SHELL_CONSTANTS_H

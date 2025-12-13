@@ -1,4 +1,4 @@
-#include "cmd_window_move_visibly.h"
+﻿#include "cmd_window_move_visibly.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 

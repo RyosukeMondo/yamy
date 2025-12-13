@@ -1,4 +1,4 @@
-#include "cmd_mouse_wheel.h"
+﻿#include "cmd_mouse_wheel.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 

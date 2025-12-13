@@ -1,4 +1,4 @@
-#include "cmd_window_monitor_to.h"
+﻿#include "cmd_window_monitor_to.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 // #include "../../platform/windows/windowstool.h" // Removed Win32 dependency

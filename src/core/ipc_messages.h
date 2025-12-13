@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "platform/types.h"
 #include <cstdint>

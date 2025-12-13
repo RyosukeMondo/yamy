@@ -1,4 +1,4 @@
-#include "core/platform/thread.h"
+﻿#include "core/platform/thread.h"
 #include <thread>
 #include <chrono>
 #include <pthread.h>

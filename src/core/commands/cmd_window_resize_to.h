@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_WINDOW_RESIZE_TO_H
 #define _CMD_WINDOW_RESIZE_TO_H
 

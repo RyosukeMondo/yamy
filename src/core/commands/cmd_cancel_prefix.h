@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_CANCEL_PREFIX_H
 #define _CMD_CANCEL_PREFIX_H
 

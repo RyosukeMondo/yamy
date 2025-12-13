@@ -1,4 +1,4 @@
-#include "cmd_window_identify.h"
+﻿#include "cmd_window_identify.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/stringtool.h"

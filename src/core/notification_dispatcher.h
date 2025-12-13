@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "platform/ipc_defs.h"
 #include <cstdint>

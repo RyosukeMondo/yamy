@@ -1,4 +1,4 @@
-#include "status_widget_qt.h"
+﻿#include "status_widget_qt.h"
 #include "../../core/engine/engine.h"
 
 #include <QVBoxLayout>

@@ -1,4 +1,4 @@
-#include "notification_sound.h"
+﻿#include "notification_sound.h"
 #include <QApplication>
 #include <QCoreApplication>
 #include <QDir>

@@ -1,4 +1,4 @@
-#include "cmd_window_resize_to.h"
+﻿#include "cmd_window_resize_to.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 

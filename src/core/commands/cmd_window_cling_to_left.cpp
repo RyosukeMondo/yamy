@@ -1,4 +1,4 @@
-#include "cmd_window_cling_to_left.h"
+﻿#include "cmd_window_cling_to_left.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "cmd_window_move_to.h" // Reuse logic

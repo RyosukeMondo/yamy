@@ -1,4 +1,4 @@
-#include "log_stats_panel.h"
+﻿#include "log_stats_panel.h"
 
 #include <QGroupBox>
 #include <QHBoxLayout>

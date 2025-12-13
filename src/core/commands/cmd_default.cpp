@@ -1,4 +1,4 @@
-#include "cmd_default.h"
+﻿#include "cmd_default.h"
 #include "../engine/engine.h"
 
 void Command_Default::exec(Engine *i_engine, FunctionParam *i_param) const

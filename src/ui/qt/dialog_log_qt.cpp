@@ -1,4 +1,4 @@
-#include "dialog_log_qt.h"
+﻿#include "dialog_log_qt.h"
 #include "core/logging/logger.h"
 #include "log_stats_panel.h"
 #include <algorithm>

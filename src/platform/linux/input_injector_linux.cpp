@@ -1,4 +1,4 @@
-#include "core/platform/input_injector_interface.h"
+﻿#include "core/platform/input_injector_interface.h"
 #include "core/platform/platform_exception.h"
 #include "core/input/input_event.h"
 #include "keycode_mapping.h"

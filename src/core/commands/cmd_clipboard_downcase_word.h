@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_CLIPBOARD_DOWNCASE_WORD_H
 #define _CMD_CLIPBOARD_DOWNCASE_WORD_H
 

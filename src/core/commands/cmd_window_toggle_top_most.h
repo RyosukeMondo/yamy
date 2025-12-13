@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_WINDOW_TOGGLE_TOP_MOST_H
 #define _CMD_WINDOW_TOGGLE_TOP_MOST_H
 

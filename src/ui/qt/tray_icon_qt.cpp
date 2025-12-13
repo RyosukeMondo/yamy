@@ -1,4 +1,4 @@
-#include "tray_icon_qt.h"
+﻿#include "tray_icon_qt.h"
 #include "dialog_settings_qt.h"
 #include "dialog_log_qt.h"
 #include "dialog_about_qt.h"

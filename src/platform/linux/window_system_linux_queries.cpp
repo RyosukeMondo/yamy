@@ -1,4 +1,4 @@
-#include "window_system_linux_queries.h"
+﻿#include "window_system_linux_queries.h"
 #include "x11_connection.h"
 #include "../../utils/platform_logger.h"
 #include <X11/Xlib.h>

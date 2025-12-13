@@ -1,4 +1,4 @@
-#include "core/platform/hook_interface.h"
+﻿#include "core/platform/hook_interface.h"
 
 namespace yamy::platform {
 

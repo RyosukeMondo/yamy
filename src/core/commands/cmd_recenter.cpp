@@ -1,4 +1,4 @@
-#include "cmd_recenter.h"
+﻿#include "cmd_recenter.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 

@@ -1,4 +1,4 @@
-#include "config_metadata_dialog.h"
+﻿#include "config_metadata_dialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>

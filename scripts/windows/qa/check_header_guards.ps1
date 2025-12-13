@@ -5,13 +5,13 @@
 
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$RepoRoot = Split-Path -Parent $ScriptDir
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 $SrcDir = Join-Path $RepoRoot "src"
 
 Write-Host "Checking for #pragma once in headers..." -ForegroundColor Cyan
 
 # Find all header files
-$files = Get-ChildItem -Path $SrcDir -Recurse -Include "*.h","*.hpp" | Select-Object -ExpandProperty FullName
+$files = Get-ChildItem -Path $SrcDir -Recurse -Include "*.h", "*.hpp" | Select-Object -ExpandProperty FullName
 
 $missingGuard = @()
 
@@ -23,7 +23,7 @@ foreach ($file in $files) {
     if ($relativePath -match "^src/tests/" -or 
         $relativePath -match "^src/ts4mayu/" -or 
         $relativePath -match "function_friends.h") {
-         continue
+        continue
     }
 
     # Read the first few lines to check for pragma once
@@ -39,7 +39,7 @@ foreach ($file in $files) {
         }
         # If we hit code/ifdef before pragma once, it's likely missing or misplaced (ignoring comments)
         if ($line.Trim().StartsWith("#ifndef") -or $line.Trim().StartsWith("class")) {
-             # Heuristic: old Include Guard style or missing guard
+            # Heuristic: old Include Guard style or missing guard
         }
     }
 
@@ -55,7 +55,8 @@ if ($missingGuard.Count -gt 0) {
     }
     Write-Host "`nPlease add '#pragma once' to the top of these files." -ForegroundColor Yellow
     exit 1
-} else {
+}
+else {
     Write-Host "All headers have #pragma once." -ForegroundColor Green
     exit 0
 }

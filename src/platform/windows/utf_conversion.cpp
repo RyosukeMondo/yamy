@@ -1,4 +1,4 @@
-#include "utf_conversion.h"
+﻿#include "utf_conversion.h"
 #include <windows.h>
 #include <vector>
 

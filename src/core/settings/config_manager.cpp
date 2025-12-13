@@ -1,4 +1,4 @@
-// config_manager.cpp
+﻿// config_manager.cpp
 // Configuration manager implementation
 
 #include "config_manager.h"

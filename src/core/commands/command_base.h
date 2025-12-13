@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _COMMAND_BASE_H
 #define _COMMAND_BASE_H
 

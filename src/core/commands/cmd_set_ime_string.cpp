@@ -1,4 +1,4 @@
-#include "cmd_set_ime_string.h"
+﻿#include "cmd_set_ime_string.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/stringtool.h"

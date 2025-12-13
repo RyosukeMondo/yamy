@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_HELP_VARIABLE_H
 #define _CMD_HELP_VARIABLE_H
 

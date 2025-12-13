@@ -1,4 +1,4 @@
-#include "input_injector_win32.h"
+﻿#include "input_injector_win32.h"
 #include <tchar.h>
 
 namespace yamy::platform {

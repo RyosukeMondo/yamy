@@ -1,4 +1,4 @@
-#include "preferences_dialog.h"
+﻿#include "preferences_dialog.h"
 #include "notification_prefs.h"
 #include "notification_sound.h"
 

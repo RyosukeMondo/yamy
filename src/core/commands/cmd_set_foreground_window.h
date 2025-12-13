@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_SET_FOREGROUND_WINDOW_H
 #define _CMD_SET_FOREGROUND_WINDOW_H
 

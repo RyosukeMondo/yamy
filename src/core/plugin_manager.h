@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifndef _PLUGIN_MANAGER_H
 #define _PLUGIN_MANAGER_H

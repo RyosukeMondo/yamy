@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_LOG_CLEAR_H
 #define _CMD_LOG_CLEAR_H
 

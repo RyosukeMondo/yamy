@@ -1,4 +1,4 @@
-#include "cmd_load_setting.h"
+﻿#include "cmd_load_setting.h"
 #include "../engine/engine.h"
 #include "../utils/stringtool.h"
 #include <regex>

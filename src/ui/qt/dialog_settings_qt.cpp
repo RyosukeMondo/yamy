@@ -1,4 +1,4 @@
-#include "dialog_settings_qt.h"
+﻿#include "dialog_settings_qt.h"
 #include "notification_sound.h"
 #include "notification_prefs.h"
 #include <QFileDialog>

@@ -1,4 +1,4 @@
-#include "cmd_direct_sstp.h"
+﻿#include "cmd_direct_sstp.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "windowstool.h" // For loadString (platform-specific)

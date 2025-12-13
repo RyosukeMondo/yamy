@@ -1,4 +1,4 @@
-#include "core/platform/thread.h"
+﻿#include "core/platform/thread.h"
 #include <windows.h>
 #include <process.h>
 

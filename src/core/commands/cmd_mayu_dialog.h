@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_MAYU_DIALOG_H
 #define _CMD_MAYU_DIALOG_H
 

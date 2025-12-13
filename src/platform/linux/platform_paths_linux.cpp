@@ -1,4 +1,4 @@
-// platform_paths_linux.cpp - Linux implementation of path utilities
+﻿// platform_paths_linux.cpp - Linux implementation of path utilities
 
 #include "platform_paths.h"
 #include "misc.h"

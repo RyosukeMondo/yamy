@@ -1,7 +1,6 @@
-// utf_conversion.h - Linux stub (UTF-8 is native, no conversion needed)
+﻿// utf_conversion.h - Linux stub (UTF-8 is native, no conversion needed)
 
-#ifndef YAMY_PLATFORM_LINUX_UTF_CONVERSION_H
-#define YAMY_PLATFORM_LINUX_UTF_CONVERSION_H
+#pragma once
 
 #include <string>
 
@@ -19,5 +18,3 @@ inline std::string wstring_to_utf8(const std::string& str) {
 
 } // namespace platform
 } // namespace yamy
-
-#endif // YAMY_PLATFORM_LINUX_UTF_CONVERSION_H

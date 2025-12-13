@@ -1,0 +1,115 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 25,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "windows-base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "installDir": "${sourceDir}/dist/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "windows-msvc-release",
+            "displayName": "Windows MSVC Release",
+            "description": "Build using MSVC 2022 (x64 Release)",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "binaryDir": "${sourceDir}/build/windows-msvc-release",
+            "installDir": "${sourceDir}/dist/windows-msvc-release"
+        },
+        {
+            "name": "windows-msvc-debug",
+            "displayName": "Windows MSVC Debug",
+            "description": "Build using MSVC 2022 (x64 Debug)",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "binaryDir": "${sourceDir}/build/windows-msvc-debug",
+            "installDir": "${sourceDir}/dist/windows-msvc-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "windows-mingw-release",
+            "displayName": "Windows MinGW Release",
+            "description": "Build using MinGW (Release)",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/build/windows-mingw-release",
+            "installDir": "${sourceDir}/dist/windows-mingw-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "windows-mingw-debug",
+            "displayName": "Windows MinGW Debug",
+            "description": "Build using MinGW (Debug)",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/build/windows-mingw-debug",
+            "installDir": "${sourceDir}/dist/windows-mingw-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "windows-msvc-release",
+            "configurePreset": "windows-msvc-release",
+            "configuration": "Release"
+        },
+        {
+            "name": "windows-msvc-debug",
+            "configurePreset": "windows-msvc-debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "windows-mingw-release",
+            "configurePreset": "windows-mingw-release",
+            "configuration": "Release"
+        },
+        {
+            "name": "windows-mingw-debug",
+            "configurePreset": "windows-mingw-debug",
+            "configuration": "Debug"
+        }
+    ],
+    "packagePresets": [
+        {
+            "name": "windows-msvc-release",
+            "configurePreset": "windows-msvc-release",
+            "generators": [
+                "ZIP"
+            ]
+        },
+        {
+            "name": "windows-msvc-debug",
+            "configurePreset": "windows-msvc-debug",
+            "generators": [
+                "ZIP"
+            ]
+        },
+        {
+            "name": "windows-mingw-release",
+            "configurePreset": "windows-mingw-release",
+            "generators": [
+                "ZIP"
+            ]
+        },
+        {
+            "name": "windows-mingw-debug",
+            "configurePreset": "windows-mingw-debug",
+            "generators": [
+                "ZIP"
+            ]
+        }
+    ]
+}

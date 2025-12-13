@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_DESCRIBE_BINDINGS_H
 #define _CMD_DESCRIBE_BINDINGS_H
 

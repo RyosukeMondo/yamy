@@ -1,7 +1,6 @@
-// platform_time.h - Platform-agnostic time utilities
+﻿// platform_time.h - Platform-agnostic time utilities
 
-#ifndef _PLATFORM_TIME_H
-#define _PLATFORM_TIME_H
+#pragma once
 
 #include <ctime>
 
@@ -21,5 +20,3 @@ inline std::tm* localtime_safe(const std::time_t* timer, std::tm* buf) {
 
 } // namespace platform
 } // namespace yamy
-
-#endif // _PLATFORM_TIME_H

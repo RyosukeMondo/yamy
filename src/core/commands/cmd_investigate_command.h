@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_INVESTIGATE_COMMAND_H
 #define _CMD_INVESTIGATE_COMMAND_H
 

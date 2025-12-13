@@ -1,0 +1,27 @@
+# Handle line endings automatically for files detected as text
+# and leave binary files untouched.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c text
+*.h text
+*.cpp text
+*.hpp text
+*.txt text
+*.md text
+*.ps1 text
+*.bat text
+*.json text
+*.cmake text
+CMakeLists.txt text
+
+# Declare files that will always have CRLF line endings on checkout.
+*.sln text eol=crlf
+
+# Denote all binary files that should not be modified.
+*.png binary
+*.jpg binary
+*.zip binary
+*.dll binary
+*.exe binary

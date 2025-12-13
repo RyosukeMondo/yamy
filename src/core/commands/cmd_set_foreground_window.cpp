@@ -1,4 +1,4 @@
-#include "cmd_set_foreground_window.h"
+﻿#include "cmd_set_foreground_window.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include "../utils/stringtool.h"

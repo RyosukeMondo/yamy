@@ -1,7 +1,6 @@
-// platform_paths.h - Platform-agnostic path utilities
+﻿// platform_paths.h - Platform-agnostic path utilities
 
-#ifndef _PLATFORM_PATHS_H
-#define _PLATFORM_PATHS_H
+#pragma once
 
 #include <string>
 
@@ -14,5 +13,3 @@ std::string getExecutableDirectory();
 
 } // namespace platform
 } // namespace yamy
-
-#endif // _PLATFORM_PATHS_H

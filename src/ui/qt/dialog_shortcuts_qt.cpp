@@ -1,4 +1,4 @@
-#include "dialog_shortcuts_qt.h"
+﻿#include "dialog_shortcuts_qt.h"
 #include <QHeaderView>
 #include <QSettings>
 #include <QLabel>

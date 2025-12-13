@@ -1,4 +1,4 @@
-#include "global_hotkey.h"
+﻿#include "global_hotkey.h"
 #include <QApplication>
 #include <QDebug>
 

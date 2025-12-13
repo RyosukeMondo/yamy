@@ -1,4 +1,4 @@
-#include "cmd_window_set_alpha.h"
+﻿#include "cmd_window_set_alpha.h"
 #include "../engine/engine.h"
 #include "../functions/function.h" // For type tables and ToString operators
 #include <algorithm>

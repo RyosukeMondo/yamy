@@ -1,4 +1,4 @@
-#include "cmd_investigate_command.h"
+﻿#include "cmd_investigate_command.h"
 #include "../engine/engine.h"
 #include "../platform/hook_interface.h" // For platform hook data interface
 

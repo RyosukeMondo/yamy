@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_WINDOW_CLOSE_H
 #define _CMD_WINDOW_CLOSE_H
 

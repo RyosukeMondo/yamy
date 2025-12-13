@@ -1,5 +1,4 @@
-#ifndef _DEBUG_CONSOLE_H
-#define _DEBUG_CONSOLE_H
+﻿#pragma once
 
 #ifdef _WIN32
 #include <windows.h>
@@ -141,5 +140,3 @@ inline std::string DebugConsole::s_logPath;
 } // namespace yamy
 
 #endif // _WIN32
-
-#endif // _DEBUG_CONSOLE_H

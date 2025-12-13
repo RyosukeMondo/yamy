@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "log_entry.h"
 #include <functional>

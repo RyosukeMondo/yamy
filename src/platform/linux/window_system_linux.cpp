@@ -1,4 +1,4 @@
-#include "core/platform/window_system_interface.h"
+﻿#include "core/platform/window_system_interface.h"
 #include <iostream>
 
 namespace yamy::platform {

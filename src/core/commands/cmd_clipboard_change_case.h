@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _CMD_CLIPBOARD_CHANGE_CASE_H
 #define _CMD_CLIPBOARD_CHANGE_CASE_H
 
