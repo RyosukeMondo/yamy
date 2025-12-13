@@ -74,7 +74,7 @@
   - _Requirements: 1, 2, 7_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Software architect with expertise in C++ class design and clean architecture | Task: Create EventProcessor class in new files src/core/engine/engine_event_processor.h/cpp following requirements 1, 2, and 7. Implement clean interface with pure layer functions, ProcessedEvent struct, and main processEvent() entry point. Follow exact design from design.md Component 1. | Restrictions: Make layer functions private pure functions, no global state, no side effects except logging, constructor takes const reference to substitution table, ensure header guards and proper includes, follow project C++ style | _Leverage: Design pattern from design.md Component 1 (EventProcessor interface specification) | _Requirements: Requirements 1 (Universal Event Processing), 2 (Event Type Consistency), 7 (Code Consistency) | Success: Clean class interface defined, ProcessedEvent struct captures output evdev + event type + validity, layer functions are pure and private, processEvent() is public entry point, compiles without errors, follows design exactly._
 
-- [ ] 2.2 Implement Layer 1 in EventProcessor
+- [x] 2.2 Implement Layer 1 in EventProcessor
   - Files: `src/core/engine/engine_event_processor.cpp`
   - Implement `layer1_evdevToYamy()` calling existing `evdevToYamyKeyCode()`
   - Add `[LAYER1:IN]` logging with event type
@@ -83,7 +83,7 @@
   - _Requirements: 1, 3, 4_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Systems programmer with expertise in input event handling | Task: Implement layer1_evdevToYamy() in src/core/engine/engine_event_processor.cpp following requirements 1, 3, and 4. Call existing evdevToYamyKeyCode(), add comprehensive logging, handle unmapped keys gracefully returning 0. | Restrictions: Must reuse existing evdevToYamyKeyCode() function not reimplement, maintain < 1ms performance, proper error handling for unmapped keys, logging must match format from Phase 1 | _Leverage: Existing evdevToYamyKeyCode() from src/platform/linux/keycode_mapping.cpp, PLATFORM_LOG_INFO macro | _Requirements: Requirements 1 (Universal Event Processing), 3 (Layer Completeness), 4 (Comprehensive Logging) | Success: Layer 1 function works correctly for all keys, calls existing keycode mapping, logs all events with proper format, unmapped keys return 0 and log NOT FOUND, no performance regression._
 
-- [ ] 2.3 Implement Layer 2 in EventProcessor
+- [x] 2.3 Implement Layer 2 in EventProcessor
   - Files: `src/core/engine/engine_event_processor.cpp`
   - Implement `layer2_applySubstitution()` as pure function
   - Look up scan code in substitution table
@@ -93,7 +93,7 @@
   - _Requirements: 1, 3, 4, 7_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Engine developer with expertise in keyboard mapping logic | Task: Implement layer2_applySubstitution() in src/core/engine/engine_event_processor.cpp following requirements 1, 3, 4, and 7. Pure function that looks up substitution, logs result, NO special cases for any key type. Modifier substitutions (N→LShift) must use identical logic to regular substitutions (W→A). | Restrictions: Must be pure function (no side effects except logging), no branching based on key type, no modifier special cases, passthrough unchanged if not in table, maintain performance, const reference to substitution table | _Leverage: Substitution table (std::unordered_map<uint16_t, uint16_t>) passed in constructor | _Requirements: Requirements 1 (Universal Event Processing), 3 (Layer Completeness), 4 (Comprehensive Logging), 7 (Code Consistency) | Success: Substitution lookup works for all 87 keys, modifier keys processed identically to regular keys, logs show SUBST or PASSTHROUGH for every event, no special cases in code, pure function with no state._
 
-- [ ] 2.4 Implement Layer 3 in EventProcessor
+- [x] 2.4 Implement Layer 3 in EventProcessor
   - Files: `src/core/engine/engine_event_processor.cpp`
   - Implement `layer3_yamyToEvdev()` calling existing `yamyToEvdevKeyCode()`
   - Verify scan map is checked FIRST (already fixed in earlier session)
@@ -103,7 +103,7 @@
   - _Requirements: 1, 3, 4_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Systems programmer with expertise in keycode mapping | Task: Implement layer3_yamyToEvdev() in src/core/engine/engine_event_processor.cpp following requirements 1, 3, and 4. Call existing yamyToEvdevKeyCode() which already has scan-map-first priority fix. Add comprehensive logging showing which map was used. Handle unmapped keys gracefully. | Restrictions: Must reuse existing yamyToEvdevKeyCode() not reimplement, do not modify scan map priority logic, maintain performance, log which map (US scan, JP scan, VK) was used for traceability | _Leverage: Existing yamyToEvdevKeyCode() from src/platform/linux/keycode_mapping.cpp (with scan map priority fix) | _Requirements: Requirements 1 (Universal Event Processing), 3 (Layer Completeness), 4 (Comprehensive Logging) | Success: Layer 3 works for all keys, scan maps checked before VK map, logs show source map, unmapped keys return 0 and log NOT FOUND, no regression from earlier VK/scan fix._
 
-- [ ] 2.5 Implement processEvent() main entry point with event type preservation
+- [x] 2.5 Implement processEvent() main entry point with event type preservation
   - Files: `src/core/engine/engine_event_processor.cpp`
   - Implement `processEvent(evdev, event_type)` that calls Layer 1 → Layer 2 → Layer 3
   - **Critical**: Preserve event type throughout - PRESS in = PRESS out, RELEASE in = RELEASE out
