@@ -167,6 +167,7 @@ void Engine::start() {
     CHECK_TRUE( m_readEvent = yamy::platform::createEvent(true, false) );
 #ifdef _WIN32
     yamy::debug::DebugConsole::LogInfo("Engine: Synchronization objects created successfully!");
+    yamy::debug::DebugConsole::LogInfo("Engine: Setting up OVERLAPPED structure...");
 #endif
 
 #ifdef _WIN32
@@ -174,11 +175,15 @@ void Engine::start() {
     pOl->Offset = 0;
     pOl->OffsetHigh = 0;
     pOl->hEvent = m_readEvent;
+    yamy::debug::DebugConsole::LogInfo("Engine: OVERLAPPED setup complete!");
 
     yamy::debug::DebugConsole::LogInfo("Engine: Opening input driver...");
 #endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Opening input driver...");
     m_inputDriver->open(m_readEvent);
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Input driver opened successfully!");
+#endif
 
 #ifdef _WIN32
     yamy::debug::DebugConsole::LogInfo("Engine: Creating keyboard handler thread...");
@@ -186,11 +191,15 @@ void Engine::start() {
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Creating keyboard handler thread...");
     CHECK_TRUE( m_threadHandle = yamy::platform::createThread(keyboardHandler, this) );
 #ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Keyboard handler thread created!");
     yamy::debug::DebugConsole::LogInfo("Engine: Creating performance metrics thread...");
 #endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Creating performance metrics thread...");
     m_isPerfThreadRunning = true;
     CHECK_TRUE( m_perfThreadHandle = yamy::platform::createThread(perfMetricsHandler, this) );
+#ifdef _WIN32
+    yamy::debug::DebugConsole::LogInfo("Engine: Performance metrics thread created!");
+#endif
 
 #ifdef _WIN32
     yamy::debug::DebugConsole::LogInfo("Engine: Engine started successfully!");
