@@ -111,7 +111,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: All_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: Build engineer. Task: In CMakeLists.txt, find yamy target definition (around line 460), add src/app/engine_adapter.cpp to STUB_SOURCES or directly to target_sources. Verify build compiles successfully. Restrictions: Do NOT change other build settings. Success: Project builds successfully with no warnings._
 
-- [-] 13. Integration testing and verification
+- [x] 13. Integration testing and verification
   - Files: All modified files
   - Test configuration loading with real .mayu files
   - Verify keyboard remapping works
