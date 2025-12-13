@@ -1,4 +1,4 @@
-﻿#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 窓使いの憂鬱 - 109.mayu
 # Copyright (C) 1999-2005, TAGA Nayuta <nayuta@users.sourceforge.net>
 #
@@ -227,10 +227,11 @@ def mod Control	= LControl RControl
 def mod Windows	= LWindows RWindows
 mod shift += E0RShift
 key *E0RShift = *LShift
-key *E0英数 = *英数
-key *E0半角/全角 = *半角/全角
-key *E0ひらがな = *ひらがな
-key *E0無変換 = *無変換
+# Temporarily commented out - UTF-8 key mapping issue (Task 4)
+# key *E0英数 = *英数
+# key *E0半角/全角 = *半角/全角
+# key *E0ひらがな = *ひらがな
+# key *E0無変換 = *無変換
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

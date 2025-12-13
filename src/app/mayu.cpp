@@ -495,22 +495,19 @@ private:
                         CHECK_TRUE( SetMenuDefaultItem(hMenuSub,
                                                        ID_MENUITEM_investigate, FALSE) );
 
-                        // create reload menu
+                        // TEMPORARILY SKIP reload menu building to avoid 38-second regex delay
+                        // TODO: Cache regex pattern or use simpler string parsing
 #ifdef _WIN32
-                        yamy::debug::DebugConsole::LogInfo("Building reload submenu...");
+                        yamy::debug::DebugConsole::LogInfo("Skipping reload submenu (regex too slow - 38 seconds!)");
 #endif
+
+                        /* Disabled for performance - takes 38 seconds!
                         HMENU hMenuSubSub = GetSubMenu(hMenuSub, 1);
                         int mayuIndex;
                         This->m_configStore->read(to_string(_T(".mayuIndex")), &mayuIndex, 0);
                         while (DeleteMenu(hMenuSubSub, 0, MF_BYPOSITION))
                             ;
-#ifdef _WIN32
-                        yamy::debug::DebugConsole::LogInfo("Compiling regex pattern...");
-#endif
-                        Regex getName(to_string(_T("^([^;]*);")));
-#ifdef _WIN32
-                        yamy::debug::DebugConsole::LogInfo("Regex compiled, scanning config entries...");
-#endif
+                        Regex getName(to_string(_T("^([^;]*);")));  // THIS TAKES 38 SECONDS!
                         for (int index = 0; ; index ++) {
                             _TCHAR buf[100];
                             _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
@@ -534,9 +531,7 @@ private:
                                 InsertMenuItem(hMenuSubSub, index, TRUE, &mii);
                             }
                         }
-#ifdef _WIN32
-                        yamy::debug::DebugConsole::LogInfo("Reload submenu built successfully");
-#endif
+                        */
 
                         // show popup menu
 #ifdef _WIN32
