@@ -28,10 +28,6 @@ void Engine::keyboardHandler()
     // loop
     Key key;
     while (1) {
-        // Handle IPC messages
-        // TODO: This should be a non-blocking check.
-        // checkForIpcMessages();
-
         yamy::platform::KeyEvent event;
 
         yamy::platform::waitForObject(m_queueMutex, yamy::platform::WAIT_INFINITE);
@@ -216,24 +212,12 @@ void Engine::keyboardHandler()
             }
         } else if (c.m_mkey.m_key) {
             // normal key
-            static int normalKeyCount = 0;
-            if (normalKeyCount++ < 100) {
-                yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
-                    "DEBUG: Normal key path - calling beginGeneratingKeyboardEvents #" +
-                    std::to_string(normalKeyCount));
-            }
             outputToLog(pProcessingKey, c.m_mkey, 1);
             if (isPhysicallyPressed)
                 m_oneShotKey.m_key = nullptr;
             beginGeneratingKeyboardEvents(c, isModifier);
         } else {
             // undefined key
-            static int undefinedKeyCount = 0;
-            if (undefinedKeyCount++ < 100) {
-                yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
-                    "DEBUG: Undefined key path #" + std::to_string(undefinedKeyCount) +
-                    ", scancode=0x" + std::to_string(event.scanCode));
-            }
             if (kid.Flags & KEYBOARD_INPUT_DATA::E1) {
                 // through mouse event even if undefined for fail safe
                 injectInput(&kid, nullptr);
@@ -286,18 +270,6 @@ void Engine::keyboardHandler()
 
     Key key;
     while (1) {
-        // DEBUG: Track loop iterations
-        static int loopIterationCount = 0;
-        loopIterationCount++;
-        if (loopIterationCount <= 20) {
-            yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
-                "DEBUG: Keyboard handler loop iteration #" + std::to_string(loopIterationCount));
-        }
-
-        // Handle IPC messages
-        // TODO: This should be a non-blocking check.
-        // checkForIpcMessages();
-
         yamy::platform::KeyEvent event;
 
         // Acquire mutex to access queue
@@ -313,11 +285,6 @@ void Engine::keyboardHandler()
 
             // If queue is empty, wait for event
             if (m_inputQueue->empty()) {
-                static int waitCount = 0;
-                if (waitCount++ < 3) {
-                    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
-                        "Queue empty, waiting for event #" + std::to_string(waitCount));
-                }
                 yamy::platform::resetEvent(m_readEvent);
                 // Release mutex, wait for event, then re-acquire
                 yamy::platform::releaseMutex(m_queueMutex);
@@ -325,10 +292,6 @@ void Engine::keyboardHandler()
                     // Wait was interrupted, try again
                     yamy::platform::acquireMutex(m_queueMutex, yamy::platform::WAIT_INFINITE);
                     continue;
-                }
-                if (waitCount <= 3) {
-                    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
-                        "Event signaled, re-checking queue");
                 }
                 yamy::platform::acquireMutex(m_queueMutex, yamy::platform::WAIT_INFINITE);
                 continue;
@@ -345,16 +308,6 @@ void Engine::keyboardHandler()
         }
         yamy::platform::releaseMutex(m_queueMutex);
 
-        // Log key event processing (INFO level for visibility)
-        static int processedKeyCount = 0;
-        if (processedKeyCount++ < 5) {
-            yamy::logging::Logger::getInstance().log(
-                yamy::logging::LogLevel::Info, "Engine",
-                "Processing key event #" + std::to_string(processedKeyCount) +
-                ": scancode=0x" + std::to_string(event.scanCode) +
-                ", isKeyDown=" + std::to_string(event.isKeyDown));
-        }
-
         // Start timing key processing
         auto keyProcessingStart = std::chrono::high_resolution_clock::now();
 
@@ -366,14 +319,8 @@ void Engine::keyboardHandler()
 
         checkFocusWindow();
 
-        // Re-enable remapping logic with debug logging
         if (!m_setting ||    // m_setting has not been loaded
                 !m_isEnabled) {    // disabled
-            static int noSettingCount = 0;
-            if (noSettingCount++ < 5) {
-                yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
-                    "DEBUG: No setting or disabled path");
-            }
             if (m_isLogMode) {
                 Key logKey;
                 logKey.addScanCode(ScanCode(kid.MakeCode, kid.Flags));
@@ -517,24 +464,12 @@ void Engine::keyboardHandler()
             }
         } else if (c.m_mkey.m_key) {
             // normal key
-            static int normalKeyCount = 0;
-            if (normalKeyCount++ < 100) {
-                yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
-                    "DEBUG: Normal key path - calling beginGeneratingKeyboardEvents #" +
-                    std::to_string(normalKeyCount));
-            }
             outputToLog(pProcessingKey, c.m_mkey, 1);
             if (isPhysicallyPressed)
                 m_oneShotKey.m_key = nullptr;
             beginGeneratingKeyboardEvents(c, isModifier);
         } else {
             // undefined key
-            static int undefinedKeyCount = 0;
-            if (undefinedKeyCount++ < 100) {
-                yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
-                    "DEBUG: Undefined key path #" + std::to_string(undefinedKeyCount) +
-                    ", scancode=0x" + std::to_string(event.scanCode));
-            }
             if (kid.Flags & KEYBOARD_INPUT_DATA::E1) {
                 // through mouse event even if undefined for fail safe
                 injectInput(&kid, nullptr);
@@ -556,14 +491,6 @@ void Engine::keyboardHandler()
             keyProcessingEnd - keyProcessingStart).count();
         yamy::metrics::PerformanceMetrics::instance().recordLatency(
             yamy::metrics::Operations::KEY_PROCESSING, static_cast<uint64_t>(durationNs));
-
-        // DEBUG: Track end of loop iteration
-        static int loopEndCount = 0;
-        loopEndCount++;
-        if (loopEndCount <= 20) {
-            yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
-                "DEBUG: Completed loop iteration #" + std::to_string(loopEndCount) + ", looping back to top");
-        }
     }
 }
 

@@ -100,13 +100,6 @@ void EventReaderThread::run()
             continue;
         }
 
-        // DEBUG: Log that we're about to call callback (first 10 events)
-        static int callbackDebugCounter = 0;
-        if (callbackDebugCounter++ < 10) {
-            PLATFORM_LOG_INFO("input", "DEBUG: Calling callback #%d for key event code=%d value=%d",
-                              callbackDebugCounter, ev.code, ev.value);
-        }
-
         // Convert evdev code to YAMY code
         uint16_t yamyCode = evdevToYamyKeyCode(ev.code, ev.value);
         if (yamyCode == 0) {

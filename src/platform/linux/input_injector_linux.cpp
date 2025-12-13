@@ -85,17 +85,7 @@ public:
         (void)rawData;
         (void)ctx;
 
-        static int injectCount = 0;
-        if (injectCount++ < 100) {
-            PLATFORM_LOG_INFO("injector", "DEBUG: inject() called #%d, MakeCode=%d, Flags=%d",
-                              injectCount, data ? data->MakeCode : 0, data ? data->Flags : 0);
-        }
-
         if (!data || m_fd < 0) {
-            if (injectCount <= 10) {
-                PLATFORM_LOG_INFO("injector", "DEBUG: inject() aborted - data=%p, fd=%d",
-                                  (void*)data, m_fd);
-            }
             return;
         }
 
@@ -150,12 +140,6 @@ public:
             }
 
             uint16_t evdevCode = yamyToEvdevKeyCode(data->MakeCode);
-
-            static int conversionLogCount = 0;
-            if (conversionLogCount++ < 20) {
-                PLATFORM_LOG_INFO("injector", "DEBUG: Converting MakeCode=%d to evdevCode=%d",
-                                  data->MakeCode, evdevCode);
-            }
 
             if (evdevCode == 0 && data->MakeCode != 0) {
                 // Unknown key code, skip
@@ -295,11 +279,6 @@ private:
         ev.type = type;
         ev.code = code;
         ev.value = value;
-
-        static int writeCount = 0;
-        if (writeCount++ < 20 && type == EV_KEY) {
-            PLATFORM_LOG_INFO("injector", "DEBUG: Writing EV_KEY event: code=%d, value=%d", code, value);
-        }
 
         if (write(m_fd, &ev, sizeof(ev)) < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK) {
