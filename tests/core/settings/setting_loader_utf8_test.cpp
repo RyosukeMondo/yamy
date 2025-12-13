@@ -294,13 +294,13 @@ TEST_F(SettingLoaderUtf8Test, MultipleJapaneseKeysInSequence) {
 }
 
 // =============================================================================
-// Test: Key Definition in Parentheses (Alternative Syntax)
+// Test: Multiple Aliases for Same Key (Standard Syntax)
 // =============================================================================
 
-TEST_F(SettingLoaderUtf8Test, KeyDefinitionInParentheses) {
-    // Alternative syntax: def key (name1 name2 name3) = scancode
+TEST_F(SettingLoaderUtf8Test, MultipleAliasesForSameKey) {
+    // Standard syntax with multiple aliases: def key name1 name2 name3 = scancode
     std::string config =
-        "def key (\xE7\x84\xA1\xE5\xA4\x89\xE6\x8F\x9B NonConvert Muhenkan) = 0x7b\n";  // 無変換
+        "def key \xE7\x84\xA1\xE5\xA4\x89\xE6\x8F\x9B NonConvert Muhenkan = 0x7b\n";  // 無変換
 
     LoadConfig(config);
 
