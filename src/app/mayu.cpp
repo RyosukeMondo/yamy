@@ -66,6 +66,7 @@ class Mayu
     NOTIFYICONDATA m_ni;                /// taskbar icon data
     HICON m_tasktrayIcon[2];            /// taskbar icon
     bool m_canUseTasktrayBaloon;            ///
+    bool m_isMenuActive;                /// prevent multiple simultaneous menus
 
     tomsgstream m_log;                /** log stream (output to log
                             dialog's edit) */
@@ -449,6 +450,14 @@ private:
 #ifdef _WIN32
                         yamy::debug::DebugConsole::LogInfo("Tray icon: Right-click detected, showing menu...");
 #endif
+                        // Prevent multiple simultaneous menus
+                        if (This->m_isMenuActive) {
+#ifdef _WIN32
+                            yamy::debug::DebugConsole::LogWarning("Menu already active, ignoring right-click");
+#endif
+                            break;
+                        }
+
                         POINT p;
                         if (!GetCursorPos(&p)) {
 #ifdef _WIN32
@@ -537,8 +546,10 @@ private:
 #ifdef _WIN32
                         yamy::debug::DebugConsole::LogInfo("Calling TrackPopupMenu...");
 #endif
+                        This->m_isMenuActive = true;
                         BOOL menuResult = TrackPopupMenu(hMenuSub, TPM_LEFTALIGN | TPM_RIGHTBUTTON,
                                        p.x, p.y, 0, i_hwnd, nullptr);
+                        This->m_isMenuActive = false;
 #ifdef _WIN32
                         if (!menuResult) {
                             DWORD error = GetLastError();
@@ -1140,6 +1151,7 @@ public:
             m_WM_MayuIPC(RegisterWindowMessage(WM_MayuIPC_NAME)),
             m_canUseTasktrayBaloon(
                 PACKVERSION(5, 0) <= getDllVersion(_T("shlwapi.dll"))),
+            m_isMenuActive(false),
             m_log(WM_APP_msgStreamNotify),
 #ifdef LOG_TO_FILE
             m_logFile(_T("logs\\mayu.log")),
