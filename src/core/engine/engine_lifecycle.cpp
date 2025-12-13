@@ -156,7 +156,8 @@ void Engine::start() {
         },
         [this](const yamy::platform::MouseEvent& e) {
             // Mouse event handler (currently unused)
-            return true;
+            // Pass through - we don't remap mouse events
+            return false;
         }
     );
 

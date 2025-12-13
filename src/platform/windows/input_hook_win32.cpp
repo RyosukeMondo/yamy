@@ -120,8 +120,8 @@ unsigned int WINAPI InputHookWin32::mouseDetour(void *i_context, WPARAM i_wParam
     event.extraInfo = mid->dwExtraInfo;
     event.message = (uint32_t)i_wParam;
 
-    This->m_mouseCallback(event);
-    return 1;
+    bool handled = This->m_mouseCallback(event);
+    return handled ? 1 : 0;
 }
 
 

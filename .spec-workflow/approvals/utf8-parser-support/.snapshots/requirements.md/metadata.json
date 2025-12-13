@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/utf8-parser-support/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-13T04:39:23.940Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765600763936_3iamfaxqd",
+      "approvalTitle": "UTF-8 Parser Support - Requirements"
+    }
+  ]
+}
