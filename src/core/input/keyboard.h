@@ -461,6 +461,11 @@ public:
     KeyIterator getKeyIterator() {
         return KeyIterator(m_hashedKeys.data(), HASHED_KEYS_SIZE);
     }
+
+    /// get substitutes list (for EventProcessor integration)
+    const Substitutes& getSubstitutes() const {
+        return m_substitutes;
+    }
 };
 
 

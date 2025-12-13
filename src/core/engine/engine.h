@@ -26,6 +26,7 @@
 #  include "../input/input_event.h" // For KEYBOARD_INPUT_DATA (legacy)
 #  include "../platform/types.h" // For KeyEvent
 #  include "../platform/message_constants.h"
+#  include "engine_event_processor.h" // For unified 3-layer event processing
 #  include <functional>
 
 enum {
@@ -257,6 +258,10 @@ private:
     yamy::platform::ThreadHandle m_perfThreadHandle; /// thread for performance metrics
     bool volatile m_isPerfThreadRunning;     /// flag to control performance thread
 
+    // Event processing
+    std::unique_ptr<yamy::EventProcessor> m_eventProcessor; /// Unified 3-layer event processor
+    yamy::SubstitutionTable m_substitutionTable; /// YAMY scan code → YAMY scan code mappings
+
 public:
     tomsgstream &m_log;                /** log stream (output to log
                                                     dialog's edit) */
@@ -343,6 +348,11 @@ private:
     /// set current keymap
     void setCurrentKeymap(const Keymap *i_keymap,
                           bool i_doesAddToHistory = false);
+
+    /// Build substitution table from Keyboard::Substitutes
+    /// @param keyboard Reference to Keyboard object with substitution mappings
+    void buildSubstitutionTable(const Keyboard &keyboard);
+
     /** open mayu device
         @return true if mayu device successfully is opened
     */

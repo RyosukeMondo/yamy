@@ -74,6 +74,10 @@ bool Engine::setSetting(Setting *i_setting) {
     m_currentFocusOfThread = &m_globalFocus;
     setCurrentKeymap(m_globalFocus.m_keymaps.front());
     m_hwndFocus = nullptr;
+
+    // Build substitution table and initialize EventProcessor
+    buildSubstitutionTable(m_setting->m_keyboard);
+
     return true;
 }
 
@@ -187,4 +191,77 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     notifyGUI(yamy::MessageType::ConfigLoaded, configPath);
     return true;
 #endif // _WIN32
+}
+
+
+// Build substitution table from Keyboard::Substitutes
+void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
+    // Clear existing table
+    m_substitutionTable.clear();
+
+    // Iterate through all substitutions defined in .mayu file
+    // Substitutes are stored as std::list<Substitute> in m_substitutes
+    for (const auto& substitute : keyboard.getSubstitutes()) {
+        // Each Substitute contains:
+        // - m_mkeyFrom: Source key (with modifiers)
+        // - m_mkeyTo: Target key (with modifiers)
+
+        // Extract YAMY scan codes from Key objects
+        // Note: For now, we ignore modifiers and only map the raw scan codes
+        // This matches the current EventProcessor design which operates on scan codes
+
+        const Key* fromKey = substitute.m_mkeyFrom.m_key;
+        const Key* toKey = substitute.m_mkeyTo.m_key;
+
+        if (!fromKey || !toKey) {
+            // Skip invalid substitutions
+            continue;
+        }
+
+        // Get scan codes (each key may have multiple scan codes)
+        const ScanCode* fromScans = fromKey->getScanCodes();
+        const ScanCode* toScans = toKey->getScanCodes();
+        size_t fromSize = fromKey->getScanCodesSize();
+        size_t toSize = toKey->getScanCodesSize();
+
+        if (fromSize == 0 || toSize == 0) {
+            // Skip keys without scan codes
+            continue;
+        }
+
+        // Use the first scan code from each key
+        // The m_scan field is the actual YAMY scan code (uint16_t)
+        uint16_t fromYamyScan = fromScans[0].m_scan;
+        uint16_t toYamyScan = toScans[0].m_scan;
+
+        // Add to substitution table: fromYamyScan → toYamyScan
+        m_substitutionTable[fromYamyScan] = toYamyScan;
+
+        // Log the substitution for debugging
+        {
+            Acquire a(&m_log, 1);
+            m_log << "Substitution: 0x" << std::hex << std::setfill('0')
+                  << std::setw(4) << fromYamyScan
+                  << " → 0x" << std::setw(4) << toYamyScan
+                  << std::dec << std::endl;
+        }
+    }
+
+    // Log summary
+    {
+        Acquire a(&m_log, 0);
+        m_log << "Built substitution table with " << m_substitutionTable.size()
+              << " mappings" << std::endl;
+    }
+
+    // Create or recreate EventProcessor with new substitution table
+    m_eventProcessor = std::make_unique<yamy::EventProcessor>(m_substitutionTable);
+
+    // Enable debug logging if YAMY_DEBUG_KEYCODE env var is set
+    const char* debugEnv = std::getenv("YAMY_DEBUG_KEYCODE");
+    if (debugEnv && std::string(debugEnv) == "1") {
+        m_eventProcessor->setDebugLogging(true);
+        Acquire a(&m_log, 0);
+        m_log << "EventProcessor debug logging enabled" << std::endl;
+    }
 }
