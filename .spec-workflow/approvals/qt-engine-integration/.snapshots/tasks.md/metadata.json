@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/qt-engine-integration/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-13T02:31:52.884Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765593112879_ri7e5guc4",
+      "approvalTitle": "Tasks: Qt Engine Integration"
+    }
+  ]
+}

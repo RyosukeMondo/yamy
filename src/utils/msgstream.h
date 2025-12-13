@@ -141,9 +141,15 @@ public:
         T *begin = this->pbase();
         T *end = this->pptr();
         T *i;
+#ifdef _WIN32
+        // Windows: Check for DBCS lead bytes to avoid splitting multi-byte chars
         for (i = begin; i < end; ++ i)
             if (_istlead(*i))
                 ++ i;
+#else
+        // Linux: UTF-8 encoding, no DBCS lead byte check needed
+        i = end;
+#endif
         if (i == end) {
             if (m_msgDebugLevel <= m_debugLevel)
                 m_str += String(begin, end - begin);

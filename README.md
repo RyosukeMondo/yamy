@@ -17,6 +17,8 @@ This repository is a fork of the original Yamy project, reorganized for better m
 
 ### Linux (Ubuntu/Debian)
 
+#### From Binary Release (Recommended)
+
 ```bash
 # Install Qt5 dependencies
 sudo apt update
@@ -33,6 +35,35 @@ sudo usermod -aG input $USER
 ```
 
 See [RELEASE-NOTES-1.0.md](RELEASE-NOTES-1.0.md) for installation instructions for other distributions.
+
+#### From Source
+
+```bash
+# 1. Install build dependencies
+sudo apt update
+sudo apt install -y build-essential cmake \
+    libqt5core5a libqt5widgets5 libqt5gui5 libqt5x11extras5 \
+    qtbase5-dev libqt5x11extras5-dev \
+    libx11-dev libxrandr-dev libudev-dev
+
+# 2. Build the project
+./scripts/linux/build_linux_package.sh
+
+# 3. Install binaries (Qt5 GUI application)
+sudo cp build_release/bin/yamy /usr/local/bin/yamy
+sudo cp build_release/bin/yamy-ctl /usr/local/bin/yamy-ctl
+sudo chmod +x /usr/local/bin/yamy /usr/local/bin/yamy-ctl
+
+# 4. Add your user to the input group (REQUIRED for keyboard capture)
+sudo usermod -aG input $USER
+
+# 5. Log out and log back in for the group change to take effect
+
+# 6. Launch yamy
+yamy
+```
+
+**Note**: The main application `yamy` is a full Qt5 GUI application with system tray icon and configuration dialogs.
 
 ### Windows
 
@@ -58,6 +89,38 @@ The project structure has been reorganized for better clarity and maintainabilit
 - **`docs/`**: Documentation files (`.html`, `.txt`, `.md`).
 
 ## Building
+
+### Linux
+
+Build script for creating distributable packages:
+
+```bash
+./scripts/linux/build_linux_package.sh [VERSION]
+```
+
+This will:
+1. Configure CMake with Release build type
+2. Enable Qt5 GUI and Linux platform support
+3. Build all binaries (`yamy`, `yamy-ctl`)
+4. Create a tarball in `dist/` directory
+
+**Manual build:**
+
+```bash
+# Configure
+cmake -B build_release \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_LINUX_STUB=ON \
+    -DBUILD_QT_GUI=ON \
+    -DBUILD_LINUX_TESTING=OFF \
+    -DBUILD_REGRESSION_TESTS=OFF \
+    -DCMAKE_INSTALL_PREFIX=/usr
+
+# Build
+cmake --build build_release -j$(nproc)
+
+# Binaries will be in build_release/bin/
+```
 
 ### Visual Studio (MSVC)
 

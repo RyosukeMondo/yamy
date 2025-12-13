@@ -221,6 +221,7 @@ cp -r "$ROOT/keymaps" "$RELEASE_DIR/"
 # Copy only launch scripts to root
 cp "$ROOT/scripts/windows/launch_yamy.bat" "$RELEASE_DIR/"
 cp "$ROOT/scripts/windows/launch_yamy_admin.bat" "$RELEASE_DIR/"
+cp "$ROOT/scripts/windows/launch_yamy_debug.bat" "$RELEASE_DIR/"
 cp -r "$ROOT/docs" "$RELEASE_DIR/" || true
 cp "$ROOT/docs/readme.txt" "$RELEASE_DIR/readme.txt" || true
 

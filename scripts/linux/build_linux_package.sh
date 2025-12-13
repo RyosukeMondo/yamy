@@ -57,12 +57,12 @@ mkdir -p "$TARBALL_DIR/share/yamy"
 mkdir -p "$TARBALL_DIR/share/doc/yamy"
 
 # Copy binaries
-if [[ -f "$ROOT/build_release/bin/yamy_stub" ]]; then
-    cp "$ROOT/build_release/bin/yamy_stub" "$TARBALL_DIR/bin/"
+if [[ -f "$ROOT/build_release/bin/yamy" ]]; then
+    cp "$ROOT/build_release/bin/yamy" "$TARBALL_DIR/bin/"
 fi
 
-if [[ -f "$ROOT/build_release/bin/yamy_qt" ]]; then
-    cp "$ROOT/build_release/bin/yamy_qt" "$TARBALL_DIR/bin/"
+if [[ -f "$ROOT/build_release/bin/yamy-ctl" ]]; then
+    cp "$ROOT/build_release/bin/yamy-ctl" "$TARBALL_DIR/bin/"
 fi
 
 # Copy keymaps and documentation

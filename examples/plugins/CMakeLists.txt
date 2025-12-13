@@ -48,7 +48,7 @@ set_target_properties(example_plugin PROPERTIES
 # If building standalone (not as part of main Yamy build),
 # we need to link against the notification dispatcher
 # In the main build, this is handled automatically
-if(NOT TARGET yamy_stub)
+if(NOT TARGET yamy)
     # When building standalone, link against Yamy's stub library
     # or provide the necessary object files
     message(STATUS "Building plugin standalone - ensure Yamy headers are available")

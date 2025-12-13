@@ -38,7 +38,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-1, FR-2_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ systems engineer specializing in dependency injection. Task: Find Engine* engine = new Engine() (around line 330), replace with: create InputHookLinux, InputInjectorLinux, WindowSystemLinux using make_unique; create real Engine with std::move of platform implementations; create EngineAdapter wrapping the Engine. Add cleanup in destructor. Restrictions: Do NOT modify EngineAdapter implementation yet. Success: Real Engine created with platform dependencies, EngineAdapter wraps it, application compiles and runs without crashes._
 
-- [ ] 5. Implement EngineAdapter lifecycle methods with thread management
+- [x] 5. Implement EngineAdapter lifecycle methods with thread management
   - File: src/app/engine_adapter.cpp
   - Implement start() to create thread and call Engine::start()
   - Implement stop() to signal engine and join thread

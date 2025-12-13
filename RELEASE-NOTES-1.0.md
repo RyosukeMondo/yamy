@@ -42,9 +42,9 @@ tar -xzf yamy-1.0.0-linux-x86_64.tar.gz
 cd yamy-1.0.0
 
 # Copy binaries to system
-sudo cp yamy_stub /usr/local/bin/
+sudo cp yamy /usr/local/bin/
 sudo cp yamy-ctl /usr/local/bin/
-sudo chmod +x /usr/local/bin/yamy_stub /usr/local/bin/yamy-ctl
+sudo chmod +x /usr/local/bin/yamy /usr/local/bin/yamy-ctl
 
 # Add your user to the input group
 sudo usermod -aG input $USER

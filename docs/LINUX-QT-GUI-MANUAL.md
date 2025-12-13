@@ -109,14 +109,14 @@ cmake --build build
 
 **Build targets:**
 - `yamy_qt_gui` - Qt GUI library (static)
-- `yamy_stub` - Main executable with Qt GUI
+- `yamy` - Main executable with Qt GUI
 
 ### 3. Verify Build
 
 ```bash
-./build/bin/yamy_stub --version
+./build/bin/yamy --version
 # Or just run:
-./build/bin/yamy_stub
+./build/bin/yamy
 ```
 
 ---
@@ -126,7 +126,7 @@ cmake --build build
 ### Standard Launch
 
 ```bash
-./build/bin/yamy_stub
+./build/bin/yamy
 ```
 
 **Expected output:**
@@ -318,7 +318,7 @@ sudo pacman -S systemd-libs  # Arch
 **Solutions:**
 1. Check Qt5 runtime libraries:
    ```bash
-   ldd ./build/bin/yamy_stub | grep Qt
+   ldd ./build/bin/yamy | grep Qt
    ```
 
 2. Install Qt5 runtime (usually automatic with qtbase5-dev)

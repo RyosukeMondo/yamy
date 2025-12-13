@@ -455,38 +455,38 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
 
             # Use Qt main instead of headless main
             list(REMOVE_ITEM STUB_SOURCES src/app/main_linux.cpp)
-            list(APPEND STUB_SOURCES src/app/main_qt.cpp)
+            list(APPEND STUB_SOURCES src/app/main_qt.cpp src/app/engine_adapter.cpp)
 
-            add_executable(yamy_stub ${STUB_SOURCES})
-            target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
-            target_link_libraries(yamy_stub PRIVATE
+            add_executable(yamy ${STUB_SOURCES})
+            target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS})
+            target_link_libraries(yamy PRIVATE
                 pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
                 Qt5::Core
                 yamy_qt_gui
             )
         else()
             message(WARNING "Qt5 GUI components not found - building headless version")
-            add_executable(yamy_stub ${STUB_SOURCES})
-            target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
-            target_link_libraries(yamy_stub PRIVATE
+            add_executable(yamy ${STUB_SOURCES})
+            target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS})
+            target_link_libraries(yamy PRIVATE
                 pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
                 Qt5::Core
             )
         endif()
     else()
         message(STATUS "Building without Qt5 GUI (headless mode)")
-        add_executable(yamy_stub ${STUB_SOURCES})
-        target_include_directories(yamy_stub PRIVATE ${UDEV_INCLUDE_DIRS})
-        target_link_libraries(yamy_stub PRIVATE
+        add_executable(yamy ${STUB_SOURCES})
+        target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS})
+        target_link_libraries(yamy PRIVATE
             pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
             Qt5::Core
         )
     endif()
 
     # Enable Qt MOC for Qt-based sources (ConfigWatcher, IIPCChannel)
-    set_target_properties(yamy_stub PROPERTIES AUTOMOC ON)
+    set_target_properties(yamy PROPERTIES AUTOMOC ON)
 
-    target_include_directories(yamy_stub PRIVATE
+    target_include_directories(yamy PRIVATE
         src
         src/ui
         src/ui/qt
@@ -1540,19 +1540,11 @@ endif()
 # Installation Rules
 # -----------------------------------------------------------------------------
 if(UNIX AND NOT APPLE AND NOT WIN32)
-    # Install main executable (renamed from yamy_stub to yamy)
-    install(TARGETS yamy_stub
+    # Install main executable
+    install(TARGETS yamy
         RUNTIME DESTINATION bin
         COMPONENT runtime
     )
-    # Rename yamy_stub to yamy during installation
-    install(CODE "
-        execute_process(
-            COMMAND \${CMAKE_COMMAND} -E rename
-                \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/yamy_stub
-                \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/yamy
-        )
-    " COMPONENT runtime)
 
     # Install control tool
     install(TARGETS yamy-ctl

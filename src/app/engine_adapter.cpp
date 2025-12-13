@@ -1,5 +1,9 @@
 #include "engine_adapter.h"
 #include "../core/engine/engine.h"
+#include <chrono>
+#include <thread>
+#include <iostream>
+#include <stdexcept>
 
 EngineAdapter::EngineAdapter(Engine* engine)
     : m_engine(engine)
@@ -20,34 +24,72 @@ EngineAdapter::~EngineAdapter()
 
 bool EngineAdapter::getIsEnabled() const
 {
-    // Stub: Return default value
-    return false;
+    if (!m_engine) {
+        return false;
+    }
+    return m_engine->getIsEnabled();
 }
 
 bool EngineAdapter::isRunning() const
 {
-    // Stub: Return default value
-    return false;
+    return m_engineThread.joinable();
 }
 
 void EngineAdapter::enable()
 {
-    // Stub: No operation yet
+    if (m_engine) {
+        m_engine->enable();
+    }
 }
 
 void EngineAdapter::disable()
 {
-    // Stub: No operation yet
+    if (m_engine) {
+        m_engine->disable();
+    }
 }
 
 void EngineAdapter::start()
 {
-    // Stub: No operation yet
+    if (!m_engine) {
+        std::cerr << "EngineAdapter::start() - No engine instance" << std::endl;
+        return;
+    }
+
+    // Don't start if already running
+    if (m_engineThread.joinable()) {
+        std::cerr << "EngineAdapter::start() - Engine thread already running" << std::endl;
+        return;
+    }
+
+    // Create thread to run the engine
+    m_engineThread = std::thread([this]() {
+        try {
+            m_engine->start();
+        } catch (const std::exception& e) {
+            std::cerr << "Engine thread exception: " << e.what() << std::endl;
+        } catch (...) {
+            std::cerr << "Engine thread unknown exception" << std::endl;
+        }
+    });
+
+    // Give the engine thread a moment to initialize
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
 void EngineAdapter::stop()
 {
-    // Stub: No operation yet
+    if (!m_engine) {
+        return;
+    }
+
+    // Signal the engine to stop
+    m_engine->stop();
+
+    // Wait for the thread to complete
+    if (m_engineThread.joinable()) {
+        m_engineThread.join();
+    }
 }
 
 bool EngineAdapter::loadConfig(const std::string& path)

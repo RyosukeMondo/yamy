@@ -31,7 +31,7 @@ It will not provide actual functionality as the Linux backend is implemented as 
 To run the application (which will print stub messages):
 
 ```bash
-./bin/yamy_stub
+./bin/yamy
 ```
 
 ## Memory Leak Detection with AddressSanitizer

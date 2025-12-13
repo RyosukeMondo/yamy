@@ -1073,26 +1073,54 @@ public:
             m_usingSN(false),
             m_startTime(time(nullptr))
     {
+        yamy::debug::DebugConsole::LogInfo("Mayu constructor: Initializing components...");
+
+        yamy::debug::DebugConsole::LogInfo("Mayu: Reading config...");
         m_configStore->read(to_string(_T("escapeNLSKeys")), &m_escapeNlsKeys, 0);
+
+        yamy::debug::DebugConsole::LogInfo("Mayu: Creating mailslot...");
         m_hNotifyMailslot = CreateMailslot(NOTIFY_MAILSLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, (SECURITY_ATTRIBUTES *)nullptr);
-        ASSERT(m_hNotifyMailslot != INVALID_HANDLE_VALUE);
+        if (m_hNotifyMailslot == INVALID_HANDLE_VALUE) {
+            DWORD error = GetLastError();
+            yamy::debug::DebugConsole::CriticalError("Failed to create mailslot. Error: " + std::to_string(error));
+            ASSERT(false);
+        }
+
+        yamy::debug::DebugConsole::LogInfo("Mayu: Setting mailslot permissions...");
         int err;
         if (checkWindowsVersion(6, 0) != FALSE) { // enableToWriteByUser() is available only Vista or later
             err = enableToWriteByUser(m_hNotifyMailslot);
             if (err) {
+                yamy::debug::DebugConsole::LogWarning("Failed to enable write permissions for mailslot. Error: " + std::to_string(err));
                 errorDialogWithCode(IDS_cannotPermitStandardUser, err);
             }
         }
 
+        yamy::debug::DebugConsole::LogInfo("Mayu: Creating notify event...");
         m_hNotifyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        ASSERT(m_hNotifyEvent);
+        if (!m_hNotifyEvent) {
+            yamy::debug::DebugConsole::CriticalError("Failed to create notify event");
+            ASSERT(false);
+        }
         m_olNotify.Offset = 0;
         m_olNotify.OffsetHigh = 0;
         m_olNotify.hEvent = m_hNotifyEvent;
         time(&m_startTime);
 
+        yamy::debug::DebugConsole::LogInfo("Mayu: Registering window classes...");
+        if (!Register_focus()) {
+            yamy::debug::DebugConsole::CriticalError("Failed to register focus window class");
+        }
         CHECK_TRUE( Register_focus() );
+
+        if (!Register_target()) {
+            yamy::debug::DebugConsole::CriticalError("Failed to register target window class");
+        }
         CHECK_TRUE( Register_target() );
+
+        if (!Register_tasktray()) {
+            yamy::debug::DebugConsole::CriticalError("Failed to register tasktray window class");
+        }
         CHECK_TRUE( Register_tasktray() );
 
         // change dir
@@ -1105,16 +1133,39 @@ public:
 #endif
 
         // create windows, dialogs
+        yamy::debug::DebugConsole::LogInfo("Mayu: Creating tasktray window...");
         tstringi title = to_tstring(loadString(IDS_mayu));
         m_hwndTaskTray = CreateWindow(_T("mayuTasktray"), title.c_str(),
                                       WS_OVERLAPPEDWINDOW,
                                       CW_USEDEFAULT, CW_USEDEFAULT,
                                       CW_USEDEFAULT, CW_USEDEFAULT,
                                       nullptr, nullptr, g_hInst, this);
+        if (!m_hwndTaskTray) {
+            DWORD error = GetLastError();
+            yamy::debug::DebugConsole::CriticalError("Failed to create tasktray window. Error: " + std::to_string(error));
+        }
         CHECK_TRUE( m_hwndTaskTray );
 
         // set window handle of tasktray to hooks
-        CHECK_FALSE( installMessageHook((DWORD)((ULONG_PTR)m_hwndTaskTray)) );
+        yamy::debug::DebugConsole::LogInfo("Mayu: Installing keyboard hooks...");
+        yamy::debug::DebugConsole::LogWarning("This may be blocked by Windows Defender or antivirus!");
+        BOOL hookResult = installMessageHook((DWORD)((ULONG_PTR)m_hwndTaskTray));
+        if (hookResult != 0) {
+            yamy::debug::DebugConsole::CriticalError(
+                "Failed to install keyboard hooks. Error code: " + std::to_string(hookResult) + "\n\n" +
+                "This is usually caused by:\n" +
+                "1. Windows Defender Real-time Protection\n" +
+                "2. Antivirus software\n" +
+                "3. Missing yamy64.dll or yamy32.dll\n\n" +
+                "Solution:\n" +
+                "- Add YAMY folder to Windows Defender exclusions\n" +
+                "- Run as Administrator\n" +
+                "- Check that .dll files are in the same folder as .exe"
+            );
+        } else {
+            yamy::debug::DebugConsole::LogInfo("Mayu: Keyboard hooks installed successfully!");
+        }
+        CHECK_FALSE( hookResult );
         m_usingSN = wtsRegisterSessionNotification(m_hwndTaskTray,
                     NOTIFY_FOR_THIS_SESSION);
 
@@ -1226,6 +1277,8 @@ public:
             CloseHandle(m_pi.hThread);
         }
 #endif // _WIN64
+
+        yamy::debug::DebugConsole::LogInfo("Mayu constructor completed successfully!");
     }
 
     ///

@@ -56,10 +56,10 @@ static CommandLineOptions parseCommandLine(const QApplication& app) {
 }
 
 /// Restore session state from disk
-/// @param engine Engine instance to configure based on restored session
+/// @param engine EngineAdapter instance to configure based on restored session
 /// @param options Command line options (to check --no-restore)
 /// @return true if session was restored, false otherwise
-static bool restoreSessionState(Engine* engine, const CommandLineOptions& options) {
+static bool restoreSessionState(EngineAdapter* engine, const CommandLineOptions& options) {
     if (options.noRestore) {
         std::cout << "Session restore skipped (--no-restore flag)" << std::endl;
         return false;
@@ -87,8 +87,9 @@ static bool restoreSessionState(Engine* engine, const CommandLineOptions& option
         // Check if the config file still exists
         struct stat st;
         if (stat(data.activeConfigPath.c_str(), &st) == 0 && S_ISREG(st.st_mode)) {
-            engine->setConfigPath(data.activeConfigPath);
-            std::cout << "Restored config: " << data.activeConfigPath << std::endl;
+            // TODO: Task 6 will implement loadConfig()
+            // engine->loadConfig(data.activeConfigPath);
+            std::cout << "Config path available: " << data.activeConfigPath << std::endl;
             restored = true;
         } else {
             std::cout << "Warning: Previous config not found: "
@@ -209,14 +210,14 @@ int main(int argc, char* argv[])
     // Restore session state (unless --no-restore is specified)
     bool sessionRestored = restoreSessionState(engine, cmdOptions);
 
-    // Create and show tray icon
-    TrayIconQt trayIcon(engine);
+    // Create and show tray icon (uses real Engine directly)
+    TrayIconQt trayIcon(realEngine);
     trayIcon.show();
 
     // Initialize plugin system
     std::cout << "Initializing plugin system..." << std::endl;
     yamy::core::PluginManager& pluginManager = yamy::core::PluginManager::instance();
-    if (pluginManager.initialize(engine)) {
+    if (pluginManager.initialize(realEngine)) {
         auto loadedPlugins = pluginManager.getLoadedPlugins();
         if (loadedPlugins.empty()) {
             std::cout << "No plugins loaded (plugin directory: "
@@ -259,16 +260,17 @@ int main(int argc, char* argv[])
                 }
                 std::cout << std::endl;
 
-                // If config name provided, set it
-                if (!data.empty()) {
-                    engine->setConfigPath(data);
-                }
+                // TODO: Task 6 will implement loadConfig()
+                // If config name provided, load it
+                // if (!data.empty()) {
+                //     engine->loadConfig(data);
+                // }
 
-                // For stub engine, just report success
+                // For now, just report success
                 result.success = true;
-                result.message = "Configuration reloaded";
+                result.message = "Configuration reload requested";
                 if (!engine->getConfigPath().empty()) {
-                    result.message += ": " + engine->getConfigPath();
+                    result.message += " (current config: " + engine->getConfigPath() + ")";
                 }
                 break;
             }
