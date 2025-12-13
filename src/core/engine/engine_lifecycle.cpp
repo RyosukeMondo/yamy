@@ -171,11 +171,15 @@ void Engine::start() {
 #endif
 
 #ifdef _WIN32
-    OVERLAPPED* pOl = reinterpret_cast<OVERLAPPED*>(m_ol);
-    pOl->Offset = 0;
-    pOl->OffsetHigh = 0;
-    pOl->hEvent = m_readEvent;
-    yamy::debug::DebugConsole::LogInfo("Engine: OVERLAPPED setup complete!");
+    if (m_ol == nullptr) {
+        yamy::debug::DebugConsole::LogWarning("Engine: m_ol is null, skipping OVERLAPPED setup (may cause issues)");
+    } else {
+        OVERLAPPED* pOl = reinterpret_cast<OVERLAPPED*>(m_ol);
+        pOl->Offset = 0;
+        pOl->OffsetHigh = 0;
+        pOl->hEvent = m_readEvent;
+        yamy::debug::DebugConsole::LogInfo("Engine: OVERLAPPED setup complete!");
+    }
 
     yamy::debug::DebugConsole::LogInfo("Engine: Opening input driver...");
 #endif
