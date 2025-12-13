@@ -71,6 +71,7 @@ public:
 
         if (s_consoleAllocated) {
             std::cout << logMsg << std::endl;
+            std::cout.flush(); // Force immediate flush
         }
 
         if (s_fileLoggingEnabled && s_logFile.is_open()) {

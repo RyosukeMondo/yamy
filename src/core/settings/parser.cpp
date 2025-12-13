@@ -262,6 +262,75 @@ int utf8_char_length(const char* str, size_t max_len, bool& is_valid) {
     return 0;
 }
 
+// Generate a detailed, user-friendly UTF-8 error message
+// This helps users understand what went wrong with their configuration file
+static ErrorMessage createUtf8ErrorMessage(
+    const char* str, size_t max_len, int line_number, size_t column) {
+    ErrorMessage e;
+    unsigned char lead = static_cast<unsigned char>(*str);
+
+    e << "Invalid UTF-8 encoding detected. ";
+
+    // Determine error type and provide specific guidance
+    if (lead >= 0x80 && lead < 0xC0) {
+        // Continuation byte (0x80-0xBF) appearing as first byte
+        e << "Found continuation byte (0x" << std::hex << static_cast<int>(lead) << std::dec
+          << ") at start of character. "
+          << "This byte should only appear after a multi-byte lead byte.";
+    } else if (lead >= 0xC0 && lead < 0xE0) {
+        // 2-byte sequence issue
+        if (max_len < 2) {
+            e << "Incomplete 2-byte UTF-8 sequence at end of line. "
+              << "Lead byte 0x" << std::hex << static_cast<int>(lead) << std::dec
+              << " requires 1 more byte.";
+        } else {
+            unsigned char cont = static_cast<unsigned char>(str[1]);
+            e << "Invalid continuation byte 0x" << std::hex << static_cast<int>(cont) << std::dec
+              << " in 2-byte sequence. Expected byte in range 0x80-0xBF.";
+        }
+    } else if (lead >= 0xE0 && lead < 0xF0) {
+        // 3-byte sequence issue (common for Japanese characters)
+        if (max_len < 3) {
+            e << "Incomplete 3-byte UTF-8 sequence (Japanese/CJK characters use this). "
+              << "Lead byte 0x" << std::hex << static_cast<int>(lead) << std::dec
+              << " requires " << (3 - max_len) << " more byte(s).";
+        } else {
+            unsigned char cont1 = static_cast<unsigned char>(str[1]);
+            unsigned char cont2 = static_cast<unsigned char>(str[2]);
+            if (cont1 < 0x80 || cont1 > 0xBF) {
+                e << "Invalid first continuation byte 0x" << std::hex << static_cast<int>(cont1) << std::dec
+                  << " in 3-byte sequence. Expected byte in range 0x80-0xBF.";
+            } else {
+                e << "Invalid second continuation byte 0x" << std::hex << static_cast<int>(cont2) << std::dec
+                  << " in 3-byte sequence. Expected byte in range 0x80-0xBF.";
+            }
+        }
+    } else if (lead >= 0xF0 && lead < 0xF8) {
+        // 4-byte sequence issue
+        if (max_len < 4) {
+            e << "Incomplete 4-byte UTF-8 sequence. "
+              << "Lead byte 0x" << std::hex << static_cast<int>(lead) << std::dec
+              << " requires " << (4 - max_len) << " more byte(s).";
+        } else {
+            e << "Invalid continuation byte in 4-byte sequence. Expected bytes in range 0x80-0xBF.";
+        }
+    } else if (lead >= 0xF8) {
+        // Reserved byte range
+        e << "Invalid UTF-8 lead byte 0x" << std::hex << static_cast<int>(lead) << std::dec
+          << ". Bytes 0xF8-0xFF are reserved and not valid UTF-8.";
+    } else {
+        // Fallback for any other issue
+        e << "Byte value 0x" << std::hex << static_cast<int>(lead) << std::dec
+          << " is not valid at this position.";
+    }
+
+    // Add location and guidance
+    e << " [Line " << line_number << ", column " << column << "]";
+    e << " Ensure your configuration file is saved with UTF-8 encoding.";
+
+    return e;
+}
+
 // symbol test
 static bool isSymbolChar(char i_c)
 {
@@ -375,10 +444,8 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
                         bool is_valid = false;
                         int char_len = utf8_char_length(t, remaining, is_valid);
                         if (!is_valid) {
-                            ErrorMessage e;
-                            e << "invalid UTF-8 sequence at line " << m_lineNumber;
-                            e << ", byte value 0x" << std::hex << static_cast<int>(uc) << std::dec;
-                            throw e;
+                            size_t column = static_cast<size_t>(t - line.c_str()) + 1;
+                            throw createUtf8ErrorMessage(t, remaining, m_lineNumber, column);
                         }
                         t += char_len;
                     } else {
@@ -416,10 +483,8 @@ bool Parser::getLine(std::vector<Token> *o_tokens)
                         bool is_valid = false;
                         int char_len = utf8_char_length(t, remaining, is_valid);
                         if (!is_valid) {
-                            ErrorMessage e;
-                            e << "invalid UTF-8 sequence at line " << m_lineNumber;
-                            e << ", byte value 0x" << std::hex << static_cast<int>(uc) << std::dec;
-                            throw e;
+                            size_t column = static_cast<size_t>(t - line.c_str()) + 1;
+                            throw createUtf8ErrorMessage(t, remaining, m_lineNumber, column);
                         }
                         t += char_len;
                     } else {
