@@ -21,7 +21,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-4, NFR-4_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ developer. Task: Create EngineAdapter.cpp with constructor accepting Engine* and stubbed method implementations returning default values. Destructor should call stop() for thread cleanup. Restrictions: Do NOT add complex logic yet. Success: File compiles successfully with stubbed implementations._
 
-- [ ] 3. Remove stub Engine class from main_qt.cpp
+- [x] 3. Remove stub Engine class from main_qt.cpp
   - File: src/app/main_qt.cpp
   - Delete stub Engine class definition (lines 21-172)
   - Add includes for real Engine and platform implementations
