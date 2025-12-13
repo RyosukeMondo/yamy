@@ -233,7 +233,7 @@ bool LayoutManager::wmSize(uint32_t /* i_fwSizeType */, short /* i_nWidth */,
 
 // forward message
 bool LayoutManager::defaultWMHandler(uint32_t i_message,
-                                     uintptr_t i_wParam, intptr_t i_lParam)
+                                     WPARAM i_wParam, LPARAM i_lParam)
 {
     switch (i_message) {
     case WM_SIZE:

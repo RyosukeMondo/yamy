@@ -113,8 +113,8 @@ public:
                         short /* i_nHeight */);
 
     /// forward message
-    virtual bool defaultWMHandler(uint32_t i_message, uintptr_t i_wParam,
-                                  intptr_t i_lParam);
+    virtual bool defaultWMHandler(uint32_t i_message, WPARAM i_wParam,
+                                  LPARAM i_lParam);
 };
 
 

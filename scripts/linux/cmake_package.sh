@@ -144,14 +144,21 @@ cmake --build "$ROOT/build/x64" --config Release > "$LOGS_DIR/build_log_x64.txt"
 }
 
 # Check dependencies for missing DLLs
-echo_color "$CYAN" "Checking 64-bit dependencies..."
 check_deps() {
     local file=$1
     local arch=$2
     echo_color "$YELLOW" "  Checking: $(basename $file)"
 
+    # Select the correct objdump based on architecture
+    local objdump_cmd
+    if [[ "$arch" == "x64" ]]; then
+        objdump_cmd="x86_64-w64-mingw32-objdump"
+    else
+        objdump_cmd="i686-w64-mingw32-objdump"
+    fi
+
     # Get DLL dependencies
-    local deps=$(x86_64-w64-mingw32-objdump -p "$file" 2>/dev/null | grep "DLL Name:" || true)
+    local deps=$($objdump_cmd -p "$file" 2>/dev/null | grep "DLL Name:" || true)
 
     if echo "$deps" | grep -qi "libstdc++\|libgcc\|libwinpthread"; then
         echo_color "$RED" "  ERROR: $file depends on MinGW runtime DLLs!"
@@ -163,6 +170,8 @@ check_deps() {
     echo_color "$GREEN" "  ✓ No MinGW runtime dependencies"
     return 0
 }
+
+echo_color "$CYAN" "Checking 64-bit dependencies..."
 
 if ! check_deps "$ROOT/build/x64/bin/yamy64.exe" "x64"; then
     echo_color "$RED" "Dependency check failed. Aborting."
@@ -189,6 +198,13 @@ cmake --build "$ROOT/build/x86" --config Release > "$LOGS_DIR/build_log_x86.txt"
     echo_color "$RED" "CMake Build 32-bit failed. Check $LOGS_DIR/build_log_x86.txt"
     exit 1
 }
+
+# Check 32-bit dependencies
+echo_color "$CYAN" "Checking 32-bit dependencies..."
+if ! check_deps "$ROOT/build/x86/bin/yamy32.exe" "x86"; then
+    echo_color "$RED" "32-bit dependency check failed. Aborting."
+    exit 1
+fi
 
 # Copy 32-bit artifacts
 echo_color "$CYAN" "Copying 32-bit artifacts..."

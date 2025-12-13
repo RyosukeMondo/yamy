@@ -172,7 +172,7 @@ class Target
 public:
     ///
     static LRESULT CALLBACK WndProc(HWND i_hwnd, UINT i_message,
-                                    uintptr_t i_wParam, intptr_t i_lParam) {
+                                    WPARAM i_wParam, LPARAM i_lParam) {
         Target *wc;
         getUserData(i_hwnd, &wc);
         if (!wc)
