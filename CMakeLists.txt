@@ -914,6 +914,37 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_notification_dispatcher_test COMMAND yamy_notification_dispatcher_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_parser_utf8_test (UTF-8 Parser Tests)
+        # Tests for UTF-8 character length detection and validation
+        # -----------------------------------------------------------------------------
+        set(PARSER_UTF8_TEST_SOURCES
+            tests/core/settings/parser_utf8_test.cpp
+            src/core/settings/parser.cpp
+            src/core/logging/logger.cpp
+            src/utils/stringtool.cpp
+        )
+
+        add_executable(yamy_parser_utf8_test
+            ${PARSER_UTF8_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_parser_utf8_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/settings
+            src/utils
+        )
+
+        target_link_libraries(yamy_parser_utf8_test PRIVATE
+            pthread
+        )
+
+        add_test(NAME yamy_parser_utf8_test COMMAND yamy_parser_utf8_test)
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_notification_prefs_test (NotificationPrefs Tests)
         # Tests for NotificationPrefs filtering system
         # -----------------------------------------------------------------------------

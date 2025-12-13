@@ -187,7 +187,7 @@ got_line_end:
 
 // Determine the byte length of a UTF-8 character and validate the sequence
 // Returns 1-4 for valid UTF-8, 0 for invalid (with is_valid set to false)
-static inline int utf8_char_length(const char* str, size_t max_len, bool& is_valid) {
+int utf8_char_length(const char* str, size_t max_len, bool& is_valid) {
     if (max_len == 0) {
         is_valid = false;
         return 0;

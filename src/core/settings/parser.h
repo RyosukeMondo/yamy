@@ -169,4 +169,9 @@ public:
 };
 
 
+// UTF-8 utility function for testing
+// Determines byte length of UTF-8 character (1-4) and validates the sequence
+// Returns 1-4 for valid UTF-8, 0 for invalid (with is_valid set to false)
+int utf8_char_length(const char* str, size_t max_len, bool& is_valid);
+
 #endif // !_PARSER_H
