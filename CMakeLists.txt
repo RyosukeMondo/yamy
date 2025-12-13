@@ -1272,6 +1272,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 # Integration tests
                 tests/integration/key_remapping_integration_test.cpp
                 tests/integration/integration_suite.cpp
+                # E2E tests
+                tests/e2e/japanese_keyboard_layout_test.cpp
             # Leak tests (without their own main)
             # Note: leak_test.cpp has its own main, so we include individual test cases separately
         )
