@@ -19,9 +19,12 @@
 #include "utils/crash_handler.h"
 #include "engine_adapter.h"
 #include "core/engine/engine.h"
-#include "platform/linux/input_hook_linux.h"
-#include "platform/linux/input_injector_linux.h"
-#include "platform/linux/window_system_linux.h"
+#include "core/platform/input_hook_interface.h"
+#include "core/platform/input_injector_interface.h"
+#include "core/platform/window_system_interface.h"
+#include "core/platform/input_driver_interface.h"
+#include "utils/msgstream.h"
+#include <memory>
 
 /// Command line options structure
 struct CommandLineOptions {
@@ -179,10 +182,29 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Starting YAMY on Linux (Qt GUI)" << std::endl;
-    std::cout << "Note: Using stub engine (full integration pending core refactoring)" << std::endl;
 
-    // Create stub engine instance
-    Engine* engine = new Engine();
+    // Create platform implementations using factory functions
+    std::cout << "Initializing platform implementations..." << std::endl;
+    yamy::platform::IWindowSystem* windowSystem = yamy::platform::createWindowSystem();
+    yamy::platform::IInputInjector* inputInjector = yamy::platform::createInputInjector(windowSystem);
+    yamy::platform::IInputHook* inputHook = yamy::platform::createInputHook();
+    yamy::platform::IInputDriver* inputDriver = yamy::platform::createInputDriver();
+
+    // Create log stream (nullptr for hwnd since we don't have a logging window yet)
+    static tomsgstream logStream(0, nullptr);
+
+    // Create real Engine with platform dependencies
+    Engine* realEngine = new Engine(
+        logStream,
+        windowSystem,
+        nullptr,  // ConfigStore - not used yet
+        inputInjector,
+        inputHook,
+        inputDriver
+    );
+
+    // Wrap real Engine in EngineAdapter for simplified Qt GUI interface
+    EngineAdapter* engine = new EngineAdapter(realEngine);
 
     // Restore session state (unless --no-restore is specified)
     bool sessionRestored = restoreSessionState(engine, cmdOptions);
@@ -356,7 +378,8 @@ int main(int argc, char* argv[])
 
     // Cleanup
     std::cout << "Shutting down YAMY..." << std::endl;
-    delete engine;
+    delete engine;  // Deletes EngineAdapter, which deletes the real Engine
+    // Note: Platform implementations are owned and deleted by the real Engine
 
     std::cout << "YAMY exited successfully." << std::endl;
     return result;

@@ -29,7 +29,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-1, NFR-4_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ refactoring specialist. Task: Delete stub Engine class (lines 21-172) from main_qt.cpp. Add includes: engine_adapter.h, core/engine/engine.h, platform/linux/input_hook_linux.h, platform/linux/input_injector_linux.h, platform/linux/window_system_linux.h. Restrictions: Do NOT modify other code yet, may not compile (references remain). Success: Stub class removed, new includes added._
 
-- [ ] 4. Replace stub Engine instantiation with real Engine
+- [x] 4. Replace stub Engine instantiation with real Engine
   - File: src/app/main_qt.cpp
   - Create Linux platform implementations
   - Instantiate real Engine with dependencies
