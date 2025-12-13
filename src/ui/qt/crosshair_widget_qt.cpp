@@ -6,10 +6,14 @@
 #include <QKeyEvent>
 #include <QScreen>
 #include <QApplication>
+#ifndef _WIN32
 #include <QX11Info>
+#endif
 
+#ifndef _WIN32
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
+#endif
 
 CrosshairWidget::CrosshairWidget(QWidget* parent)
     : QWidget(parent)
@@ -30,10 +34,14 @@ CrosshairWidget::~CrosshairWidget()
 void CrosshairWidget::setupOverlay()
 {
     // Set window flags for overlay behavior
-    setWindowFlags(Qt::WindowStaysOnTopHint |
+    // Set window flags for overlay behavior
+    Qt::WindowFlags flags = Qt::WindowStaysOnTopHint |
                    Qt::FramelessWindowHint |
-                   Qt::Tool |
-                   Qt::X11BypassWindowManagerHint);
+                   Qt::Tool;
+#ifndef _WIN32
+    flags |= Qt::X11BypassWindowManagerHint;
+#endif
+    setWindowFlags(flags);
 
     // Set attributes for transparency
     setAttribute(Qt::WA_TranslucentBackground);
@@ -177,6 +185,7 @@ void CrosshairWidget::mousePressEvent(QMouseEvent* event)
 
 void CrosshairWidget::mouseMoveEvent(QMouseEvent* /*event*/)
 {
+#ifndef _WIN32
     // Simplified getWindowAtCursor logic that doesn't hide the overlay
     Display* display = QX11Info::display();
     yamy::platform::WindowHandle hwnd = nullptr;
@@ -207,6 +216,11 @@ void CrosshairWidget::mouseMoveEvent(QMouseEvent* /*event*/)
     }
     
     update();
+#else
+    // Windows implementation TODO
+    m_highlightRect = yamy::platform::Rect();
+    update();
+#endif
 }
 
 void CrosshairWidget::keyPressEvent(QKeyEvent* event)
@@ -220,6 +234,7 @@ void CrosshairWidget::keyPressEvent(QKeyEvent* event)
 
 yamy::platform::WindowHandle CrosshairWidget::getWindowAtCursor()
 {
+#ifndef _WIN32
     Display* display = QX11Info::display();
     if (!display) {
         return nullptr;
@@ -273,4 +288,7 @@ yamy::platform::WindowHandle CrosshairWidget::getWindowAtCursor()
     }
 
     return reinterpret_cast<yamy::platform::WindowHandle>(target);
+#else
+    return nullptr;
+#endif
 }

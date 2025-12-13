@@ -55,6 +55,12 @@ public slots:
     void updateIcon(bool enabled);
 
     /**
+     * @brief Force refresh of the current icon
+     * Used to fix tray icon rendering issues on Windows startup.
+     */
+    void forceIconRefresh();
+
+    /**
      * @brief Update tooltip text
      * @param text Tooltip string
      */
@@ -208,7 +214,16 @@ private:
      * @param overlayColor Color for state indicator
      * @return Icon with state overlay
      */
+
     QIcon createStateIcon(const QIcon& baseIcon, const QColor& overlayColor);
+
+    /**
+     * @brief Generate a dynamic tray icon
+     * @param bg Background color
+     * @param text Text to display (e.g., "Y")
+     * @return Generated QIcon
+     */
+    QIcon generateTrayIcon(const QColor& bg, const QString& text);
 
     /**
      * @brief Find local documentation path if available

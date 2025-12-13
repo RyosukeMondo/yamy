@@ -26,6 +26,15 @@
             "installDir": "${sourceDir}/dist/windows-msvc-release"
         },
         {
+            "name": "windows-msvc-release-x86",
+            "displayName": "Windows MSVC Release x86",
+            "description": "Build using MSVC 2022 (x86 Release) for 32-bit helper",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "Win32",
+            "binaryDir": "${sourceDir}/build/windows-msvc-release-x86",
+            "installDir": "${sourceDir}/dist/windows-msvc-release-x86"
+        },
+        {
             "name": "windows-msvc-debug",
             "displayName": "Windows MSVC Debug",
             "description": "Build using MSVC 2022 (x64 Debug)",
@@ -64,6 +73,11 @@
         {
             "name": "windows-msvc-release",
             "configurePreset": "windows-msvc-release",
+            "configuration": "Release"
+        },
+        {
+            "name": "windows-msvc-release-x86",
+            "configurePreset": "windows-msvc-release-x86",
             "configuration": "Release"
         },
         {

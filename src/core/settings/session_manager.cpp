@@ -7,8 +7,21 @@
 #include <sstream>
 #include <ctime>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#include <io.h>
+#define mkdir(path, mode) _mkdir(path)
+#ifndef S_ISDIR
+#define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
+#endif
+#ifndef S_ISREG
+#define S_ISREG(mode) (((mode) & S_IFMT) == S_IFREG)
+#endif
+#else
 #include <unistd.h>
 #include <pwd.h>
+#endif
 #include <cerrno>
 #include <cstring>
 
@@ -17,6 +30,11 @@ namespace yamy {
 namespace {
 
 std::string getHomeDir() {
+#ifdef _WIN32
+    const char* home = getenv("USERPROFILE");
+    if (home && *home) return home;
+    return "C:\\";
+#else
     const char* home = getenv("HOME");
     if (home && *home) {
         return home;
@@ -26,6 +44,7 @@ std::string getHomeDir() {
         return pw->pw_dir;
     }
     return "/tmp";
+#endif
 }
 
 bool directoryExists(const std::string& path) {
@@ -422,6 +441,13 @@ std::string SessionManager::getAutoStartFilePath() {
 namespace {
 
 std::string getExecutablePath() {
+#ifdef _WIN32
+    char path[MAX_PATH];
+    if (GetModuleFileNameA(nullptr, path, MAX_PATH) != 0) {
+        return path;
+    }
+    return "yamy.exe";
+#else
     char path[4096];
     ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
     if (len != -1) {
@@ -430,6 +456,7 @@ std::string getExecutablePath() {
     }
     // Fallback: try to find yamy in PATH or use current working directory
     return "yamy";
+#endif
 }
 
 bool isValidDesktopEntry(const std::string& content) {

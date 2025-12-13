@@ -1,5 +1,7 @@
 ﻿#include "sound_manager.h"
 
+#if defined(QT_MULTIMEDIA_AVAILABLE)
+
 #if defined(QT_CORE_LIB)
 #include <QUrl>
 
@@ -47,3 +49,5 @@ void SoundManager::setEnabled(bool enabled) {
 } // namespace audio
 } // namespace yamy
 #endif // defined(QT_CORE_LIB)
+
+#endif // QT_MULTIMEDIA_AVAILABLE

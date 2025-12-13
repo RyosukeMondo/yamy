@@ -44,9 +44,9 @@ public:
         if (logPath.empty()) {
             // Use AppData/Local/YAMY/yamy.log
             char appData[MAX_PATH];
-            if (SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, appData) == S_OK) {
+            if (SHGetFolderPathA(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, appData) == S_OK) {
                 s_logPath = std::string(appData) + "\\YAMY";
-                CreateDirectoryA(s_logPath.c_str(), NULL);
+                CreateDirectoryA(s_logPath.c_str(), nullptr);
                 s_logPath += "\\yamy.log";
             } else {
                 s_logPath = "yamy.log";
@@ -99,7 +99,7 @@ public:
     // Show critical error dialog and log
     static void CriticalError(const std::string& message) {
         LogError("CRITICAL: " + message);
-        MessageBoxA(NULL, message.c_str(), "YAMY Critical Error", MB_OK | MB_ICONERROR);
+        MessageBoxA(nullptr, message.c_str(), "YAMY Critical Error", MB_OK | MB_ICONERROR);
     }
 
     // Close console and log file

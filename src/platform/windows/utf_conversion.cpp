@@ -9,7 +9,7 @@ std::wstring utf8_to_wstring(const std::string& utf8) {
         return std::wstring();
     }
 
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), (int)utf8.size(), NULL, 0);
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), (int)utf8.size(), nullptr, 0);
     if (size_needed <= 0) {
         return std::wstring();
     }
@@ -20,7 +20,7 @@ std::wstring utf8_to_wstring(const std::string& utf8) {
 }
 
 std::wstring utf8_to_wstring(const char* utf8) {
-    if (!utf8) return std::wstring();
+    if (utf8 == nullptr) return std::wstring();
     return utf8_to_wstring(std::string(utf8));
 }
 
@@ -29,18 +29,18 @@ std::string wstring_to_utf8(const std::wstring& wide) {
         return std::string();
     }
 
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), (int)wide.size(), NULL, 0, NULL, NULL);
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), (int)wide.size(), nullptr, 0, nullptr, nullptr);
     if (size_needed <= 0) {
         return std::string();
     }
 
     std::string strTo(size_needed, 0);
-    WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), (int)wide.size(), &strTo[0], size_needed, NULL, NULL);
+    WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), (int)wide.size(), &strTo[0], size_needed, nullptr, nullptr);
     return strTo;
 }
 
 std::string wstring_to_utf8(const wchar_t* wide) {
-    if (!wide) return std::string();
+    if (wide == nullptr) return std::string();
     return wstring_to_utf8(std::wstring(wide));
 }
 

@@ -1,4 +1,6 @@
-﻿#include "plugin_manager.h"
+﻿// Windows Stub Logic
+#ifndef _WIN32
+#include "plugin_manager.h"
 #include "utils/platform_logger.h"
 
 #include <dlfcn.h>
@@ -430,3 +432,31 @@ bool PluginManager::isPluginLoaded(const std::string& name) const {
 
 } // namespace core
 } // namespace yamy
+#endif
+
+#ifdef _WIN32
+#include "plugin_manager.h"
+#include "utils/platform_logger.h"
+
+namespace yamy {
+namespace core {
+
+PluginManager& PluginManager::instance() {
+    static PluginManager instance;
+    return instance;
+}
+
+PluginManager::~PluginManager() {}
+std::string PluginManager::getPluginDirectory() { return ""; }
+bool PluginManager::initialize(Engine* engine) { return true; }
+void PluginManager::shutdown() {}
+void PluginManager::scanAndLoadPlugins() {}
+bool PluginManager::loadPlugin(const std::string& path) { return false; }
+bool PluginManager::unloadPlugin(const std::string& name) { return false; }
+void PluginManager::unloadPluginInternal(LoadedPlugin& lp) {}
+std::vector<std::string> PluginManager::getLoadedPlugins() const { return {}; }
+bool PluginManager::isPluginLoaded(const std::string& name) const { return false; }
+
+} // namespace core
+} // namespace yamy
+#endif

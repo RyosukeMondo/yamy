@@ -108,7 +108,7 @@ std::vector<InputDeviceInfo> DeviceManager::enumerateDevices()
         } else {
             // Fallback: get name from parent
             struct udev_device* parent = udev_device_get_parent_with_subsystem_devtype(
-                dev, "input", NULL);
+                dev, "input", nullptr);
             if (parent) {
                 const char* parent_name = udev_device_get_sysattr_value(parent, "name");
                 if (parent_name) {

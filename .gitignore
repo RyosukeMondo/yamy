@@ -19,3 +19,7 @@ build_linux/
 build_asan/
 build_regression/
 audit.log
+
+*.txt
+UAT/
+*.log

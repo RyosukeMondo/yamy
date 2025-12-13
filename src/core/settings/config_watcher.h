@@ -12,8 +12,8 @@
 /// Callback type for config file changes
 using ConfigFileChangedCallback = std::function<void(const std::string& configPath)>;
 
-#ifndef _WIN32
-// Linux implementation using Qt
+#if 1 
+// Qt implementation
 #include <QObject>
 #include <QFileSystemWatcher>
 #include <QTimer>

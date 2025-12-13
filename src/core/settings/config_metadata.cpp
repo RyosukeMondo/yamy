@@ -7,9 +7,17 @@
 #include <sstream>
 #include <algorithm>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#define mkdir(path, mode) _mkdir(path)
+#define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
+#define S_ISREG(mode) (((mode) & S_IFMT) == S_IFREG)
+#else
 #include <unistd.h>
-#include <cstring>
 #include <pwd.h>
+#endif
+#include <cstring>
 
 // Simple JSON parsing helpers (no external dependencies)
 namespace {
@@ -150,6 +158,11 @@ bool extractStringArray(const std::string& json, const std::string& key,
 }
 
 std::string getHomeDir() {
+#ifdef _WIN32
+    const char* home = getenv("USERPROFILE");
+    if (home && *home) return home;
+    return "C:\\";
+#else
     const char* home = getenv("HOME");
     if (home && *home) {
         return home;
@@ -159,6 +172,7 @@ std::string getHomeDir() {
         return pw->pw_dir;
     }
     return "/tmp";
+#endif
 }
 
 bool directoryExists(const std::string& path) {

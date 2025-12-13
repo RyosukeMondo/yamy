@@ -12,12 +12,25 @@
 #include <vector>
 #include <sys/stat.h>
 #include <chrono>
+#include <QStandardPaths>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QTimer>
+
+#ifndef S_ISREG
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
 #include "ui/qt/tray_icon_qt.h"
 #include "ui/qt/crash_report_dialog.h"
 #include "core/settings/session_manager.h"
 #include "core/settings/config_manager.h"
 #include "core/plugin_manager.h"
+#ifdef _WIN32
+#include "platform/windows/ipc_control_server.h"
+#else
 #include "platform/linux/ipc_control_server.h"
+#endif
 #include "utils/crash_handler.h"
 #include "engine_adapter.h"
 #include "core/engine/engine.h"
@@ -163,17 +176,81 @@ static void saveWindowPosition(QWidget* widget, const std::string& windowName) {
  *
  * NOTE: Full engine integration requires core YAMY refactoring to remove
  * Windows-specific dependencies (HWND, PostMessage, SW_*, etc.)
+// ... (comments)
  */
+// Global log stream pointer for message handler
+static std::ofstream* g_logStream = nullptr;
+
+void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    if (!g_logStream) return;
+
+    QByteArray localMsg = msg.toLocal8Bit();
+    const char *file = context.file ? context.file : "";
+    const char *function = context.function ? context.function : "";
+    
+    std::string typeStr;
+    switch (type) {
+    case QtDebugMsg:    typeStr = "Debug"; break;
+    case QtInfoMsg:     typeStr = "Info"; break;
+    case QtWarningMsg:  typeStr = "Warning"; break;
+    case QtCriticalMsg: typeStr = "Critical"; break;
+    case QtFatalMsg:    typeStr = "Fatal"; break;
+    }
+
+    (*g_logStream) << "[" << typeStr << "] " << localMsg.constData();
+    if (context.file) {
+        (*g_logStream) << " (" << file << ":" << context.line << ", " << function << ")";
+    }
+    (*g_logStream) << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
-    std::ofstream("/tmp/yamy-debug.log") << "MAIN: Entry point" << std::endl;
+    // Initialize logging functionality immediately
+    std::string logPath;
+#ifdef _WIN32
+    char path[MAX_PATH];
+    if (GetModuleFileNameA(nullptr, path, MAX_PATH) != 0) {
+        std::string exePath(path);
+        std::string exeDir = exePath.substr(0, exePath.find_last_of("\\/"));
+        std::string localLogDir = exeDir + "\\logs";
+        
+        struct stat st;
+        if (stat(localLogDir.c_str(), &st) == 0 && (st.st_mode & S_IFDIR)) {
+             logPath = localLogDir + "\\yamy.log";
+        }
+    }
+#endif
 
-    // Install crash handler as early as possible
+    // If local log exists, start logging PRE-INIT
+    if (!logPath.empty()) {
+        static std::ofstream debugLog(logPath, std::ios::app);
+        g_logStream = &debugLog;
+        qInstallMessageHandler(messageHandler);
+    }
+    
+    // Install crash handler (Linux only)
+#ifndef _WIN32
     yamy::CrashHandler::install();
     yamy::CrashHandler::setVersion("0.04");
-
-    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Creating QApplication" << std::endl;
+#endif
+    
     QApplication app(argc, argv);
+    
+    // Resume logging (or start fallback logging)
+    QString debugLogPath;
+    if (!logPath.empty()) {
+        debugLogPath = QString::fromStdString(logPath);
+        std::ofstream debugLog(logPath, std::ios::app);
+        // debugLog << "MAIN: QApplication created." << std::endl; // Reduced noise
+    } else {
+        // Fallback to temp directory (safe now that QApplication exists)
+        debugLogPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/yamy-debug.log";
+        std::ofstream debugLog(debugLogPath.toStdString(), std::ios::app);
+        debugLog << "MAIN: Entry point (Fallback). Log path: " << debugLogPath.toStdString() << std::endl;
+        debugLog << "MAIN: QApplication created." << std::endl;
+    }
 
     // Set application metadata
     QApplication::setApplicationName("YAMY");
@@ -197,11 +274,11 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Starting YAMY" << std::endl;
-    std::cout << "Starting YAMY on Linux (Qt GUI)" << std::endl;
+    std::ofstream(debugLogPath.toStdString(), std::ios::app) << "MAIN: Starting YAMY" << std::endl;
+    std::cout << "Starting YAMY (Qt GUI)" << std::endl;
 
     // Create platform implementations using factory functions
-    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Creating platform implementations" << std::endl;
+    std::ofstream(debugLogPath.toStdString(), std::ios::app) << "MAIN: Creating platform implementations" << std::endl;
     std::cout << "Initializing platform implementations..." << std::endl;
     yamy::platform::IWindowSystem* windowSystem = yamy::platform::createWindowSystem();
     yamy::platform::IInputInjector* inputInjector = yamy::platform::createInputInjector(windowSystem);
@@ -244,7 +321,7 @@ int main(int argc, char* argv[])
     );
 
     // Initialize plugin system
-    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Initializing plugin system" << std::endl;
+    std::ofstream(debugLogPath.toStdString(), std::ios::app) << "MAIN: Initializing plugin system" << std::endl;
     std::cout << "Initializing plugin system..." << std::endl;
     yamy::core::PluginManager& pluginManager = yamy::core::PluginManager::instance();
     if (pluginManager.initialize(realEngine)) {
@@ -260,7 +337,8 @@ int main(int argc, char* argv[])
     }
 
     // Check for crash reports from previous session
-    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Checking crash reports" << std::endl;
+    std::ofstream(debugLogPath.toStdString(), std::ios::app) << "MAIN: Checking crash reports" << std::endl;
+#ifndef _WIN32
     if (yamy::CrashReportDialog::shouldShowCrashDialog()) {
         std::vector<std::string> crashReports = yamy::CrashHandler::getCrashReports();
         if (!crashReports.empty()) {
@@ -275,9 +353,10 @@ int main(int argc, char* argv[])
             }
         }
     }
+#endif
 
     // Create IPC control server for yamy-ctl commands
-    std::ofstream("/tmp/yamy-debug.log", std::ios::app) << "MAIN: Creating IPC control server" << std::endl;
+    std::ofstream(debugLogPath.toStdString(), std::ios::app) << "MAIN: Creating IPC control server" << std::endl;
     yamy::platform::IPCControlServer controlServer;
     controlServer.setCommandCallback(
         [engine, &trayIcon](yamy::platform::ControlCommand cmd, const std::string& data)
@@ -384,17 +463,16 @@ int main(int argc, char* argv[])
         return result;
     });
 
-    // Start IPC control server
     {
-        std::ofstream debugLog("/tmp/yamy-debug.log", std::ios::app);
+        std::ofstream debugLog(debugLogPath.toStdString(), std::ios::app);
         debugLog << "DEBUG: About to start IPC control server" << std::endl;
     }
     if (controlServer.start()) {
-        std::ofstream debugLog("/tmp/yamy-debug.log", std::ios::app);
+        std::ofstream debugLog(debugLogPath.toStdString(), std::ios::app);
         debugLog << "IPC control server started at: " << controlServer.socketPath() << std::endl;
         std::cout << "IPC control server started at: " << controlServer.socketPath() << std::endl;
     } else {
-        std::ofstream debugLog("/tmp/yamy-debug.log", std::ios::app);
+        std::ofstream debugLog(debugLogPath.toStdString(), std::ios::app);
         debugLog << "Warning: Failed to start IPC control server" << std::endl;
         std::cerr << "Warning: Failed to start IPC control server" << std::endl;
     }
@@ -408,6 +486,9 @@ int main(int argc, char* argv[])
         notificationMsg,
         QSystemTrayIcon::Information
     );
+
+    // Force icon refresh after a short delay to ensure tray is ready
+    QTimer::singleShot(500, &trayIcon, &TrayIconQt::forceIconRefresh);
 
     std::cout << "YAMY Qt GUI initialized. Running..." << std::endl;
 

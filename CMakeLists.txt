@@ -61,6 +61,7 @@ if(MSVC)
         _CRT_SECURE_NO_WARNINGS
         MAYU64
         USE_INI
+        NOMINMAX
     )
     add_compile_options(/W3 /MP) # Warning level 3, Multi-processor compilation
 elseif(MINGW)
@@ -259,9 +260,58 @@ if(WIN32)
         src/platform/windows/hook_data.cpp
     )
 
+
+    # -----------------------------------------------------------------------------
+    # Option: Use Modern Qt GUI on Windows
+    # -----------------------------------------------------------------------------
+    option(BUILD_QT_GUI "Build with Modern Qt GUI" ON)
+
+    if(BUILD_QT_GUI)
+        find_package(Qt5 COMPONENTS Widgets Gui Core REQUIRED)
+        
+        # Add Qt sources
+        add_subdirectory(src/ui/qt)
+        
+        # Remove Win32 UI sources
+        list(REMOVE_ITEM ENGINE_SOURCES
+            src/ui/dlgeditsetting.cpp
+            src/ui/dlginvestigate.cpp
+            src/ui/dlglog.cpp
+            src/ui/dlgsetting.cpp
+            src/ui/dlgversion.cpp
+            src/ui/mayu.rc
+            src/app/mayu.cpp
+        )
+        
+        # Add Qt Entry Point and Adapter, and missing Core components
+        list(APPEND ENGINE_SOURCES 
+            src/app/main_qt.cpp 
+            src/app/engine_adapter.cpp
+            src/core/settings/config_manager.cpp
+            src/core/settings/config_validator.cpp
+            src/core/settings/config_metadata.cpp
+            src/core/settings/session_manager.cpp
+            src/core/plugin_manager.cpp
+            src/utils/crash_handler.cpp
+            src/platform/windows/ipc_control_server.cpp
+        )
+        
+        # Enable MOC (Disabled for main target to avoid duplicates with yamy_qt_gui)
+        # set(CMAKE_AUTOMOC ON)
+    endif()
+
     add_executable(yamy_engine_new WIN32 ${ENGINE_SOURCES})
     set_target_properties(yamy_engine_new PROPERTIES OUTPUT_NAME "yamy${YAMY_ARCH_SUFFIX}")
-    target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32)
+    
+    if(BUILD_QT_GUI)
+        target_link_libraries(yamy_engine_new PRIVATE 
+            yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32
+            Qt5::Widgets Qt5::Gui Qt5::Core yamy_qt_gui
+        )
+        target_compile_definitions(yamy_engine_new PRIVATE BUILD_QT_GUI)
+    else()
+        target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32)
+    endif()
 
     target_include_directories(yamy_engine_new PRIVATE
         src
@@ -1647,6 +1697,33 @@ if(WIN32)
             RUNTIME DESTINATION .
             COMPONENT runtime
         )
+    else()
+        # If we are in 64-bit build, try to find pre-built 32-bit helper and dlls
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            set(YAMY_X86_BUILD_DIR "${CMAKE_SOURCE_DIR}/build/windows-msvc-release-x86/bin/Release")
+            
+            # Helper executable
+            if(EXISTS "${YAMY_X86_BUILD_DIR}/yamyd32.exe")
+                message(STATUS "Found 32-bit helper: ${YAMY_X86_BUILD_DIR}/yamyd32.exe")
+                install(FILES "${YAMY_X86_BUILD_DIR}/yamyd32.exe" DESTINATION . COMPONENT runtime)
+            else()
+                message(WARNING "32-bit helper (yamyd32.exe) not found at ${YAMY_X86_BUILD_DIR}. Please build windows-msvc-release-x86 preset first.")
+            endif()
+
+            # 32-bit Hook DLL
+            if(EXISTS "${YAMY_X86_BUILD_DIR}/yamy32.dll")
+                message(STATUS "Found 32-bit hook DLL: ${YAMY_X86_BUILD_DIR}/yamy32.dll")
+                install(FILES "${YAMY_X86_BUILD_DIR}/yamy32.dll" DESTINATION . COMPONENT runtime)
+            else()
+                 message(WARNING "32-bit hook DLL (yamy32.dll) not found at ${YAMY_X86_BUILD_DIR}.")
+            endif()
+
+            # 32-bit Main Executable (optional but requested)
+            if(EXISTS "${YAMY_X86_BUILD_DIR}/yamy32.exe")
+                message(STATUS "Found 32-bit engine: ${YAMY_X86_BUILD_DIR}/yamy32.exe")
+                install(FILES "${YAMY_X86_BUILD_DIR}/yamy32.exe" DESTINATION . COMPONENT runtime)
+            endif()
+        endif()
     endif()
 
     # Install keymaps
@@ -1665,8 +1742,7 @@ if(WIN32)
 
     # Install scripts (launchers)
     install(FILES 
-        scripts/windows/launch_yamy.bat
-        scripts/windows/launch_yamy_admin.bat
+        scripts/windows/launch.ps1
         DESTINATION .
         COMPONENT runtime
     )

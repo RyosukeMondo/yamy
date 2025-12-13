@@ -480,7 +480,7 @@ private:
 #endif
                         if (!This->m_hMenuTaskTray) {
 #ifdef _WIN32
-                            yamy::debug::DebugConsole::LogError("m_hMenuTaskTray is NULL! Menu not loaded!");
+                            yamy::debug::DebugConsole::LogError("m_hMenuTaskTray is nullptr! Menu not loaded!");
 #endif
                             break;
                         }
@@ -636,9 +636,17 @@ private:
                     case ID_MENUITEM_setting:
                         if (!This->m_isSettingDialogOpened) {
                             This->m_isSettingDialogOpened = true;
-                            if (DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_setting),
-                                          nullptr, (DLGPROC)dlgSetting_dlgProc))
+                            yamy::debug::DebugConsole::LogInfo("Attempting to open Settings dialog...");
+                            INT_PTR result = DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_setting),
+                                          nullptr, (DLGPROC)dlgSetting_dlgProc);
+                            if (result == -1 || result == 0) {
+                                yamy::debug::DebugConsole::LogError("DialogBox failed! Error: " + std::to_string(GetLastError()));
+                            } else if (result) {
+                                yamy::debug::DebugConsole::LogInfo("Settings dialog closed with OK, reloading...");
                                 This->load();
+                            } else {
+                                yamy::debug::DebugConsole::LogInfo("Settings dialog cancelled.");
+                            }
                             This->m_isSettingDialogOpened = false;
                         }
                         break;
@@ -1183,7 +1191,7 @@ public:
             DWORD error = GetLastError();
             if (error == ERROR_ALREADY_EXISTS) {
                 yamy::debug::DebugConsole::LogError("YAMY is already running. Please close the existing instance first.");
-                MessageBoxA(NULL,
+                MessageBoxA(nullptr,
                     "YAMY is already running.\n\nPlease close the existing instance before starting a new one.\n\nCheck the system tray for the YAMY icon.",
                     "YAMY Already Running",
                     MB_OK | MB_ICONWARNING);
@@ -1597,7 +1605,7 @@ extern "C" int WINAPI wWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstan
 
     if (showVersion) {
         yamy::debug::DebugConsole::LogInfo("YAMY version 1.0.1");
-        MessageBoxA(NULL, "YAMY version 1.0.1\nKeyboard remapper for Windows",
+        MessageBoxA(nullptr, "YAMY version 1.0.1\nKeyboard remapper for Windows",
                     "YAMY Version", MB_OK | MB_ICONINFORMATION);
         return 0;
     }
@@ -1612,7 +1620,7 @@ extern "C" int WINAPI wWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstan
             "  --help, -h        Show this help message\n\n"
             "Log file location: " + yamy::debug::DebugConsole::GetLogPath();
         yamy::debug::DebugConsole::LogInfo(helpText);
-        MessageBoxA(NULL, helpText.c_str(), "YAMY Help", MB_OK | MB_ICONINFORMATION);
+        MessageBoxA(nullptr, helpText.c_str(), "YAMY Help", MB_OK | MB_ICONINFORMATION);
         return 0;
     }
 
@@ -1621,7 +1629,15 @@ extern "C" int WINAPI wWinMain(HINSTANCE i_hInstance, HINSTANCE /* i_hPrevInstan
     }
 
     yamy::debug::DebugConsole::LogInfo("Initializing common controls...");
-    InitCommonControls();
+    // InitCommonControls(); // Deprecated
+    INITCOMMONCONTROLSEX icex;
+    icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+    icex.dwICC = ICC_WIN95_CLASSES | ICC_LISTVIEW_CLASSES | ICC_USEREX_CLASSES;
+    if (!InitCommonControlsEx(&icex)) {
+        yamy::debug::DebugConsole::LogWarning("InitCommonControlsEx failed! Error: " + std::to_string(GetLastError()));
+    } else {
+        yamy::debug::DebugConsole::LogInfo("Common controls initialized successfully.");
+    }
 
     yamy::debug::DebugConsole::LogInfo("Initializing OLE...");
     if (FAILED(OleInitialize(nullptr))) {

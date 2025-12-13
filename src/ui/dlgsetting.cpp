@@ -11,7 +11,9 @@
 #include "windowstool.h"
 #include "setting.h"
 #include "dlgeditsetting.h"
+#include "dlgeditsetting.h"
 #include "layoutmanager.h"
+#include "utils/debug_console.h"
 
 #include <commctrl.h>
 #include <windowsx.h>
@@ -94,10 +96,12 @@ class DlgSetting : public LayoutManager
     int getSelectedItem() {
         if (ListView_GetSelectedCount(m_hwndMayuPaths) == 0)
             return -1;
-        for (int i = 0; ; ++ i) {
+        int count = ListView_GetItemCount(m_hwndMayuPaths);
+        for (int i = 0; i < count; ++ i) {
             if (ListView_GetItemState(m_hwndMayuPaths, i, LVIS_SELECTED))
                 return i;
         }
+        return -1;
     }
 
 public:
@@ -116,6 +120,7 @@ public:
 
     /// WM_INITDIALOG
     BOOL wmInitDialog(HWND /* i_focus */, LPARAM /* i_lParam */) {
+        yamy::debug::DebugConsole::LogInfo("DlgSetting: wmInitDialog called");
         setSmallIcon(static_cast<HWND>(m_hwnd), IDI_ICON_mayu);
         setBigIcon(static_cast<HWND>(m_hwnd), IDI_ICON_mayu);
 
@@ -314,7 +319,7 @@ public:
                 std::string val = data.m_name + ";" + data.m_filename + ";" + data.m_symbols;
                 m_reg.write(to_string(buf), val);
             }
-            for (; ; ++ index) {
+            for (int safety = 0; safety < 1000; ++index, ++safety) {
                 _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
                 if (!m_reg.remove(to_string(buf)))
                     break;

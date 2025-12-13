@@ -21,6 +21,11 @@
 #include <vector>
 #include <csignal>
 
+#ifdef _WIN32
+// Stub for Windows to allow compilation of header
+struct siginfo_t; 
+#endif
+
 namespace yamy {
 
 /// Crash handler for generating crash reports on fatal signals

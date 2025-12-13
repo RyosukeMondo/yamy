@@ -6,12 +6,13 @@ find_package(Qt5 REQUIRED COMPONENTS
     Core
     Widgets
     Gui
-    X11Extras
 )
-find_package(Qt5 COMPONENTS Multimedia QUIET)
 
-# Find X11 for global hotkeys
-find_package(X11 REQUIRED)
+if(UNIX AND NOT WIN32)
+    find_package(Qt5 REQUIRED COMPONENTS X11Extras)
+    # Find X11 for global hotkeys
+    find_package(X11 REQUIRED)
+endif()
 
 # Enable Qt MOC (Meta-Object Compiler)
 set(CMAKE_AUTOMOC ON)
@@ -41,6 +42,7 @@ set(QT_GUI_SOURCES
     preferences_dialog.cpp
     crash_report_dialog.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/platform/ipc_channel_interface.cpp
 )
 
 # Qt header files
@@ -93,10 +95,15 @@ target_link_libraries(yamy_qt_gui PUBLIC
     Qt5::Core
     Qt5::Widgets
     Qt5::Gui
-    Qt5::X11Extras
-    ${X11_LIBRARIES}
-    xcb
 )
+
+if(UNIX AND NOT WIN32)
+    target_link_libraries(yamy_qt_gui PUBLIC
+        Qt5::X11Extras
+        ${X11_LIBRARIES}
+        xcb
+    )
+endif()
 
 # Optionally link Qt Multimedia if available
 if(Qt5Multimedia_FOUND)

@@ -4,7 +4,7 @@
 
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$RepoRoot = Split-Path -Parent (Split-Path -Parent $ScriptDir)
+$RepoRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $ScriptDir))
 $CMakeFile = Join-Path $RepoRoot "CMakeLists.txt"
 $SrcDir = Join-Path $RepoRoot "src"
 
@@ -27,10 +27,14 @@ foreach ($file in $allCppFiles) {
     if ($cmakeContent -notmatch [regex]::Escape($relativePath)) {
         # Exclude known non-build files
         # - tests/: Test sources are handled separately or in yamy_test
-        # - ts4mayu/: Legacy touchpad support, not currently in CMake build
-        if ($relativePath -match "^src/tests/" -or $relativePath -match "^src/ts4mayu/") {
+        if ($relativePath -match "^src/tests/" -or 
+            $relativePath -match "^src/ts4mayu/" -or
+            $relativePath -match "^src/ui/qt/" -or
+            $relativePath -match "^src/examples/" -or
+            $relativePath -match "test_.*\.cpp$") {
             continue
         }
+        $missingFiles += $relativePath
     }
 }
 

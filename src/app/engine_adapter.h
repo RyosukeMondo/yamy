@@ -4,6 +4,7 @@
 #include <thread>
 #include <memory>
 #include <functional>
+#include <chrono>
 #include "core/platform/ipc_defs.h"
 
 // Forward declaration of real Engine

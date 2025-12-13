@@ -22,7 +22,9 @@
 #include <QClipboard>
 #include <QApplication>
 
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include <limits.h>
 
 DialogInvestigateQt::DialogInvestigateQt(Engine* engine, QWidget* parent)
@@ -403,6 +405,7 @@ QString DialogInvestigateQt::getProcessName(uint32_t pid)
         return QString();
     }
 
+#ifndef _WIN32
     // Read process name from /proc/{pid}/comm
     QString commPath = QString("/proc/%1/comm").arg(pid);
     QFile commFile(commPath);
@@ -420,6 +423,9 @@ QString DialogInvestigateQt::getProcessName(uint32_t pid)
     commFile.close();
 
     return processName;
+#else
+    return QString(); // TODO: Windows implementation
+#endif
 }
 
 QString DialogInvestigateQt::getProcessPath(uint32_t pid)
@@ -428,6 +434,7 @@ QString DialogInvestigateQt::getProcessPath(uint32_t pid)
         return QString();
     }
 
+#ifndef _WIN32
     // Read executable path from /proc/{pid}/exe using readlink
     QString exePath = QString("/proc/%1/exe").arg(pid);
 
@@ -449,6 +456,9 @@ QString DialogInvestigateQt::getProcessPath(uint32_t pid)
 
     buffer[len] = '\0';
     return QString::fromUtf8(buffer);
+#else
+    return QString(); // TODO: Windows implementation
+#endif
 }
 
 void DialogInvestigateQt::setEngine(Engine* engine)

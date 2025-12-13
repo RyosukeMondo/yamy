@@ -1,11 +1,11 @@
 ﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// crash_handler.cpp - Crash reporting infrastructure implementation
-//
-// Uses only async-signal-safe functions inside signal handlers per POSIX.
-// See: signal-safety(7) for list of async-signal-safe functions.
+// crash_handler.cpp - Crash reporting infrastructure declaration
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #include "crash_handler.h"
 
+#ifndef _WIN32
+// Linux Implementation
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -448,3 +448,23 @@ void CrashHandler::writeCrashReport(int sig, siginfo_t* info, void* context) {
 }
 
 } // namespace yamy
+
+#endif // _WIN32
+
+#ifdef _WIN32
+// Windows Stubs
+namespace yamy {
+    void CrashHandler::install() {}
+    void CrashHandler::uninstall() {}
+    void CrashHandler::setVersion(const std::string&) {}
+    void CrashHandler::setConfigPath(const std::string&) {}
+    bool CrashHandler::hasCrashReports() { return false; }
+    std::vector<std::string> CrashHandler::getCrashReports() { return {}; }
+    bool CrashHandler::deleteCrashReport(const std::string&) { return false; }
+    int CrashHandler::deleteAllCrashReports() { return 0; }
+    std::string CrashHandler::getCrashDir() { return ""; }
+    bool CrashHandler::ensureCrashDirExists() { return false; }
+    void CrashHandler::signalHandler(int, siginfo_t*, void*) {}
+    void CrashHandler::writeCrashReport(int, siginfo_t*, void*) {}
+}
+#endif

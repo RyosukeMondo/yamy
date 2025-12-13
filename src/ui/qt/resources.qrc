@@ -1,8 +1,8 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="/icons">
-        <file alias="yamy_enabled.png">../../../resources/mayu.ico</file>
-        <file alias="yamy_disabled.png">../../../resources/mayudisabled.ico</file>
+        <file alias="yamy_enabled.ico">../../../resources/mayu.ico</file>
+        <file alias="yamy_disabled.ico">../../../resources/mayudisabled.ico</file>
         <!-- State icons (optional - will be auto-generated if missing) -->
         <!-- <file alias="yamy_loading.png">../../resources/icons/yamy_loading.png</file> -->
         <!-- <file alias="yamy_running.png">../../resources/icons/yamy_running.png</file> -->

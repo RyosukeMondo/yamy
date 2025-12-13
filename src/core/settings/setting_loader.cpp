@@ -1614,7 +1614,7 @@ add_symbols:
         if (!i_name.empty())
             return false;                // called by 'include'
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(BUILD_QT_GUI)
         if (!DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_setting),
                        nullptr, (DLGPROC)dlgSetting_dlgProc))
             return false;

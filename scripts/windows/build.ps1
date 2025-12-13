@@ -37,15 +37,21 @@ param(
     [ValidateSet("MSVC", "MinGW")]
     [string]$Compiler = "MSVC",
 
-    [switch]$Clean,
+    [ValidateSet("x64", "x86")]
+    [string]$Arch = "x64",
+
     [switch]$Install,
-    [switch]$Package
+    [switch]$Package,
+    [switch]$Clean
 )
 
 $ErrorActionPreference = "Stop"
 # Ensure we are in the project root
 Set-Location "$PSScriptRoot/../.."
 $presetName = "windows-$($Compiler.ToLower())-$($Config.ToLower())"
+if ($Arch -eq "x86") {
+    $presetName += "-x86"
+}
 
 Write-Host "==============================================" -ForegroundColor Cyan
 Write-Host "  YAMY Build System" -ForegroundColor Cyan

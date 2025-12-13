@@ -91,6 +91,18 @@ void TrayIconQt::updateIcon(bool enabled)
     }
 }
 
+void TrayIconQt::forceIconRefresh()
+{
+    // Re-set the current icon to force a repaint
+    updateIcon(m_enabled);
+    
+    // Also try setVisible toggling which sometimes helps Windows shell
+    if (isVisible()) {
+        hide();
+        show();
+    }
+}
+
 void TrayIconQt::updateTooltip(const QString& text)
 {
     setToolTip(text);
@@ -453,44 +465,39 @@ void TrayIconQt::createMenu()
 
 void TrayIconQt::loadIcons()
 {
-    // Load icons from Qt resources
-    m_iconEnabled = QIcon(":/icons/yamy_enabled.png");
-    m_iconDisabled = QIcon(":/icons/yamy_disabled.png");
-    m_iconLoading = QIcon(":/icons/yamy_loading.png");
-    m_iconRunning = QIcon(":/icons/yamy_running.png");
-    m_iconStopped = QIcon(":/icons/yamy_stopped.png");
-    m_iconError = QIcon(":/icons/yamy_error.png");
+    // Generate safe icons to prevent file format issues
+    // Using simple colored backgrounds with "Y" text
+    m_iconEnabled = generateTrayIcon(QColor(0, 120, 215), "Y"); // Blue
+    m_iconDisabled = generateTrayIcon(Qt::gray, "Y");           // Gray
 
-    // Fallback: Create state icons from enabled/disabled with overlays
-    if (m_iconLoading.isNull()) {
-        m_iconLoading = createStateIcon(m_iconEnabled, Qt::yellow);
-    }
-    if (m_iconRunning.isNull()) {
-        // Use enabled icon as running icon
-        m_iconRunning = m_iconEnabled;
-        if (m_iconRunning.isNull()) {
-            m_iconRunning = QIcon::fromTheme("preferences-desktop-keyboard");
-        }
-    }
-    if (m_iconStopped.isNull()) {
-        // Use disabled icon as stopped icon
-        m_iconStopped = m_iconDisabled;
-        if (m_iconStopped.isNull()) {
-            m_iconStopped = QIcon::fromTheme("preferences-desktop-keyboard-shortcuts");
-        }
-    }
-    if (m_iconError.isNull()) {
-        m_iconError = createStateIcon(m_iconEnabled.isNull() ?
-            QIcon::fromTheme("preferences-desktop-keyboard") : m_iconEnabled, Qt::red);
-    }
+    // Explicitly set the icon immediately
+    setIcon(m_iconEnabled);
 
-    // Final fallbacks for enabled/disabled
-    if (m_iconEnabled.isNull()) {
-        m_iconEnabled = m_iconRunning;
-    }
-    if (m_iconDisabled.isNull()) {
-        m_iconDisabled = m_iconStopped;
-    }
+    // Initialize state icons
+    m_iconLoading = generateTrayIcon(Qt::darkYellow, "...");
+    m_iconRunning = m_iconEnabled;
+    m_iconStopped = m_iconDisabled;
+    m_iconError = generateTrayIcon(Qt::red, "!");
+}
+
+QIcon TrayIconQt::generateTrayIcon(const QColor& bg, const QString& text)
+{
+    QPixmap pix(32, 32);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing);
+    
+    // Draw rounded background
+    p.setBrush(bg);
+    p.setPen(Qt::NoPen);
+    p.drawRoundedRect(0, 0, 32, 32, 4, 4);
+    
+    // Draw text
+    p.setPen(Qt::white);
+    p.setFont(QFont("Arial", 20, QFont::Bold));
+    p.drawText(pix.rect(), Qt::AlignCenter, text);
+    
+    return QIcon(pix);
 }
 
 QIcon TrayIconQt::createStateIcon(const QIcon& baseIcon, const QColor& overlayColor)

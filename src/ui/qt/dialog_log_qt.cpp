@@ -1043,7 +1043,11 @@ QString DialogLogQt::formatTimestamp(const std::chrono::system_clock::time_point
         case TimestampFormat::Absolute: {
             auto time_t_val = std::chrono::system_clock::to_time_t(timestamp);
             std::tm tm{};
+#ifdef _WIN32
+            localtime_s(&tm, &time_t_val);
+#else
             localtime_r(&time_t_val, &tm);
+#endif
 
             // Get milliseconds
             auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(

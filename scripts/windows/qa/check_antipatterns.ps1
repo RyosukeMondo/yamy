@@ -1,59 +1,59 @@
 $ErrorActionPreference = "Stop"
 
-$RepoRoot = Resolve-Path "$PSScriptRoot/.."
+$RepoRoot = Resolve-Path "$PSScriptRoot/../../.."
 $SrcRoot = "$RepoRoot/src"
 
 Write-Host "Checking for code anti-patterns in: $SrcRoot" -ForegroundColor Cyan
 
 $AntiPatterns = @(
     @{
-        Name = "Legacy NULL";
-        Pattern = "\bNULL\b";
-        Suggestion = "Use 'nullptr' instead of 'NULL'.";
-        Type = "Error";
+        Name         = "Legacy NULL";
+        Pattern      = "\bNULL\b";
+        Suggestion   = "Use 'nullptr' instead of 'NULL'.";
+        Type         = "Error";
         ExcludePaths = @("src/tests/", "src/ts4mayu/")
     },
     @{
-        Name = "Namespace Pollution";
-        Pattern = "^using\s+namespace\s+std;";
-        Suggestion = "Do not use 'using namespace std;' in header files.";
-        Type = "Error";
+        Name          = "Namespace Pollution";
+        Pattern       = "^using\s+namespace\s+std;";
+        Suggestion    = "Do not use 'using namespace std;' in header files.";
+        Type          = "Error";
         FileExtension = ".h";
-        ExcludePaths = @("src/tests/")
+        ExcludePaths  = @("src/tests/")
     },
     @{
-        Name = "Unsafe String Function";
-        Pattern = "\b(sprintf|strcpy|strcat)\b";
-        Suggestion = "Use safe alternatives like 'snprintf', 'strncpy', or std::string.";
-        Type = "Warning";
+        Name         = "Unsafe String Function";
+        Pattern      = "\b(sprintf|strcpy|strcat)\b";
+        Suggestion   = "Use safe alternatives like 'snprintf', 'strncpy', or std::string.";
+        Type         = "Warning";
         ExcludePaths = @("src/tests/", "src/ts4mayu/")
     },
     @{
-        Name = "Raw Memory Allocation";
-        Pattern = "\b(malloc|free)\b";
-        Suggestion = "Use 'new'/'delete' or smart pointers.";
-        Type = "Warning";
+        Name         = "Raw Memory Allocation";
+        Pattern      = "\b(malloc|free)\b";
+        Suggestion   = "Use 'new'/'delete' or smart pointers.";
+        Type         = "Warning";
         ExcludePaths = @("src/tests/", "src/ts4mayu/", "src/platform/")
     },
     @{
-        Name = "Source File Inclusion";
-        Pattern = '^\s*#include\s+["<].+\.cpp[">]';
-        Suggestion = "Do not include .cpp files.";
-        Type = "Error";
+        Name         = "Source File Inclusion";
+        Pattern      = '^\s*#include\s+["<].+\.cpp[">]';
+        Suggestion   = "Do not include .cpp files.";
+        Type         = "Error";
         ExcludePaths = @("src/tests/")
     },
-     @{
-         Name = "Conditional Compilation in Core";
-         Pattern = '^\s*#ifn?def\s+';
-         Suggestion = "Minimize #ifdef in core logic. Use interfaces/polymorphism.";
-         Type = "Warning";
-         ExcludePaths = @("src/tests/", "src/ts4mayu/", "src/platform/", "src/core/engine/engine.h") # Engine is legacy central
-     },
-     @{
-        Name = "Tab Character";
-        Pattern = "\t";
-        Suggestion = "Use spaces instead of tabs.";
-        Type = "Warning"; 
+    @{
+        Name         = "Conditional Compilation in Core";
+        Pattern      = '^\s*#ifn?def\s+';
+        Suggestion   = "Minimize #ifdef in core logic. Use interfaces/polymorphism.";
+        Type         = "Warning";
+        ExcludePaths = @("src/tests/", "src/ts4mayu/", "src/platform/", "src/core/engine/engine.h") # Engine is legacy central
+    },
+    @{
+        Name         = "Tab Character";
+        Pattern      = "\t";
+        Suggestion   = "Use spaces instead of tabs.";
+        Type         = "Warning"; 
         ExcludePaths = @("src/tests/", "src/ts4mayu/") 
     }
 )
@@ -92,7 +92,8 @@ foreach ($file in $Files) {
                     if ($check.Type -eq "Error") {
                         Write-Host $msg -ForegroundColor Red
                         $ErrorCount++
-                    } else {
+                    }
+                    else {
                         Write-Host $msg -ForegroundColor Yellow
                         $WarningCount++
                     }
