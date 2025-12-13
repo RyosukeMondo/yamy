@@ -11,7 +11,7 @@
   - _Requirements: 1, 3, 4_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Systems programmer with expertise in C++ logging and input event handling | Task: Add comprehensive logging to evdevToYamyKeyCode() function in src/platform/linux/keycode_mapping.cpp following requirements 1, 3, and 4. Log format: [LAYER1:IN] evdev X (PRESS/RELEASE) → yamy 0xYYYY. Include event type in function signature. Leverage existing PLATFORM_LOG_INFO macro. | Restrictions: Do not modify map tables, maintain function performance (< 1ms), ensure debug logging can be toggled via YAMY_DEBUG_KEYCODE env var, do not break existing callers | _Leverage: Existing PLATFORM_LOG_INFO macro in src/platform/linux/platform_log.h | _Requirements: Requirements 1 (Universal Event Processing), 3 (Layer Completeness), 4 (Comprehensive Logging) | Success: All Layer 1 events logged with evdev code, event type, and YAMY scan code. Unmapped keys show NOT FOUND. No performance degradation. Existing code compiles without changes._
 
-- [-] 1.2 Add Layer 3 logging to yamyToEvdevKeyCode()
+- [x] 1.2 Add Layer 3 logging to yamyToEvdevKeyCode()
   - Files: `src/platform/linux/keycode_mapping.cpp`
   - Add logging to `yamyToEvdevKeyCode()`: `[LAYER3:OUT] yamy 0xYYYY → evdev Z (KEY_NAME)`
   - Log which map was used: "Found in US scan map" or "Found in VK map"
