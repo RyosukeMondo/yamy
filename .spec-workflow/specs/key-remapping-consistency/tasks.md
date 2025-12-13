@@ -212,16 +212,36 @@
   - _Requirements: 5, 6_
   - _Commit: ba63824 "feat(spec): create Python automated test framework (task 3.5)"_
 
-- [ ] 3.6 Create test report generator
-  - Files: `tests/generate_test_report.py`
-  - Generate HTML report from test results
-  - Show: total tests, passed, failed, pass rate percentage
-  - List failures with: input key, expected key, actual key, event type, which layer failed
-  - Color-coded: green for pass, red for fail, yellow for inconclusive
-  - Include summary statistics and improvement vs baseline
-  - _Leverage: Test results from automated_keymap_test.py_
+- [x] 3.6 Create test report generator
+  - Files: `tests/generate_test_report.py`, `tests/README_TEST_REPORTING.md`
+  - **STATUS**: COMPLETED
+  - **IMPLEMENTATION**:
+    - Created `generate_test_report.py` with comprehensive HTML report generation
+    - Loads test results from JSON format (exported by automated_keymap_test.py)
+    - Generates color-coded HTML with CSS styling (no external dependencies)
+    - Shows statistics: total tests, passed, failed, pass rate
+    - Compares against baseline (50% from task 1.6) with improvement indicator
+    - Lists failures grouped by type (no output, wrong output)
+    - Each failure shows: input/output keys, evdev codes, event type, error message
+    - Color scheme: green for pass/improvement, red for fail/regression, yellow for rate
+    - Stats-only mode for quick reports without detailed results
+    - Enhanced automated_keymap_test.py with JSON export capability
+    - Created comprehensive documentation in README_TEST_REPORTING.md
+  - **FEATURES**:
+    - Command-line interface with --input, --output, --baseline, --config options
+    - Supports JSON input from automated_keymap_test.py
+    - Fallback text parsing for non-JSON results
+    - Stats-only mode: --stats-only --total N --passed N --failed N
+    - Generates static HTML (Python stdlib only, no external libraries)
+    - Professional styling with responsive design
+    - Clear visual indicators for improvement/regression
+    - Actionable error messages for debugging
+  - **INTEGRATION**:
+    - Added `--json` option to automated_keymap_test.py for JSON export
+    - Test results exported in JSON format consumable by report generator
+    - Complete workflow: run tests → export JSON → generate HTML → view in browser
+  - _Leverage: Test results from automated_keymap_test.py, baseline from task 1.6_
   - _Requirements: 5, 6_
-  - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Test reporting specialist with expertise in HTML generation and data visualization | Task: Create test report generator in tests/generate_test_report.py following requirements 5 and 6. Generate HTML report from test results with statistics, failure details, color coding, and comparison to baseline. Make report clear and actionable. | Restrictions: Must consume test results from automated_keymap_test.py, generate static HTML (no external JS libraries), color-coded for readability, show specific failure details (which key, which layer), include baseline comparison, Python stdlib only | _Leverage: Test results structure from automated_keymap_test.py, baseline metrics from task 1.6 | _Requirements: Requirement 5 (Automated Testing), Requirement 6 (Test Coverage) | Success: Report clearly shows pass/fail statistics, lists specific failures with details, color-coded for readability, includes improvement vs baseline (e.g., 50% → 100%), generates clean HTML, actionable information for debugging failures._
 
 - [ ] 3.7 Create CI test runner script
   - Files: `tests/run_all_tests.sh`

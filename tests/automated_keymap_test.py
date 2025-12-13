@@ -407,6 +407,51 @@ class AutomatedKeymapTest:
 
         return stats
 
+    def export_json(self, output_path: str) -> bool:
+        """
+        Export test results to JSON file for report generator.
+
+        Args:
+            output_path: Path to output JSON file
+
+        Returns:
+            True if export succeeded, False otherwise
+        """
+        try:
+            data = {
+                'stats': self.stats if hasattr(self, 'stats') and self.stats else {
+                    'total_tests': 0,
+                    'passed': 0,
+                    'failed': 0,
+                    'pass_rate': 0.0,
+                    'substitutions_tested': 0
+                },
+                'results': [
+                    {
+                        'input_key': r.mapping.input_key,
+                        'output_key': r.mapping.output_key,
+                        'input_evdev': r.mapping.input_evdev,
+                        'output_evdev': r.mapping.output_evdev,
+                        'event_type': r.event_type,
+                        'passed': r.passed,
+                        'expected_evdev': r.expected_evdev,
+                        'actual_evdev': r.actual_evdev,
+                        'error_message': r.error_message
+                    }
+                    for r in self.results
+                ]
+            }
+
+            with open(output_path, 'w') as f:
+                json.dump(data, f, indent=2)
+
+            print(f"\n✓ Results exported to JSON: {output_path}")
+            return True
+
+        except Exception as e:
+            print(f"\nERROR: Failed to export JSON: {e}")
+            return False
+
     def generate_report(self, stats: Dict[str, any]) -> str:
         """
         Generate comprehensive test report.
@@ -480,14 +525,14 @@ class AutomatedKeymapTest:
             return False
 
         # Run all tests
-        stats = self.test_all_substitutions()
+        self.stats = self.test_all_substitutions()
 
         # Generate and print report
-        report = self.generate_report(stats)
+        report = self.generate_report(self.stats)
         print(report)
 
         # Return True only if all tests passed
-        return stats['failed'] == 0
+        return self.stats['failed'] == 0
 
 
 def main():
@@ -516,6 +561,11 @@ def main():
         help='Path to YAMY log file (default: /tmp/yamy_test.log)'
     )
 
+    parser.add_argument(
+        '--json',
+        help='Export results to JSON file (for use with generate_test_report.py)'
+    )
+
     args = parser.parse_args()
 
     # Create test framework
@@ -527,6 +577,10 @@ def main():
 
     # Run tests
     success = test.run()
+
+    # Export JSON if requested
+    if args.json:
+        test.export_json(args.json)
 
     # Exit with appropriate status code
     sys.exit(0 if success else 1)
