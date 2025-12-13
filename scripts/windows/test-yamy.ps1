@@ -10,23 +10,23 @@ $ErrorActionPreference = "Stop"
 # Configuration
 $RELEASE_VERSION = "v1.0.3"
 $GITHUB_REPO = "RyosukeMondo/yamy"
-$DOWNLOAD_URL = "https://github.com/$GITHUB_REPO/releases/download/$RELEASE_VERSION/yamy-dist.zip"
-$TEST_DIR = "$env:TEMP\yamy-test"
-$ZIP_FILE = "$TEST_DIR\yamy-dist.zip"
+$DOWNLOAD_URL = "https://github.com/$GITHUB_REPO/releases/download/$RELEASE_VERSION/yamy-v1.0.3-complete.zip"
+$BASE_TEST_DIR = "$env:TEMP\yamy-test"
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "YAMY One-Click Test Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Step 1: Clean up existing folder
-if (Test-Path $TEST_DIR) {
-    Write-Host "[1/4] Removing existing test folder..." -ForegroundColor Yellow
-    Remove-Item -Path $TEST_DIR -Recurse -Force
-    Write-Host "      Cleaned up: $TEST_DIR" -ForegroundColor Green
-} else {
-    Write-Host "[1/4] No existing folder to clean" -ForegroundColor Green
+# Step 1: Find next available test folder (auto-rolling)
+Write-Host "[1/4] Finding next available test folder..." -ForegroundColor Yellow
+$folderNumber = 1
+while (Test-Path "$BASE_TEST_DIR-$folderNumber") {
+    $folderNumber++
 }
+$TEST_DIR = "$BASE_TEST_DIR-$folderNumber"
+$ZIP_FILE = "$TEST_DIR\yamy-v1.0.3-complete.zip"
+Write-Host "      Using: $TEST_DIR" -ForegroundColor Green
 
 # Step 2: Create test directory
 Write-Host "[2/4] Creating test directory..." -ForegroundColor Yellow
@@ -72,21 +72,31 @@ $batFile = switch ($Mode.ToLower()) {
     default  { "launch_yamy_debug.bat" }
 }
 
-$batPath = Join-Path $TEST_DIR $batFile
+# Look for bat file in extracted yamy-v1.0.3 subfolder
+$extractedFolder = Join-Path $TEST_DIR "yamy-v1.0.3"
+$batPath = Join-Path $extractedFolder $batFile
+
 if (-not (Test-Path $batPath)) {
     Write-Host "ERROR: $batFile not found in extracted files!" -ForegroundColor Red
+    Write-Host "       Expected: $batPath" -ForegroundColor Red
+    Write-Host "       Checking extracted contents..." -ForegroundColor Yellow
+    if (Test-Path $extractedFolder) {
+        Get-ChildItem $extractedFolder | ForEach-Object { Write-Host "       - $($_.Name)" -ForegroundColor Gray }
+    } else {
+        Write-Host "       ERROR: Extracted folder not found: $extractedFolder" -ForegroundColor Red
+    }
     exit 1
 }
 
 Write-Host "Launching: $batFile" -ForegroundColor Green
-Write-Host "Location:  $TEST_DIR" -ForegroundColor Gray
+Write-Host "Location:  $extractedFolder" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Press Ctrl+C to stop YAMY when done testing." -ForegroundColor Yellow
 Write-Host ""
 
-# Launch YAMY
-Set-Location $TEST_DIR
-Start-Process -FilePath $batPath -Wait
+# Launch YAMY from the extracted folder
+Set-Location $extractedFolder
+Start-Process -FilePath $batPath -NoNewWindow -Wait
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
@@ -94,6 +104,7 @@ Write-Host "Test Complete!" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Log file: $env:LOCALAPPDATA\YAMY\yamy.log" -ForegroundColor Gray
-Write-Host "Test folder: $TEST_DIR" -ForegroundColor Gray
+Write-Host "Test folder: $extractedFolder" -ForegroundColor Gray
 Write-Host ""
-Write-Host "To test again, just re-run this script!" -ForegroundColor Green
+Write-Host "Previous test folders are preserved for comparison." -ForegroundColor Cyan
+Write-Host "To clean up old tests: Remove-Item '$BASE_TEST_DIR-*' -Recurse -Force" -ForegroundColor Gray
