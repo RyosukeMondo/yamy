@@ -6,6 +6,43 @@
 
 The original "Mado tsukai no Yuutsu" (Mayu) used a filter driver to replace key inputs. Yamy changes this approach to use a user-mode hook (`WH_KEYBOARD_LL`) and `SendInput()` API. This allows Yamy to work on modern Windows versions (Vista and later, including 64-bit) without requiring a signed driver, although some low-level replacement capabilities are traded off.
 
+## Features
+
+### Core Functionality
+- **Key Remapping**: Remap any key to any other key using intuitive `.mayu` configuration syntax
+- **Modal Layers**: Create Vim-style modal layers with custom key behaviors per layer
+- **Substitution System**: Define key substitutions with support for modifiers and combinations
+- **Cross-Platform**: Full support for both Windows and Linux with unified configuration
+
+### Advanced Features
+
+#### Number Keys as Custom Modifiers
+Use number keys (0-9) as hardware modifier keys when held, perfect for small keyboards (60%, 65%, 75% layouts):
+
+- **Hold-Tap Detection**: Hold number key ≥200ms → activates modifier (Shift, Ctrl, Alt, Win)
+- **Tap Behavior**: Tap < 200ms → normal key behavior (or substitution if configured)
+- **System-Wide**: Modifiers work in all applications, not just YAMY
+- **Dual-Purpose**: Number keys serve double duty without sacrificing functionality
+
+**Example Configuration:**
+```mayu
+# Hold number keys as modifiers
+def numbermod *_1 = *LShift
+def numbermod *_2 = *LCtrl
+def numbermod *_3 = *LAlt
+
+# Tap for function keys
+*_1 = *F1
+*_2 = *F2
+*_3 = *F3
+```
+
+**Usage:**
+- Hold `1` + press `A` → Shift+A (capital A)
+- Tap `1` quickly → F1 (if substitution configured)
+
+See [Number Modifier User Guide](docs/NUMBER_MODIFIER_USER_GUIDE.md) for complete documentation.
+
 ## Status
 
 This repository is a fork of the original Yamy project, reorganized for better maintainability and extended with **full Linux support**.
