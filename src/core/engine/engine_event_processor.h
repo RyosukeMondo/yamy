@@ -7,8 +7,14 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <memory>
 
 namespace yamy {
+
+// Forward declaration for ModifierKeyHandler
+namespace engine {
+class ModifierKeyHandler;
+}
 
 /// Event type enumeration for key events
 enum class EventType {
@@ -44,6 +50,9 @@ public:
     /// @param subst_table Reference to substitution table (YAMY → YAMY mappings)
     explicit EventProcessor(const SubstitutionTable& subst_table);
 
+    /// Destructor - defined in .cpp to allow forward declaration of ModifierKeyHandler
+    ~EventProcessor();
+
     /// Main entry point: Process an input event through all 3 layers
     /// @param input_evdev Input evdev code from hardware
     /// @param type Event type (PRESS or RELEASE)
@@ -64,10 +73,12 @@ private:
 
     /// Layer 2: Apply substitution from .mayu configuration
     /// @param yamy_in Input YAMY scan code
+    /// @param type Event type (PRESS or RELEASE) - needed for number modifier processing
     /// @return Substituted YAMY scan code, or input unchanged if no substitution
     /// @note Logs: [LAYER2:SUBST] or [LAYER2:PASSTHROUGH]
     /// @note Pure function: NO special cases for any key type
-    uint16_t layer2_applySubstitution(uint16_t yamy_in);
+    /// @note Number modifiers checked BEFORE substitution lookup
+    uint16_t layer2_applySubstitution(uint16_t yamy_in, EventType type);
 
     /// Layer 3: Map YAMY scan code to output evdev code
     /// @param yamy Input YAMY scan code
@@ -75,8 +86,9 @@ private:
     /// @note Logs: [LAYER3:OUT] yamy 0xYYYY → evdev Z
     uint16_t layer3_yamyToEvdev(uint16_t yamy);
 
-    const SubstitutionTable& m_substitutions;  ///< Reference to substitution table
-    bool m_debugLogging;                       ///< Debug logging enabled flag
+    const SubstitutionTable& m_substitutions;       ///< Reference to substitution table
+    bool m_debugLogging;                            ///< Debug logging enabled flag
+    std::unique_ptr<engine::ModifierKeyHandler> m_modifierHandler;  ///< Number modifier handler
 };
 
 } // namespace yamy

@@ -2,6 +2,7 @@
 // engine_event_processor.cpp - Unified 3-layer event processing implementation
 
 #include "engine_event_processor.h"
+#include "modifier_key_handler.h"
 #include "../../platform/linux/keycode_mapping.h"
 #include "../../utils/platform_logger.h"
 #include <cstdlib>
@@ -11,6 +12,7 @@ namespace yamy {
 EventProcessor::EventProcessor(const SubstitutionTable& subst_table)
     : m_substitutions(subst_table)
     , m_debugLogging(false)
+    , m_modifierHandler(std::make_unique<engine::ModifierKeyHandler>())
 {
     // Check for debug logging environment variable
     const char* debug_env = std::getenv("YAMY_DEBUG_KEYCODE");
@@ -18,7 +20,42 @@ EventProcessor::EventProcessor(const SubstitutionTable& subst_table)
         m_debugLogging = true;
         PLATFORM_LOG_INFO("EventProcessor", "Debug logging enabled via YAMY_DEBUG_KEYCODE");
     }
+
+    // Initialize number modifier mappings using the mapping table
+    // Number keys: _1 through _0 (YAMY scan codes 0x0002-0x000B)
+    // The mapping table in keycode_mapping.cpp defines which modifier each number maps to
+    for (uint16_t yamy_num = 0x0002; yamy_num <= 0x000B; ++yamy_num) {
+        uint16_t modifier_evdev = yamy::platform::getModifierForNumberKey(yamy_num);
+        if (modifier_evdev != 0) {
+            // Convert evdev modifier code to HardwareModifier enum
+            engine::HardwareModifier hw_mod = engine::HardwareModifier::NONE;
+
+            // Map evdev codes to HardwareModifier enum
+            // KEY_LEFTSHIFT (42), KEY_RIGHTSHIFT (54)
+            // KEY_LEFTCTRL (29), KEY_RIGHTCTRL (97)
+            // KEY_LEFTALT (56), KEY_RIGHTALT (100)
+            // KEY_LEFTMETA (125), KEY_RIGHTMETA (126)
+            switch (modifier_evdev) {
+                case 42:  hw_mod = engine::HardwareModifier::LSHIFT; break;
+                case 54:  hw_mod = engine::HardwareModifier::RSHIFT; break;
+                case 29:  hw_mod = engine::HardwareModifier::LCTRL; break;
+                case 97:  hw_mod = engine::HardwareModifier::RCTRL; break;
+                case 56:  hw_mod = engine::HardwareModifier::LALT; break;
+                case 100: hw_mod = engine::HardwareModifier::RALT; break;
+                case 125: hw_mod = engine::HardwareModifier::LWIN; break;
+                case 126: hw_mod = engine::HardwareModifier::RWIN; break;
+                default:
+                    PLATFORM_LOG_INFO("EventProcessor", "WARNING: Unknown modifier evdev code %u for number key 0x%04X",
+                                      modifier_evdev, yamy_num);
+                    continue;
+            }
+
+            m_modifierHandler->registerNumberModifier(yamy_num, hw_mod);
+        }
+    }
 }
+
+EventProcessor::~EventProcessor() = default;
 
 EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev, EventType type)
 {
@@ -36,8 +73,8 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
         return ProcessedEvent(0, 0, type, false);
     }
 
-    // Layer 2: Apply substitution
-    uint16_t yamy_l2 = layer2_applySubstitution(yamy_l1);
+    // Layer 2: Apply substitution (with number modifier support)
+    uint16_t yamy_l2 = layer2_applySubstitution(yamy_l1, type);
 
     // Layer 3: YAMY scan code → evdev
     uint16_t output_evdev = layer3_yamyToEvdev(yamy_l2);
@@ -75,9 +112,56 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
     return yamy;
 }
 
-uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in)
+uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type)
 {
-    // Look up in substitution table
+    // CRITICAL: Check if key is registered as number modifier BEFORE substitution lookup
+    // This ensures number keys can act as modifiers (HOLD) or be substituted (TAP)
+    if (m_modifierHandler && m_modifierHandler->isNumberModifier(yamy_in)) {
+        engine::NumberKeyResult result = m_modifierHandler->processNumberKey(yamy_in, type);
+
+        switch (result.action) {
+            case engine::ProcessingAction::ACTIVATE_MODIFIER:
+                // HOLD detected - return hardware modifier VK code
+                if (m_debugLogging) {
+                    PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:NUMBER_MOD] 0x%04X HOLD → modifier VK 0x%04X",
+                                      yamy_in, result.output_yamy_code);
+                }
+                return result.output_yamy_code;
+
+            case engine::ProcessingAction::DEACTIVATE_MODIFIER:
+                // Modifier release
+                if (m_debugLogging) {
+                    PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:NUMBER_MOD] 0x%04X RELEASE modifier VK 0x%04X",
+                                      yamy_in, result.output_yamy_code);
+                }
+                return result.output_yamy_code;
+
+            case engine::ProcessingAction::APPLY_SUBSTITUTION_PRESS:
+            case engine::ProcessingAction::APPLY_SUBSTITUTION_RELEASE:
+                // TAP detected - fall through to normal substitution logic
+                if (m_debugLogging) {
+                    PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:NUMBER_MOD] 0x%04X TAP detected, applying substitution",
+                                      yamy_in);
+                }
+                break;
+
+            case engine::ProcessingAction::WAITING_FOR_THRESHOLD:
+                // Still waiting for hold threshold - suppress this event
+                // The event will be re-evaluated on RELEASE or threshold expiry
+                if (m_debugLogging) {
+                    PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:NUMBER_MOD] 0x%04X waiting for threshold, suppressing",
+                                      yamy_in);
+                }
+                return 0;  // Signal suppression (will fail at Layer 3)
+
+            case engine::ProcessingAction::NOT_A_NUMBER_MODIFIER:
+            default:
+                // Not a number modifier, proceed with normal substitution
+                break;
+        }
+    }
+
+    // Normal substitution lookup (for non-number keys or TAP-detected number keys)
     auto it = m_substitutions.find(yamy_in);
 
     if (it != m_substitutions.end()) {

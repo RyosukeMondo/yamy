@@ -152,6 +152,7 @@ set(ENGINE_SOURCES
     src/core/engine/engine_setting.cpp
     src/core/engine/engine_log.cpp
     src/core/engine/engine_event_processor.cpp
+    src/core/engine/modifier_key_handler.cpp
     src/core/logging/logger.cpp
     src/core/window/focus.cpp
     src/core/functions/function.cpp
@@ -360,6 +361,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/engine/engine_setting.cpp
         src/core/engine/engine_log.cpp
         src/core/engine/engine_event_processor.cpp
+        src/core/engine/modifier_key_handler.cpp
         src/core/logging/logger.cpp
         src/core/window/focus.cpp
         src/core/functions/function.cpp
@@ -1105,6 +1107,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/engine/engine_setting.cpp
             src/core/engine/engine_log.cpp
             src/core/engine/engine_event_processor.cpp
+            src/core/engine/modifier_key_handler.cpp
             src/core/logging/logger.cpp
             src/utils/stringtool.cpp
             src/utils/compiler_specific_func.cpp
@@ -1300,6 +1303,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             tests/test_event_processor_ut.cpp
             src/platform/linux/keycode_mapping.cpp
             src/core/engine/engine_event_processor.cpp
+            src/core/engine/modifier_key_handler.cpp
         )
 
         add_executable(yamy_event_processor_ut
@@ -1336,6 +1340,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             tests/test_event_processor_it.cpp
             src/platform/linux/keycode_mapping.cpp
             src/core/engine/engine_event_processor.cpp
+            src/core/engine/modifier_key_handler.cpp
         )
 
         add_executable(yamy_event_processor_it
@@ -1456,6 +1461,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/engine/engine_setting.cpp
             src/core/engine/engine_log.cpp
             src/core/engine/engine_event_processor.cpp
+            src/core/engine/modifier_key_handler.cpp
             src/core/notification_dispatcher.cpp
             src/core/logging/logger.cpp
             src/core/platform/ipc_channel_interface.cpp

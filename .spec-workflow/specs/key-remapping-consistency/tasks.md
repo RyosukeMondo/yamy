@@ -334,7 +334,7 @@
   - _Requirements: 8_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Systems programmer with expertise in keycode mapping | Task: Add number-to-modifier mapping table in src/platform/linux/keycode_mapping.cpp following requirement 8. Create g_numberToModifierMap with default mappings, add lookup function, make configurable. Follow existing map table patterns. | Restrictions: Must follow existing map table style and naming, default mappings should be sensible (1→LShift, 2→RShift, etc.), lookup function must be efficient (O(1) hash map), configurable via .mayu parsing (integrate with config loader) | _Leverage: Existing map table patterns (g_evdevToYamyMap, g_scanToEvdevMap_US/JP) in keycode_mapping.cpp | _Requirements: Requirement 8 (Number Keys as Custom Modifiers) | Success: Map table created with sensible defaults, lookup function implemented and efficient, configurable via .mayu files, follows project patterns, compiles and integrates cleanly._
 
-- [ ] 4.4 Integrate ModifierKeyHandler into EventProcessor Layer 2
+- [x] 4.4 Integrate ModifierKeyHandler into EventProcessor Layer 2
   - Files: `src/core/engine/engine_event_processor.cpp`
   - Add ModifierKeyHandler instance to EventProcessor
   - In `layer2_applySubstitution()`, check if key is registered number modifier BEFORE substitution lookup
