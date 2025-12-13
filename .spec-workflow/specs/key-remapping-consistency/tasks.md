@@ -293,7 +293,7 @@
 
 ## Phase 4: Advanced Features (Week 4)
 
-- [ ] 4.1 Design number-to-modifier mapping system
+- [x] 4.1 Design number-to-modifier mapping system
   - Files: `docs/NUMBER_MODIFIER_DESIGN.md`
   - Design hold vs tap detection (200ms threshold)
   - Design state machine: IDLE → HELD → MODIFIER_ACTIVE vs IDLE → TAP → SUBSTITUTION
