@@ -504,27 +504,23 @@ private:
                         CHECK_TRUE( SetMenuDefaultItem(hMenuSub,
                                                        ID_MENUITEM_investigate, FALSE) );
 
-                        // TEMPORARILY SKIP reload menu building to avoid 38-second regex delay
-                        // TODO: Cache regex pattern or use simpler string parsing
-#ifdef _WIN32
-                        yamy::debug::DebugConsole::LogInfo("Skipping reload submenu (regex too slow - 38 seconds!)");
-#endif
-
-                        /* Disabled for performance - takes 38 seconds!
+                        // Build reload submenu (optimized - no regex!)
                         HMENU hMenuSubSub = GetSubMenu(hMenuSub, 1);
                         int mayuIndex;
                         This->m_configStore->read(to_string(_T(".mayuIndex")), &mayuIndex, 0);
                         while (DeleteMenu(hMenuSubSub, 0, MF_BYPOSITION))
                             ;
-                        Regex getName(to_string(_T("^([^;]*);")));  // THIS TAKES 38 SECONDS!
+                        // Replace slow regex with simple string parsing
                         for (int index = 0; ; index ++) {
                             _TCHAR buf[100];
                             _sntprintf(buf, NUMBER_OF(buf), _T(".mayu%d"), index);
                             std::string dot_mayu;
                             if (!This->m_configStore->read(to_string(buf), &dot_mayu))
                                 break;
-                            std::smatch what;
-                            if (std::regex_search(dot_mayu, what, getName)) {
+                            // Extract name before first semicolon (replaces regex ^([^;]*);)
+                            size_t semicolon_pos = dot_mayu.find(';');
+                            if (semicolon_pos != std::string::npos && semicolon_pos > 0) {
+                                std::string name_str = dot_mayu.substr(0, semicolon_pos);
                                 MENUITEMINFO mii;
                                 std::memset(&mii, 0, sizeof(mii));
                                 mii.cbSize = sizeof(mii);
@@ -533,14 +529,13 @@ private:
                                 mii.fState =
                                     MFS_ENABLED | ((mayuIndex == index) ? MFS_CHECKED : 0);
                                 mii.wID = ID_MENUITEM_reloadBegin + index;
-                                tstringi name = to_tstring(what.str(1));
+                                tstringi name = to_tstring(name_str);
                                 mii.dwTypeData = const_cast<_TCHAR *>(name.c_str());
                                 mii.cch = (UINT)name.size();
 
                                 InsertMenuItem(hMenuSubSub, index, TRUE, &mii);
                             }
                         }
-                        */
 
                         // show popup menu
 #ifdef _WIN32
