@@ -1,0 +1,4 @@
+
+# Test remapping - a -> b
+key *a = *b
+

@@ -1,0 +1,160 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 109_clean.mayu - Verified Japanese Keyboard Layout
+# All keys verified to work with Linux YAMY scan code implementation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Row 1 - Number Row
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key Esc Escape			= 0x01
+def key _1				= 0x02  # 1!
+def key _2				= 0x03  # 2"
+def key _3				= 0x04  # 3#
+def key _4				= 0x05  # 4$
+def key _5				= 0x06  # 5%
+def key _6				= 0x07  # 6&
+def key _7				= 0x08  # 7'
+def key _8				= 0x09  # 8(
+def key _9				= 0x0a  # 9)
+def key _0				= 0x0b  # 0
+def key Minus HyphenMinus		= 0x0c  # -=
+def key Caret CircumflexAccent		= 0x0d  # ^~ (JP keyboard)
+def key BackSpace BS			= 0x0e
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Row 2 - QWERTY Row
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key Tab				= 0x0f
+def key Q				= 0x10
+def key W				= 0x11
+def key E				= 0x12
+def key R				= 0x13
+def key T				= 0x14
+def key Y				= 0x15
+def key U				= 0x16
+def key I				= 0x17
+def key O				= 0x18
+def key P				= 0x19
+def key Atmark CommercialAt		= 0x1a  # @` (JP keyboard)
+def key OpenBracket LeftSquareBracket	= 0x1b  # [{ (JP keyboard)
+def key Enter Return			= 0x1c
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Row 3 - ASDF Row
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key LCtrl LControl LeftControl	= 0x1d
+def key A				= 0x1e
+def key S				= 0x1f
+def key D				= 0x20
+def key F				= 0x21
+def key G				= 0x22
+def key H				= 0x23
+def key J				= 0x24
+def key K				= 0x25
+def key L				= 0x26
+def key Semicolon			= 0x27  # ;+ (JP keyboard)
+def key Colon				= 0x28  # :* (JP keyboard)
+def key Kanji				= 0x29  # 半角/全角
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Row 4 - ZXCV Row
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key LShift LeftShift		= 0x2a
+def key CloseBracket RightSquareBracket	= 0x2b  # ]} (JP keyboard)
+def key Z				= 0x2c
+def key X				= 0x2d
+def key C				= 0x2e
+def key V				= 0x2f
+def key B				= 0x30
+def key N				= 0x31
+def key M				= 0x32
+def key Comma				= 0x33  # ,<
+def key Period FullStop			= 0x34  # .>
+def key Slash Solidus			= 0x35  # /?
+def key RShift RightShift		= 0x36
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Row 5 - Space Row
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key LAlt LeftAlt LMenu		= 0x38
+def key Space				= 0x39
+def key Eisuu CapsLock			= 0x3a  # 英数 (JP keyboard uses CapsLock position)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Function Keys
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key F1				= 0x3b
+def key F2				= 0x3c
+def key F3				= 0x3d
+def key F4				= 0x3e
+def key F5				= 0x3f
+def key F6				= 0x40
+def key F7				= 0x41
+def key F8				= 0x42
+def key F9				= 0x43
+def key F10				= 0x44
+def key F11				= 0x57
+def key F12				= 0x58
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Lock Keys
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key NumLock				= 0x45
+def key ScrollLock Scroll		= 0x46
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Numpad
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key Num7 KP7			= 0x47
+def key Num8 KP8			= 0x48
+def key Num9 KP9			= 0x49
+def key NumMinus KPMinus		= 0x4a
+def key Num4 KP4			= 0x4b
+def key Num5 KP5			= 0x4c
+def key Num6 KP6			= 0x4d
+def key NumPlus KPPlus			= 0x4e
+def key Num1 KP1			= 0x4f
+def key Num2 KP2			= 0x50
+def key Num3 KP3			= 0x51
+def key Num0 KP0			= 0x52
+def key NumPeriod NumDot KPDot		= 0x53
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Japanese-Specific Keys
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key Hiragana			= 0x70  # ひらがな
+def key ReverseSolidus BackSlash RO	= 0x73  # ＼_ (JP specific)
+def key Convert Henkan			= 0x79  # 変換
+def key NonConvert Muhenkan		= 0x7b  # 無変換
+def key Yen				= 0x7d  # ¥|
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# E0-Extended Keys (Navigation & Editing)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def key NumEnter KPEnter		= E0-0x1c
+def key RCtrl RControl RightControl	= E0-0x1d
+def key NumSlash KPSlash		= E0-0x35
+def key PrintScreen Snapshot SysRq	= E0-0x37
+def key RAlt RightAlt RMenu		= E0-0x38
+def key Home				= E0-0x47
+def key Up UpArrow			= E0-0x48
+def key PageUp PgUp			= E0-0x49
+def key Left LeftArrow			= E0-0x4b
+def key Right RightArrow		= E0-0x4d
+def key End				= E0-0x4f
+def key Down DownArrow			= E0-0x50
+def key PageDown PgDn			= E0-0x51
+def key Insert Ins			= E0-0x52
+def key Delete Del			= E0-0x53
+def key LWin LeftWin LSuper		= E0-0x5b
+def key RWin RightWin RSuper		= E0-0x5c
+def key Apps Menu			= E0-0x5d
+def key Sleep				= E0-0x5f
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Notes:
+# - All scan codes verified against g_scanToEvdevMap_US/JP
+# - E0-extended keys use E0-0xXX format (converted to 0xE0XX internally)
+# - Aliases provided for common key name variations
+# - 100% compatible with Linux YAMY scan code implementation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

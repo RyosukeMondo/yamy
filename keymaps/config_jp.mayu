@@ -1,0 +1,26 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# config_jp.mayu - Japanese Keyboard Layout Configuration
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# LAYOUT: JP (this comment enables easy detection of layout intent)
+# Use this config file when using Japanese (109-key) keyboard layout
+# To apply: include "config_jp.mayu" in master.mayu
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# NOTE: config.mayu was designed for US layout
+# When using JP layout, scan code mappings may differ
+# This file can be used to add JP-specific adjustments
+
+include "config.mayu"
+
+# JP-specific adjustments (add here if needed)
+# Example:
+# def subst *Hiragana = *RControl    # JP-specific key
+# def subst *Convert = *RAlt          # JP-specific key
+# def subst *NonConvert = *Space      # JP-specific key
+
+# JP keyboard specific keys:
+# - Hiragana/Katakana (KEY_KATAKANAHIRAGANA)
+# - Convert (KEY_HENKAN)
+# - NonConvert (KEY_MUHENKAN)
+# - Yen (KEY_YEN)
+# - RO (KEY_RO)

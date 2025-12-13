@@ -1,0 +1,21 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# config_us.mayu - US Keyboard Layout Configuration
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# LAYOUT: US (this comment enables easy detection of layout intent)
+# Use this config file when using US keyboard layout
+# To apply: include "config_us.mayu" in master.mayu
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# NOTE: To enable layout override from config, you need to call
+# yamy::platform::setLayoutOverride("us") from the engine
+# Current implementation: Layout is detected automatically via setxkbmap
+
+# Copy all substitutions from config.mayu
+# These are designed for US layout and should work correctly
+
+include "config.mayu"
+
+# US-specific notes:
+# - All def subst mappings in config.mayu are designed for US layout
+# - Modal layers (mod0-mod9) work regardless of layout
+# - Symbol keys match US keyboard positions

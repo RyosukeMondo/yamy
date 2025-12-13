@@ -1,0 +1,103 @@
+# YAMY E2E Test Cases
+# Comprehensive test coverage for all configuration behaviors
+
+# Format: TEST_NAME | CONFIG | INPUT_KEYS | EXPECTED_KEYS | DESCRIPTION
+
+#=============================================================================
+# CATEGORY 1: BASELINE (Priority: HIGH) ✅
+#=============================================================================
+
+baseline_passthrough | 109.mayu | 30,48,46 | 30,48,46 | abc → abc (passthrough)
+
+#=============================================================================
+# CATEGORY 2: SIMPLE SUBSTITUTION (Priority: HIGH)
+#=============================================================================
+# Testing def subst behavior from config.mayu
+
+subst_a_to_tab | config.mayu | 30 | 15 | A → Tab (KEY_A=30 → KEY_TAB=15)
+subst_b_to_enter | config.mayu | 48 | 28 | B → Enter (KEY_B=48 → KEY_ENTER=28)
+subst_v_to_backspace | config.mayu | 47 | 14 | V → Backspace (KEY_V=47 → KEY_BS=14)
+subst_w_to_a | config.mayu | 17 | 30 | W → A (KEY_W=17 → KEY_A=30)
+subst_sequence_wav | config.mayu | 17,30,47 | 30,15,14 | WAV → A+Tab+BS sequence
+
+# More substitutions from config.mayu
+subst_r_to_e | config.mayu | 19 | 18 | R → E (KEY_R=19 → KEY_E=18)
+subst_q_to_minus | config.mayu | 16 | 12 | Q → Minus (KEY_Q=16 → KEY_MINUS=12)
+subst_tab_to_space | config.mayu | 15 | 57 | Tab → Space (KEY_TAB=15 → KEY_SPACE=57)
+subst_enter_to_yen | config.mayu | 28 | 124 | Enter → Yen (KEY_ENTER=28 → KEY_YEN=124)
+
+# Test multiple keys in realistic sequence
+subst_hello | config.mayu | 35,18,38,38,24 | 66,18,17,17,57 | HELLO → remapped sequence
+
+#=============================================================================
+# CATEGORY 3: MODAL LAYERS - mod0 (Hold B) (Priority: HIGH)
+#=============================================================================
+# Testing: mod mod0 = !!B
+# When B (KEY_B=48) is held, it activates mod0 layer
+
+# Note: These require key hold functionality - implementation pending
+# Format: HOLD_KEY,PRESS_KEY | EXPECTED_OUTPUT
+
+modal_mod0_tab_to_f11 | config.mayu | HOLD:48+PRESS:15 | 87 | Hold B + Tab → F11
+modal_mod0_a_to_1 | config.mayu | HOLD:48+PRESS:30 | 2 | Hold B + A → _1 (number 1)
+modal_mod0_colon_to_left | config.mayu | HOLD:48+PRESS:40 | 105 | Hold B + Colon → Left arrow
+modal_mod0_comma_to_right | config.mayu | HOLD:48+PRESS:51 | 106 | Hold B + Comma → Right arrow
+
+#=============================================================================
+# CATEGORY 4: MODAL LAYERS - mod1 (Hold V) (Priority: HIGH)
+#=============================================================================
+# Testing: mod mod1 = !!V
+# When V (KEY_V=47) is held, it activates mod1 layer
+
+modal_mod1_a_to_s | config.mayu | HOLD:47+PRESS:30 | 31 | Hold V + A → S
+modal_mod1_colon_to_l | config.mayu | HOLD:47+PRESS:40 | 38 | Hold V + Colon → L
+modal_mod1_tab_to_atmark | config.mayu | HOLD:47+PRESS:15 | 26 | Hold V + Tab → @
+
+#=============================================================================
+# CATEGORY 5: SYMBOL REMAPPING (hm.mayu) (Priority: MEDIUM)
+#=============================================================================
+# Testing symbol transformations from hm.mayu
+
+symbol_colon_to_ampersand | config+hm | 40 | SHIFT:7 | : → & (Shift+7)
+symbol_shift_semicolon_to_colon | config+hm | SHIFT:39 | 40 | Shift+; → :
+symbol_atmark_to_grave | config+hm | 26 | GRAVE | @ → `
+symbol_shift_2_to_at | config+hm | SHIFT:3 | COMMERCIAL_AT | Shift+2 → @
+
+#=============================================================================
+# CATEGORY 6: MULTI-CHARACTER OUTPUT (dvorakY.mayu) (Priority: LOW)
+#=============================================================================
+# Testing multi-key output sequences
+
+dvorak_semicolon_to_ya | dvorakY | 39 | 21,30 | ; → 'ya' (KEY_Y + KEY_A)
+dvorak_q_to_yo | dvorakY | 16 | 21,24 | q → 'yo' (KEY_Y + KEY_O)
+dvorak_j_to_ye | dvorakY | 36 | 21,18 | j → 'ye' (KEY_Y + KEY_E)
+
+#=============================================================================
+# CATEGORY 7: COMBINED CONFIGURATIONS (Priority: MEDIUM)
+#=============================================================================
+
+combined_config_hm_a | config+hm | 30 | 15 | A → Tab (with both configs)
+combined_config_hm_colon | config+hm | 40 | SHIFT:7 | : → & (combined behavior)
+combined_all_a | config+hm+dvorakY | 30 | 15 | A → Tab (all configs)
+
+#=============================================================================
+# CATEGORY 8: EDGE CASES (Priority: LOW)
+#=============================================================================
+
+edge_rapid_sequence | config | 30,30,30 | 15,15,15 | AAA → Tab+Tab+Tab (rapid)
+edge_alternating | config | 30,48,30,48 | 15,28,15,28 | ABAB → Tab+Enter+Tab+Enter
+edge_all_letters | config | 30,48,46,32,18,33 | ... | Full alphabet test
+
+#=============================================================================
+# KEY CODE REFERENCE
+#=============================================================================
+# Common evdev key codes:
+# KEY_A=30, KEY_B=48, KEY_C=46, KEY_D=32, KEY_E=18, KEY_F=33
+# KEY_Q=16, KEY_R=19, KEY_S=31, KEY_T=20, KEY_V=47, KEY_W=17
+# KEY_TAB=15, KEY_ENTER=28, KEY_BACKSPACE=14, KEY_SPACE=57
+# KEY_SEMICOLON=39, KEY_COLON=40, KEY_COMMA=51, KEY_MINUS=12
+# KEY_LEFT=105, KEY_RIGHT=106, KEY_UP=103, KEY_DOWN=108
+# KEY_F11=87, KEY_1=2, KEY_YEN=124
+
+# Note: SHIFT:N means Shift key + key N
+# Note: HOLD:X+PRESS:Y means hold X, press Y, release both

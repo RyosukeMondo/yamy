@@ -319,10 +319,21 @@ void Engine::setCurrentKeymap(const Keymap *i_keymap, bool i_doesAddToHistory)
 
 void Engine::pushInputEvent(const yamy::platform::KeyEvent &event)
 {
+    static int debugCounter = 0;
+    if (debugCounter++ < 10) {
+        std::string msg = "DEBUG: pushInputEvent called #" + std::to_string(debugCounter) +
+            ", queueing scancode=0x" + std::to_string(event.scanCode);
+        yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", msg);
+    }
     yamy::platform::acquireMutex(m_queueMutex, yamy::platform::WAIT_INFINITE);
     if (m_inputQueue) {
         m_inputQueue->push_back(event);
-        yamy::platform::setEvent(m_readEvent);
+        bool eventSet = yamy::platform::setEvent(m_readEvent);
+        if (debugCounter <= 10) {
+            std::string msg2 = "DEBUG: Event setEvent returned " + std::to_string(eventSet) +
+                ", queue size now: " + std::to_string(m_inputQueue->size());
+            yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", msg2);
+        }
     }
     yamy::platform::releaseMutex(m_queueMutex);
 }

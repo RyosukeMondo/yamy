@@ -1738,3 +1738,10 @@ endif()
 
 # Include CPack module
 include(CPack)
+
+# Test tool for automated testing
+add_executable(yamy-test
+    src/test/yamy_test_main.cpp
+)
+target_link_libraries(yamy-test PRIVATE pthread)
+install(TARGETS yamy-test DESTINATION bin)
