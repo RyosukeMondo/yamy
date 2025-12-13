@@ -2,7 +2,7 @@
 
 ## Implementation Tasks
 
-- [ ] 1. Implement utf8_char_length() helper function
+- [x] 1. Implement utf8_char_length() helper function
   - **File**: `src/core/settings/parser.cpp`
   - **Description**: Create a static inline helper function that determines the byte length of a UTF-8 character (1-4 bytes) and validates the byte sequence according to UTF-8 specification (RFC 3629)
   - **Purpose**: Provide accurate UTF-8 character boundary detection for the tokenizer
@@ -24,7 +24,7 @@
     - **Success**: Function correctly returns 1-4 for all valid UTF-8 sequences. Returns 0 with `is_valid=false` for invalid sequences (bad lead byte, bad continuation byte, incomplete sequence). Handles all test cases in design document. Zero compiler warnings. Function is inlined for performance.
     - **Instructions**: After implementing, mark this task as in-progress [-] in tasks.md. When complete, use log-implementation tool to record implementation with artifacts (functions field with name, signature, location). Then mark as complete [x] in tasks.md.
 
-- [ ] 2. Fix tokenizer UTF-8 handling in readToken()
+- [x] 2. Fix tokenizer UTF-8 handling in readToken()
   - **File**: `src/core/settings/parser.cpp` (modify existing `readToken()` method around line 323)
   - **Description**: Replace the broken UTF-8 handling code (lines 323-327) that only skips 1 byte with proper multi-byte UTF-8 processing using `utf8_char_length()`
   - **Purpose**: Correctly advance parser pointer through multi-byte UTF-8 characters without misaligning character boundaries
@@ -43,7 +43,7 @@
     - **Success**: Tokenizer correctly processes all UTF-8 character lengths without boundary misalignment. Invalid UTF-8 sequences trigger clear error messages with all required context. Existing ASCII tokenization remains unchanged and performant. No crashes on malformed UTF-8 input.
     - **Instructions**: First mark this task as in-progress [-] in tasks.md. Test with both valid and invalid UTF-8 input. When complete, use log-implementation tool with artifacts (filesModified, specific line numbers changed). Then mark as complete [x] in tasks.md.
 
-- [ ] 3. Fix isSymbolChar() to distinguish lead bytes from continuation bytes
+- [x] 3. Fix isSymbolChar() to distinguish lead bytes from continuation bytes
   - **File**: `src/core/settings/parser.cpp` (modify existing `isSymbolChar()` function around line 189)
   - **Description**: Change the UTF-8 detection from `>= 0x80` to `>= 0xC0` to correctly identify only UTF-8 lead bytes and not continuation bytes
   - **Purpose**: Prevent continuation bytes (0x80-0xBF) from being treated as valid symbol-starting characters

@@ -440,9 +440,15 @@ private:
             }
 
             case WM_APP_taskTrayNotify: {
+#ifdef _WIN32
+                yamy::debug::DebugConsole::LogInfo("Tray icon event received: wParam=" + std::to_string(i_wParam) + " lParam=" + std::to_string(i_lParam));
+#endif
                 if (i_wParam == ID_TaskTrayIcon)
                     switch (i_lParam) {
                     case WM_RBUTTONUP: {
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Tray icon: Right-click detected, showing menu...");
+#endif
                         POINT p;
                         CHECK_TRUE( GetCursorPos(&p) );
                         SetForegroundWindow(i_hwnd);
@@ -495,8 +501,17 @@ private:
                     }
 
                     case WM_LBUTTONDBLCLK:
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Tray icon: Double-click detected, opening investigate dialog...");
+#endif
                         SendMessage(i_hwnd, WM_COMMAND,
                                     MAKELONG(ID_MENUITEM_investigate, 0), 0);
+                        break;
+
+                    default:
+#ifdef _WIN32
+                        yamy::debug::DebugConsole::LogInfo("Tray icon: Unhandled message lParam=" + std::to_string(i_lParam));
+#endif
                         break;
                     }
                 return 0;
@@ -810,17 +825,40 @@ private:
         m_ni.hIcon  = m_tasktrayIcon[m_engine.getIsEnabled() ? 1 : 0];
         m_ni.szInfo[0] = m_ni.szInfoTitle[0] = _T('\0');
         if (i_doesAdd) {
+#ifdef _WIN32
+            yamy::debug::DebugConsole::LogInfo("showTasktrayIcon: Adding icon to system tray...");
+#endif
             // http://support.microsoft.com/kb/418138/JA/
             int guard = 60;
             for (; !Shell_NotifyIcon(NIM_ADD, &m_ni) && 0 < guard; -- guard) {
                 if (Shell_NotifyIcon(NIM_MODIFY, &m_ni)) {
+#ifdef _WIN32
+                    yamy::debug::DebugConsole::LogInfo("showTasktrayIcon: Icon added successfully (MODIFY)");
+#endif
                     return true;
                 }
                 Sleep(1000);                // 1sec
             }
+            if (0 < guard) {
+#ifdef _WIN32
+                yamy::debug::DebugConsole::LogInfo("showTasktrayIcon: Icon added successfully (ADD)");
+#endif
+            } else {
+#ifdef _WIN32
+                yamy::debug::DebugConsole::LogError("showTasktrayIcon: Failed to add icon after 60 retries! Error: " + std::to_string(GetLastError()));
+#endif
+            }
             return 0 < guard;
         } else {
-            return !!Shell_NotifyIcon(NIM_MODIFY, &m_ni);
+            BOOL result = Shell_NotifyIcon(NIM_MODIFY, &m_ni);
+#ifdef _WIN32
+            if (result) {
+                yamy::debug::DebugConsole::LogInfo("showTasktrayIcon: Icon modified successfully");
+            } else {
+                yamy::debug::DebugConsole::LogError("showTasktrayIcon: Failed to modify icon! Error: " + std::to_string(GetLastError()));
+            }
+#endif
+            return !!result;
         }
     }
 
@@ -1213,6 +1251,7 @@ public:
         m_engine.start();
 
         yamy::debug::DebugConsole::LogInfo("Mayu: Setting up tasktray icon...");
+        yamy::debug::DebugConsole::LogInfo("Mayu: Tasktray window handle: " + std::to_string((uintptr_t)m_hwndTaskTray));
         // show tasktray icon
         m_tasktrayIcon[0] = loadSmallIcon(IDI_ICON_mayu_disabled);
         m_tasktrayIcon[1] = loadSmallIcon(IDI_ICON_mayu);
@@ -1222,6 +1261,8 @@ public:
         m_ni.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
         m_ni.hIcon  = m_tasktrayIcon[1];
         m_ni.uCallbackMessage = WM_APP_taskTrayNotify;
+        yamy::debug::DebugConsole::LogInfo("Mayu: NOTIFYICONDATA configured - hWnd=" + std::to_string((uintptr_t)m_ni.hWnd) +
+                                          " uCallbackMessage=" + std::to_string(m_ni.uCallbackMessage));
         tstring tip = to_tstring(loadString(IDS_mayu));
         tcslcpy(m_ni.szTip, tip.c_str(), NUMBER_OF(m_ni.szTip));
         if (m_canUseTasktrayBaloon) {
