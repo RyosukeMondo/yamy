@@ -564,46 +564,34 @@ uint16_t evdevToYamyKeyCode(uint16_t evdev_code, int event_type) {
 uint16_t yamyToEvdevKeyCode(uint16_t yamy_code) {
     static bool debug_logging = (std::getenv("YAMY_DEBUG_KEYCODE") != nullptr);
 
-    if (debug_logging) {
-        PLATFORM_LOG_INFO("keycode", "[LAYER3:OUT] Input YAMY code = 0x%04X (%d)", yamy_code, yamy_code);
-    }
-
     // First try scan code mapping based on detected keyboard layout
     // This is the PRIMARY mapping since .mayu files use scan codes
     std::string layout = detectKeyboardLayout();
-
-    if (debug_logging) {
-        PLATFORM_LOG_INFO("keycode", "[LAYER3:OUT] Checking scan map for layout: %s", layout.c_str());
-    }
 
     auto it = (layout == "jp") ? g_scanToEvdevMap_JP.find(yamy_code) : g_scanToEvdevMap_US.find(yamy_code);
 
     if (it != (layout == "jp" ? g_scanToEvdevMap_JP.end() : g_scanToEvdevMap_US.end())) {
         if (debug_logging) {
-            PLATFORM_LOG_INFO("keycode", "[LAYER3:OUT] Found in %s scan map → evdev %d (%s)",
-                              layout.c_str(), it->second, getKeyName(it->second));
+            PLATFORM_LOG_INFO("keycode", "[LAYER3:OUT] yamy 0x%04X → evdev %d (%s) - Found in %s scan map",
+                              yamy_code, it->second, getKeyName(it->second), layout.c_str());
         }
         return it->second;
     }
 
     // If not found in scan map, try VK code mapping as fallback
     // VK codes are Windows virtual keys used for special cases
-    if (debug_logging) {
-        PLATFORM_LOG_INFO("keycode", "[LAYER3:OUT] Not in scan map, checking VK map");
-    }
-
     it = g_yamyToEvdevMap.find(yamy_code);
     if (it != g_yamyToEvdevMap.end()) {
         if (debug_logging) {
-            PLATFORM_LOG_INFO("keycode", "[LAYER3:OUT] Found in VK map → evdev %d (%s)",
-                              it->second, getKeyName(it->second));
+            PLATFORM_LOG_INFO("keycode", "[LAYER3:OUT] yamy 0x%04X → evdev %d (%s) - Found in VK map",
+                              yamy_code, it->second, getKeyName(it->second));
         }
         return it->second;
     }
 
     // Not found in either map
     if (debug_logging) {
-        PLATFORM_LOG_INFO("keycode", "[LAYER3:OUT] NOT FOUND in any map → unmapped");
+        PLATFORM_LOG_INFO("keycode", "[LAYER3:OUT] yamy 0x%04X → NOT FOUND in any map", yamy_code);
     }
     return 0;
 }
