@@ -1293,12 +1293,13 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         # -----------------------------------------------------------------------------
         # Target: yamy_event_processor_ut (EventProcessor Unit Tests)
-        # Unit tests for Layer 1 (evdevToYamyKeyCode) keycode mapping
-        # Part of task 3.1 in key-remapping-consistency spec
+        # Unit tests for Layer 1 (evdevToYamyKeyCode) and Layer 2 (applySubstitution)
+        # Part of tasks 3.1 and 3.2 in key-remapping-consistency spec
         # -----------------------------------------------------------------------------
         set(EVENT_PROCESSOR_UT_SOURCES
             tests/test_event_processor_ut.cpp
             src/platform/linux/keycode_mapping.cpp
+            src/core/engine/engine_event_processor.cpp
         )
 
         add_executable(yamy_event_processor_ut
@@ -1314,6 +1315,10 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/engine
             src/platform/linux
             src/utils
+        )
+
+        target_compile_definitions(yamy_event_processor_ut PRIVATE
+            YAMY_UNIT_TEST
         )
 
         target_link_libraries(yamy_event_processor_ut PRIVATE

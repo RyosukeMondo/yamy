@@ -156,7 +156,7 @@
   - _Requirements: 6_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Test engineer with expertise in C++ unit testing and GoogleTest | Task: Create comprehensive unit tests for Layer 1 in tests/test_event_processor_ut.cpp following requirement 6. Test evdevToYamyKeyCode() function with known mappings, unmapped keys, US and JP layouts. Set up GoogleTest framework if not already present. | Restrictions: Tests must be isolated (no YAMY engine running), mock dependencies if needed, test both success and failure cases, cover edge cases (unmapped keys, layout differences), maintain fast test execution | _Leverage: GoogleTest framework, g_evdevToYamyMap from src/platform/linux/keycode_mapping.cpp | _Requirements: Requirement 6 (Unit, Integration, E2E Test Coverage) | Success: Unit tests verify Layer 1 correctness, known keys map correctly, unmapped keys return 0, US and JP layouts handled, tests run in < 1 second, > 95% code coverage for Layer 1 function._
 
-- [ ] 3.2 Create unit tests for Layer 2 (applySubstitution)
+- [x] 3.2 Create unit tests for Layer 2 (applySubstitution)
   - Files: `tests/test_event_processor_ut.cpp`
   - Test substitution lookup with mock substitution table
   - Test key WITH substitution returns transformed code (W→A: 0x0011→0x001E)
