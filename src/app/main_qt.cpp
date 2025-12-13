@@ -87,10 +87,14 @@ static bool restoreSessionState(EngineAdapter* engine, const CommandLineOptions&
         // Check if the config file still exists
         struct stat st;
         if (stat(data.activeConfigPath.c_str(), &st) == 0 && S_ISREG(st.st_mode)) {
-            // TODO: Task 6 will implement loadConfig()
-            // engine->loadConfig(data.activeConfigPath);
-            std::cout << "Config path available: " << data.activeConfigPath << std::endl;
-            restored = true;
+            std::cout << "Loading previous config: " << data.activeConfigPath << std::endl;
+            if (engine->loadConfig(data.activeConfigPath)) {
+                std::cout << "Config loaded successfully" << std::endl;
+                restored = true;
+            } else {
+                std::cout << "Warning: Failed to load previous config: "
+                          << data.activeConfigPath << std::endl;
+            }
         } else {
             std::cout << "Warning: Previous config not found: "
                       << data.activeConfigPath << std::endl;

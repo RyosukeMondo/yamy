@@ -1,6 +1,7 @@
 #include "engine_adapter.h"
 #include "../core/engine/engine.h"
 #include "../core/settings/setting.h"
+#include "../core/settings/session_manager.h"
 #include "../utils/metrics.h"
 #include <chrono>
 #include <thread>
@@ -150,6 +151,13 @@ bool EngineAdapter::loadConfig(const std::string& path)
     if (success) {
         m_configPath = path;
         m_configLoadedTime = std::chrono::system_clock::now();
+
+        // Save session state after successful config load
+        // This ensures config path is persisted immediately
+        yamy::SessionManager& session = yamy::SessionManager::instance();
+        session.setActiveConfig(m_configPath);
+        session.setEngineRunning(wasRunning);  // Save the running state before we stopped for reload
+        session.saveSession();
     } else {
         std::cerr << "EngineAdapter::loadConfig() - Failed to load config: " << path << std::endl;
     }

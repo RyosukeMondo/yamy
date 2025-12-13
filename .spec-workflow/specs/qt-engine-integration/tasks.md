@@ -85,7 +85,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-4, US-3_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ IPC developer. Task: In main_qt.cpp IPC handler, update ControlCommand::Stop case to call engine->stop() and set result.success=true, result.message="Engine stopped"; update ControlCommand::Start case to call engine->start() and set result.success=true, result.message="Engine started". Restrictions: Keep backward compatibility with yamy-ctl. Success: yamy-ctl start/stop control the real engine correctly._
 
-- [ ] 10. Enhance session state persistence
+- [x] 10. Enhance session state persistence
   - File: src/app/main_qt.cpp
   - Save session state after successful config load
   - Restore session on startup with validation
