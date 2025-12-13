@@ -48,7 +48,7 @@
   - _Requirements: 5, 6_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Test infrastructure engineer with expertise in C++ and input event injection | Task: Create test utility src/tests/test_inject_key.cpp that can inject synthetic key events into running YAMY engine for autonomous testing following requirements 5 and 6. CLI: yamy-test inject <evdev_code> <PRESS|RELEASE>. Events must flow through all 3 layers identically to real keypresses. | Restrictions: Must not require user to actually press keys, use existing IPC/injection infrastructure, events must be indistinguishable from real hardware events to engine, proper error handling for YAMY not running | _Leverage: Existing IPC channel in src/platform/linux/ipc_channel_linux.cpp, input_injector_linux.cpp for virtual device | _Requirements: Requirements 5 (Automated Testing), 6 (Test Coverage) | Success: Utility successfully injects PRESS and RELEASE events, events appear in debug logs with all 3 layers, engine processes synthetic events identically to real keys, can be called from test scripts._
 
-- [ ] 1.6 Run initial diagnostic tests and document asymmetries
+- [x] 1.6 Run initial diagnostic tests and document asymmetries
   - Files: `docs/INVESTIGATION_FINDINGS.md`
   - Use log analysis tool to analyze current behavior with config_clean.mayu
   - Test all 87 substitutions manually or with initial test script
