@@ -243,18 +243,38 @@
   - _Leverage: Test results from automated_keymap_test.py, baseline from task 1.6_
   - _Requirements: 5, 6_
 
-- [ ] 3.7 Create CI test runner script
-  - Files: `tests/run_all_tests.sh`
-  - Start YAMY in test mode with debug logging
-  - Run unit tests (C++ GoogleTest)
-  - Run integration tests (C++ GoogleTest)
-  - Run E2E tests (Python autonomous framework)
-  - Generate test report
-  - Stop YAMY
-  - Exit with status 0 for all pass, non-zero for any failures
+- [x] 3.7 Create CI test runner script
+  - Files: `tests/run_all_tests.sh`, `tests/README_CI_TESTING.md`
+  - **STATUS**: COMPLETED
+  - **IMPLEMENTATION**:
+    - Created comprehensive test runner script `tests/run_all_tests.sh`
+    - Implements all 4 test phases: Unit → Integration → E2E → Report Generation
+    - Automatic YAMY lifecycle management (startup/shutdown with proper cleanup)
+    - Robust error handling with trap-based cleanup on EXIT/INT/TERM
+    - Exit codes reflect test status (0 = all pass, non-zero = failures)
+    - Pre-flight checks for all dependencies and binaries
+    - Graceful shutdown with timeout and force-kill fallback
+    - Made script executable with proper bash shebangs
+  - **TEST PHASES**:
+    - Phase 1: Unit tests via `build/bin/yamy_event_processor_ut`
+    - Phase 2: Integration tests via `build/bin/yamy_event_processor_it`
+    - Phase 3: E2E tests via `tests/automated_keymap_test.py` with JSON export
+    - Phase 4: Report generation via `tests/generate_test_report.py`
+  - **FEATURES**:
+    - Color-coded output (✓/✗/i/!) for clear status reporting
+    - Configurable via environment variables (LOG_DIR)
+    - Timeout-based startup/shutdown (5 seconds each)
+    - Comprehensive documentation in README_CI_TESTING.md
+    - CI/CD ready with example GitHub Actions and GitLab CI configs
+    - Fully autonomous - zero user interaction required
+  - **DOCUMENTATION**:
+    - Complete usage guide with examples
+    - Troubleshooting section for common issues
+    - CI/CD integration examples
+    - Expected output sample
+    - Related documentation links
   - _Leverage: All test components from Phase 3_
   - _Requirements: 5, 6_
-  - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: CI/CD engineer with expertise in test automation and shell scripting | Task: Create comprehensive test runner script in tests/run_all_tests.sh following requirements 5 and 6. Orchestrate all test phases: start YAMY, run unit/integration/E2E tests, generate report, cleanup, exit with proper status. Make script robust and CI-ready. | Restrictions: Must handle YAMY startup/shutdown gracefully, wait for engine ready before testing, collect all test results, generate unified report, proper error handling and cleanup on failure, exit code reflects test status, no user interaction | _Leverage: Unit tests from task 3.1-3.3, integration tests from 3.4, E2E framework from 3.5, report generator from 3.6, YAMY binary with debug mode | _Requirements: Requirement 5 (Automated Testing), Requirement 6 (Test Coverage) | Success: Script successfully runs all test phases, starts/stops YAMY cleanly, generates comprehensive report, exits with correct status, handles failures gracefully, ready for CI/CD integration, runs completely autonomously._
 
 - [ ] 3.8 Validate 100% pass rate for all 87 substitutions
   - Files: `docs/TEST_VALIDATION_REPORT.md`
