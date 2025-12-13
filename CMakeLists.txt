@@ -1264,6 +1264,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 src/tests/platform/config_manager_test.cpp
                 src/tests/platform/config_validator_test.cpp
                 src/tests/platform/config_metadata_test.cpp
+                # UTF-8 integration tests
+                tests/core/settings/setting_loader_utf8_test.cpp
                 # Key remapping tests
                 src/tests/platform/key_remap_linux_test.cpp
                 src/tests/platform/window_context_keymap_test.cpp

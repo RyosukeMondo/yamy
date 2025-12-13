@@ -100,7 +100,7 @@
     - **Success**: All UTF-8 validation cases are tested. Tests cover valid sequences for all byte lengths. Tests cover all error conditions mentioned in requirements. Tests verify both return value and is_valid flag. 100% code coverage of utf8_char_length(). All tests pass.
     - **Instructions**: Mark in-progress [-]. Create test file with clear test case names. When complete, log with log-implementation tool including filesCreated and test coverage details. Mark complete [x].
 
-- [ ] 6. Add integration tests for UTF-8 tokenization and key registration
+- [-] 6. Add integration tests for UTF-8 tokenization and key registration
   - **File**: `tests/core/settings/setting_loader_utf8_test.cpp` (new file)
   - **Description**: Create integration tests that verify UTF-8 key definitions are correctly tokenized, registered, and looked up
   - **Purpose**: Test the complete flow from parsing UTF-8 key names to looking them up by both Japanese and English aliases

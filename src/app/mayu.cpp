@@ -1193,6 +1193,28 @@ public:
         }
         CHECK_TRUE( m_hwndTaskTray );
 
+        // Allow tray icon messages from lower integrity processes (UIPI fix)
+        yamy::debug::DebugConsole::LogInfo("Mayu: Enabling message filter for tray icon...");
+#if defined(_WIN32) && !defined(UNDER_CE)
+        typedef BOOL (WINAPI *ChangeWindowMessageFilterFunc)(UINT, DWORD);
+        HMODULE hUser32 = GetModuleHandle(_T("user32.dll"));
+        if (hUser32) {
+            ChangeWindowMessageFilterFunc pChangeWindowMessageFilter =
+                (ChangeWindowMessageFilterFunc)GetProcAddress(hUser32, "ChangeWindowMessageFilter");
+            if (pChangeWindowMessageFilter) {
+                // MSGFLT_ADD = 1 (allow message)
+                BOOL result = pChangeWindowMessageFilter(WM_APP_taskTrayNotify, 1);
+                if (result) {
+                    yamy::debug::DebugConsole::LogInfo("Mayu: Message filter enabled for WM_APP_taskTrayNotify");
+                } else {
+                    yamy::debug::DebugConsole::LogWarning("Mayu: Failed to enable message filter. Error: " + std::to_string(GetLastError()));
+                }
+            } else {
+                yamy::debug::DebugConsole::LogInfo("Mayu: ChangeWindowMessageFilter not available (older Windows)");
+            }
+        }
+#endif
+
         // set window handle of tasktray to hooks
         yamy::debug::DebugConsole::LogInfo("Mayu: Installing keyboard hooks...");
         yamy::debug::DebugConsole::LogWarning("This may be blocked by Windows Defender or antivirus!");
