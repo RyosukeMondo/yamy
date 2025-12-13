@@ -94,7 +94,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-5, US-2_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ persistence specialist. Task: In EngineAdapter::loadConfig(), after success, call SessionManager::instance().saveSession() with activeConfigPath and engineWasRunning. In main() restoreSessionState(), load session, validate config file exists, call engine->loadConfig(path), start engine if was running. Add --no-restore check. Restrictions: Do NOT modify SessionManager class. Success: Config path saved when loaded, restored on startup, missing files handled gracefully._
 
-- [ ] 11. Add engine notification callbacks
+- [x] 11. Add engine notification callbacks
   - File: src/app/engine_adapter.cpp and src/app/engine_adapter.h
   - Add notification callback mechanism to EngineAdapter
   - Emit notifications on config load/error

@@ -1166,9 +1166,12 @@ public:
             yamy::debug::DebugConsole::LogInfo("Mayu: Keyboard hooks installed successfully!");
         }
         CHECK_FALSE( hookResult );
+
+        yamy::debug::DebugConsole::LogInfo("Mayu: Registering session notification...");
         m_usingSN = wtsRegisterSessionNotification(m_hwndTaskTray,
                     NOTIFY_FOR_THIS_SESSION);
 
+        yamy::debug::DebugConsole::LogInfo("Mayu: Creating log dialog...");
         DlgLogData dld;
         dld.m_log = &m_log;
         dld.m_hwndTaskTray = m_hwndTaskTray;
@@ -1176,8 +1179,13 @@ public:
         m_hwndLog =
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_log), nullptr,
                               (DLGPROC)dlgLog_dlgProc, (LPARAM)&dld);
+        if (!m_hwndLog) {
+            DWORD error = GetLastError();
+            yamy::debug::DebugConsole::CriticalError("Failed to create log dialog. Error: " + std::to_string(error));
+        }
         CHECK_TRUE( m_hwndLog );
 
+        yamy::debug::DebugConsole::LogInfo("Mayu: Creating investigate dialog...");
         DlgInvestigateData did;
         did.m_engine = &m_engine;
         did.m_hwndLog = m_hwndLog;
@@ -1185,12 +1193,21 @@ public:
         m_hwndInvestigate =
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_investigate), nullptr,
                               (DLGPROC)dlgInvestigate_dlgProc, (LPARAM)&did);
+        if (!m_hwndInvestigate) {
+            DWORD error = GetLastError();
+            yamy::debug::DebugConsole::CriticalError("Failed to create investigate dialog. Error: " + std::to_string(error));
+        }
         CHECK_TRUE( m_hwndInvestigate );
 
+        yamy::debug::DebugConsole::LogInfo("Mayu: Creating version dialog...");
         m_hwndVersion =
             CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_DIALOG_version),
                               nullptr, (DLGPROC)dlgVersion_dlgProc,
                               (LPARAM)_T(""));
+        if (!m_hwndVersion) {
+            DWORD error = GetLastError();
+            yamy::debug::DebugConsole::CriticalError("Failed to create version dialog. Error: " + std::to_string(error));
+        }
         CHECK_TRUE( m_hwndVersion );
 
         // attach log
@@ -1210,10 +1227,12 @@ public:
         SendMessage(GetDlgItem(m_hwndLog, IDC_EDIT_log), EM_SETLIMITTEXT, 0, 0);
         m_log.attach(m_hwndTaskTray);
 
+        yamy::debug::DebugConsole::LogInfo("Mayu: Starting engine...");
         // start keyboard handler thread
         m_engine.setAssociatedWndow(m_hwndTaskTray);
         m_engine.start();
 
+        yamy::debug::DebugConsole::LogInfo("Mayu: Setting up tasktray icon...");
         // show tasktray icon
         m_tasktrayIcon[0] = loadSmallIcon(IDI_ICON_mayu_disabled);
         m_tasktrayIcon[1] = loadSmallIcon(IDI_ICON_mayu);
@@ -1230,16 +1249,21 @@ public:
             m_ni.uFlags |= NIF_INFO;
         } else
             m_ni.cbSize = NOTIFYICONDATA_V1_SIZE;
+
+        yamy::debug::DebugConsole::LogInfo("Mayu: Showing tasktray icon...");
         showTasktrayIcon(true);
 
+        yamy::debug::DebugConsole::LogInfo("Mayu: Creating menu...");
         // create menu
         m_hMenuTaskTray = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU_tasktray));
         ASSERT(m_hMenuTaskTray);
 
+        yamy::debug::DebugConsole::LogInfo("Mayu: Setting lock state...");
         // set initial lock state
         notifyLockState();
 
 #ifdef _WIN64
+        yamy::debug::DebugConsole::LogInfo("Mayu: Launching yamyd32.exe (64-bit mode)...");
         ZeroMemory(&m_pi,sizeof(m_pi));
         ZeroMemory(&m_si,sizeof(m_si));
         m_si.cb=sizeof(m_si);
@@ -1261,6 +1285,8 @@ public:
         BOOL result = CreateProcess(yamydPath.c_str(), nullptr, nullptr, nullptr, FALSE,
                                NORMAL_PRIORITY_CLASS, 0, nullptr, &m_si, &m_pi);
         if (result == FALSE) {
+            DWORD error = GetLastError();
+            yamy::debug::DebugConsole::LogWarning("Failed to launch yamyd32.exe. Error: " + std::to_string(error));
             TCHAR buf[1024];
             TCHAR text[1024];
             TCHAR title[1024];
@@ -1274,6 +1300,7 @@ public:
                         text, _T("yamyd32"), GetLastError());
              MessageBox((HWND)nullptr, buf, title, MB_OK | MB_ICONSTOP);
         } else {
+            yamy::debug::DebugConsole::LogInfo("Mayu: yamyd32.exe launched successfully!");
             CloseHandle(m_pi.hThread);
         }
 #endif // _WIN64

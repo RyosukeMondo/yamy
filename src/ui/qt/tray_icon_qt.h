@@ -74,6 +74,14 @@ public slots:
         int millisecondsTimeoutHint = 3000
     );
 
+    /**
+     * @brief Handle engine notification messages
+     * Updates tray icon and tooltip based on engine state
+     * @param type Message type indicating engine state change
+     * @param data Additional data associated with the message
+     */
+    void handleEngineMessage(yamy::MessageType type, const QString& data);
+
 private slots:
     /**
      * @brief Handle tray icon activation (clicks)
@@ -167,14 +175,6 @@ private slots:
      * Cycles to the next configuration
      */
     void onQuickSwitchHotkey();
-
-    /**
-     * @brief Handle engine notification messages
-     * Updates tray icon and tooltip based on engine state
-     * @param type Message type indicating engine state change
-     * @param data Additional data associated with the message
-     */
-    void handleEngineMessage(yamy::MessageType type, const QString& data);
 
 private:
     /**

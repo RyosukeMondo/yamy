@@ -218,6 +218,16 @@ int main(int argc, char* argv[])
     TrayIconQt trayIcon(realEngine);
     trayIcon.show();
 
+    // Connect EngineAdapter notifications to TrayIconQt
+    engine->setNotificationCallback(
+        [&trayIcon](yamy::MessageType type, const std::string& data) {
+            // Convert std::string to QString for Qt
+            QString qdata = QString::fromStdString(data);
+            // Forward to tray icon's message handler
+            trayIcon.handleEngineMessage(type, qdata);
+        }
+    );
+
     // Initialize plugin system
     std::cout << "Initializing plugin system..." << std::endl;
     yamy::core::PluginManager& pluginManager = yamy::core::PluginManager::instance();

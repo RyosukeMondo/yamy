@@ -158,8 +158,19 @@ bool EngineAdapter::loadConfig(const std::string& path)
         session.setActiveConfig(m_configPath);
         session.setEngineRunning(wasRunning);  // Save the running state before we stopped for reload
         session.saveSession();
+
+        // Notify success via callback
+        if (m_notificationCallback) {
+            m_notificationCallback(yamy::MessageType::ConfigLoaded, path);
+        }
     } else {
         std::cerr << "EngineAdapter::loadConfig() - Failed to load config: " << path << std::endl;
+
+        // Notify error via callback
+        if (m_notificationCallback) {
+            std::string errorMsg = "Failed to load configuration: " + path;
+            m_notificationCallback(yamy::MessageType::ConfigError, errorMsg);
+        }
     }
 
     // Restart engine if it was running before
@@ -322,4 +333,9 @@ std::string EngineAdapter::getMetricsJson() const
     obj["keys_per_second"] = keysPerSecond;
 
     return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
+}
+
+void EngineAdapter::setNotificationCallback(NotificationCallback callback)
+{
+    m_notificationCallback = callback;
 }

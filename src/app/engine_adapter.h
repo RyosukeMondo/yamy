@@ -3,6 +3,8 @@
 #include <string>
 #include <thread>
 #include <memory>
+#include <functional>
+#include "core/platform/ipc_defs.h"
 
 // Forward declaration of real Engine
 class Engine;
@@ -81,10 +83,20 @@ public:
     /// @return JSON string with performance metrics
     std::string getMetricsJson() const;
 
+    /// Callback type for engine notifications
+    /// @param type Notification message type (ConfigLoaded, ConfigError, etc.)
+    /// @param data Additional data associated with the notification (e.g., error message)
+    using NotificationCallback = std::function<void(yamy::MessageType type, const std::string& data)>;
+
+    /// Set notification callback for engine events
+    /// @param callback Callback function to be invoked on engine notifications
+    void setNotificationCallback(NotificationCallback callback);
+
 private:
     Engine* m_engine;                           ///< Real Engine instance (owned)
     std::string m_configPath;                   ///< Path to loaded configuration
     std::thread m_engineThread;                 ///< Thread running the engine
     std::chrono::steady_clock::time_point m_startTime;  ///< Time when engine was started
     std::chrono::system_clock::time_point m_configLoadedTime; ///< Time when config was loaded
+    NotificationCallback m_notificationCallback; ///< Callback for engine notifications
 };
