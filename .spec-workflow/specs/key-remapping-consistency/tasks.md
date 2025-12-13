@@ -487,16 +487,42 @@
   - _Requirements: 5, 6, 9_
   - _Commit: [Next commit]_
 
-- [ ] 5.2 Update architecture documentation
+- [x] 5.2 Update architecture documentation
   - Files: `docs/EVENT_FLOW_ARCHITECTURE.md`, update `docs/SYSTEMATIC_INVESTIGATION_SPEC.md`
-  - Document final EventProcessor architecture
-  - Document 3-layer flow with formal specification
-  - Document invariants that are now enforced
-  - Document test coverage and autonomous testing approach
-  - Update investigation spec with "RESOLVED" status for all issues
+  - **STATUS**: COMPLETED
+  - **DELIVERABLES**:
+    - Created comprehensive EVENT_FLOW_ARCHITECTURE.md (1300+ lines)
+    - Updated SYSTEMATIC_INVESTIGATION_SPEC.md with RESOLVED status for all issues
+    - Documented complete 3-layer architecture with formal specifications
+    - Documented all system invariants with test-based proofs
+    - Documented testing architecture (unit/integration/E2E strategy)
+    - Added developer guide (5-minute quick start, debugging, testing workflow)
+  - **CONTENT OVERVIEW**:
+    - Executive Summary: Transformation achieved (50% → 100% pass rate)
+    - Core Principles: 5 architectural principles with formal proofs
+    - Architecture Overview: Complete system diagram with data flow examples
+    - Formal Layer Specification: Mathematical specification for f₁, f₂, f₃
+    - System Invariants: 4 invariants with formal statements and test verification
+    - Component Documentation: EventProcessor, keycode_mapping, ModifierKeyHandler
+    - Event Flow Diagrams: Sequence diagrams and state machines
+    - Testing Architecture: 3-tier verification strategy (unit/integration/E2E)
+    - Advanced Features: Number modifier system documentation
+    - Performance Characteristics: Latency, logging overhead, test execution metrics
+    - Developer Guide: Quick start, adding mappings, debugging, testing workflow
+  - **SYSTEMATIC_INVESTIGATION_SPEC UPDATES**:
+    - Added completion status banner with achievement summary
+    - Marked all 3 asymmetries as RESOLVED with solutions
+    - Updated success criteria (all 4 quantitative + 3 qualitative metrics ACHIEVED)
+    - Updated implementation roadmap (all 4 weeks completed)
+    - Added final conclusion with achievement summary and next steps
+  - Document final EventProcessor architecture ✅
+  - Document 3-layer flow with formal specification ✅
+  - Document invariants that are now enforced ✅
+  - Document test coverage and autonomous testing approach ✅
+  - Update investigation spec with "RESOLVED" status for all issues ✅
   - _Leverage: Design from Phase 2, test framework from Phase 3_
   - _Requirements: All requirements_
-  - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Technical architect with expertise in system documentation | Task: Create comprehensive architecture documentation in docs/EVENT_FLOW_ARCHITECTURE.md and update docs/SYSTEMATIC_INVESTIGATION_SPEC.md following all requirements. Document final architecture, formal specification, enforced invariants, testing approach. Mark all original issues as RESOLVED. | Restrictions: Must include formal layer specifications (f₁, f₂, f₃), document invariants with proofs from tests, explain autonomous testing architecture, provide architecture diagrams, maintain consistency with implementation | _Leverage: Design document from Phase 2, test framework architecture from Phase 3, original investigation spec from docs/SYSTEMATIC_INVESTIGATION_SPEC.md | _Requirements: All requirements (comprehensive documentation) | Success: Architecture clearly documented with formal specs, invariants proven by tests, testing approach explained, original spec updated with RESOLVED status, diagrams clear, new developers can understand system quickly._
+  - _Commit: [Next commit]_
 
 - [ ] 5.3 Create developer onboarding guide
   - Files: `docs/DEVELOPER_GUIDE.md`
