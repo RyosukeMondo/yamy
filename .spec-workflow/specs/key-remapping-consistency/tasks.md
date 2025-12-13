@@ -113,16 +113,14 @@
   - _Requirements: 1, 2, 3, 7_
   - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Systems architect with expertise in event-driven systems | Task: Implement processEvent() main entry point in src/core/engine/engine_event_processor.cpp following requirements 1, 2, 3, and 7. Compose layer functions: output = f₃(f₂(f₁(input))). CRITICAL: Preserve event type - PRESS in must produce PRESS out, RELEASE in must produce RELEASE out. No branching based on event type except to preserve the flag. | Restrictions: Must call all 3 layers for every event (no layer skipping), event type preservation is mandatory, no special cases for any key, return ProcessedEvent struct with all fields populated, add event start/end logging | _Leverage: Layer functions from tasks 2.2 (layer1_evdevToYamy), 2.3 (layer2_applySubstitution), 2.4 (layer3_yamyToEvdev) | _Requirements: Requirements 1 (Universal Event Processing), 2 (Event Type Consistency), 3 (Layer Completeness), 7 (Code Consistency) | Success: All events processed through all 3 layers, event type preserved correctly, ProcessedEvent returns output evdev + original event type, logs show complete EVENT:START → LAYER1 → LAYER2 → LAYER3 → EVENT:END sequence, no event type branching._
 
-- [-] 2.6 Integrate EventProcessor into engine.cpp main event loop
-  - Files: `src/core/engine/engine.cpp`
-  - Replace existing event processing logic with EventProcessor::processEvent()
-  - Pass substitution table to EventProcessor constructor
-  - Remove any old special-case code for modifiers or specific keys
-  - Ensure output events are injected with correct event type
-  - _Leverage: Existing event loop structure, input_injector for output_
+- [x] 2.6 Integrate EventProcessor into engine.cpp main event loop
+  - Files: `src/core/engine/engine.cpp`, `src/core/engine/engine.h`, `src/core/engine/engine_setting.cpp`, `src/core/engine/engine_generator.cpp`, `src/core/input/keyboard.h`
+  - Replace existing event processing logic with EventProcessor substitution table
+  - Pass substitution table to EventProcessor constructor in setSetting()
+  - Remove old searchSubstitute() logic, use EventProcessor substitution table directly
+  - Ensure event type preservation through substitution logic
+  - _Leverage: Existing event loop structure, EventProcessor substitution table_
   - _Requirements: 1, 2, 7_
-  - _Status: IN PROGRESS - Build system configured, EventProcessor compiles. Integration requires extracting substitution table from Keymap system and carefully replacing existing event processing while preserving advanced features (prefix keys, modal layers, oneshot modifiers)._
-  - _Prompt: Implement the task for spec key-remapping-consistency, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Engine developer with expertise in refactoring and integration | Task: Integrate EventProcessor into main event loop in src/core/engine/engine.cpp following requirements 1, 2, and 7. Replace old event processing with new unified processor, remove all special cases for modifiers or specific keys, ensure output injection preserves event type. | Restrictions: Must remove all old special-case code (no partial migration), EventProcessor is single source of truth for event processing, maintain engine startup/shutdown logic, ensure substitution table is loaded once and passed to processor, no breaking changes to .mayu file loading | _Leverage: Existing event loop in engine.cpp, EventProcessor from previous tasks, input_injector_linux.cpp for output injection | _Requirements: Requirements 1 (Universal Event Processing), 2 (Event Type Consistency), 7 (Code Consistency) | Success: Engine uses EventProcessor for all events, old special-case code completely removed, event type preserved in output injection, engine starts and loads config correctly, no functional regressions in working keys._
 
 - [ ] 2.7 Verify refactoring with manual testing
   - Files: `docs/REFACTORING_VALIDATION.md`
