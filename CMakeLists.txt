@@ -443,6 +443,14 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
 
         if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND)
             message(STATUS "Qt5 GUI components found - building with GUI support")
+
+            # Remove Qt-dependent sources from STUB_SOURCES - they're already compiled in yamy_qt_gui
+            # This prevents duplicate MOC compilation and linker errors
+            list(REMOVE_ITEM STUB_SOURCES
+                src/core/settings/config_watcher.cpp
+                src/core/platform/ipc_channel_interface.cpp
+            )
+
             add_subdirectory(src/ui/qt)
 
             # Use Qt main instead of headless main
