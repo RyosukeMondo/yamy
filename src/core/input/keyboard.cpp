@@ -37,10 +37,13 @@ Key &Key::initialize()
 }
 
 
-// equation by name
+// equation by name (UTF-8-aware case-insensitive comparison)
 bool Key::operator==(const std::string &i_name) const
 {
-    return std::find(m_names.begin(), m_names.end(), i_name) != m_names.end();
+    return std::find_if(m_names.begin(), m_names.end(),
+        [&i_name](const std::string &name) {
+            return strcasecmp_utf8(name.c_str(), i_name.c_str()) == 0;
+        }) != m_names.end();
 }
 
 
