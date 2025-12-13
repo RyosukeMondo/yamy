@@ -77,7 +77,7 @@
     - **Success**: Key name lookups work correctly for UTF-8 strings with case-insensitive matching. Both "無変換" and "NonConvert" find the same key. ASCII key names still work with case-insensitive matching (e.g., "Escape" == "escape"). No performance regression in key lookups.
     - **Instructions**: Mark in-progress [-] in tasks.md. Test that both Japanese and English key names can be used to look up the same key. When done, log with log-implementation tool including filesModified and code statistics. Mark complete [x].
 
-- [-] 5. Add unit tests for UTF-8 character length detection
+- [x] 5. Add unit tests for UTF-8 character length detection
   - **File**: `tests/core/settings/parser_utf8_test.cpp` (new file)
   - **Description**: Create comprehensive unit tests for the `utf8_char_length()` function covering all valid UTF-8 ranges and error cases
   - **Purpose**: Ensure UTF-8 validation logic is correct and handles all edge cases
