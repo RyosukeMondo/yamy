@@ -13,7 +13,7 @@ Replace the stub Engine implementation in the Qt GUI application with the real k
   - _Requirements: FR-4, NFR-4_
   - _Prompt: Implement the task for spec qt-engine-integration. Role: C++ systems programmer specializing in adapter pattern. Task: Create EngineAdapter.h with class declaration bridging Qt GUI (simple interface) and real Engine (complex API). Include all public methods from stub: getIsEnabled, isRunning, enable, disable, start, stop, loadConfig, getConfigPath, keyCount, getStatusJson, getConfigJson, getKeymapsJson, getMetricsJson. Private members: Engine* m_engine, std::string m_configPath, std::thread m_engineThread. Restrictions: Do NOT implement functionality yet (just declarations). Success: Header compiles, all methods declared, no warnings._
 
-- [ ] 2. Create EngineAdapter implementation file
+- [x] 2. Create EngineAdapter implementation file
   - File: src/app/engine_adapter.cpp
   - Implement constructor and stub method implementations
   - Add destructor with thread cleanup
