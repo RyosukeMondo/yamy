@@ -2049,6 +2049,42 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             pthread
         )
 
+        # -----------------------------------------------------------------------------
+        # Target: yamy_property_keymap_test (Keymap Property-Based Tests)
+        # Property-based tests using RapidCheck for keymap invariants
+        # Part of task 5.1 in modern-cpp-toolchain spec
+        # -----------------------------------------------------------------------------
+        set(PROPERTY_KEYMAP_SOURCES
+            tests/property_keymap.cpp
+            tests/property_keymap_main.cpp
+        )
+
+        add_executable(yamy_property_keymap_test
+            ${PROPERTY_KEYMAP_SOURCES}
+        )
+
+        target_include_directories(yamy_property_keymap_test PRIVATE
+            src
+            src/core
+            src/core/input
+            src/core/functions
+            src/core/engine
+            src/platform/linux
+            src/utils
+        )
+
+        target_compile_definitions(yamy_property_keymap_test PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(yamy_property_keymap_test PRIVATE
+            yamy_test_dependencies
+            yamy_dependencies
+            pthread
+        )
+
+        add_test(NAME yamy_property_keymap_test COMMAND yamy_property_keymap_test)
+
         else()
             message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/not found)")
         endif() # Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6Gui_FOUND
