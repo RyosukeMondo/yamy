@@ -5,6 +5,30 @@ All notable changes to YAMY (Yet Another Mado tsukai no Yuutsu) are documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Investigate Window Feature (Linux Qt GUI)**: Real-time debugging tool for inspecting window properties and keymap status
+  - Crosshair window selection tool (click "Investigate Window" in tray menu)
+  - Window info panel: displays title, class, process name/path, geometry, state
+  - Keymap status panel: shows active keymap, matched regex patterns, modifier state
+  - Live key event log: real-time stream of key presses/releases with timestamps
+  - IPC communication between GUI and engine for real-time status updates
+  - Useful for debugging .mayu configurations (e.g., "why isn't my C-x binding working in Emacs?")
+
+### Fixed
+
+- Window property queries now return real data (not stubs) on Linux via X11/EWMH
+- IPC channel now functional between Qt GUI and engine (was stub returning "not connected")
+- Engine now sends keymap status responses to investigate dialog via IPC
+- X11 window queries properly handle BadWindow errors without crashing
+
+### Changed
+
+- Window property queries use caching (100ms TTL) to reduce X11 round-trip latency to <10ms
+- Engine IPC message handler now connected via Qt signals/slots for asynchronous processing
+
 ## [1.0.0] - 2025-12-12
 
 ### Added

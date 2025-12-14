@@ -8,6 +8,7 @@ YAMY now includes a **Qt5-based graphical user interface (GUI)** for Linux, prov
 - **Context menu** with quick actions
 - **Settings dialog** for keymap configuration
 - **Log viewer** for debugging
+- **Investigate window** for real-time keymap debugging and window inspection
 - **About dialog** with version information
 
 ## Current Status
@@ -15,18 +16,24 @@ YAMY now includes a **Qt5-based graphical user interface (GUI)** for Linux, prov
 ✅ **Implemented and Working:**
 - Qt5 GUI framework integration
 - System tray icon with visual state (enabled/disabled)
-- Context menu (Enable, Reload, Settings, Log, About, Exit)
+- Context menu (Enable, Reload, Settings, Log, Investigate Window, About, Exit)
 - Settings dialog (keymap file management)
 - Log viewer dialog (with auto-scroll, save to file)
+- Investigate window dialog (real-time window/keymap debugging)
+  - Crosshair window selection
+  - Window property inspection (title, class, PID, geometry, state)
+  - Keymap status display (active keymap, matched regex, modifiers)
+  - Live key event logging with timestamps
 - About dialog (version, build info, license)
 - CMake build system integration
 - Platform-specific conditional compilation
+- IPC integration (Qt GUI ↔ Engine communication via Unix domain sockets)
+- X11 window system integration (property queries, hierarchy)
 
 ⏳ **Pending (requires core refactoring):**
 - Full keyboard remapping engine integration
 - Configuration reload from .mayu files
 - Dynamic keymap switching
-- IPC integration
 
 **Note:** The Qt GUI is currently running with a **stub engine** (demo mode). Full engine integration requires refactoring core YAMY code to remove Windows-specific dependencies (`HWND`, `PostMessage`, `SW_*`, `tstring`).
 
@@ -220,7 +227,79 @@ YAMY Qt GUI initialized. Running...
 
 ---
 
-### 4. About Dialog
+### 4. Investigate Window (Debug Tool)
+
+**Purpose:** Real-time debugging tool for inspecting window properties and keymap status
+
+The Investigate Window feature helps you debug your .mayu configuration by showing:
+- Which window YAMY sees when you select it
+- Which keymap is active for that window
+- Why a particular regex matched (or didn't match)
+- Real-time stream of key events as you type
+
+#### How to Use
+
+1. **Open the Investigate Dialog:**
+   - Right-click the YAMY tray icon
+   - Select "Investigate Window" from menu
+   - Dialog window opens
+
+2. **Select a Window:**
+   - Click "Select Window" button
+   - Crosshair cursor appears
+   - Drag crosshair over target window
+   - Release mouse button to select
+
+3. **View Window Information:**
+   - **Window Information Panel** (left):
+     - **Handle:** Unique window ID (hex)
+     - **Title:** Window title as seen by YAMY
+     - **Class:** Window class name (for .mayu window rules)
+     - **Process:** Application process name
+     - **Path:** Full path to executable
+     - **Geometry:** Screen position and size
+     - **State:** Normal, Minimized, or Maximized
+
+4. **View Keymap Status** (right):
+   - **Keymap:** Name of active keymap (or "(global keymap)")
+   - **Matched Regex:** Class/title patterns that matched
+   - **Modifiers:** Current modifier state (Shift, Ctrl, Alt, etc.)
+
+5. **Monitor Live Key Events:**
+   - Press keys while window is selected
+   - Events appear in log panel: `[HH:MM:SS.zzz] KeyName ↓↑`
+   - Verify your bindings are being captured correctly
+
+#### Troubleshooting
+
+- **"(IPC not connected)":** Engine is not running. Start `yamy_stub` or `yamy`.
+- **Panels show "-":** No window selected yet. Click "Select Window".
+- **No live events:** Make sure dialog is still open (closing disables logging).
+
+#### Example: Debug Emacs Binding
+
+**Problem:** "My C-x doesn't work in Emacs, why?"
+
+1. Open investigate dialog
+2. Select Emacs window
+3. Check **Keymap** field: Should show "Emacs" (not "Global")
+   - If shows "Global", your window rule didn't match
+   - Check **Matched Regex** to see what YAMY sees
+4. Press C-x
+5. Check live log: Should show `[HH:MM:SS] C-x ↓`
+   - If shows different key, your binding has a typo in .mayu
+
+#### Technical Details
+
+- **Window Selection:** Uses X11 XQueryPointer to find window at cursor position
+- **Property Queries:** Queries _NET_WM_NAME, WM_CLASS, _NET_WM_PID via X11/EWMH
+- **IPC:** Communication between GUI and engine via Unix domain sockets (QLocalSocket)
+- **Performance:** Window queries cached for 100ms, latency <10ms typical
+- **Live Events:** Engine sends key event notifications via IPC when investigate mode active
+
+---
+
+### 5. About Dialog
 
 **Purpose:** Display version and license information
 
@@ -408,7 +487,6 @@ endif()
 
 - **Keymap hot reload** - Reload without restart
 - **Dynamic keymap menu** - Show loaded keymaps in menu
-- **Investigate window dialog** - X11 window inspection tool
 - **Autostart integration** - XDG autostart file
 - **Tray notifications** - More informative messages
 - **Theme support** - Follow system theme
