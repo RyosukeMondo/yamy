@@ -261,7 +261,7 @@
 
 ## Phase 8: Documentation and Final Validation
 
-- [ ] 8.1. Update user documentation
+- [x] 8.1. Update user documentation
   - Files: `docs/USER_GUIDE.md` (new), update `README.md`
   - Document yamy-gui usage and architecture
   - Add troubleshooting guide

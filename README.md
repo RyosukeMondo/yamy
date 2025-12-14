@@ -1,6 +1,8 @@
 # Yamy (Yet Another Mado tsukai no Yuutsu)
 
-**Yamy** is a key binding customization tool for Windows, derived from "Mado tsukai no Yuutsu" (Mayu).
+**Yamy** is a key binding customization tool for Windows and Linux, derived from "Mado tsukai no Yuutsu" (Mayu).
+
+The current architecture separates a **headless daemon (`yamy`)** from a **Qt Widgets front-end (`yamy-gui`)**. The daemon hosts the engine and IPC server; the GUI connects over the IPC channel to show status, toggle enable/disable, switch/reload configs, and launch existing dialogs.
 
 ## Overview
 
@@ -51,6 +53,21 @@ This repository is a fork of the original Yamy project, reorganized for better m
 - **Original Yamy**: [http://yamy.sourceforge.jp/](http://yamy.sourceforge.jp/)
 
 ## Installation
+
+### Linux (daemon + GUI, source build)
+
+```bash
+cmake -B build_release -DCMAKE_BUILD_TYPE=Release -DBUILD_LINUX_STUB=ON -DBUILD_QT_GUI=ON
+cmake --build build_release -j$(nproc)
+
+# 1) Start headless daemon (needs input permissions)
+./build_release/bin/yamy --no-restore
+
+# 2) Launch GUI (connects to IPC server name yamy-engine by default)
+./build_release/bin/yamy-gui
+```
+
+See `docs/USER_GUIDE.md` for the full GUI walkthrough, troubleshooting, and screenshots.
 
 ### Linux (Ubuntu/Debian)
 
