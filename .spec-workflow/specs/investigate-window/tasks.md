@@ -373,7 +373,7 @@
     7. Mark complete
     ```
 
-- [ ] 2.2 Implement window property queries (title, class, PID)
+- [x] 2.2 Implement window property queries (title, class, PID)
   - Files:
     - src/platform/linux/window_system_linux_queries.cpp (modify)
   - Description:
