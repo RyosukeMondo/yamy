@@ -11,6 +11,11 @@
 
 namespace yamy {
 
+// Forward declaration for ModifierState
+namespace input {
+class ModifierState;
+}
+
 // Forward declaration for ModifierKeyHandler
 namespace engine {
 class ModifierKeyHandler;
@@ -56,9 +61,10 @@ public:
     /// Main entry point: Process an input event through all 3 layers
     /// @param input_evdev Input evdev code from hardware
     /// @param type Event type (PRESS or RELEASE)
+    /// @param io_modState Pointer to modifier state (input/output) - updated during processing
     /// @return Processed event with output evdev code and validity
     /// @note Event type is ALWAYS preserved: PRESS in = PRESS out
-    ProcessedEvent processEvent(uint16_t input_evdev, EventType type);
+    ProcessedEvent processEvent(uint16_t input_evdev, EventType type, input::ModifierState* io_modState);
 
     /// Enable or disable debug logging
     /// @param enabled true to enable debug logging
@@ -87,11 +93,12 @@ private:
     /// Layer 2: Apply substitution from .mayu configuration
     /// @param yamy_in Input YAMY scan code
     /// @param type Event type (PRESS or RELEASE) - needed for number modifier processing
+    /// @param io_modState Pointer to modifier state (input/output) - updated for modal modifiers
     /// @return Substituted YAMY scan code, or input unchanged if no substitution
     /// @note Logs: [LAYER2:SUBST] or [LAYER2:PASSTHROUGH]
     /// @note Pure function: NO special cases for any key type
     /// @note Number modifiers checked BEFORE substitution lookup
-    uint16_t layer2_applySubstitution(uint16_t yamy_in, EventType type);
+    uint16_t layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState);
 
     /// Layer 3: Map YAMY scan code to output evdev code
     /// @param yamy Input YAMY scan code

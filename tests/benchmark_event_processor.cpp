@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
 
         // Warmup
         for (int i = 0; i < WARMUP_ITERATIONS; i++) {
-            processor.processEvent(test.evdev, test.type);
+            processor.processEvent(test.evdev, test.type, nullptr);
         }
 
         // Benchmark
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
 
         for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
             auto start = high_resolution_clock::now();
-            processor.processEvent(test.evdev, test.type);
+            processor.processEvent(test.evdev, test.type, nullptr);
             auto end = high_resolution_clock::now();
 
             double elapsed_ns = duration_cast<nanoseconds>(end - start).count();
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
 
     // Warmup
     for (int i = 0; i < WARMUP_ITERATIONS; i++) {
-        processor_with_logging.processEvent(17, EventType::PRESS);
+        processor_with_logging.processEvent(17, EventType::PRESS, nullptr);
     }
 
     // Benchmark
@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
         auto start = high_resolution_clock::now();
-        processor_with_logging.processEvent(17, EventType::PRESS);
+        processor_with_logging.processEvent(17, EventType::PRESS, nullptr);
         auto end = high_resolution_clock::now();
 
         double elapsed_ns = duration_cast<nanoseconds>(end - start).count();
@@ -169,12 +169,12 @@ int main(int argc, char** argv) {
     EventProcessor processor_no_logging(subst_table);
 
     for (int i = 0; i < WARMUP_ITERATIONS; i++) {
-        processor_no_logging.processEvent(17, EventType::PRESS);
+        processor_no_logging.processEvent(17, EventType::PRESS, nullptr);
     }
 
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
         auto start = high_resolution_clock::now();
-        processor_no_logging.processEvent(17, EventType::PRESS);
+        processor_no_logging.processEvent(17, EventType::PRESS, nullptr);
         auto end = high_resolution_clock::now();
 
         double elapsed_ns = duration_cast<nanoseconds>(end - start).count();

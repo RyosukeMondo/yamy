@@ -265,7 +265,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
     6. Mark task 4 as complete
     ```
 
-- [ ] 5. Integrate modifier detection into EventProcessor::layer2
+- [x] 5. Integrate modifier detection into EventProcessor::layer2
   - **Files**:
     - `src/core/engine/engine_event_processor.cpp` (modify layer2_applySubstitution method)
   - **Description**: Add modifier detection logic to Layer 2 processing before substitution lookup
@@ -353,7 +353,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
     7. Mark task 5 as complete
     ```
 
-- [ ] 6. Add ModifierState parameter to EventProcessor methods
+- [x] 6. Add ModifierState parameter to EventProcessor methods
   - **Files**:
     - `src/core/engine/engine_event_processor.h` (update method signatures)
     - `src/core/engine/engine_event_processor.cpp` (update implementations)

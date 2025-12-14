@@ -488,11 +488,11 @@ TEST_F(EventProcessorLayer2Test, EmptySubstitutionTable) {
     emptyProcessor.setDebugLogging(false);
 
     // All keys should passthrough unchanged
-    auto result_w = emptyProcessor.processEvent(KEY_W, yamy::EventType::PRESS);
+    auto result_w = emptyProcessor.processEvent(KEY_W, yamy::EventType::PRESS, nullptr);
     EXPECT_EQ(result_w.output_yamy, 0x0011);  // W unchanged
     EXPECT_EQ(result_w.output_evdev, KEY_W);
 
-    auto result_a = emptyProcessor.processEvent(KEY_A, yamy::EventType::PRESS);
+    auto result_a = emptyProcessor.processEvent(KEY_A, yamy::EventType::PRESS, nullptr);
     EXPECT_EQ(result_a.output_yamy, 0x001E);  // A unchanged
     EXPECT_EQ(result_a.output_evdev, KEY_A);
 }
@@ -509,7 +509,7 @@ TEST_F(EventProcessorLayer2Test, NoDoubleSubstitution) {
     chainProcessor.setDebugLogging(false);
 
     // Input A should output B (single substitution lookup only)
-    auto result = chainProcessor.processEvent(KEY_A, yamy::EventType::PRESS);
+    auto result = chainProcessor.processEvent(KEY_A, yamy::EventType::PRESS, nullptr);
     EXPECT_EQ(result.output_yamy, 0x0030);  // Should be B, not C
     EXPECT_EQ(result.output_evdev, KEY_B);  // After Layer 3: KEY_B
 
@@ -525,7 +525,7 @@ TEST_F(EventProcessorLayer2Test, IdentitySubstitution) {
     yamy::EventProcessor identityProcessor(identityTable);
     identityProcessor.setDebugLogging(false);
 
-    auto result = identityProcessor.processEvent(KEY_A, yamy::EventType::PRESS);
+    auto result = identityProcessor.processEvent(KEY_A, yamy::EventType::PRESS, nullptr);
     EXPECT_EQ(result.output_yamy, 0x001E);  // A → A
     EXPECT_EQ(result.output_evdev, KEY_A);
     EXPECT_TRUE(result.valid);

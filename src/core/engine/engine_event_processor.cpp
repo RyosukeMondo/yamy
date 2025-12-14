@@ -3,6 +3,7 @@
 
 #include "engine_event_processor.h"
 #include "modifier_key_handler.h"
+#include "../input/modifier_state.h"
 #include "../../platform/linux/keycode_mapping.h"
 #include "../../utils/platform_logger.h"
 #include "../logger/journey_logger.h"
@@ -29,7 +30,7 @@ EventProcessor::EventProcessor(const SubstitutionTable& subst_table)
 
 EventProcessor::~EventProcessor() = default;
 
-EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev, EventType type)
+EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev, EventType type, input::ModifierState* io_modState)
 {
     // Create journey event for tracking (if enabled)
     yamy::logger::JourneyEvent journey;
@@ -60,7 +61,7 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
     }
 
     // Layer 2: Apply substitution (with number modifier support)
-    uint16_t yamy_l2 = layer2_applySubstitution(yamy_l1, type);
+    uint16_t yamy_l2 = layer2_applySubstitution(yamy_l1, type, io_modState);
 
     if (yamy::logger::JourneyLogger::isEnabled()) {
         journey.yamy_output = yamy_l2;
@@ -116,7 +117,7 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
     return yamy;
 }
 
-uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type)
+uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState)
 {
     // CRITICAL: Check if key is registered as number modifier BEFORE substitution lookup
     // This ensures number keys can act as modifiers (HOLD) or be substituted (TAP)
