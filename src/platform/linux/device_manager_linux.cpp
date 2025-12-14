@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
-#include <iostream>
+#include "../../utils/logger.h"
 #include <dirent.h>
 
 // Helper macros for bit manipulation
@@ -31,10 +31,10 @@ DeviceManager::DeviceManager()
     // Create udev context
     m_udev = udev_new();
     if (!m_udev) {
-        std::cerr << "[DeviceManager] Failed to create udev context" << std::endl;
+        LOG_ERROR("[DeviceManager] Failed to create udev context");
     }
 #else
-    std::cerr << "[DeviceManager] Built without libudev - using /dev/input fallback" << std::endl;
+    LOG_INFO("[DeviceManager] Built without libudev - using /dev/input fallback");
 #endif
 }
 
@@ -54,14 +54,14 @@ std::vector<InputDeviceInfo> DeviceManager::enumerateDevices()
 
 #ifdef HAVE_LIBUDEV
     if (!m_udev) {
-        std::cerr << "[DeviceManager] udev context not initialized" << std::endl;
+        LOG_ERROR("[DeviceManager] udev context not initialized");
         return devices;
     }
 
     // Create enumerate object
     struct udev_enumerate* enumerate = udev_enumerate_new(m_udev);
     if (!enumerate) {
-        std::cerr << "[DeviceManager] Failed to create udev enumerate" << std::endl;
+        LOG_ERROR("[DeviceManager] Failed to create udev enumerate");
         return devices;
     }
 
@@ -142,7 +142,7 @@ std::vector<InputDeviceInfo> DeviceManager::enumerateDevices()
     // Fallback: scan /dev/input/event* directly without udev
     DIR* dir = opendir("/dev/input");
     if (!dir) {
-        std::cerr << "[DeviceManager] Failed to open /dev/input" << std::endl;
+        LOG_ERROR("[DeviceManager] Failed to open /dev/input");
         return devices;
     }
 
@@ -257,8 +257,7 @@ int DeviceManager::openDevice(const std::string& devNode, bool nonBlock)
 
     int fd = open(devNode.c_str(), flags);
     if (fd < 0) {
-        std::cerr << "[DeviceManager] Failed to open " << devNode << ": "
-                  << strerror(errno) << std::endl;
+        LOG_ERROR("[DeviceManager] Failed to open {}: {}", devNode, strerror(errno));
         return -1;
     }
 
@@ -271,8 +270,9 @@ bool DeviceManager::grabDevice(int fd, bool grab)
 
     int grabFlag = grab ? 1 : 0;
     if (ioctl(fd, EVIOCGRAB, grabFlag) < 0) {
-        std::cerr << "[DeviceManager] Failed to " << (grab ? "grab" : "ungrab")
-                  << " device: " << strerror(errno) << std::endl;
+        LOG_ERROR("[DeviceManager] Failed to {} device: {}",
+                  grab ? "grab" : "ungrab",
+                  strerror(errno));
         return false;
     }
 

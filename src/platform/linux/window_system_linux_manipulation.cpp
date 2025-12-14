@@ -1,6 +1,6 @@
 ﻿#include "window_system_linux_manipulation.h"
 #include "x11_connection.h"
-#include "../../utils/platform_logger.h"
+#include "../../utils/logger.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -19,20 +19,20 @@ static Atom getAtom(const char* name) {
 }
 
 WindowSystemLinuxManipulation::WindowSystemLinuxManipulation() {
-    PLATFORM_LOG_DEBUG("window", "WindowSystemLinuxManipulation initialized");
+    LOG_DEBUG("[window] WindowSystemLinuxManipulation initialized");
 }
 
 WindowSystemLinuxManipulation::~WindowSystemLinuxManipulation() {}
 
 bool WindowSystemLinuxManipulation::setForegroundWindow(WindowHandle hwnd) {
     if (!hwnd) {
-        PLATFORM_LOG_DEBUG("window", "setForegroundWindow: null handle");
+        LOG_DEBUG("[window] setForegroundWindow: null handle");
         return false;
     }
 
     Display* display = getDisplay();
     if (!display) {
-        PLATFORM_LOG_DEBUG("window", "setForegroundWindow: no display");
+        LOG_DEBUG("[window] setForegroundWindow: no display");
         return false;
     }
 
@@ -60,20 +60,20 @@ bool WindowSystemLinuxManipulation::setForegroundWindow(WindowHandle hwnd) {
                &event);
 
     XFlush(display);
-    PLATFORM_LOG_INFO("window", "setForegroundWindow(0x%lx): success", window);
+    LOG_INFO("[window] setForegroundWindow(0x{:lx}): success", window);
     return true;
 }
 
 bool WindowSystemLinuxManipulation::moveWindow(WindowHandle hwnd,
                                                const Rect& rect) {
     if (!hwnd) {
-        PLATFORM_LOG_DEBUG("window", "moveWindow: null handle");
+        LOG_DEBUG("[window] moveWindow: null handle");
         return false;
     }
 
     Display* display = getDisplay();
     if (!display) {
-        PLATFORM_LOG_DEBUG("window", "moveWindow: no display");
+        LOG_DEBUG("[window] moveWindow: no display");
         return false;
     }
 
@@ -87,20 +87,20 @@ bool WindowSystemLinuxManipulation::moveWindow(WindowHandle hwnd,
     XMoveResizeWindow(display, window, x, y, width, height);
     XFlush(display);
 
-    PLATFORM_LOG_INFO("window", "moveWindow(0x%lx): pos=(%d,%d) size=%dx%d", window, x, y, width, height);
+    LOG_INFO("[window] moveWindow(0x{:lx}): pos=({}, {}) size={}x{}", window, x, y, width, height);
     return true;
 }
 
 bool WindowSystemLinuxManipulation::showWindow(WindowHandle hwnd,
                                                int cmdShow) {
     if (!hwnd) {
-        PLATFORM_LOG_DEBUG("window", "showWindow: null handle");
+        LOG_DEBUG("[window] showWindow: null handle");
         return false;
     }
 
     Display* display = getDisplay();
     if (!display) {
-        PLATFORM_LOG_DEBUG("window", "showWindow: no display");
+        LOG_DEBUG("[window] showWindow: no display");
         return false;
     }
 
@@ -141,19 +141,19 @@ bool WindowSystemLinuxManipulation::showWindow(WindowHandle hwnd,
     }
 
     XFlush(display);
-    PLATFORM_LOG_INFO("window", "showWindow(0x%lx): cmd=%d (%s)", window, cmdShow, cmdName);
+    LOG_INFO("[window] showWindow(0x{:lx}): cmd={} ({})", window, cmdShow, cmdName);
     return true;
 }
 
 bool WindowSystemLinuxManipulation::closeWindow(WindowHandle hwnd) {
     if (!hwnd) {
-        PLATFORM_LOG_DEBUG("window", "closeWindow: null handle");
+        LOG_DEBUG("[window] closeWindow: null handle");
         return false;
     }
 
     Display* display = getDisplay();
     if (!display) {
-        PLATFORM_LOG_DEBUG("window", "closeWindow: no display");
+        LOG_DEBUG("[window] closeWindow: no display");
         return false;
     }
 
@@ -175,7 +175,7 @@ bool WindowSystemLinuxManipulation::closeWindow(WindowHandle hwnd) {
     XSendEvent(display, window, False, NoEventMask, &event);
     XFlush(display);
 
-    PLATFORM_LOG_INFO("window", "closeWindow(0x%lx): WM_DELETE_WINDOW sent", window);
+    LOG_INFO("[window] closeWindow(0x{:lx}): WM_DELETE_WINDOW sent", window);
     return true;
 }
 

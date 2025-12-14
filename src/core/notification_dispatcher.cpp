@@ -1,5 +1,5 @@
 ﻿#include "notification_dispatcher.h"
-#include "../utils/platform_logger.h"
+#include "../utils/logger.h"
 #include <algorithm>
 
 namespace yamy {
@@ -29,9 +29,9 @@ CallbackHandle NotificationDispatcher::registerCallback(
 
     m_callbacks.push_back(std::move(entry));
 
-    PLATFORM_LOG_DEBUG("dispatcher", "Registered callback handle=%lu, types=%s",
-                       static_cast<unsigned long>(m_callbacks.back().handle),
-                       entry.types.empty() ? "all" : std::to_string(entry.types.size()).c_str());
+    LOG_DEBUG("[dispatcher] Registered callback handle={} types={}",
+              static_cast<unsigned long>(m_callbacks.back().handle),
+              entry.types.empty() ? "all" : std::to_string(entry.types.size()));
 
     return m_callbacks.back().handle;
 }
@@ -44,14 +44,14 @@ bool NotificationDispatcher::unregisterCallback(CallbackHandle handle)
                            [handle](const CallbackEntry& e) { return e.handle == handle; });
 
     if (it == m_callbacks.end()) {
-        PLATFORM_LOG_WARN("dispatcher", "Attempted to unregister unknown handle=%lu",
-                          static_cast<unsigned long>(handle));
+        LOG_WARN("[dispatcher] Attempted to unregister unknown handle={}",
+                 static_cast<unsigned long>(handle));
         return false;
     }
 
     m_callbacks.erase(it);
-    PLATFORM_LOG_DEBUG("dispatcher", "Unregistered callback handle=%lu",
-                       static_cast<unsigned long>(handle));
+    LOG_DEBUG("[dispatcher] Unregistered callback handle={}",
+              static_cast<unsigned long>(handle));
     return true;
 }
 
@@ -74,9 +74,9 @@ void NotificationDispatcher::dispatch(MessageType type, const std::string& data)
         try {
             cb(type, data);
         } catch (const std::exception& e) {
-            PLATFORM_LOG_ERROR("dispatcher", "Callback threw exception: %s", e.what());
+            LOG_ERROR("[dispatcher] Callback threw exception: {}", e.what());
         } catch (...) {
-            PLATFORM_LOG_ERROR("dispatcher", "Callback threw unknown exception");
+            LOG_ERROR("[dispatcher] Callback threw unknown exception");
         }
     }
 }
@@ -91,7 +91,7 @@ void NotificationDispatcher::clearCallbacks()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_callbacks.clear();
-    PLATFORM_LOG_DEBUG("dispatcher", "Cleared all callbacks");
+    LOG_DEBUG("[dispatcher] Cleared all callbacks");
 }
 
 } // namespace core

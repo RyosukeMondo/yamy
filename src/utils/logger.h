@@ -18,4 +18,5 @@ void flush();
 
 #define LOG_DEBUG(...) QUILL_LOG_DEBUG(::yamy::log::logger(), __VA_ARGS__)
 #define LOG_INFO(...)  QUILL_LOG_INFO(::yamy::log::logger(), __VA_ARGS__)
+#define LOG_WARN(...)  QUILL_LOG_WARNING(::yamy::log::logger(), __VA_ARGS__)
 #define LOG_ERROR(...) QUILL_LOG_ERROR(::yamy::log::logger(), __VA_ARGS__)

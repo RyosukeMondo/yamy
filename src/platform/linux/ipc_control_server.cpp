@@ -9,7 +9,7 @@
 #include <poll.h>
 #include <cstring>
 #include <cerrno>
-#include <iostream>
+#include "../../utils/logger.h"
 
 namespace yamy::platform {
 
@@ -115,7 +115,7 @@ bool IPCControlServer::start() {
     // Create socket
     m_serverFd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (m_serverFd == -1) {
-        std::cerr << "IPCControlServer: Failed to create socket: " << std::strerror(errno) << "\n";
+        LOG_ERROR("[ipc-control] Failed to create socket: {}", std::strerror(errno));
         return false;
     }
 
@@ -126,7 +126,7 @@ bool IPCControlServer::start() {
     std::strncpy(addr.sun_path, m_socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
     if (bind(m_serverFd, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1) {
-        std::cerr << "IPCControlServer: Failed to bind socket: " << std::strerror(errno) << "\n";
+        LOG_ERROR("[ipc-control] Failed to bind socket: {}", std::strerror(errno));
         close(m_serverFd);
         m_serverFd = -1;
         return false;
@@ -134,7 +134,7 @@ bool IPCControlServer::start() {
 
     // Listen for connections
     if (listen(m_serverFd, 5) == -1) {
-        std::cerr << "IPCControlServer: Failed to listen: " << std::strerror(errno) << "\n";
+        LOG_ERROR("[ipc-control] Failed to listen: {}", std::strerror(errno));
         close(m_serverFd);
         m_serverFd = -1;
         unlink(m_socketPath.c_str());
@@ -192,7 +192,7 @@ void IPCControlServer::serverLoop() {
                 continue; // Interrupted, check m_running
             }
             if (m_running) {
-                std::cerr << "IPCControlServer: poll() error: " << std::strerror(errno) << "\n";
+                LOG_ERROR("[ipc-control] poll() error: {}", std::strerror(errno));
             }
             break;
         }
@@ -208,7 +208,7 @@ void IPCControlServer::serverLoop() {
                 continue;
             }
             if (m_running) {
-                std::cerr << "IPCControlServer: accept() error: " << std::strerror(errno) << "\n";
+                LOG_ERROR("[ipc-control] accept() error: {}", std::strerror(errno));
             }
             break;
         }
@@ -223,7 +223,7 @@ void IPCControlServer::handleClient(int clientFd) {
     // Read message header
     MessageHeader header;
     if (!recvAll(clientFd, &header, sizeof(header))) {
-        std::cerr << "IPCControlServer: Failed to receive message header\n";
+        LOG_WARN("[ipc-control] Failed to receive message header");
         return;
     }
 
@@ -232,14 +232,14 @@ void IPCControlServer::handleClient(int clientFd) {
     if (header.dataSize > 0) {
         // Sanity check
         if (header.dataSize > 1024 * 1024) {
-            std::cerr << "IPCControlServer: Message data too large\n";
+            LOG_WARN("[ipc-control] Message data too large");
             sendResponse(clientFd, MessageType::RspError, "Message data too large");
             return;
         }
 
         data.resize(header.dataSize);
         if (!recvAll(clientFd, &data[0], header.dataSize)) {
-            std::cerr << "IPCControlServer: Failed to receive message data\n";
+            LOG_WARN("[ipc-control] Failed to receive message data");
             return;
         }
     }

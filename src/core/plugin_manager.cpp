@@ -1,7 +1,7 @@
 ﻿// Windows Stub Logic
 #ifndef _WIN32
 #include "plugin_manager.h"
-#include "utils/platform_logger.h"
+#include "utils/logger.h"
 
 #include <dlfcn.h>
 #include <dirent.h>
@@ -33,14 +33,14 @@ bool PluginManager::initialize(Engine* engine) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_initialized) {
-        PLATFORM_LOG_WARN("plugin", "PluginManager already initialized");
+        LOG_WARN("[plugin] PluginManager already initialized");
         return true;
     }
 
     m_engine = engine;
     m_initialized = true;
 
-    PLATFORM_LOG_INFO("plugin", "PluginManager initialized, scanning for plugins...");
+    LOG_INFO("[plugin] PluginManager initialized, scanning for plugins...");
     scanAndLoadPlugins();
 
     return true;
@@ -53,8 +53,8 @@ void PluginManager::shutdown() {
         return;
     }
 
-    PLATFORM_LOG_INFO("plugin", "PluginManager shutting down, unloading %zu plugins",
-                      m_plugins.size());
+    LOG_INFO("[plugin] PluginManager shutting down, unloading {} plugins",
+             m_plugins.size());
 
     // Unload plugins in reverse order (LIFO)
     for (auto it = m_plugins.rbegin(); it != m_plugins.rend(); ++it) {
@@ -69,20 +69,20 @@ void PluginManager::shutdown() {
 void PluginManager::scanAndLoadPlugins() {
     std::string pluginDir = getPluginDirectory();
     if (pluginDir.empty()) {
-        PLATFORM_LOG_WARN("plugin", "Could not determine plugin directory");
+        LOG_WARN("[plugin] Could not determine plugin directory");
         return;
     }
 
     // Check if directory exists
     struct stat st;
     if (stat(pluginDir.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
-        PLATFORM_LOG_INFO("plugin", "Plugin directory does not exist: %s", pluginDir.c_str());
+        LOG_INFO("[plugin] Plugin directory does not exist: {}", pluginDir);
         return;
     }
 
     DIR* dir = opendir(pluginDir.c_str());
     if (!dir) {
-        PLATFORM_LOG_WARN("plugin", "Could not open plugin directory: %s", pluginDir.c_str());
+        LOG_WARN("[plugin] Could not open plugin directory: {}", pluginDir);
         return;
     }
 
@@ -101,13 +101,12 @@ void PluginManager::scanAndLoadPlugins() {
         // Don't hold lock during load (loadPlugin acquires its own lock)
         // But we're already holding lock from scanAndLoadPlugins caller
         // So we need to call internal load logic directly
-        PLATFORM_LOG_INFO("plugin", "Found plugin file: %s", fullPath.c_str());
+        LOG_INFO("[plugin] Found plugin file: {}", fullPath);
 
         // Load the plugin
         void* handle = dlopen(fullPath.c_str(), RTLD_NOW | RTLD_LOCAL);
         if (!handle) {
-            PLATFORM_LOG_ERROR("plugin", "Failed to load plugin %s: %s",
-                              fullPath.c_str(), dlerror());
+            LOG_ERROR("[plugin] Failed to load plugin {}: {}", fullPath, dlerror());
             continue;
         }
 
@@ -120,8 +119,8 @@ void PluginManager::scanAndLoadPlugins() {
 
         const char* dlsymError = dlerror();
         if (dlsymError || !createFunc) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s missing plugin_create function: %s",
-                              fullPath.c_str(), dlsymError ? dlsymError : "symbol not found");
+            LOG_ERROR("[plugin] Plugin {} missing plugin_create function: {}",
+                      fullPath, dlsymError ? dlsymError : "symbol not found");
             dlclose(handle);
             continue;
         }
@@ -136,19 +135,17 @@ void PluginManager::scanAndLoadPlugins() {
         try {
             plugin = createFunc();
         } catch (const std::exception& e) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s factory threw exception: %s",
-                              fullPath.c_str(), e.what());
+            LOG_ERROR("[plugin] Plugin {} factory threw exception: {}", fullPath, e.what());
             dlclose(handle);
             continue;
         } catch (...) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s factory threw unknown exception",
-                              fullPath.c_str());
+            LOG_ERROR("[plugin] Plugin {} factory threw unknown exception", fullPath);
             dlclose(handle);
             continue;
         }
 
         if (!plugin) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s factory returned nullptr", fullPath.c_str());
+            LOG_ERROR("[plugin] Plugin {} factory returned nullptr", fullPath);
             dlclose(handle);
             continue;
         }
@@ -156,8 +153,8 @@ void PluginManager::scanAndLoadPlugins() {
         // Check API version
         int pluginApiVersion = plugin->getApiVersion();
         if (pluginApiVersion != PLUGIN_API_VERSION) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s API version mismatch: expected %d, got %d",
-                              fullPath.c_str(), PLUGIN_API_VERSION, pluginApiVersion);
+            LOG_ERROR("[plugin] Plugin {} API version mismatch: expected {}, got {}",
+                      fullPath, PLUGIN_API_VERSION, pluginApiVersion);
             if (destroyFunc) {
                 destroyFunc(plugin);
             } else {
@@ -172,7 +169,7 @@ void PluginManager::scanAndLoadPlugins() {
         const char* version = plugin->getVersion();
 
         if (!name || strlen(name) == 0) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s returned empty name", fullPath.c_str());
+            LOG_ERROR("[plugin] Plugin {} returned empty name", fullPath);
             if (destroyFunc) {
                 destroyFunc(plugin);
             } else {
@@ -186,8 +183,8 @@ void PluginManager::scanAndLoadPlugins() {
         bool duplicate = false;
         for (const auto& lp : m_plugins) {
             if (lp.name == name) {
-                PLATFORM_LOG_WARN("plugin", "Plugin %s already loaded, skipping duplicate from %s",
-                                 name, fullPath.c_str());
+                LOG_WARN("[plugin] Plugin {} already loaded, skipping duplicate from {}",
+                         name, fullPath);
                 duplicate = true;
                 break;
             }
@@ -208,14 +205,13 @@ void PluginManager::scanAndLoadPlugins() {
         try {
             initSuccess = plugin->initialize(m_engine);
         } catch (const std::exception& e) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s initialization threw exception: %s",
-                              name, e.what());
+            LOG_ERROR("[plugin] Plugin {} initialization threw exception: {}", name, e.what());
         } catch (...) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s initialization threw unknown exception", name);
+            LOG_ERROR("[plugin] Plugin {} initialization threw unknown exception", name);
         }
 
         if (!initSuccess) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s failed to initialize", name);
+            LOG_ERROR("[plugin] Plugin {} failed to initialize", name);
             if (destroyFunc) {
                 destroyFunc(plugin);
             } else {
@@ -234,25 +230,25 @@ void PluginManager::scanAndLoadPlugins() {
         lp.destroyFunc = destroyFunc;
         m_plugins.push_back(lp);
 
-        PLATFORM_LOG_INFO("plugin", "Loaded plugin: %s v%s", name, version ? version : "unknown");
+        LOG_INFO("[plugin] Loaded plugin: {} v{}", name, version ? version : "unknown");
     }
 
     closedir(dir);
-    PLATFORM_LOG_INFO("plugin", "Plugin scan complete, %zu plugins loaded", m_plugins.size());
+    LOG_INFO("[plugin] Plugin scan complete, {} plugins loaded", m_plugins.size());
 }
 
 bool PluginManager::loadPlugin(const std::string& path) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if (!m_initialized) {
-        PLATFORM_LOG_ERROR("plugin", "PluginManager not initialized");
+        LOG_ERROR("[plugin] PluginManager not initialized");
         return false;
     }
 
     // Check if already loaded from this path
     for (const auto& lp : m_plugins) {
         if (lp.path == path) {
-            PLATFORM_LOG_WARN("plugin", "Plugin already loaded from: %s", path.c_str());
+            LOG_WARN("[plugin] Plugin already loaded from: {}", path);
             return false;
         }
     }
@@ -260,7 +256,7 @@ bool PluginManager::loadPlugin(const std::string& path) {
     // Load the plugin
     void* handle = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
     if (!handle) {
-        PLATFORM_LOG_ERROR("plugin", "Failed to load plugin %s: %s", path.c_str(), dlerror());
+        LOG_ERROR("[plugin] Failed to load plugin {}: {}", path, dlerror());
         return false;
     }
 
@@ -271,8 +267,8 @@ bool PluginManager::loadPlugin(const std::string& path) {
 
     const char* dlsymError = dlerror();
     if (dlsymError || !createFunc) {
-        PLATFORM_LOG_ERROR("plugin", "Plugin %s missing plugin_create: %s",
-                          path.c_str(), dlsymError ? dlsymError : "symbol not found");
+        LOG_ERROR("[plugin] Plugin {} missing plugin_create: {}",
+                  path, dlsymError ? dlsymError : "symbol not found");
         dlclose(handle);
         return false;
     }
@@ -284,19 +280,19 @@ bool PluginManager::loadPlugin(const std::string& path) {
     try {
         plugin = createFunc();
     } catch (...) {
-        PLATFORM_LOG_ERROR("plugin", "Plugin %s factory threw exception", path.c_str());
+        LOG_ERROR("[plugin] Plugin {} factory threw exception", path);
         dlclose(handle);
         return false;
     }
 
     if (!plugin) {
-        PLATFORM_LOG_ERROR("plugin", "Plugin %s factory returned nullptr", path.c_str());
+        LOG_ERROR("[plugin] Plugin {} factory returned nullptr", path);
         dlclose(handle);
         return false;
     }
 
     if (plugin->getApiVersion() != PLUGIN_API_VERSION) {
-        PLATFORM_LOG_ERROR("plugin", "Plugin %s API version mismatch", path.c_str());
+        LOG_ERROR("[plugin] Plugin {} API version mismatch", path);
         if (destroyFunc) {
             destroyFunc(plugin);
         } else {
@@ -308,7 +304,7 @@ bool PluginManager::loadPlugin(const std::string& path) {
 
     const char* name = plugin->getName();
     if (!name || strlen(name) == 0) {
-        PLATFORM_LOG_ERROR("plugin", "Plugin %s returned empty name", path.c_str());
+        LOG_ERROR("[plugin] Plugin {} returned empty name", path);
         if (destroyFunc) {
             destroyFunc(plugin);
         } else {
@@ -321,7 +317,7 @@ bool PluginManager::loadPlugin(const std::string& path) {
     // Check for duplicate names
     for (const auto& lp : m_plugins) {
         if (lp.name == name) {
-            PLATFORM_LOG_WARN("plugin", "Plugin %s already loaded", name);
+            LOG_WARN("[plugin] Plugin {} already loaded", name);
             if (destroyFunc) {
                 destroyFunc(plugin);
             } else {
@@ -336,11 +332,11 @@ bool PluginManager::loadPlugin(const std::string& path) {
     try {
         initSuccess = plugin->initialize(m_engine);
     } catch (...) {
-        PLATFORM_LOG_ERROR("plugin", "Plugin %s initialization threw exception", name);
+        LOG_ERROR("[plugin] Plugin {} initialization threw exception", name);
     }
 
     if (!initSuccess) {
-        PLATFORM_LOG_ERROR("plugin", "Plugin %s failed to initialize", name);
+        LOG_ERROR("[plugin] Plugin {} failed to initialize", name);
         if (destroyFunc) {
             destroyFunc(plugin);
         } else {
@@ -358,8 +354,9 @@ bool PluginManager::loadPlugin(const std::string& path) {
     lp.destroyFunc = destroyFunc;
     m_plugins.push_back(lp);
 
-    PLATFORM_LOG_INFO("plugin", "Loaded plugin: %s v%s", name,
-                      plugin->getVersion() ? plugin->getVersion() : "unknown");
+    LOG_INFO("[plugin] Loaded plugin: {} v{}",
+             name,
+             plugin->getVersion() ? plugin->getVersion() : "unknown");
     return true;
 }
 
@@ -370,14 +367,14 @@ bool PluginManager::unloadPlugin(const std::string& name) {
         [&name](const LoadedPlugin& lp) { return lp.name == name; });
 
     if (it == m_plugins.end()) {
-        PLATFORM_LOG_WARN("plugin", "Plugin not found: %s", name.c_str());
+        LOG_WARN("[plugin] Plugin not found: {}", name);
         return false;
     }
 
     unloadPluginInternal(*it);
     m_plugins.erase(it);
 
-    PLATFORM_LOG_INFO("plugin", "Unloaded plugin: %s", name.c_str());
+    LOG_INFO("[plugin] Unloaded plugin: {}", name);
     return true;
 }
 
@@ -387,11 +384,9 @@ void PluginManager::unloadPluginInternal(LoadedPlugin& lp) {
         try {
             lp.plugin->shutdown();
         } catch (const std::exception& e) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s shutdown threw exception: %s",
-                              lp.name.c_str(), e.what());
+            LOG_ERROR("[plugin] Plugin {} shutdown threw exception: {}", lp.name, e.what());
         } catch (...) {
-            PLATFORM_LOG_ERROR("plugin", "Plugin %s shutdown threw unknown exception",
-                              lp.name.c_str());
+            LOG_ERROR("[plugin] Plugin {} shutdown threw unknown exception", lp.name);
         }
 
         // Destroy the plugin instance
@@ -399,7 +394,7 @@ void PluginManager::unloadPluginInternal(LoadedPlugin& lp) {
             try {
                 lp.destroyFunc(lp.plugin);
             } catch (...) {
-                PLATFORM_LOG_ERROR("plugin", "Plugin %s destroy threw exception", lp.name.c_str());
+                LOG_ERROR("[plugin] Plugin {} destroy threw exception", lp.name);
             }
         } else {
             delete lp.plugin;
@@ -436,7 +431,7 @@ bool PluginManager::isPluginLoaded(const std::string& name) const {
 
 #ifdef _WIN32
 #include "plugin_manager.h"
-#include "utils/platform_logger.h"
+#include "utils/logger.h"
 
 namespace yamy {
 namespace core {

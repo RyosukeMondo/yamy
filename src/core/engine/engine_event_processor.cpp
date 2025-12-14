@@ -4,8 +4,9 @@
 #include "engine_event_processor.h"
 #include "modifier_key_handler.h"
 #include "../input/modifier_state.h"
+#include "../input/keyboard.h"
 #include "../../platform/linux/keycode_mapping.h"
-#include "../../utils/platform_logger.h"
+#include "../../utils/logger.h"
 #include "../logger/journey_logger.h"
 #include <cstdlib>
 #include <chrono>
@@ -21,7 +22,7 @@ EventProcessor::EventProcessor(const SubstitutionTable& subst_table)
     const char* debug_env = std::getenv("YAMY_DEBUG_KEYCODE");
     if (debug_env && debug_env[0] == '1') {
         m_debugLogging = true;
-        PLATFORM_LOG_INFO("EventProcessor", "Debug logging enabled via YAMY_DEBUG_KEYCODE");
+        LOG_INFO("[EventProcessor] Debug logging enabled via YAMY_DEBUG_KEYCODE");
     }
 
     // Number modifiers will be registered dynamically from .mayu configuration
@@ -44,14 +45,14 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
 
     if (m_debugLogging) {
         const char* type_str = (type == EventType::PRESS) ? "PRESS" : "RELEASE";
-        PLATFORM_LOG_DEBUG("EventProcessor", "[EVENT:START] evdev %u (%s)", input_evdev, type_str);
+        LOG_DEBUG("[EventProcessor] [EVENT:START] evdev {} ({})", input_evdev, type_str);
     }
 
     // Layer 1: evdev → YAMY scan code
     uint16_t yamy_l1 = layer1_evdevToYamy(input_evdev);
     if (yamy_l1 == 0) {
         if (m_debugLogging) {
-            PLATFORM_LOG_DEBUG("EventProcessor", "[EVENT:END] Invalid (Layer 1 failed)");
+            LOG_DEBUG("[EventProcessor] [EVENT:END] Invalid (Layer 1 failed)");
         }
         return ProcessedEvent(0, 0, type, false);
     }
@@ -73,7 +74,7 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
     uint16_t output_evdev = layer3_yamyToEvdev(yamy_l2);
     if (output_evdev == 0) {
         if (m_debugLogging) {
-            PLATFORM_LOG_DEBUG("EventProcessor", "[EVENT:END] Invalid (Layer 3 failed)");
+            LOG_DEBUG("[EventProcessor] [EVENT:END] Invalid (Layer 3 failed)");
         }
         return ProcessedEvent(0, 0, type, false);
     }
@@ -99,7 +100,7 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
 
     if (m_debugLogging) {
         const char* type_str = (type == EventType::PRESS) ? "PRESS" : "RELEASE";
-        PLATFORM_LOG_DEBUG("EventProcessor", "[EVENT:END] Output evdev %u (%s)", output_evdev, type_str);
+        LOG_DEBUG("[EventProcessor] [EVENT:END] Output evdev {} ({})", output_evdev, type_str);
     }
 
     // Event type is ALWAYS preserved: PRESS in = PRESS out, RELEASE in = RELEASE out
@@ -115,9 +116,9 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
 
     if (m_debugLogging) {
         if (yamy != 0) {
-            PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER1:IN] evdev %u → yamy 0x%04X", evdev, yamy);
+            LOG_DEBUG("[EventProcessor] [LAYER1:IN] evdev {} → yamy 0x{:04X}", evdev, yamy);
         } else {
-            PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER1:IN] evdev %u → NOT FOUND", evdev);
+            LOG_DEBUG("[EventProcessor] [LAYER1:IN] evdev {} → NOT FOUND", evdev);
         }
     }
 
@@ -133,27 +134,49 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
 
         switch (result.action) {
             case engine::ProcessingAction::ACTIVATE_MODIFIER:
-                // HOLD detected - return hardware modifier VK code
-                if (m_debugLogging) {
-                    PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:NUMBER_MOD] 0x%04X HOLD → modifier VK 0x%04X",
-                                      yamy_in, result.output_yamy_code);
+                // HOLD detected - activate modifier
+                if (result.modifier_type >= 0 && io_modState) {
+                    // Modal modifier - update ModifierState only
+                    io_modState->activate(static_cast<Modifier::Type>(result.modifier_type));
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[EventProcessor] [LAYER2:MODAL_MOD] 0x{:04X} HOLD → mod{} ACTIVATE",
+                                  yamy_in, result.modifier_type - 16);  // Type_Mod0 = 16
+                    }
+                    return 0;  // Suppress event (no VK code to inject)
+                } else {
+                    // Hardware modifier - return VK code for injection
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[EventProcessor] [LAYER2:NUMBER_MOD] 0x{:04X} HOLD → modifier VK 0x{:04X}",
+                                  yamy_in, result.output_yamy_code);
+                    }
+                    return result.output_yamy_code;
                 }
-                return result.output_yamy_code;
 
             case engine::ProcessingAction::DEACTIVATE_MODIFIER:
                 // Modifier release
-                if (m_debugLogging) {
-                    PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:NUMBER_MOD] 0x%04X RELEASE modifier VK 0x%04X",
-                                      yamy_in, result.output_yamy_code);
+                if (result.modifier_type >= 0 && io_modState) {
+                    // Modal modifier - update ModifierState only
+                    io_modState->deactivate(static_cast<Modifier::Type>(result.modifier_type));
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[EventProcessor] [LAYER2:MODAL_MOD] 0x{:04X} RELEASE → mod{} DEACTIVATE",
+                                  yamy_in, result.modifier_type - 16);  // Type_Mod0 = 16
+                    }
+                    return 0;  // Suppress event (no VK code to inject)
+                } else {
+                    // Hardware modifier - return VK code for injection
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[EventProcessor] [LAYER2:NUMBER_MOD] 0x{:04X} RELEASE modifier VK 0x{:04X}",
+                                  yamy_in, result.output_yamy_code);
+                    }
+                    return result.output_yamy_code;
                 }
-                return result.output_yamy_code;
 
             case engine::ProcessingAction::APPLY_SUBSTITUTION_PRESS:
             case engine::ProcessingAction::APPLY_SUBSTITUTION_RELEASE:
                 // TAP detected - fall through to normal substitution logic
                 if (m_debugLogging) {
-                    PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:NUMBER_MOD] 0x%04X TAP detected, applying substitution",
-                                      yamy_in);
+                    LOG_DEBUG("[EventProcessor] [LAYER2:NUMBER_MOD] 0x{:04X} TAP detected, applying substitution",
+                              yamy_in);
                 }
                 break;
 
@@ -161,8 +184,8 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
                 // Still waiting for hold threshold - suppress this event
                 // The event will be re-evaluated on RELEASE or threshold expiry
                 if (m_debugLogging) {
-                    PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:NUMBER_MOD] 0x%04X waiting for threshold, suppressing",
-                                      yamy_in);
+                    LOG_DEBUG("[EventProcessor] [LAYER2:NUMBER_MOD] 0x{:04X} waiting for threshold, suppressing",
+                              yamy_in);
                 }
                 return 0;  // Signal suppression (will fail at Layer 3)
 
@@ -180,13 +203,13 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
         // Substitution found
         uint16_t yamy_out = it->second;
         if (m_debugLogging) {
-            PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:SUBST] 0x%04X → 0x%04X", yamy_in, yamy_out);
+            LOG_DEBUG("[EventProcessor] [LAYER2:SUBST] 0x{:04X} → 0x{:04X}", yamy_in, yamy_out);
         }
         return yamy_out;
     } else {
         // No substitution, passthrough unchanged
         if (m_debugLogging) {
-            PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER2:PASSTHROUGH] 0x%04X (no substitution)", yamy_in);
+            LOG_DEBUG("[EventProcessor] [LAYER2:PASSTHROUGH] 0x{:04X} (no substitution)", yamy_in);
         }
         return yamy_in;
     }
@@ -200,10 +223,10 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
     if (m_debugLogging) {
         if (evdev != 0) {
             const char* key_name = yamy::platform::getKeyName(evdev);
-            PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER3:OUT] yamy 0x%04X → evdev %u (%s)",
-                             yamy, evdev, key_name);
+            LOG_DEBUG("[EventProcessor] [LAYER3:OUT] yamy 0x{:04X} → evdev {} ({})",
+                      yamy, evdev, key_name);
         } else {
-            PLATFORM_LOG_DEBUG("EventProcessor", "[LAYER3:OUT] yamy 0x%04X → NOT FOUND", yamy);
+            LOG_DEBUG("[EventProcessor] [LAYER3:OUT] yamy 0x{:04X} → NOT FOUND", yamy);
         }
     }
 
@@ -221,8 +244,8 @@ void EventProcessor::registerNumberModifier(uint16_t yamy_scancode, uint16_t mod
     uint16_t modifier_evdev = yamy::platform::yamyToEvdevKeyCode(modifier_yamy_code);
 
     if (modifier_evdev == 0) {
-        PLATFORM_LOG_INFO("EventProcessor", "WARNING: Cannot map modifier YAMY code 0x%04X to evdev",
-                          modifier_yamy_code);
+        LOG_WARN("[EventProcessor] Cannot map modifier YAMY code 0x{:04X} to evdev",
+                 modifier_yamy_code);
         return;
     }
 
@@ -242,14 +265,14 @@ void EventProcessor::registerNumberModifier(uint16_t yamy_scancode, uint16_t mod
         case 125: hw_mod = engine::HardwareModifier::LWIN; break;
         case 126: hw_mod = engine::HardwareModifier::RWIN; break;
         default:
-            PLATFORM_LOG_INFO("EventProcessor", "WARNING: Unknown modifier evdev code %u for number key 0x%04X",
-                              modifier_evdev, yamy_scancode);
+            LOG_WARN("[EventProcessor] Unknown modifier evdev code {} for number key 0x{:04X}",
+                     modifier_evdev, yamy_scancode);
             return;
     }
 
     m_modifierHandler->registerNumberModifier(yamy_scancode, hw_mod);
-    PLATFORM_LOG_INFO("EventProcessor", "Registered number modifier: 0x%04X → 0x%04X (evdev %u)",
-                      yamy_scancode, modifier_yamy_code, modifier_evdev);
+    LOG_INFO("[EventProcessor] Registered number modifier: 0x{:04X} → 0x{:04X} (evdev {})",
+             yamy_scancode, modifier_yamy_code, modifier_evdev);
 }
 
 } // namespace yamy

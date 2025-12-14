@@ -11,7 +11,6 @@
 #include "setting_loader.h"
 #include "stringtool.h"
 #include "windowstool.h"
-#include "../../utils/platform_logger.h"
 
 #include <iomanip>
 #include <string>
@@ -318,10 +317,13 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
                     if (scanSize > 0) {
                         uint16_t triggerYamyScan = scans[0].m_scan;
 
-                        // TODO: Register modal modifier with EventProcessor
-                        // Currently ModifierKeyHandler only supports HardwareModifier enum
-                        // Need to extend API to support Modifier::Type_Mod0-Mod19
-                        // For now, just log the modal modifier definition
+                        // Register modal modifier with EventProcessor's ModifierKeyHandler
+                        if (m_eventProcessor && m_eventProcessor->getModifierHandler()) {
+                            m_eventProcessor->getModifierHandler()->registerModalModifier(
+                                triggerYamyScan,
+                                modType  // Modifier::Type enum value
+                            );
+                        }
 
                         {
                             Acquire a(&m_log, 1);
@@ -329,7 +331,7 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
                                   << " = !!" << assignment.m_key->getName()
                                   << " (0x" << std::hex << std::setfill('0')
                                   << std::setw(4) << triggerYamyScan
-                                  << std::dec << ")" << std::endl;
+                                  << std::dec << ") - REGISTERED" << std::endl;
                         }
 
                         modalModCount++;
@@ -341,8 +343,8 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
 
     {
         Acquire a(&m_log, 0);
-        m_log << "Found " << modalModCount
-              << " modal modifier definitions (registration pending API extension)"
+        m_log << "Registered " << modalModCount
+              << " modal modifiers"
               << std::endl;
     }
 

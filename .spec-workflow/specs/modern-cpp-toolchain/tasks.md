@@ -115,7 +115,7 @@
   - _Requirements: 4_
   - _Prompt: **Role:** C++ Developer with Quill logging expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create Quill logger wrapper in src/utils/logger.h/cpp following requirement 4. Configure RDTSC timestamps, JSON formatting, provide LOG_INFO/ERROR/DEBUG macros. Initialize backend thread in wrapper. | **Restrictions:** Wrapper must be simple to use, macros must support structured logging, must handle initialization/shutdown, must be thread-safe | **_Leverage:** quill::Logger, quill::Backend, quill::JsonFileHandler, macro variadic arguments | **_Requirements:** 4 | **Success:** Wrapper compiles and links, LOG_INFO macro works, JSON output verified, initialization/shutdown work correctly | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions, classes), then mark task as complete [x]
 
-- [ ] 3.2. Replace existing logging with Quill
+- [x] 3.2. Replace existing logging with Quill
   - Files: `src/core/engine/*.cpp`, `src/platform/**/*.cpp`
   - Find and replace all printf, std::cout, std::cerr calls
   - Use LOG_INFO/ERROR/DEBUG macros

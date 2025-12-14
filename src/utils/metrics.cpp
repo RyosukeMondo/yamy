@@ -3,7 +3,7 @@
 //
 
 #include "metrics.h"
-#include "platform_logger.h"
+#include "logger.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -146,14 +146,13 @@ void PerformanceMetrics::loggingThread()
         for (const auto& stats : allStats) {
             if (stats.count == 0) continue;
 
-            PLATFORM_LOG_INFO("metrics",
-                "%s: count=%lu avg=%.2fus p50=%.2fus p95=%.2fus p99=%.2fus",
-                stats.name.c_str(),
-                static_cast<unsigned long>(stats.count),
-                stats.averageNs / 1000.0,
-                stats.p50Ns / 1000.0,
-                stats.p95Ns / 1000.0,
-                stats.p99Ns / 1000.0);
+            LOG_INFO("[metrics] {}: count={} avg={:.2f}us p50={:.2f}us p95={:.2f}us p99={:.2f}us",
+                     stats.name,
+                     static_cast<unsigned long>(stats.count),
+                     stats.averageNs / 1000.0,
+                     stats.p50Ns / 1000.0,
+                     stats.p95Ns / 1000.0,
+                     stats.p99Ns / 1000.0);
         }
 
         // Reset for next period
