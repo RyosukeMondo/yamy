@@ -84,7 +84,7 @@
   - _Requirements: 3_
   - _Prompt: **Role:** DevOps Engineer with Conan caching expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Configure Conan binary caching following requirement 3. Document remote setup, test local cache, verify clean build performance improvement. Create setup documentation. | **Restrictions:** Must work without custom remote (ConanCenter only initially), must document cache location, must provide cleanup instructions | **_Leverage:** conan remote add, conan cache path, ConanCenter public binaries | **_Requirements:** 3 | **Success:** Clean build with cache completes in <2min (vs 10min without), documentation explains cache setup, cache location documented | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 2.4. Update CMakeLists.txt to find Conan packages
+- [x] 2.4. Update CMakeLists.txt to find Conan packages
   - File: `CMakeLists.txt`
   - Add find_package calls for all Conan dependencies
   - Link libraries to appropriate targets

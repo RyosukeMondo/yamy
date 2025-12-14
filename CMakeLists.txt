@@ -113,6 +113,69 @@ else()
     message(STATUS "ccache not found; builds will proceed without compilation caching")
 endif()
 
+# Third-party dependencies provided by Conan (fmt, Microsoft.GSL, quill)
+set(CONAN_INSTALL_HINT "Run `conan install . --output-folder=build/<preset>` for your active preset to generate Conan packages.")
+
+find_package(fmt CONFIG QUIET)
+if(NOT fmt_FOUND)
+    message(FATAL_ERROR "fmt not found. ${CONAN_INSTALL_HINT}")
+endif()
+
+find_package(Microsoft.GSL CONFIG QUIET)
+if(NOT Microsoft.GSL_FOUND)
+    message(FATAL_ERROR "Microsoft.GSL not found. ${CONAN_INSTALL_HINT}")
+endif()
+
+find_package(quill CONFIG QUIET)
+if(NOT quill_FOUND)
+    message(FATAL_ERROR "quill not found. ${CONAN_INSTALL_HINT}")
+endif()
+
+find_package(Catch2 CONFIG QUIET)
+if(NOT Catch2_FOUND)
+    message(FATAL_ERROR "Catch2 not found. ${CONAN_INSTALL_HINT}")
+endif()
+
+find_package(rapidcheck CONFIG QUIET)
+if(NOT rapidcheck_FOUND)
+    message(FATAL_ERROR "RapidCheck not found. ${CONAN_INSTALL_HINT}")
+endif()
+
+set(CATCH2_IMPORTED_TARGET "")
+if(TARGET Catch2::Catch2)
+    set(CATCH2_IMPORTED_TARGET Catch2::Catch2)
+elseif(TARGET Catch2::Catch2WithMain)
+    set(CATCH2_IMPORTED_TARGET Catch2::Catch2WithMain)
+endif()
+if(CATCH2_IMPORTED_TARGET STREQUAL "")
+    message(FATAL_ERROR "Catch2 package located but expected targets were not found.")
+endif()
+
+set(RAPIDCHECK_IMPORTED_TARGET "")
+if(TARGET rapidcheck)
+    set(RAPIDCHECK_IMPORTED_TARGET rapidcheck)
+elseif(TARGET RapidCheck::rapidcheck)
+    set(RAPIDCHECK_IMPORTED_TARGET RapidCheck::rapidcheck)
+elseif(TARGET RapidCheck::RapidCheck)
+    set(RAPIDCHECK_IMPORTED_TARGET RapidCheck::RapidCheck)
+endif()
+if(RAPIDCHECK_IMPORTED_TARGET STREQUAL "")
+    message(FATAL_ERROR "RapidCheck package located but expected targets were not found.")
+endif()
+
+add_library(yamy_dependencies INTERFACE)
+target_link_libraries(yamy_dependencies INTERFACE
+    fmt::fmt
+    Microsoft.GSL::GSL
+    quill::quill
+)
+
+add_library(yamy_test_dependencies INTERFACE)
+target_link_libraries(yamy_test_dependencies INTERFACE
+    ${CATCH2_IMPORTED_TARGET}
+    ${RAPIDCHECK_IMPORTED_TARGET}
+)
+
 # Output Directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -383,6 +446,8 @@ if(WIN32)
         target_link_libraries(yamy_engine_new PRIVATE yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32)
     endif()
 
+    target_link_libraries(yamy_engine_new PRIVATE yamy_dependencies)
+
     target_include_directories(yamy_engine_new PRIVATE
         src
         src/ui
@@ -588,6 +653,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
         Qt6::Core
         Qt6::Network
+        yamy_dependencies
     )
 
     add_executable(yamy src/app/main.cpp)
@@ -2172,6 +2238,39 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
     endif() # BUILD_REGRESSION_TESTS
 endif() # UNIX AND NOT APPLE AND NOT WIN32
+
+# Link Conan-provided test dependencies (Catch2, RapidCheck) to all test targets when present
+set(YAMY_TEST_TARGETS
+    yamy_test
+    yamy_linux_test
+    yamy_ui_test
+    yamy_investigate_workflow_test
+    yamy_log_test
+    yamy_notification_history_test
+    yamy_tray_test
+    yamy_ipc_channel_qt_test
+    yamy_ipc_protocol_test
+    yamy_ipc_client_gui_test
+    yamy_notification_dispatcher_test
+    yamy_parser_utf8_test
+    yamy_notification_prefs_test
+    yamy_investigate_performance_test
+    yamy_plugin_test
+    yamy_keyremap_test
+    yamy_leak_test
+    yamy_number_modifiers_test
+    yamy_modifier_state_test
+    yamy_event_processor_modal_test
+    yamy_modal_e2e_test
+    yamy_regression_test
+    yamy-test
+)
+
+foreach(test_target IN LISTS YAMY_TEST_TARGETS)
+    if(TARGET ${test_target})
+        target_link_libraries(${test_target} PRIVATE yamy_test_dependencies)
+    endif()
+endforeach()
 
 # -----------------------------------------------------------------------------
 # Example Plugins (optional, build with -DBUILD_EXAMPLES=ON)
