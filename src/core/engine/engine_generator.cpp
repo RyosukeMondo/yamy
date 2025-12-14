@@ -15,10 +15,8 @@
 #include <iomanip>
 
 
-// generate keyboard event for a key
 void Engine::generateKeyEvent(Key *i_key, bool i_doPress, bool i_isByAssign)
 {
-    // check if key is event
     bool isEvent = false;
     for (Key **e = Event::events; *e; ++ e)
         if (*e == i_key) {
@@ -72,10 +70,8 @@ void Engine::generateKeyEvent(Key *i_key, bool i_doPress, bool i_isByAssign)
 }
 
 
-// genete event
 void Engine::generateEvents(Current i_c, const Keymap *i_keymap, Key *i_event)
 {
-    // generate
     i_c.m_keymap = i_keymap;
     i_c.m_mkey.m_key = i_event;
     if (const Keymap::KeyAssignment *keyAssign =
@@ -90,7 +86,6 @@ void Engine::generateEvents(Current i_c, const Keymap *i_keymap, Key *i_event)
 }
 
 
-// genete modifier events
 void Engine::generateModifierEvents(const Modifier &i_mod)
 {
     {
