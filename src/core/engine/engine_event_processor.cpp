@@ -202,6 +202,11 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
     return evdev;
 }
 
+void EventProcessor::setModifierHandler(std::unique_ptr<engine::ModifierKeyHandler> handler)
+{
+    m_modifierHandler = std::move(handler);
+}
+
 void EventProcessor::registerNumberModifier(uint16_t yamy_scancode, uint16_t modifier_yamy_code)
 {
     // Convert modifier YAMY scan code to evdev code to determine HardwareModifier enum

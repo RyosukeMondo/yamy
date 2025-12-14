@@ -731,6 +731,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/utils/stringtool.cpp
             src/utils/metrics.cpp
             src/core/logging/logger.cpp
+            src/core/logger/journey_logger.cpp
         )
 
         add_executable(yamy_linux_test

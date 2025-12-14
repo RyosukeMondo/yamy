@@ -205,7 +205,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
 
 ## Phase 2: Event Processing Integration (Tasks 4-7)
 
-- [ ] 4. Extend EventProcessor to accept ModifierKeyHandler
+- [x] 4. Extend EventProcessor to accept ModifierKeyHandler
   - **Files**:
     - `src/core/engine/engine_event_processor.h` (add handler member + setter)
     - `src/core/engine/engine_event_processor.cpp` (implement setter)

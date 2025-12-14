@@ -69,6 +69,14 @@ public:
     /// @param modifier_yamy_code YAMY scan code for hardware modifier key
     void registerNumberModifier(uint16_t yamy_scancode, uint16_t modifier_yamy_code);
 
+    /// Set the modifier key handler (dependency injection)
+    /// @param handler Unique pointer to ModifierKeyHandler (ownership transferred)
+    void setModifierHandler(std::unique_ptr<engine::ModifierKeyHandler> handler);
+
+    /// Check if modifier handler is available
+    /// @return true if handler is set, false otherwise
+    bool hasModifierHandler() const { return m_modifierHandler != nullptr; }
+
 private:
     /// Layer 1: Map evdev code to YAMY scan code
     /// @param evdev Input evdev code
