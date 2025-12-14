@@ -351,7 +351,7 @@
   - _Requirements: 9_
   - _Prompt: **Role:** C++ Developer with refactoring expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Refactor existing code to meet metrics following requirement 9. Find violations with lizard, split large files/functions, reduce complexity. Preserve exact behavior (no functional changes). | **Restrictions:** Must not change behavior (verify with tests), must not introduce new bugs, refactor incrementally, test after each change | **_Leverage:** Extract function, extract class refactorings, existing test suite | **_Requirements:** 9 | **Success:** All existing code meets metrics, tests still pass, behavior unchanged, code is cleaner | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 7.5. Document code metrics policy
+- [x] 7.5. Document code metrics policy
   - File: `docs/CODE_METRICS.md` (new)
   - Explain rationale for each limit
   - Provide examples of good vs bad code
