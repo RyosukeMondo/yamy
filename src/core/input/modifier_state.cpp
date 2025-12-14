@@ -139,6 +139,15 @@ Modifier ModifierState::toModifier() const
         mod.press(Modifier::Type_ScrollLock);
     }
 
+    // Map modal modifiers (mod0-mod19) to Modifier type
+    // Each bit in m_modal corresponds to a modal modifier
+    for (int i = 0; i < 20; ++i) {
+        if (m_modal & (1u << i)) {
+            Modifier::Type modalType = static_cast<Modifier::Type>(Modifier::Type_Mod0 + i);
+            mod.press(modalType);
+        }
+    }
+
     return mod;
 }
 

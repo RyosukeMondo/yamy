@@ -251,4 +251,58 @@ TEST_F(ModifierStateTest, PartialDeactivation) {
     EXPECT_EQ(state->getActiveBitmask(), expected);
 }
 
+//=============================================================================
+// toModifier() Tests
+//=============================================================================
+
+TEST_F(ModifierStateTest, ToModifier_IncludesModalModifiers) {
+    // Activate some modal modifiers
+    state->activate(Modifier::Type_Mod0);
+    state->activate(Modifier::Type_Mod9);
+    state->activate(Modifier::Type_Mod19);
+
+    // Convert to Modifier object
+    Modifier mod = state->toModifier();
+
+    // Verify modal modifiers are included
+    EXPECT_TRUE(mod.isPressed(Modifier::Type_Mod0));
+    EXPECT_TRUE(mod.isPressed(Modifier::Type_Mod9));
+    EXPECT_TRUE(mod.isPressed(Modifier::Type_Mod19));
+
+    // Verify other modal modifiers are not active
+    EXPECT_FALSE(mod.isPressed(Modifier::Type_Mod1));
+    EXPECT_FALSE(mod.isPressed(Modifier::Type_Mod5));
+}
+
+TEST_F(ModifierStateTest, ToModifier_CombinesStandardAndModal) {
+    // This test verifies that toModifier() includes both standard and modal modifiers
+    // Note: We can't easily set standard modifiers without a real key event,
+    // so we just verify modal modifiers are included
+
+    state->activate(Modifier::Type_Mod3);
+    state->activate(Modifier::Type_Mod7);
+
+    Modifier mod = state->toModifier();
+
+    EXPECT_TRUE(mod.isPressed(Modifier::Type_Mod3));
+    EXPECT_TRUE(mod.isPressed(Modifier::Type_Mod7));
+}
+
+TEST_F(ModifierStateTest, ToModifier_AllModalModifiersActive) {
+    // Activate all 20 modal modifiers
+    for (int i = 0; i < 20; ++i) {
+        Modifier::Type modType = static_cast<Modifier::Type>(Modifier::Type_Mod0 + i);
+        state->activate(modType);
+    }
+
+    // Convert to Modifier object
+    Modifier mod = state->toModifier();
+
+    // Verify all modal modifiers are included
+    for (int i = 0; i < 20; ++i) {
+        Modifier::Type modType = static_cast<Modifier::Type>(Modifier::Type_Mod0 + i);
+        EXPECT_TRUE(mod.isPressed(modType)) << "Mod" << i << " should be active";
+    }
+}
+
 } // namespace yamy::test
