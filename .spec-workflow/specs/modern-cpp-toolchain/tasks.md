@@ -291,7 +291,7 @@
   - _Requirements: 8_
   - _Prompt: **Role:** Technical Writer with AI IDE expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create .cursorrules file following requirement 8. Condense .clinerules to top 10 rules. Format for Cursor IDE. Include quick reference section. Keep to 1 page. | **Restrictions:** Must be <1 page, prioritize most important rules, must be Cursor-compatible format, include "read docs/map.md first" instruction | **_Leverage:** .clinerules content, Cursor documentation, priority rules | **_Requirements:** 8 | **Success:** File is concise (<1 page), covers critical rules, Cursor IDE uses rules effectively | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 6.4. Update headers with Doxygen comments
+- [x] 6.4. Update headers with Doxygen comments
   - Files: All headers in `src/core/`
   - Add Doxygen file and class comments
   - Document all public methods with @param, @return, @pre, @post
