@@ -1,0 +1,53 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# modal_basic.mayu - Basic Modal Modifier Test Configuration
+# Tests fundamental modal modifier functionality with hold-vs-tap detection
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+include "109_clean.mayu"
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Test 1: Basic Modal Modifier (mod9 activated by holding A)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+mod mod9 = !!A
+
+# Tap behavior: A → Tab (when released < 200ms)
+def subst *A = *Tab
+
+# Modal combinations: When mod9 is active (A held ≥ 200ms)
+key m9-*X = Y                  # mod9+X → Y
+key m9-*F = F1                 # mod9+F → F1 (simulating OpenFile)
+key m9-*S = F2                 # mod9+S → F2 (simulating SaveFile)
+key m9-*C = Escape             # mod9+C → Escape (simulating Exit)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Test 2: Verify standard keys still work normally
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# X, F, S, C should work as normal when mod9 is not active
+# No remapping needed - they pass through by default
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Test 3: Standard modifiers work normally
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Ctrl+C, Ctrl+V, etc. should still work as expected
+# No configuration needed - standard modifiers are handled by OS
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Expected Behavior:
+#
+# 1. Tap A quickly (< 200ms):
+#    - Output: Tab character
+#
+# 2. Hold A for 250ms, then press X:
+#    - Output: Y character
+#    - mod9 is active while A is held
+#
+# 3. Hold A for 250ms, then press F:
+#    - Output: F1 key
+#
+# 4. Press X without holding A:
+#    - Output: X character (normal behavior)
+#
+# 5. Hold A for 250ms, release, then tap A again:
+#    - First hold: mod9 activated
+#    - Second tap: Tab output
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

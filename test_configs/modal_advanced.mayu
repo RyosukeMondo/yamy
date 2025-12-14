@@ -1,0 +1,105 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# modal_advanced.mayu - Advanced Modal Modifier Test Configuration
+# Tests multiple modal modifiers, combinations with standard modifiers,
+# and number modifier integration
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+include "109_clean.mayu"
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Multiple Modal Modifiers
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+mod mod9 = !!A                 # A as modal modifier (mod9)
+mod mod8 = !!S                 # S as modal modifier (mod8)
+mod mod7 = !!D                 # D as modal modifier (mod7)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Number Modifiers (Hardware modifiers when held)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def numbermod *_1 = *LShift    # Hold 1 → LShift
+def numbermod *_2 = *LCtrl     # Hold 2 → LCtrl
+def numbermod *_3 = *LAlt      # Hold 3 → LAlt
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Tap Behavior for Modal Triggers
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def subst *A = *Tab            # Tap A → Tab
+def subst *S = *S              # Tap S → S (passthrough)
+def subst *D = *D              # Tap D → D (passthrough)
+
+# Tap behavior for number keys with substitutions
+*_1 = *F1                      # Tap 1 → F1
+*_2 = *F2                      # Tap 2 → F2
+*_3 = *F3                      # Tap 3 → F3
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Single Modal Modifier Combinations
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+key m9-*X = Y                  # mod9+X → Y
+key m8-*X = Z                  # mod8+X → Z
+key m7-*X = W                  # mod7+X → W
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Modal + Standard Modifier Combinations
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+key *C-m9-*X = U               # Ctrl+mod9+X → U
+key *S-m9-*X = V               # Shift+mod9+X → V
+key *A-m9-*X = T               # Alt+mod9+X → T
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Multiple Modal Modifiers Simultaneously
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+key m9-m8-*X = Q               # mod9+mod8+X → Q
+key m9-m7-*X = R               # mod9+mod7+X → R
+key m8-m7-*X = E               # mod8+mod7+X → E
+key m9-m8-m7-*X = P            # mod9+mod8+mod7+X → P (all three)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Modal + Standard + Multiple Modal
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+key *C-m9-m8-*X = O            # Ctrl+mod9+mod8+X → O
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Different keys with same modal modifier
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+key m9-*H = Left               # mod9+H → Left arrow
+key m9-*J = Down               # mod9+J → Down arrow
+key m9-*K = Up                 # mod9+K → Up arrow
+key m9-*L = Right              # mod9+L → Right arrow
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Number modifier outputs (when held)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Note: Number modifiers generate hardware modifier events (LShift, LCtrl, LAlt)
+# These are system-wide, so holding 1+A should produce Shift+A in any app
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Expected Behavior:
+#
+# 1. Hold A (mod9), press X:
+#    - Output: Y
+#
+# 2. Hold S (mod8), press X:
+#    - Output: Z
+#
+# 3. Hold A+S (mod9+mod8), press X:
+#    - Output: Q (most specific match: m9-m8-*X)
+#
+# 4. Hold Ctrl, hold A (mod9), press X:
+#    - Output: U (Ctrl+mod9+X)
+#
+# 5. Hold 1 (LShift), press A:
+#    - Output: Shift+A (system-wide, uppercase A)
+#
+# 6. Tap 1 quickly:
+#    - Output: F1 (substitution)
+#
+# 7. Hold A (mod9), press H/J/K/L:
+#    - Output: Arrow keys (Vim-like navigation)
+#
+# 8. Hold A+S+D (all three modal modifiers), press X:
+#    - Output: P (m9-m8-m7-*X)
+#
+# 9. Hold Ctrl+A+S (Ctrl+mod9+mod8), press X:
+#    - Output: O (most specific)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
