@@ -60,6 +60,7 @@ set(QT_GUI_SOURCES
     notification_prefs.cpp
     preferences_dialog.cpp
     crash_report_dialog.cpp
+    main_window_gui.cpp
     ipc_client_gui.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
     ${CMAKE_SOURCE_DIR}/src/core/platform/ipc_channel_interface.cpp
@@ -89,6 +90,7 @@ set(QT_GUI_HEADERS
     notification_prefs.h
     preferences_dialog.h
     crash_report_dialog.h
+    main_window_gui.h
     ipc_client_gui.h
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
     ${CMAKE_SOURCE_DIR}/src/core/platform/ipc_channel_interface.h

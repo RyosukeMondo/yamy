@@ -119,7 +119,7 @@
 
 ## Phase 3: Minimal GUI Prototype (validate before full implementation)
 
-- [ ] 3.1. Create minimal MainWindowGUI prototype
+- [x] 3.1. Create minimal MainWindowGUI prototype
   - Files: `src/ui/qt/main_window_gui.cpp`, `src/ui/qt/main_window_gui.h`
   - Create basic window with connection status label only
   - Initialize IPCClientGUI instance and connect signals
