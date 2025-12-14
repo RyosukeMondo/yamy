@@ -145,7 +145,7 @@
   - _Requirements: 4_
   - _Prompt: **Role:** Performance Engineer with C++ benchmarking expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create logging performance benchmark following requirement 4. Measure LOG_INFO latency using RDTSC, calculate 99th percentile, compare with spdlog. Target <1μs on critical path. | **Restrictions:** Must measure hot path only (not backend thread), must use RDTSC for precision, must run enough iterations for statistical significance (10,000+) | **_Leverage:** RDTSC or std::chrono::high_resolution_clock, Catch2 BENCHMARK macro, statistical analysis | **_Requirements:** 4 | **Success:** Benchmark shows <1μs latency (99th percentile), comparison with spdlog included, results documented | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions, benchmarks), then mark task as complete [x]
 
-- [ ] 3.5. Document Quill usage guidelines
+- [x] 3.5. Document Quill usage guidelines
   - File: `docs/LOGGING_GUIDE.md` (new)
   - Document when to use each log level
   - Provide examples of structured logging
