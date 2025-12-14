@@ -24,7 +24,6 @@ Key *events[] = {
 }
 
 
-// get mayu filename
 bool getFilenameFromConfig(const ConfigStore &i_config,
     std::string *o_name, std::string *o_filename, Setting::Symbols *o_symbols)
 {
@@ -59,7 +58,6 @@ bool getFilenameFromConfig(const ConfigStore &i_config,
 }
 
 
-// get home directory path
 void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
 {
     std::string filename;
@@ -85,7 +83,6 @@ void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
     if (userprofile)
         o_pathes->push_back(userprofile);
 
-    // Get current working directory using C++17 filesystem
     std::error_code ec;
     auto currentPath = std::filesystem::current_path(ec);
     if (!ec)
@@ -94,7 +91,6 @@ void getHomeDirectories(const ConfigStore *i_config, HomeDirectories *o_pathes)
     char buf[GANA_MAX_PATH];
 #endif //USE_INI
 
-    // Get executable directory
     std::string execDir = yamy::platform::getExecutableDirectory();
     if (!execDir.empty())
         o_pathes->push_back(execDir);

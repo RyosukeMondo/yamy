@@ -14,7 +14,6 @@
 #include <gsl/gsl>
 
 
-// is modifier pressed ?
 bool Engine::isPressed(Modifier::Type i_mt)
 {
     const Keymap::ModAssignments &ma = m_currentKeymap->getModAssignments(i_mt);
@@ -26,23 +25,19 @@ bool Engine::isPressed(Modifier::Type i_mt)
 }
 
 
-// fix modifier key (if fixed, return true)
 bool Engine::fixModifierKey(ModifiedKey *io_mkey, Keymap::AssignMode *o_am)
 {
-    // for all modifier ...
     for (int i = Modifier::Type_begin; i != Modifier::Type_end; ++ i) {
-        // get modifier assignments (list of modifier keys)
         const Keymap::ModAssignments &ma =
             m_currentKeymap->getModAssignments(static_cast<Modifier::Type>(i));
 
         for (Keymap::ModAssignments::const_iterator
                 j = ma.begin(); j != ma.end(); ++ j)
-            if (io_mkey->m_key == (*j).m_key) { // is io_mkey a modifier ?
+            if (io_mkey->m_key == (*j).m_key) {
                 {
                     Acquire a(&m_log, 1);
                     m_log << "* Modifier Key" << std::endl;
                 }
-                // set dontcare for this modifier
                 io_mkey->m_modifier.dontcare(static_cast<Modifier::Type>(i));
                 *o_am = (*j).m_assignMode;
                 Ensures(*o_am >= Keymap::AM_normal && *o_am <= Keymap::AM_oneShotRepeatable);
@@ -55,7 +50,6 @@ bool Engine::fixModifierKey(ModifiedKey *io_mkey, Keymap::AssignMode *o_am)
 }
 
 
-// get current modifiers
 Modifier Engine::getCurrentModifiers(Key *i_key, bool i_isPressed)
 {
     Modifier cmods;
@@ -81,7 +75,6 @@ Modifier Engine::getCurrentModifiers(Key *i_key, bool i_isPressed)
         cmods.press(static_cast<Modifier::Type>(i),
                     isPressed(static_cast<Modifier::Type>(i)));
 
-    // Ensure that exactly one of Up/Down is set (mutually exclusive)
     Ensures(cmods.isPressed(Modifier::Type_Up) != cmods.isPressed(Modifier::Type_Down));
     return cmods;
 }

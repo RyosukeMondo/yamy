@@ -13,26 +13,22 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Action
 
-//
 tostream &operator<<(tostream &i_ost, const Action &i_action)
 {
     return i_action.output(i_ost);
 }
 
 
-//
 ActionKey::ActionKey(const ModifiedKey &i_mk)
         : m_modifiedKey(i_mk)
 {
 }
 
-//
 Action::Type ActionKey::getType() const
 {
     return Type_key;
 }
 
-// create clone
 Action *ActionKey::clone() const
 {
     Action *result = new ActionKey(m_modifiedKey);
@@ -40,7 +36,6 @@ Action *ActionKey::clone() const
     return result;
 }
 
-// stream output
 tostream &ActionKey::output(tostream &i_ost) const
 {
     // ModifiedKey operator<< is only defined for narrow streams
@@ -50,13 +45,11 @@ tostream &ActionKey::output(tostream &i_ost) const
     return i_ost;
 }
 
-//
 ActionKeySeq::ActionKeySeq(KeySeq *i_keySeq)
         : m_keySeq(i_keySeq)
 {
 }
 
-//
 Action::Type ActionKeySeq::getType() const
 {
     return Type_keySeq;
@@ -76,7 +69,6 @@ tostream &ActionKeySeq::output(tostream &i_ost) const
     return i_ost << "$" << to_tstring(m_keySeq->getName());
 }
 
-//
 ActionFunction::ActionFunction(FunctionData *i_functionData,
                                Modifier i_modifier)
         : m_functionData(i_functionData),
@@ -84,13 +76,11 @@ ActionFunction::ActionFunction(FunctionData *i_functionData,
 {
 }
 
-//
 ActionFunction::~ActionFunction()
 {
     delete m_functionData;
 }
 
-//
 Action::Type ActionFunction::getType() const
 {
     return Type_function;
@@ -196,11 +186,10 @@ ModifiedKey KeySeq::getFirstModifiedKey() const
             break;
         }
     }
-    return ModifiedKey();                // failed
+    return ModifiedKey();
 }
 
 
-// stream output (narrow)
 std::ostream &operator<<(std::ostream &i_ost, const KeySeq &i_ks)
 {
     tstringstream tss;
@@ -218,7 +207,6 @@ std::ostream &operator<<(std::ostream &i_ost, const KeySeq &i_ks)
 }
 
 #ifdef _WIN32
-// stream output (wide, for Windows UI)
 tostream &operator<<(tostream &i_ost, const KeySeq &i_ks)
 {
     for (KeySeq::Actions::const_iterator
@@ -276,7 +264,6 @@ Keymap::Keymap(Type i_type,
 }
 
 
-// add a key assignment;
 void Keymap::addAssignment(const ModifiedKey &i_mk, KeySeq *i_keySeq)
 {
     KeyAssignments &ka = getKeyAssignments(i_mk);
@@ -289,7 +276,6 @@ void Keymap::addAssignment(const ModifiedKey &i_mk, KeySeq *i_keySeq)
 }
 
 
-// add modifier
 void Keymap::addModifier(Modifier::Type i_mt, AssignOperator i_ao,
                          AssignMode i_am, Key *i_key)
 {
@@ -312,7 +298,6 @@ void Keymap::addModifier(Modifier::Type i_mt, AssignOperator i_ao,
 }
 
 
-// search
 const Keymap::KeyAssignment *
 Keymap::searchAssignment(const ModifiedKey &i_mk) const
 {
@@ -356,7 +341,6 @@ Keymap::searchAssignment(const ModifiedKey &i_mk) const
 }
 
 
-// does same window
 bool Keymap::doesSameWindow(const std::string &i_className,
                             const std::string &i_titleName)
 {
@@ -378,7 +362,6 @@ bool Keymap::doesSameWindow(const std::string &i_className,
 }
 
 
-// adjust modifier
 void Keymap::adjustModifier(Keyboard &i_keyboard)
 {
     for (size_t i = 0; i < NUMBER_OF(m_modAssignments); ++ i) {

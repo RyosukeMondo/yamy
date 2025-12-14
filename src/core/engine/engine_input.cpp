@@ -16,7 +16,6 @@
 unsigned int Engine::injectInput(const KEYBOARD_INPUT_DATA *i_kid, const void *i_kidRaw)
 {
     if (i_kid->ExtraInformation == 0x59414D59) {
-        // Mouse event
         bool down = !(i_kid->Flags & KEYBOARD_INPUT_DATA::BREAK);
         using namespace yamy::platform;
 
@@ -24,17 +23,16 @@ unsigned int Engine::injectInput(const KEYBOARD_INPUT_DATA *i_kid, const void *i
             case 1: m_inputInjector->mouseButton(MouseButton::Left, down); break;
             case 2: m_inputInjector->mouseButton(MouseButton::Right, down); break;
             case 3: m_inputInjector->mouseButton(MouseButton::Middle, down); break;
-            case 4: if (!down) m_inputInjector->mouseWheel(120); break; // WHEEL_DELTA
+            case 4: if (!down) m_inputInjector->mouseWheel(120); break;
             case 5: if (!down) m_inputInjector->mouseWheel(-120); break;
             case 6: m_inputInjector->mouseButton(MouseButton::X1, down); break;
             case 7: m_inputInjector->mouseButton(MouseButton::X2, down); break;
-            case 8: if (!down) m_inputInjector->mouseWheel(120); break; // HWheel not supported in interface yet, treating as V
+            case 8: if (!down) m_inputInjector->mouseWheel(120); break;
             case 9: if (!down) m_inputInjector->mouseWheel(-120); break;
-            case 10: if (!down) m_inputInjector->mouseWheel(static_cast<int32_t>(i_kid->ExtraInformation)); break; // Invalid cast? ExtraInfo is magic
+            case 10: if (!down) m_inputInjector->mouseWheel(static_cast<int32_t>(i_kid->ExtraInformation)); break;
             default: break;
         }
     } else {
-        // Keyboard event
         yamy::platform::InjectionContext ctx;
         ctx.isDragging = false;
         ctx.dragStartPos = yamy::platform::Point(0, 0);
@@ -45,7 +43,6 @@ unsigned int Engine::injectInput(const KEYBOARD_INPUT_DATA *i_kid, const void *i
 }
 
 
-// pop all pressed key on win32
 void Engine::keyboardResetOnWin32()
 {
     for (Keyboard::KeyIterator
