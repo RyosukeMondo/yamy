@@ -1,0 +1,63 @@
+#pragma once
+
+#include <QObject>
+#include <QTimer>
+#include <QString>
+#include <array>
+#include <memory>
+#include <string>
+
+#include "core/platform/ipc_defs.h"
+#include "core/platform/ipc_channel_interface.h"
+
+/**
+ * @brief High-level GUI IPC client that wraps IPCChannelQt with GUI-specific commands.
+ *
+ * Provides asynchronous helpers for sending GUI control commands to the daemon and
+ * emits Qt signals for structured responses and connection state changes.
+ */
+class IPCClientGUI : public QObject {
+    Q_OBJECT
+public:
+    explicit IPCClientGUI(QObject* parent = nullptr);
+
+    /// Connect to the daemon IPC server (default: "yamy-engine")
+    void connectToDaemon(const std::string& serverName = "yamy-engine");
+
+    /// Disconnect from the daemon IPC server
+    void disconnectFromDaemon();
+
+    /// Whether the underlying IPC channel reports as connected
+    bool isConnected() const;
+
+    /// Request current status and config list
+    void sendGetStatus();
+
+    /// Toggle enabled/disabled state
+    void sendSetEnabled(bool enabled);
+
+    /// Switch to a specific configuration name/path
+    void sendSwitchConfig(const QString& configName);
+
+    /// Reload the active or named configuration
+    void sendReloadConfig(const QString& configName);
+
+signals:
+    void statusReceived(const yamy::RspStatusPayload& payload);
+    void configListReceived(const yamy::RspConfigListPayload& payload);
+    void connectionStateChanged(bool connected);
+
+private slots:
+    void handleMessage(const yamy::ipc::Message& message);
+    void pollConnectionState();
+
+private:
+    template <size_t N>
+    void copyStringField(const QString& value, std::array<char, N>& buffer);
+    void sendMessage(yamy::MessageType type, const void* data, size_t size);
+
+    std::unique_ptr<yamy::platform::IIPCChannel> m_channel;
+    QString m_serverName;
+    QTimer m_connectionPoller;
+    bool m_lastConnected;
+};

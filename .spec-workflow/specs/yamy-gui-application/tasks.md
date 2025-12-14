@@ -87,7 +87,7 @@
 
 ## Phase 2: IPC Client Wrapper for GUI (with mock testing)
 
-- [ ] 2.1. Create IPCClientGUI wrapper class
+- [x] 2.1. Create IPCClientGUI wrapper class
   - Files: `src/ui/qt/ipc_client_gui.cpp`, `src/ui/qt/ipc_client_gui.h`
   - Implement high-level wrapper around IPCChannelQt for GUI-specific commands
   - Add async command methods (sendGetStatus, sendSetEnabled, etc.)
