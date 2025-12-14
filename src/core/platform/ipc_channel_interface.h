@@ -34,6 +34,8 @@ public:
 
 signals:
     void messageReceived(const yamy::ipc::Message& message);
+    void connected();
+    void disconnected();
 };
 
 } // namespace yamy::platform

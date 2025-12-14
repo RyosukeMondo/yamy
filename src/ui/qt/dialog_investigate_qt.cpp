@@ -61,6 +61,8 @@ DialogInvestigateQt::DialogInvestigateQt(Engine* engine, QWidget* parent)
     if (m_ipcChannel) {
         connect(m_ipcChannel.get(), &yamy::platform::IIPCChannel::messageReceived,
                 this, &DialogInvestigateQt::onIpcMessageReceived);
+        connect(m_ipcChannel.get(), &yamy::platform::IIPCChannel::connected,
+                this, &DialogInvestigateQt::onIpcConnected);
         m_ipcChannel->connect("yamy-engine");
     }
 }
@@ -472,7 +474,10 @@ void DialogInvestigateQt::updateKeymapStatus(
     const std::string& titleName)
 {
     if (!m_ipcChannel || !m_ipcChannel->isConnected()) {
-        m_labelKeymapName->setText("(IPC not connected)");
+        m_labelKeymapName->setText("(IPC connecting...)");
+        // Store pending info to query once connected
+        m_pendingClassName = className;
+        m_pendingTitleName = titleName;
         return;
     }
 
@@ -485,6 +490,16 @@ void DialogInvestigateQt::updateKeymapStatus(
     message.size = sizeof(request);
 
     m_ipcChannel->send(message);
+}
+
+void DialogInvestigateQt::onIpcConnected()
+{
+    // Connection established - retry pending keymap query if any
+    if (m_selectedWindow && (!m_pendingClassName.empty() || !m_pendingTitleName.empty())) {
+        updateKeymapStatus(m_selectedWindow, m_pendingClassName, m_pendingTitleName);
+        m_pendingClassName.clear();
+        m_pendingTitleName.clear();
+    }
 }
 
 void DialogInvestigateQt::onIpcMessageReceived(const yamy::ipc::Message& message)

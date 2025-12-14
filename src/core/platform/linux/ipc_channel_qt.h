@@ -167,14 +167,18 @@ private:
      * Parses the buffer for complete messages (4-byte length prefix + data),
      * deserializes them, and emits messageReceived() signal.
      * Keeps partial messages in the buffer for next call.
+     *
+     * @param socket The socket that sent the data (used for logging, can be nullptr)
+     * @param buffer The buffer to process
      */
-    void processReceiveBuffer();
+    void processReceiveBuffer(QLocalSocket* socket, QByteArray& buffer);
 
     std::string m_name;                           ///< Channel name
     QLocalSocket* m_clientSocket;                 ///< Client socket (client mode)
     QLocalServer* m_server;                       ///< Server socket (server mode)
-    QLocalSocket* m_serverClientSocket;           ///< Connected client (server mode)
-    QByteArray m_receiveBuffer;                   ///< Buffer for partial messages
+    QList<QLocalSocket*> m_serverClientSockets;   ///< Connected clients (server mode)
+    QByteArray m_receiveBuffer;                   ///< Buffer for partial messages (client mode)
+    QMap<QLocalSocket*, QByteArray> m_clientReceiveBuffers;  ///< Per-client buffers (server mode)
     bool m_isServerMode;                          ///< True if in server mode, false if client
 };
 

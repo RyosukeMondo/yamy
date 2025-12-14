@@ -12,7 +12,6 @@ IPCChannelQt::IPCChannelQt(const std::string& name)
     : m_name(name)
     , m_clientSocket(nullptr)
     , m_server(nullptr)
-    , m_serverClientSocket(nullptr)
     , m_isServerMode(false)
 {
 }
@@ -67,10 +66,15 @@ void IPCChannelQt::disconnect() {
         }
     }
 
-    if (m_serverClientSocket) {
-        m_serverClientSocket->disconnectFromServer();
-        m_serverClientSocket = nullptr;
+    // Disconnect all server clients
+    for (QLocalSocket* client : m_serverClientSockets) {
+        if (client) {
+            client->disconnectFromServer();
+            client->deleteLater();
+        }
     }
+    m_serverClientSockets.clear();
+    m_clientReceiveBuffers.clear();
 
     m_receiveBuffer.clear();
 }
@@ -101,8 +105,13 @@ void IPCChannelQt::listen() {
 
 bool IPCChannelQt::isConnected() {
     if (m_isServerMode) {
-        return m_serverClientSocket != nullptr &&
-               m_serverClientSocket->state() == QLocalSocket::ConnectedState;
+        // Server is connected if it has at least one connected client
+        for (QLocalSocket* client : m_serverClientSockets) {
+            if (client && client->state() == QLocalSocket::ConnectedState) {
+                return true;
+            }
+        }
+        return false;
     } else {
         return m_clientSocket != nullptr &&
                m_clientSocket->state() == QLocalSocket::ConnectedState;
@@ -110,19 +119,7 @@ bool IPCChannelQt::isConnected() {
 }
 
 void IPCChannelQt::send(const ipc::Message& msg) {
-    QLocalSocket* socket = nullptr;
-
-    if (m_isServerMode) {
-        socket = m_serverClientSocket;
-    } else {
-        socket = m_clientSocket;
-    }
-
-    if (!socket || socket->state() != QLocalSocket::ConnectedState) {
-        return;  // Silently drop if not connected
-    }
-
-    // Serialize message: 4-byte length (big-endian) + MessageType (4 bytes) + data
+    // Serialize message once
     QByteArray bufferData;
     QBuffer buffer(&bufferData);
     buffer.open(QIODevice::WriteOnly);
@@ -146,10 +143,23 @@ void IPCChannelQt::send(const ipc::Message& msg) {
         return;  // Drop message
     }
 
-    // Send to socket
     buffer.close();
-    socket->write(bufferData);
-    socket->flush();
+
+    if (m_isServerMode) {
+        // Broadcast to all connected clients
+        for (QLocalSocket* client : m_serverClientSockets) {
+            if (client && client->state() == QLocalSocket::ConnectedState) {
+                client->write(bufferData);
+                client->flush();
+            }
+        }
+    } else {
+        // Send to server
+        if (m_clientSocket && m_clientSocket->state() == QLocalSocket::ConnectedState) {
+            m_clientSocket->write(bufferData);
+            m_clientSocket->flush();
+        }
+    }
 }
 
 std::unique_ptr<ipc::Message> IPCChannelQt::nonBlockingReceive() {
@@ -159,48 +169,49 @@ std::unique_ptr<ipc::Message> IPCChannelQt::nonBlockingReceive() {
 }
 
 void IPCChannelQt::onReadyRead() {
-    QLocalSocket* socket = nullptr;
-
-    if (m_isServerMode) {
-        socket = qobject_cast<QLocalSocket*>(sender());
-        if (!socket) return;
-    } else {
-        socket = m_clientSocket;
-    }
-
+    QLocalSocket* socket = qobject_cast<QLocalSocket*>(sender());
     if (!socket) return;
 
-    // Read all available data into buffer
-    m_receiveBuffer.append(socket->readAll());
+    if (m_isServerMode) {
+        // Use per-client buffer
+        QByteArray& buffer = m_clientReceiveBuffers[socket];
+        buffer.append(socket->readAll());
 
-    // Process complete messages
-    processReceiveBuffer();
+        // Process complete messages from this client's buffer
+        processReceiveBuffer(socket, buffer);
+    } else {
+        // Client mode - use main buffer
+        m_receiveBuffer.append(socket->readAll());
+        processReceiveBuffer(nullptr, m_receiveBuffer);
+    }
 }
 
-void IPCChannelQt::processReceiveBuffer() {
+void IPCChannelQt::processReceiveBuffer(QLocalSocket* socket, QByteArray& buffer) {
+    (void)socket;  // May be used later for client-specific handling
+
     while (true) {
         // Need at least 4 bytes for length prefix
-        if (m_receiveBuffer.size() < 4) {
+        if (buffer.size() < 4) {
             break;
         }
 
         // Read length prefix (big-endian) - copy first 4 bytes to ensure read-only access
-        QByteArray lengthBytes = m_receiveBuffer.left(4);
+        QByteArray lengthBytes = buffer.left(4);
         QDataStream lengthStream(&lengthBytes, QIODevice::ReadOnly);
         lengthStream.setByteOrder(QDataStream::BigEndian);
         uint32_t messageSize;
         lengthStream >> messageSize;
 
         // Check if we have the complete message
-        if (m_receiveBuffer.size() < static_cast<int>(4 + messageSize)) {
+        if (buffer.size() < static_cast<int>(4 + messageSize)) {
             break;  // Wait for more data
         }
 
         // Extract message data (skip the 4-byte length prefix)
-        QByteArray messageData = m_receiveBuffer.mid(4, messageSize);
+        QByteArray messageData = buffer.mid(4, messageSize);
 
         // Remove processed message from buffer
-        m_receiveBuffer.remove(0, 4 + messageSize);
+        buffer.remove(0, 4 + messageSize);
 
         // Deserialize message - use QDataStream with ReadOnly mode
         QDataStream messageStream(&messageData, QIODevice::ReadOnly);
@@ -252,11 +263,25 @@ void IPCChannelQt::processReceiveBuffer() {
 
 void IPCChannelQt::onConnected() {
     std::cout << "[IPCChannelQt] Connected to server" << std::endl;
+    emit connected();
 }
 
 void IPCChannelQt::onDisconnected() {
     std::cout << "[IPCChannelQt] Disconnected from server" << std::endl;
-    m_receiveBuffer.clear();
+
+    if (m_isServerMode) {
+        // Remove disconnected client from list
+        QLocalSocket* disconnectedSocket = qobject_cast<QLocalSocket*>(sender());
+        if (disconnectedSocket) {
+            m_serverClientSockets.removeOne(disconnectedSocket);
+            m_clientReceiveBuffers.remove(disconnectedSocket);
+            disconnectedSocket->deleteLater();
+        }
+    } else {
+        m_receiveBuffer.clear();
+    }
+
+    emit disconnected();
 }
 
 void IPCChannelQt::onNewConnection() {
@@ -265,20 +290,18 @@ void IPCChannelQt::onNewConnection() {
     QLocalSocket* clientSocket = m_server->nextPendingConnection();
     if (!clientSocket) return;
 
-    std::cout << "[IPCChannelQt] New client connected" << std::endl;
+    std::cout << "[IPCChannelQt] New client connected (total: " << (m_serverClientSockets.size() + 1) << ")" << std::endl;
 
-    // If we already have a client, disconnect it
-    if (m_serverClientSocket) {
-        m_serverClientSocket->disconnectFromServer();
-        m_serverClientSocket->deleteLater();
-    }
+    // Add client to list
+    m_serverClientSockets.append(clientSocket);
 
-    m_serverClientSocket = clientSocket;
+    // Create buffer for this client
+    m_clientReceiveBuffers[clientSocket] = QByteArray();
 
     // Connect signals
-    QObject::connect(m_serverClientSocket, &QLocalSocket::readyRead,
+    QObject::connect(clientSocket, &QLocalSocket::readyRead,
                     this, &IPCChannelQt::onReadyRead);
-    QObject::connect(m_serverClientSocket, &QLocalSocket::disconnected,
+    QObject::connect(clientSocket, &QLocalSocket::disconnected,
                     this, &IPCChannelQt::onDisconnected);
 }
 

@@ -93,6 +93,11 @@ private slots:
     void onIpcMessageReceived(const yamy::ipc::Message& message);
 
     /**
+     * @brief Handle IPC connection established
+     */
+    void onIpcConnected();
+
+    /**
      * @brief Handle Copy to Clipboard button click
      */
     void onCopyToClipboard();
@@ -216,4 +221,8 @@ private:
 
     // Currently selected window
     yamy::platform::WindowHandle m_selectedWindow;
+
+    // Pending keymap query info (used when IPC connection is delayed)
+    std::string m_pendingClassName;
+    std::string m_pendingTitleName;
 };
