@@ -1246,9 +1246,10 @@
     6. Mark complete
     ```
 
-- [ ] 4.4 Performance benchmarking and optimization
+- [x] 4.4 Performance benchmarking and optimization
   - Files:
     - tests/benchmarks/investigate_performance_test.cpp (new)
+    - tests/benchmarks/README.md (new)
   - Description:
     - Measure window property query latency (<10ms target)
     - Measure IPC round-trip latency (<5ms target)

@@ -1134,6 +1134,49 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_notification_prefs_test COMMAND yamy_notification_prefs_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_investigate_performance_test (Investigate Window Performance Benchmarks)
+        # Benchmarks for window property queries, IPC latency, and end-to-end workflow
+        # -----------------------------------------------------------------------------
+        set(INVESTIGATE_PERFORMANCE_TEST_SOURCES
+            tests/benchmarks/investigate_performance_test.cpp
+            src/core/platform/linux/ipc_channel_qt.cpp
+            src/core/platform/ipc_channel_interface.cpp
+            src/platform/linux/window_system_linux.cpp
+            src/platform/linux/window_system_linux_queries.cpp
+            src/platform/linux/window_system_linux_hierarchy.cpp
+            src/platform/linux/x11_connection.cpp
+        )
+
+        add_executable(yamy_investigate_performance_test
+            ${INVESTIGATE_PERFORMANCE_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        set_target_properties(yamy_investigate_performance_test PROPERTIES
+            AUTOMOC ON
+        )
+
+        target_include_directories(yamy_investigate_performance_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/platform/linux
+            src/utils
+        )
+
+        target_link_libraries(yamy_investigate_performance_test PRIVATE
+            pthread
+            ${X11_LIBRARIES}
+            Qt5::Core
+            Qt5::Network
+            Qt5::Test
+        )
+
+        add_test(NAME yamy_investigate_performance_test COMMAND yamy_investigate_performance_test)
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_plugin_test (Plugin System Tests)
         # Tests plugin loading, initialization, and callback registration
         # -----------------------------------------------------------------------------
