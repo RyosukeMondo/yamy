@@ -12,7 +12,7 @@
   - _Requirements: 10_
   - _Prompt: **Role:** DevOps Engineer with expertise in IPC debugging and shell scripting | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create IPC debugging tool at tools/debug_ipc_communication.sh that monitors socket traffic, adds YAMY_DEBUG_IPC environment variable for verbose logging following requirement 10. Enable investigation of IPC messages before GUI is built. | **Restrictions:** Must not interfere with normal IPC operation, logging should be toggleable via env var, output should be human-readable | **_Leverage:** socat or nc for socket monitoring, existing IPC socket path, Qt debug output | **_Requirements:** 10 | **Success:** Tool can capture and display all IPC messages, debug logging shows message content clearly, can be used to verify protocol before GUI implementation | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 0.2. Create mock IPC server for testing
+- [x] 0.2. Create mock IPC server for testing
   - File: `tests/mock_ipc_server.cpp`
   - Implement simple IPC server that responds to GUI commands
   - Simulate daemon responses for all command types
