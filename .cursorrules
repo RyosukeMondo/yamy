@@ -1,0 +1,148 @@
+# YAMY Quick Reference for Cursor AI
+
+**READ `docs/map.md` FIRST** to locate files before starting.
+
+You're working on YAMY, a cross-platform keyboard remapper with <1ms latency requirements.
+
+## Top 10 Critical Rules
+
+### 1. Platform Abstraction (CRITICAL)
+- **NEVER** put platform-specific code in `src/core/` directory
+- **NEVER** use `#ifdef _WIN32` or `#ifdef __linux__` in core engine
+- **MUST** place ALL platform code in `src/platform/windows/` or `src/platform/linux/`
+- Core engine must compile on all platforms without changes
+
+### 2. Logging - Use Quill ONLY
+- **MUST** use `LOG_INFO`, `LOG_ERROR`, `LOG_DEBUG` macros
+- **NEVER** use `printf`, `std::cout`, `std::cerr`, `fprintf`
+- **NEVER** log inside event processing loop (critical path)
+```cpp
+LOG_INFO(logger, "Key {code} mapped to {action}", "code", key, "action", act);
+```
+
+### 3. Contracts - Microsoft GSL Required
+- **MUST** add `Expects()` to ALL public API functions
+- **MUST** use `gsl::span<T>` instead of pointer+size
+- **MUST** use `gsl::not_null<T*>` for non-nullable pointers
+```cpp
+void processEvents(gsl::span<const InputEvent> events) {
+    Expects(!events.empty());
+    Expects(m_initialized);
+    // ... process
+    Ensures(m_activeKeys.size() <= MAX_KEYS);
+}
+```
+
+### 4. Testing Requirements
+- **MUST** write RapidCheck property tests for state machines
+- **MUST** write Catch2 unit tests for pure functions
+- **MUST** achieve 80% coverage minimum (90% for critical paths)
+
+### 5. Performance Constraints
+- Keymap lookup: O(1) average (hash table required)
+- Event processing: <1ms latency (99th percentile)
+- Logging overhead: <1μs on critical path
+- No blocking I/O on input event path
+
+### 6. Naming Conventions
+- Classes/Types: `PascalCase` (e.g., `WindowSystem`)
+- Functions/Variables: `camelCase` (e.g., `processEvent`)
+- Member variables: `m_` prefix (e.g., `m_isEnabled`)
+- Parameters: `i_` input, `o_` output (e.g., `i_keyCode`, `o_result`)
+- Constants: `UPPER_SNAKE_CASE` (e.g., `MAX_KEYS`)
+
+### 7. Modern C++ Only (C++20)
+- Use `std::unique_ptr`/`std::shared_ptr` (NO raw new/delete)
+- Use `std::optional` for nullable values
+- Use `nullptr` (NO NULL)
+- Use `constexpr` (NO #define for constants)
+- Use range-based for loops when possible
+
+### 8. Code Metrics (Enforced)
+- Files: ≤500 lines (excluding comments/blanks)
+- Functions: ≤50 lines
+- Cyclomatic complexity: ≤15 per function
+- Violations FAIL pre-commit hooks and CI
+
+### 9. Error Handling
+- Core engine: NO exceptions (use return codes/`std::optional`)
+- UI layer: Exceptions OK
+- **MUST** validate input at API boundaries
+- **MUST** log ALL errors with context
+
+### 10. Include Order (Mandatory)
+1. Corresponding header (if .cpp)
+2. Standard library (`<vector>`, `<memory>`)
+3. Third-party (`<quill/Quill.h>`, `<gsl/gsl>`)
+4. Local project (`"keymap.h"`, `"engine.h"`)
+
+## Quick Checks Before Committing
+
+✅ No platform code in `src/core/`?
+✅ All `printf`/`cout` replaced with Quill?
+✅ All public APIs have `Expects()`?
+✅ Using `gsl::span` instead of pointer+size?
+✅ Tests written and passing?
+✅ File <500 lines, functions <50 lines?
+✅ No blocking I/O on critical path?
+
+## File Structure Template
+
+```cpp
+#pragma once
+
+#include <vector>           // Standard
+#include <gsl/gsl>          // Third-party
+#include "input_event.h"    // Local
+
+/**
+ * @brief Brief description
+ * @code
+ * Usage example();
+ * @endcode
+ */
+class MyClass {
+public:
+    /**
+     * @param i_input Input parameter
+     * @return Result
+     * @pre i_input must not be null
+     */
+    int myMethod(gsl::not_null<int*> i_input);
+
+private:
+    bool m_memberVariable;
+};
+```
+
+## Anti-Patterns - NEVER DO
+
+❌ Platform code in core: `#ifdef _WIN32` in `src/core/`
+❌ Synchronous I/O in event loop
+❌ Global static variables
+❌ Using `printf`/`cout` for logging
+❌ Raw `new`/`delete`
+❌ Pointer+size parameters
+❌ Exceptions in core engine
+
+## Dependencies (Conan 2.0)
+
+- **NEVER** vendor libraries in source tree
+- **MUST** add to `conanfile.txt` with exact versions
+- Use `find_package()` in CMake
+
+## Build Commands
+
+```bash
+conan install . --build=missing
+cmake --preset linux-debug
+cmake --build --preset linux-debug
+cmake --build --target check-metrics  # Check code metrics
+```
+
+## When Stuck
+
+1. Read `docs/map.md` to locate files
+2. Check `tech.md` for architecture decisions
+3. Follow existing patterns in similar code
+4. Ask before making architectural changes

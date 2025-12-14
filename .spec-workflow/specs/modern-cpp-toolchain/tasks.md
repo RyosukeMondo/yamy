@@ -281,7 +281,7 @@
   - _Requirements: 8_
   - _Prompt: **Role:** Technical Lead with AI-assisted development expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create .clinerules file following requirement 8. Define architecture rules (platform abstraction, core engine platform-agnostic), coding style (naming, formatting), contract/logging/testing requirements. Format as AI-readable constraints. | **Restrictions:** Keep concise (1-2 pages), focus on enforceable rules, use imperative language ("MUST", "NEVER"), organize by category | **_Leverage:** Existing tech.md and structure.md, C++ Core Guidelines, YAMY-specific patterns | **_Requirements:** 8 | **Success:** Rules file is clear and concise, covers all critical constraints, AI agents follow rules when generating code | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 6.3. Create .cursorrules coding guidelines
+- [x] 6.3. Create .cursorrules coding guidelines
   - File: `.cursorrules`
   - Shorter version of .clinerules for Cursor IDE
   - Focus on top 10 most important rules
