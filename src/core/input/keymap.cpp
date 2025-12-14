@@ -310,10 +310,32 @@ const Keymap::KeyAssignment *
 Keymap::searchAssignment(const ModifiedKey &i_mk) const
 {
     const KeyAssignments &ka = getKeyAssignments(i_mk);
+
+    // Attempt 1: Exact match with all modifiers (including modal)
     for (KeyAssignments::const_iterator i = ka.begin(); i != ka.end(); ++ i)
         if ((*i).m_modifiedKey.m_key == i_mk.m_key &&
                 (*i).m_modifiedKey.m_modifier.doesMatch(i_mk.m_modifier))
             return &(*i);
+
+    // Attempt 2: Match without modal modifiers (standard modifiers only)
+    // Create a modifier without modal modifiers (Type_Mod0..Type_Mod19)
+    Modifier modWithoutModal = i_mk.m_modifier;
+    for (int i = Modifier::Type_Mod0; i <= Modifier::Type_Mod19; ++i) {
+        modWithoutModal.release(static_cast<Modifier::Type>(i));
+    }
+
+    for (KeyAssignments::const_iterator i = ka.begin(); i != ka.end(); ++ i)
+        if ((*i).m_modifiedKey.m_key == i_mk.m_key &&
+                (*i).m_modifiedKey.m_modifier.doesMatch(modWithoutModal))
+            return &(*i);
+
+    // Attempt 3: Match with no modifiers at all (base key only)
+    Modifier noModifiers;
+    for (KeyAssignments::const_iterator i = ka.begin(); i != ka.end(); ++ i)
+        if ((*i).m_modifiedKey.m_key == i_mk.m_key &&
+                (*i).m_modifiedKey.m_modifier.doesMatch(noModifiers))
+            return &(*i);
+
     return nullptr;
 }
 

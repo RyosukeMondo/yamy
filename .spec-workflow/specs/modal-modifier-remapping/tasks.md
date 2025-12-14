@@ -635,7 +635,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
     8. Mark task 9 as complete
     ```
 
-- [ ] 10. Add fallback logic for keymap lookup with modal modifiers
+- [x] 10. Add fallback logic for keymap lookup with modal modifiers
   - **Files**:
     - `src/core/input/keymap.cpp` (extend lookup method)
   - **Description**: Implement priority-based fallback when exact modal+standard match not found
