@@ -1,5 +1,5 @@
 [requires]
-quill/3.9.0
+quill/2.9.2
 ms-gsl/4.0.0
 rapidcheck/cci.20230815
 catch2/3.5.0

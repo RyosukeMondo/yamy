@@ -10,6 +10,7 @@
 #include "mayurc.h"
 #include "stringtool.h"
 #include "windowstool.h"
+#include "../../utils/platform_logger.h"
 
 #include <iomanip>
 

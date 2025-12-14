@@ -57,16 +57,21 @@ enum class ProcessingAction : uint8_t {
 /// Result from processNumberKey()
 struct NumberKeyResult {
     ProcessingAction action;
-    uint16_t output_yamy_code;  // Hardware modifier VK code if ACTIVATE/DEACTIVATE
+    uint16_t output_yamy_code;  // Hardware modifier VK code if ACTIVATE/DEACTIVATE (0 for modal)
+    int modifier_type;          // Modifier::Type enum value (Type_Mod0..Mod19 or Type_Shift, etc.)
     bool valid;
 
     NumberKeyResult()
         : action(ProcessingAction::NOT_A_NUMBER_MODIFIER)
         , output_yamy_code(0)
+        , modifier_type(-1)
         , valid(false) {}
 
     NumberKeyResult(ProcessingAction a, uint16_t code, bool v)
-        : action(a), output_yamy_code(code), valid(v) {}
+        : action(a), output_yamy_code(code), modifier_type(-1), valid(v) {}
+
+    NumberKeyResult(ProcessingAction a, uint16_t code, int mod_type, bool v)
+        : action(a), output_yamy_code(code), modifier_type(mod_type), valid(v) {}
 };
 
 /// Handler for number keys as custom hardware modifiers
@@ -84,6 +89,11 @@ public:
     /// @param yamy_scancode YAMY scan code for number key (e.g., 0x0002 for _1)
     /// @param modifier Hardware modifier to activate (e.g., LSHIFT)
     void registerNumberModifier(uint16_t yamy_scancode, HardwareModifier modifier);
+
+    /// Register a key as a modal modifier (mod0-mod19)
+    /// @param yamy_scancode YAMY scan code for trigger key (e.g., 0x001E for A)
+    /// @param modifier_type Modifier::Type enum value (Type_Mod0 through Type_Mod19)
+    void registerModalModifier(uint16_t yamy_scancode, int modifier_type);
 
     /// Process a number key event (PRESS or RELEASE)
     /// Implements state machine for hold-vs-tap detection
@@ -109,12 +119,16 @@ public:
     struct KeyState {
         NumberKeyState state;
         std::chrono::steady_clock::time_point press_time;
-        HardwareModifier target_modifier;
+        HardwareModifier target_modifier;     // For number modifiers (hardware)
+        int modal_modifier_type;              // For modal modifiers (Modifier::Type_Mod0..19), -1 if not modal
+        bool is_modal;                        // true if modal modifier, false if hardware modifier
 
         KeyState()
             : state(NumberKeyState::IDLE)
             , press_time()
-            , target_modifier(HardwareModifier::NONE) {}
+            , target_modifier(HardwareModifier::NONE)
+            , modal_modifier_type(-1)
+            , is_modal(false) {}
     };
 
     /// Get key states for testing purposes

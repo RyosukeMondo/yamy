@@ -51,10 +51,11 @@ Bring enterprise-grade keyboard remapping to Linux while maintaining 100% featur
 4. **Community Building** - GitHub discussions, example configurations
 
 ### Medium-Term (Q2-Q3 2025)
-1. **Wayland Support** - Native Wayland input capture (no X11 dependency)
-2. **Configuration Sharing** - Cloud sync of .mayu files across devices
-3. **Visual Configurator** - GUI-based keymap editor (no .mayu file editing)
-4. **Plugin System** - Lua scripting for custom key actions
+1. **Modern C++ Toolchain** - <5 second incremental builds, zero-latency logging
+2. **Wayland Support** - Native Wayland input capture (no X11 dependency)
+3. **Configuration Sharing** - Cloud sync of .mayu files across devices
+4. **Visual Configurator** - GUI-based keymap editor (no .mayu file editing)
+5. **Plugin System** - Lua scripting for custom key actions
 
 ### Long-Term (Q4 2025+)
 1. **macOS Port** - Complete cross-platform trinity
@@ -83,8 +84,13 @@ Bring enterprise-grade keyboard remapping to Linux while maintaining 100% featur
 
 ### Performance Metrics
 - **Target**: <1ms input latency (99th percentile)
-- **Measurement**: Built-in latency profiler
+- **Measurement**: Built-in latency profiler with zero-overhead logging
 - **Indicator**: No user complaints about lag/ghosting
+
+### Developer Velocity Metrics
+- **Target**: <5 second incremental builds
+- **Measurement**: CI build time tracking, local developer measurements
+- **Indicator**: Contributors report fast iteration cycles
 
 ---
 
@@ -152,6 +158,12 @@ Bring enterprise-grade keyboard remapping to Linux while maintaining 100% featur
 - Plugin API for custom functions
 - Community-driven development
 
+### 6. **Developer Velocity as a Feature**
+- Sub-5 second incremental builds mandatory
+- AI-agent compatible project structure
+- Automated code quality enforcement
+- Zero-friction contribution experience
+
 ---
 
 ## Roadmap Risks
@@ -160,8 +172,9 @@ Bring enterprise-grade keyboard remapping to Linux while maintaining 100% featur
 1. **Wayland Input Capture** - API still immature, may need workarounds
 2. **Multi-Monitor Edge Cases** - X11/Wayland behavior differs
 3. **Performance on ARM** - Raspberry Pi users may see lag
+4. **Build System Complexity** - Modern toolchain may increase learning curve
 
-**Mitigations**: Early prototyping, community testing, performance profiling
+**Mitigations**: Early prototyping, community testing, performance profiling, comprehensive documentation
 
 ### Market Risks
 1. **keyd/kmonad adoption** - Competitors gaining traction
@@ -192,7 +205,7 @@ Bring enterprise-grade keyboard remapping to Linux while maintaining 100% featur
 - ❌ **Electron GUI** - Qt is lighter and native
 - ❌ **YAML/TOML config** - .mayu syntax is established
 - ❌ **Paid tiers** - Free forever, donations only
-- ❌ **Telemetry** - Zero data collection
+- ❌ **Telemetry** - Zero data collection (structured logging is for development/debugging only)
 
 ---
 
@@ -218,6 +231,7 @@ Bring enterprise-grade keyboard remapping to Linux while maintaining 100% featur
 - **For Windows Users**: "Your .mayu file works on Linux, zero changes"
 - **For Linux Users**: "AutoHotkey for Linux, but better"
 - **For Emacs Users**: "System-wide Emacs bindings, finally"
+- **For Developers**: "Build it in 5 seconds, run it in 1 millisecond"
 
 ---
 
@@ -236,7 +250,8 @@ Bring enterprise-grade keyboard remapping to Linux while maintaining 100% featur
 1. Passes 100% of Windows integration tests
 2. Community beta testing (20+ testers, 2 weeks)
 3. Benchmarks: <1ms latency, <5MB RAM, <1% CPU
-4. All GitHub issues labeled "v1.0-blocker" closed
+4. Build benchmarks: <5s incremental, <2min clean
+5. All GitHub issues labeled "v1.0-blocker" closed
 
 **Launch Plan:**
 - Date: Q2 2025 (April-June)
@@ -265,6 +280,6 @@ This positions YAMY as the **operating system's missing input abstraction layer*
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: 2025-12-10
+**Document Version**: 2.0
+**Last Updated**: 2025-12-15
 **Reviewed By**: (Pending approval)

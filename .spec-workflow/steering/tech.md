@@ -4,15 +4,43 @@
 
 ### Core Technologies
 
-**Language**: C++17
-- **Rationale**: Performance-critical input handling, cross-platform portability
-- **Benefits**: Zero-overhead abstractions, RAII, standard library maturity
-- **Trade-offs**: Longer compile times, steeper learning curve than C
+**Language**: C++20
+- **Rationale**: Performance-critical input handling, cross-platform portability, modern features (concepts, modules preparation)
+- **Benefits**: Zero-overhead abstractions, RAII, standard library maturity, improved compile-time diagnostics
+- **Trade-offs**: Longer compile times (mitigated by modern toolchain), steeper learning curve than C
+- **Upgrade from C++17**: Enables concepts for template constraints, improved constexpr, designated initializers
 
-**Build System**: CMake 3.10+
-- **Rationale**: Cross-platform builds, conditional compilation, IDE integration
-- **Benefits**: One build system for Windows/Linux, widely understood
+**Build System**: CMake 3.28+ with Ninja
+- **Rationale**: Industry standard for parallelism, CMakePresets.json for deterministic configuration across AI agents and developers
+- **Benefits**: One build system for Windows/Linux, excellent IDE integration, compile_commands.json for tooling
 - **Trade-offs**: Verbose syntax, but necessary for platform-specific code
+- **Modern Features**: CMakePresets.json for reproducible builds, native Conan integration
+
+### Modern Build Infrastructure
+
+**Build Generator**: Ninja
+- **Rationale**: Designed purely for speed with pre-computed dependency graphs
+- **Performance**: Starts builds in ~0.4s vs 10-30s for Make systems
+- **Benefits**: Zero overhead for incremental builds, perfect for <5s iteration cycles
+- **Configuration**: Automatically selected via CMakePresets.json
+
+**Linker Strategy**:
+
+| Platform | Linker | Performance | Rationale |
+|----------|--------|-------------|-----------|
+| **Linux** | Mold | 10x faster than GNU ld | Massive parallelism, concurrent hashing. Links Clang in 1.35s vs 42s for GNU ld |
+| **Windows** | LLD (lld-link) | 3-5x faster than MSVC link.exe | LLVM linker with clang-cl integration, production-ready |
+
+**Build Cache**: ccache
+- **Purpose**: Cache compilation results across branches and rebuilds
+- **Benefits**: Near-instant rebuilds for unchanged translation units
+- **Storage**: Configurable cache size (default 5GB)
+
+**Dependency Management**: Conan 2.0
+- **Rationale**: Reproducible builds, binary caching, CMake toolchain integration
+- **Benefits**: Automatic dependency resolution, pre-built binaries from remote cache
+- **Integration**: Generates conan_toolchain.cmake for CMakePresets.json
+- **Dependencies**: fmt, Quill, Microsoft GSL, RapidCheck, Catch2
 
 ### Platform-Specific Technologies
 
@@ -25,6 +53,7 @@
 | **Window System** | Win32 Window API | Window manipulation, focus tracking |
 | **IPC** | Named Pipes + Windows Messages | Hook-to-engine communication |
 | **Configuration** | Windows Registry | Settings persistence |
+| **Compiler** | Clang-cl + LLD | Unified toolchain with Linux |
 
 #### Linux
 | Component | Technology | Purpose |
@@ -35,6 +64,89 @@
 | **Window System** | X11 (Xlib + Xrandr) | Window manipulation, focus tracking |
 | **IPC** | Unix Domain Sockets | Hook-to-engine communication |
 | **Configuration** | QSettings (INI format) | Settings persistence |
+| **Compiler** | GCC 11+ or Clang 16+ | C++20 support with Mold linker |
+
+---
+
+## Modern Development Infrastructure
+
+### Zero-Latency Logging: Quill
+
+**Technology**: Quill asynchronous logger
+- **Architecture**: Thread-local SPSC ring buffer with backend thread for I/O
+- **Performance**: Nanosecond-level latency on hot path (no mutex contention)
+- **Timestamping**: RDTSC (Time Stamp Counter) for microsecond precision without syscalls
+- **Format**: Structured JSON logging for AI analysis and time-travel debugging
+
+**Rationale**: Traditional logging (spdlog, etc.) introduces mutex contention and I/O blocking on the critical input path. Quill decouples logging from I/O completely.
+
+**Usage Pattern**:
+```cpp
+LOG_INFO(logger, "Input {key} mapped to {mapped}", "key", input.code, "mapped", output.code);
+// Output: {"level":"INFO", "key": 32, "mapped": 45, "timestamp": 1234567890123}
+```
+
+**Benefits**:
+- ✅ No perceptible latency on input processing (<1μs)
+- ✅ JSON output compatible with Perfetto/Chrome tracing
+- ✅ Structured logs enable AI-driven debugging
+
+### Contract Programming: Microsoft GSL
+
+**Technology**: Guidelines Support Library (GSL)
+- **Purpose**: Production-ready Design by Contract (preconditions/postconditions)
+- **Rationale**: C++26 Contracts postponed; GSL provides Expects/Ensures today
+- **Safety**: gsl::span for bounds-safe array access, gsl::not_null for pointer validation
+
+**Contract Macros**:
+```cpp
+// Preconditions
+Expects(input_code < MAX_KEYCODE);
+Expects(ptr != nullptr);
+
+// Postconditions
+Ensures(result_queue.size() <= MAX_QUEUE);
+Ensures(state->active_keys.empty());
+
+// Bounds safety
+void process(gsl::span<const InputEvent> events);  // replaces pointer+size
+```
+
+**Debug vs Release**:
+- **Debug Mode**: Violations trigger `gsl::fail_fast` with debugger breakpoint
+- **Release Mode**: Optimized out or `std::terminate` (prefer crash over corruption)
+
+**Benefits**:
+- ✅ Catches state machine bugs (missing key-up events) at precondition checks
+- ✅ Self-documenting API contracts
+- ✅ Zero runtime cost in release builds
+
+### Property-Based Testing: RapidCheck
+
+**Technology**: RapidCheck
+- **Purpose**: Generative testing with automatic shrinking for input permutations
+- **Rationale**: Unit tests cannot cover Layers × Modifiers × History combinatorial explosion
+
+**How It Works**:
+1. Generates random sequences of 100+ input events
+2. Finds a bug (e.g., stuck key)
+3. **Shrinks** the sequence to minimal reproduction (e.g., 4 events)
+4. Reports: "Bug occurs with: KeyDown(A) → Shift → KeyDown(B) → KeyUp(A)"
+
+**Example Property**:
+```cpp
+rc::check("Key Up event must eventually match every Key Down",
+  [](const std::vector<InputEvent>& events) {
+    InputSystem sys;
+    for (auto e : events) sys.process(e);
+    RC_ASSERT(sys.active_key_count() == 0);
+  });
+```
+
+**Advantages over Catch2 Generators**:
+- ✅ Automatic test case minimization (shrinking)
+- ✅ Designed for QuickCheck-style property testing
+- ✅ Better for state machine verification
 
 ---
 
@@ -152,6 +264,45 @@ Input Device → IInputDriver → Engine::handleInput() →
 - Engine posts notifications → UI updates
 - UI triggers actions → Engine executes
 - No direct UI object access from engine
+
+---
+
+## AI-Compatible Project Structure
+
+### Context Engineering for AI Agents
+
+Modern development involves AI agents (Claude, GPT-4o) constrained by context windows. YAMY implements "Context Density Optimization."
+
+**1. Codebase Map (docs/map.md)**
+- Single file summarizing project structure
+- AI reads this first to locate relevant files
+- Example entries:
+  - `src/core/runner.cpp`: "Entry point. Initializes memory and loads logic."
+  - `src/logic/remap.cpp`: "Core state machine for layer switching."
+
+**2. Rule Enforcement (.clinerules / .cursorrules)**
+- System prompts for IDE agents
+- Constraint injection: "Use gsl::span for arrays. No iostream."
+- Architecture guidance: "Global state forbidden in src/logic. Use AppContext."
+
+**Sample .clinerules**:
+```
+YAMY Engineering Rules
+
+Architecture:
+- State: ALL persistent state is in struct AppContext
+- Concurrency: Input loop is single-threaded
+
+Coding Style:
+- Use auto for iterators, explicit types for arithmetic
+- Prefer Quill logging macros over printf
+- Use GSL contracts (Expects/Ensures) for API boundaries
+```
+
+**3. Semantic Density**
+- Headers: Detailed Doxygen comments (AI-readable intent)
+- Implementation: Stripped of redundant comments
+- Maximizes "Signal-to-Token" ratio for AI context windows
 
 ---
 
@@ -273,6 +424,37 @@ void someFunction() {
 
 ---
 
+### Decision 4: Mold vs LLD for Linking
+
+**Linux: Mold** (CHOSEN)
+- **Performance**: 10x faster than GNU ld (1.35s vs 42s for Clang)
+- **Mechanism**: Concurrent hashing, massive parallelism
+- **Stability**: Production-ready for Linux
+
+**Windows: LLD** (CHOSEN)
+- **Rationale**: Mold Windows support not production-ready
+- **Performance**: 3-5x faster than MSVC link.exe
+- **Integration**: Perfect with clang-cl
+
+---
+
+### Decision 5: Quill vs spdlog for Logging
+
+**Quill** (CHOSEN)
+- **Latency**: Nanosecond-level (SPSC ring buffer)
+- **Timestamping**: RDTSC (no syscall overhead)
+- **Structured Logging**: Native JSON support
+- **Critical Path**: Zero blocking on hot path
+
+**spdlog** (NOT CHOSEN)
+- ❌ Async mode still uses mutexes (contention)
+- ❌ No RDTSC support
+- ❌ JSON requires custom formatters
+
+**Decision**: Quill essential for <1ms latency requirement
+
+---
+
 ## Build System Architecture
 
 ### CMake Structure
@@ -302,7 +484,7 @@ CMakeLists.txt (root)
 | `yamyd` | Windows | 32-bit helper for WOW64 |
 | `yamy_stub` | Linux | Main executable (engine + Qt GUI) |
 | `yamy_qt_gui` | Linux | Static library for Qt widgets |
-| `yamy_test` | Both | Google Test suite |
+| `yamy_test` | Both | Catch2/RapidCheck test suite |
 
 ### Conditional Compilation Flags
 
@@ -316,8 +498,32 @@ endif()
 
 # Feature flags
 option(BUILD_QT_GUI "Build Qt5 GUI for Linux" ON)
-option(BUILD_TESTING "Build test suite" OFF)
-option(USE_INI "Use INI instead of registry (Windows)" OFF)
+option(BUILD_TESTING "Build test suite" ON)
+option(USE_MOLD "Use Mold linker on Linux" ON)
+option(ENABLE_CONTRACTS "Enable GSL contract checking" ON)
+```
+
+### CMakePresets.json Integration
+
+**Purpose**: Deterministic builds for AI agents and humans
+
+```json
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "linux-release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "conan_toolchain.cmake",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_LINKER": "mold"
+      }
+    }
+  ]
+}
 ```
 
 ---
@@ -329,12 +535,14 @@ option(USE_INI "Use INI instead of registry (Windows)" OFF)
 1. **Main Thread**: UI message loop (Win32 window messages)
 2. **Engine Thread**: Keyboard handler (processes hook callbacks)
 3. **Mailslot Thread**: IPC receiver (async I/O completion routine)
+4. **Quill Backend**: Log I/O thread (managed by Quill)
 
 **Synchronization**: `CriticalSection` (Windows mutexes)
 
 ### Linux: Single-Threaded (Initially)
 
 1. **Main Thread**: Qt event loop + engine + evdev polling
+2. **Quill Backend**: Log I/O thread (managed by Quill)
 
 **Future**: Move evdev to worker thread if latency issues
 
@@ -381,7 +589,7 @@ window Firefox /            # Window-specific bindings
 
 ## Testing Strategy
 
-### Unit Tests (Google Test)
+### Unit Tests (Catch2)
 
 **Coverage**:
 - String utilities (UTF-8 conversion, parsing)
@@ -391,12 +599,29 @@ window Firefox /            # Window-specific bindings
 
 **Example**:
 ```cpp
-TEST(KeymapTest, BasicLookup) {
+TEST_CASE("Keymap basic lookup") {
     Keymap km;
     km.define(ModifiedKey(VK_A, M_Ctrl), new ActionFunction("test"));
     Action* result = km.lookup(ModifiedKey(VK_A, M_Ctrl));
-    ASSERT_NE(nullptr, result);
+    REQUIRE(result != nullptr);
 }
+```
+
+### Property-Based Tests (RapidCheck)
+
+**Coverage**:
+- Input event sequences (state machine verification)
+- Layer switching invariants
+- Modifier combination correctness
+
+**Example**:
+```cpp
+rc::check("All key-down events have matching key-up",
+  [](const std::vector<InputEvent>& events) {
+    Engine engine;
+    for (auto e : events) engine.process(e);
+    RC_ASSERT(engine.pressedKeys().empty());
+  });
 ```
 
 ### Integration Tests
@@ -439,6 +664,15 @@ evdev read (100μs) → Lookup (10μs) → Execute (100μs) = ~210μs total
 2. **Inline modifier state checks** - No function calls
 3. **Pre-compiled actions** - No parsing at runtime
 4. **Minimal allocations** - Reuse Action objects
+5. **Quill logging** - Zero blocking on hot path
+
+### Build Performance Targets
+
+| Operation | Target | Tool |
+|-----------|--------|------|
+| **Clean build** | <2 minutes | Conan binary cache |
+| **Incremental rebuild** | <5 seconds | Ninja + Mold/LLD + ccache |
+| **Null build (no changes)** | <1 second | Ninja |
 
 ### Memory Usage
 
@@ -449,6 +683,7 @@ evdev read (100μs) → Lookup (10μs) → Execute (100μs) = ~210μs total
 - Parsed .mayu: ~1MB (typical config)
 - Qt GUI: ~5MB (when active)
 - Buffers: ~1MB
+- Quill ring buffers: ~1MB
 
 ### Latency Budget
 
@@ -457,6 +692,7 @@ evdev read (100μs) → Lookup (10μs) → Execute (100μs) = ~210μs total
 | Event read | <100μs | `clock_gettime()` before/after |
 | Keymap lookup | <10μs | Hash table profiling |
 | Action execute | <100μs | Per-action timing |
+| Logging | <1μs | Quill RDTSC timestamps |
 | **Total** | **<1ms** | 99th percentile |
 
 **Monitoring**: Built-in `--benchmark` flag logs timing stats
@@ -468,16 +704,21 @@ evdev read (100μs) → Lookup (10μs) → Execute (100μs) = ~210μs total
 ### Windows Dependencies
 ```
 - Windows SDK 10.0+
-- MSVC 2019+ or MinGW-w64
-- CMake 3.10+
+- Clang-cl 16+ (LLVM) or MSVC 2022+
+- CMake 3.28+
+- Conan 2.0
+- Ninja
 ```
 
 ### Linux Dependencies
 
 **Build-time**:
 ```
-- GCC 7+ or Clang 8+
-- CMake 3.10+
+- GCC 11+ or Clang 16+
+- CMake 3.28+
+- Conan 2.0
+- Ninja
+- Mold linker
 - Qt5 dev packages (qtbase5-dev, qttools5-dev)
 - X11 dev packages (libx11-dev, libxrandr-dev)
 - libudev-dev (for evdev device enumeration)
@@ -490,6 +731,34 @@ evdev read (100μs) → Lookup (10μs) → Execute (100μs) = ~210μs total
 - libudev (for device discovery)
 - Membership in 'input' group (for /dev/input/* access)
 ```
+
+**Conan Dependencies** (all platforms):
+```
+- fmt/10.2.1
+- quill/4.1.0
+- ms-gsl/4.0.0
+- rapidcheck/cci.20230815
+- catch2/3.5.0
+```
+
+---
+
+## Code Metrics Enforcement
+
+### File Size Limits
+- **Max 500 lines per file** (excluding comments/blank lines)
+- **Max 50 lines per function**
+- Enforced via pre-commit hooks
+
+### Test Coverage
+- **Minimum 80% code coverage** (90% for critical paths)
+- Measured with gcov/lcov (Linux) or OpenCppCoverage (Windows)
+- Enforced in CI pipeline
+
+### Complexity Metrics
+- **Max cyclomatic complexity: 15** per function
+- Measured with lizard or cppcheck
+- Critical path functions must be <10
 
 ---
 
@@ -560,16 +829,12 @@ function yamy.action.openURL(url)
 end
 ```
 
-### 2026+: GPU Acceleration (Experimental)
+### 2026+: Advanced Optimization
 
-**Goal**: Sub-100μs latency via GPU-accelerated lookup
-
-**Technology**: Vulkan compute shaders
-- **Rationale**: Keymap lookup is embarrassingly parallel
-- **Approach**: Upload keymap to VRAM, GPU does hash table lookup
-- **Challenge**: CPU-GPU transfer overhead may negate benefit
-
-**Status**: Research phase, may not be practical
+**Potential Areas**:
+- Profile-Guided Optimization (PGO) for critical paths
+- SIMD optimization for batch input processing
+- io_uring for async evdev reads (Linux 5.1+)
 
 ---
 
@@ -603,8 +868,8 @@ end
 
 ### Refactoring Priorities
 
-**Q1 2025** (Track 1): Remove Windows types
-**Q2 2025** (Track 2-5): Implement missing features
+**Q1 2025**: Modern toolchain adoption (this spec)
+**Q2 2025**: Remove Windows types (Track 1)
 **Q3 2025**: Performance optimization
 **Q4 2025**: Plugin system
 
@@ -656,6 +921,7 @@ Trade-offs and implications
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: 2025-12-10
+**Document Version**: 2.0
+**Last Updated**: 2025-12-15
+**Changes**: Added modern C++ toolchain (Mold/LLD, Conan 2.0, Quill, GSL, RapidCheck, AI compatibility)
 **Reviewed By**: (Pending approval)

@@ -2,21 +2,34 @@
 
 #include <chrono>
 #include <cstdio>
+#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
 
-#include <quill/handlers/JsonConsoleHandler.h>
+#include <quill/handlers/JsonFileHandler.h>
 
 namespace yamy::log {
 namespace {
 std::once_flag init_flag;
 quill::Logger* g_logger = nullptr;
 
-std::shared_ptr<quill::Handler> make_json_console_handler() {
-    auto handler = quill::create_handler<quill::JsonConsoleHandler>(
-        "yamy_json_console", std::string{"stdout"}, stdout, quill::ConsoleColours{});
+std::shared_ptr<quill::Handler> make_json_file_handler() {
+    // Ensure logs directory exists
+    std::filesystem::create_directories("logs");
+
+    // Create JsonFileHandler for Quill 3.9.0
+    // Constructor: (filename, mode, append_to_filename, file_event_notifier, do_fsync)
+    // JsonFileHandler automatically outputs JSON format
+    auto handler = std::make_shared<quill::JsonFileHandler>(
+        std::filesystem::path("logs/yamy.json"),
+        "a",  // append mode for continuous logging
+        quill::FilenameAppend::None,
+        quill::FileEventNotifier{},
+        false  // do_fsync - false for better performance
+    );
+
     handler->set_log_level(quill::LogLevel::Debug);
     return handler;
 }
@@ -29,7 +42,7 @@ void init() {
         config.default_timestamp_clock_type = quill::TimestampClockType::Tsc;
         config.rdtsc_resync_interval = std::chrono::milliseconds{250};
         config.backend_thread_sleep_duration = std::chrono::nanoseconds{0};
-        config.default_handlers = {make_json_console_handler()};
+        config.default_handlers = {make_json_file_handler()};
 
         quill::configure(config);
         quill::start();

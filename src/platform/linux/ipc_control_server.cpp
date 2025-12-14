@@ -9,6 +9,7 @@
 #include <poll.h>
 #include <cstring>
 #include <cerrno>
+#include <iostream>
 #include "../../utils/logger.h"
 
 namespace yamy::platform {

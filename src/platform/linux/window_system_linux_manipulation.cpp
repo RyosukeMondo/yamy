@@ -60,7 +60,7 @@ bool WindowSystemLinuxManipulation::setForegroundWindow(WindowHandle hwnd) {
                &event);
 
     XFlush(display);
-    LOG_INFO("[window] setForegroundWindow(0x{:lx}): success", window);
+    LOG_INFO("[window] setForegroundWindow(0x{:x}): success", window);
     return true;
 }
 
@@ -87,7 +87,7 @@ bool WindowSystemLinuxManipulation::moveWindow(WindowHandle hwnd,
     XMoveResizeWindow(display, window, x, y, width, height);
     XFlush(display);
 
-    LOG_INFO("[window] moveWindow(0x{:lx}): pos=({}, {}) size={}x{}", window, x, y, width, height);
+    LOG_INFO("[window] moveWindow(0x{:x}): pos=({}, {}) size={}x{}", window, x, y, width, height);
     return true;
 }
 
@@ -141,7 +141,7 @@ bool WindowSystemLinuxManipulation::showWindow(WindowHandle hwnd,
     }
 
     XFlush(display);
-    LOG_INFO("[window] showWindow(0x{:lx}): cmd={} ({})", window, cmdShow, cmdName);
+    LOG_INFO("[window] showWindow(0x{:x}): cmd={} ({})", window, cmdShow, cmdName);
     return true;
 }
 
@@ -175,7 +175,7 @@ bool WindowSystemLinuxManipulation::closeWindow(WindowHandle hwnd) {
     XSendEvent(display, window, False, NoEventMask, &event);
     XFlush(display);
 
-    LOG_INFO("[window] closeWindow(0x{:lx}): WM_DELETE_WINDOW sent", window);
+    LOG_INFO("[window] closeWindow(0x{:x}): WM_DELETE_WINDOW sent", window);
     return true;
 }
 
