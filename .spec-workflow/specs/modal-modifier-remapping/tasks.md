@@ -562,7 +562,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
     8. Mark task 8 as complete
     ```
 
-- [ ] 9. Extend Keymap hash key generation to include modal modifiers
+- [x] 9. Extend Keymap hash key generation to include modal modifiers
   - **Files**:
     - `src/core/input/keymap.cpp` (modify lookup method)
     - `src/core/input/keymap.h` (update buildHashKey signature if needed)
