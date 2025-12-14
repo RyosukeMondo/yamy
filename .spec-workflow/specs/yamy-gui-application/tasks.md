@@ -185,7 +185,7 @@
 
 ## Phase 5: yamy-gui Executable
 
-- [ ] 5.1. Create main_gui.cpp entry point
+- [x] 5.1. Create main_gui.cpp entry point
   - File: `src/app/main_gui.cpp`
   - Create QApplication instance
   - Instantiate and show MainWindowGUI
