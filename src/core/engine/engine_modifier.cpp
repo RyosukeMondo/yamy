@@ -11,6 +11,7 @@
 #include "windowstool.h"
 
 #include <iomanip>
+#include <gsl/gsl>
 
 
 // is modifier pressed ?
@@ -44,10 +45,12 @@ bool Engine::fixModifierKey(ModifiedKey *io_mkey, Keymap::AssignMode *o_am)
                 // set dontcare for this modifier
                 io_mkey->m_modifier.dontcare(static_cast<Modifier::Type>(i));
                 *o_am = (*j).m_assignMode;
+                Ensures(*o_am >= Keymap::AM_normal && *o_am <= Keymap::AM_oneShotRepeatable);
                 return true;
             }
     }
     *o_am = Keymap::AM_notModifier;
+    Ensures(*o_am == Keymap::AM_notModifier);
     return false;
 }
 
@@ -78,5 +81,7 @@ Modifier Engine::getCurrentModifiers(Key *i_key, bool i_isPressed)
         cmods.press(static_cast<Modifier::Type>(i),
                     isPressed(static_cast<Modifier::Type>(i)));
 
+    // Ensure that exactly one of Up/Down is set (mutually exclusive)
+    Ensures(cmods.isPressed(Modifier::Type_Up) != cmods.isPressed(Modifier::Type_Down));
     return cmods;
 }

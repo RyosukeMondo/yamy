@@ -7,6 +7,7 @@
 #include "stringtool.h"
 #include "setting.h"
 #include <algorithm>
+#include <gsl/gsl>
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,7 +35,9 @@ Action::Type ActionKey::getType() const
 // create clone
 Action *ActionKey::clone() const
 {
-    return new ActionKey(m_modifiedKey);
+    Action *result = new ActionKey(m_modifiedKey);
+    Ensures(result != nullptr);
+    return result;
 }
 
 // stream output
@@ -62,7 +65,9 @@ Action::Type ActionKeySeq::getType() const
 // create clone
 Action *ActionKeySeq::clone() const
 {
-    return new ActionKeySeq(m_keySeq);
+    Action *result = new ActionKeySeq(m_keySeq);
+    Ensures(result != nullptr);
+    return result;
 }
 
 // stream output
@@ -94,7 +99,9 @@ Action::Type ActionFunction::getType() const
 // create clone
 Action *ActionFunction::clone() const
 {
-    return new ActionFunction(m_functionData->clone(), m_modifier);
+    Action *result = new ActionFunction(m_functionData->clone(), m_modifier);
+    Ensures(result != nullptr);
+    return result;
 }
 
 // stream output
@@ -314,8 +321,11 @@ Keymap::searchAssignment(const ModifiedKey &i_mk) const
     // Attempt 1: Exact match with all modifiers (including modal)
     for (KeyAssignments::const_iterator i = ka.begin(); i != ka.end(); ++ i)
         if ((*i).m_modifiedKey.m_key == i_mk.m_key &&
-                (*i).m_modifiedKey.m_modifier.doesMatch(i_mk.m_modifier))
-            return &(*i);
+                (*i).m_modifiedKey.m_modifier.doesMatch(i_mk.m_modifier)) {
+            const KeyAssignment *result = &(*i);
+            Ensures(result != nullptr && result->m_keySeq != nullptr);
+            return result;
+        }
 
     // Attempt 2: Match without modal modifiers (standard modifiers only)
     // Create a modifier without modal modifiers (Type_Mod0..Type_Mod19)
@@ -326,15 +336,21 @@ Keymap::searchAssignment(const ModifiedKey &i_mk) const
 
     for (KeyAssignments::const_iterator i = ka.begin(); i != ka.end(); ++ i)
         if ((*i).m_modifiedKey.m_key == i_mk.m_key &&
-                (*i).m_modifiedKey.m_modifier.doesMatch(modWithoutModal))
-            return &(*i);
+                (*i).m_modifiedKey.m_modifier.doesMatch(modWithoutModal)) {
+            const KeyAssignment *result = &(*i);
+            Ensures(result != nullptr && result->m_keySeq != nullptr);
+            return result;
+        }
 
     // Attempt 3: Match with no modifiers at all (base key only)
     Modifier noModifiers;
     for (KeyAssignments::const_iterator i = ka.begin(); i != ka.end(); ++ i)
         if ((*i).m_modifiedKey.m_key == i_mk.m_key &&
-                (*i).m_modifiedKey.m_modifier.doesMatch(noModifiers))
-            return &(*i);
+                (*i).m_modifiedKey.m_modifier.doesMatch(noModifiers)) {
+            const KeyAssignment *result = &(*i);
+            Ensures(result != nullptr && result->m_keySeq != nullptr);
+            return result;
+        }
 
     return nullptr;
 }
@@ -570,8 +586,11 @@ Keymap *Keymaps::searchByName(const std::string &i_name)
     for (KeymapList::iterator
             i = m_keymapList.begin(); i != m_keymapList.end(); ++ i)
         // Perform case-insensitive comparison
-        if (strcasecmp_utf8(i_name.c_str(), (*i).getName().c_str()) == 0)
-            return &*i;
+        if (strcasecmp_utf8(i_name.c_str(), (*i).getName().c_str()) == 0) {
+            Keymap *result = &*i;
+            Ensures(result != nullptr);
+            return result;
+        }
     return nullptr;
 }
 
@@ -595,7 +614,9 @@ Keymap *Keymaps::add(const Keymap &i_keymap)
     if (Keymap *k = searchByName(i_keymap.getName()))
         return k;
     m_keymapList.push_front(i_keymap);
-    return &m_keymapList.front();
+    Keymap *result = &m_keymapList.front();
+    Ensures(result != nullptr);
+    return result;
 }
 
 
@@ -621,7 +642,9 @@ KeySeq *KeySeqs::add(const KeySeq &i_keySeq)
             return &(*ks = i_keySeq);
     }
     m_keySeqList.push_front(i_keySeq);
-    return &m_keySeqList.front();
+    KeySeq *result = &m_keySeqList.front();
+    Ensures(result != nullptr);
+    return result;
 }
 
 
@@ -631,7 +654,10 @@ KeySeq *KeySeqs::searchByName(const std::string &i_name)
     for (KeySeqList::iterator
             i = m_keySeqList.begin(); i != m_keySeqList.end(); ++ i)
         // Perform case-insensitive comparison
-        if (strcasecmp_utf8(i_name.c_str(), (*i).getName().c_str()) == 0)
-            return &*i;
+        if (strcasecmp_utf8(i_name.c_str(), (*i).getName().c_str()) == 0) {
+            KeySeq *result = &*i;
+            Ensures(result != nullptr);
+            return result;
+        }
     return nullptr;
 }

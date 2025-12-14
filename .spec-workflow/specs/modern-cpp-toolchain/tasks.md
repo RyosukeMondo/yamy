@@ -167,7 +167,7 @@
   - _Requirements: 5_
   - _Prompt: **Role:** C++ Developer with contract programming expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Add preconditions to core engine APIs following requirement 5. Identify critical preconditions (bounds checks, null checks), add Expects() macros, update Doxygen comments with @pre tags. | **Restrictions:** Focus on public APIs only (not internal functions), preconditions must be necessary (not overly strict), must document in comments | **_Leverage:** Microsoft GSL Expects(), @pre Doxygen tag, existing engine API documentation | **_Requirements:** 5 | **Success:** All public engine APIs have preconditions, Expects() compiles correctly, debug builds trap on violations | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 4.2. Add postconditions to critical functions
+- [x] 4.2. Add postconditions to critical functions
   - Files: `src/core/input/keymap.cpp`, `src/core/engine/engine_modifier.cpp`
   - Identify critical postconditions (e.g., result != nullptr)
   - Add Ensures() macros at function exit points
