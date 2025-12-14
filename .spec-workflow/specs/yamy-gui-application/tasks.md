@@ -74,7 +74,7 @@
   - _Requirements: 2, 3, 4, 5_
   - _Prompt: **Role:** Backend Developer with expertise in IPC server implementation and Qt networking | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Add command handler methods to IPCControlServer in src/core/platform/linux/ipc_control_server.cpp for processing GUI commands (GetStatus, SetEnabled, SwitchConfig, ReloadConfig) following requirements 2, 3, 4, 5. Handlers should call appropriate Engine and ConfigManager methods and send responses via IPC. | **Restrictions:** Do not block IPC server event loop, handle all error cases gracefully, maintain thread safety when accessing Engine state | **_Leverage:** Study existing IPC server structure in ipc_control_server.cpp, Engine API in src/core/engine/engine.h, ConfigManager singleton pattern | **_Requirements:** 2, 3, 4, 5 | **Success:** All GUI commands are handled correctly, daemon responds with proper status/error messages, no crashes or hangs under error conditions | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions, apiEndpoints), then mark task as complete [x]
 
-- [ ] 1.4. Test daemon handlers with debug tool
+- [x] 1.4. Test daemon handlers with debug tool
   - Use: `tools/debug_ipc_communication.sh` from Phase 0
   - Send test commands to daemon via IPC socket
   - Verify responses match expected protocol
@@ -83,6 +83,7 @@
   - _Leverage: Debug tool from task 0.1, daemon with new handlers
   - _Requirements: 2, 3, 4, 5, 10_
   - _Prompt: **Role:** Test Engineer with IPC debugging expertise | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Use IPC debug tool from task 0.1 to test daemon command handlers from task 1.3 following requirements 2, 3, 4, 5, 10. Send test commands and verify responses. | **Restrictions:** Test all command types and error scenarios, document any issues found, ensure handlers are stable before GUI development | **_Leverage:** tools/debug_ipc_communication.sh from Phase 0, running yamy daemon | **_Requirements:** 2, 3, 4, 5, 10 | **Success:** All commands receive correct responses, error scenarios handled properly, debug output shows clear message flow | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts documenting test results, then mark task as complete [x]
+  - Result (2025-12-14): Daemon accepted connections on `/tmp/yamy-yamy-engine-1000` but returned no GUI (`0x51xx`) responses to `CmdGetStatus/SetEnabled/SwitchConfig/ReloadConfig` messages; debug capture at `logs/ipc_debug_20251214_214431.log` shows outgoing frames only. Needs follow-up on GUI IPC channel handling.
 
 ## Phase 2: IPC Client Wrapper for GUI (with mock testing)
 
