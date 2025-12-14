@@ -17,7 +17,11 @@ jobs:
     - name: Install clang tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y clang-format clang-tidy
+        sudo apt-get install -y clang-format clang-tidy python3-pip
+
+    - name: Install lizard for code metrics
+      run: |
+        pip3 install lizard
 
     - name: Check code formatting
       run: |
@@ -73,6 +77,74 @@ jobs:
         else
           echo "No platform/linux files to analyze." >> $GITHUB_STEP_SUMMARY
         fi
+
+    - name: Check code metrics
+      run: |
+        echo "## Code Metrics Check" >> $GITHUB_STEP_SUMMARY
+
+        # Run lizard with configured limits: 500 lines/file, 50 lines/function, CCN ≤15
+        # Exclude third-party and build directories
+        LIZARD_OUTPUT=$(lizard src/ \
+          --length 50 \
+          --CCN 15 \
+          --arguments 10 \
+          --exclude "*/third_party/*" \
+          --exclude "*/external/*" \
+          --exclude "*/build/*" \
+          --warnings_only 2>&1) || true
+
+        # Check for violations
+        if echo "$LIZARD_OUTPUT" | grep -q "NLOC.*CCN.*token"; then
+          # Parse violations
+          VIOLATIONS=$(echo "$LIZARD_OUTPUT" | grep -E "^  " | wc -l)
+
+          if [ "$VIOLATIONS" -gt 0 ]; then
+            echo "❌ **Code metrics violations found:** $VIOLATIONS" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Limits:** Max 50 lines/function, Max CCN 15" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "<details><summary>Violations</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "$LIZARD_OUTPUT" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+            echo ""
+            echo "ERROR: Code metrics violations detected!"
+            echo "$LIZARD_OUTPUT"
+            echo ""
+            echo "Functions exceeding limits must be refactored."
+            echo "See docs/CODE_METRICS.md for guidelines."
+            exit 1
+          fi
+        fi
+
+        # Also check for files exceeding 500 lines (excluding comments/blanks)
+        FILES_OVER_LIMIT=$(lizard src/ \
+          --exclude "*/third_party/*" \
+          --exclude "*/external/*" \
+          --exclude "*/build/*" 2>&1 | \
+          awk '/^[^[:space:]]/ {file=$1; nloc=$2} nloc > 500 {print file " (" nloc " lines)"}')
+
+        if [ -n "$FILES_OVER_LIMIT" ]; then
+          echo "❌ **Files exceeding 500 NLOC:**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "$FILES_OVER_LIMIT" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo ""
+          echo "ERROR: Files exceeding 500 NLOC limit!"
+          echo "$FILES_OVER_LIMIT"
+          echo ""
+          echo "Large files must be split. See docs/CODE_METRICS.md for guidelines."
+          exit 1
+        fi
+
+        echo "✅ **All code metrics checks passed**" >> $GITHUB_STEP_SUMMARY
+        echo "- Functions ≤ 50 lines" >> $GITHUB_STEP_SUMMARY
+        echo "- Cyclomatic complexity ≤ 15" >> $GITHUB_STEP_SUMMARY
+        echo "- Files ≤ 500 NLOC" >> $GITHUB_STEP_SUMMARY
 
   build-linux-stub:
     name: Linux Stub Build & Verification

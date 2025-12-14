@@ -332,7 +332,7 @@
   - _Requirements: 9_
   - _Prompt: **Role:** DevOps Engineer with Git hooks expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create pre-commit hook for code metrics following requirement 9. Run lizard on staged files only, reject commit on violations, allow bypass with --no-verify. Provide installation instructions. | **Restrictions:** Must check only staged files (not working directory), must be fast (<5s), must provide clear violation messages, must be installable | **_Leverage:** git diff --cached --name-only, lizard, Bash scripting | **_Requirements:** 9 | **Success:** Hook installs easily, checks staged files, rejects violations, bypass works, fast execution | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 7.3. Add metrics check to CI pipeline
+- [x] 7.3. Add metrics check to CI pipeline
   - File: `.github/workflows/ci.yml` or equivalent
   - Add step running make check-metrics
   - Fail build on violations
