@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/investigate-window/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-14T02:59:43.162Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765681183157_g04gywp2h",
+      "approvalTitle": "Tasks Document - Investigate Window Feature"
+    }
+  ]
+}

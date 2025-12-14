@@ -815,6 +815,59 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_ui_test COMMAND yamy_ui_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_investigate_workflow_test (Investigate Workflow Integration Tests)
+        # End-to-end tests for investigate window feature
+        # -----------------------------------------------------------------------------
+        add_executable(yamy_investigate_workflow_test
+            tests/integration/investigate_workflow_test.cpp
+            src/ui/qt/dialog_investigate_qt.cpp
+            src/ui/qt/dialog_condition_generator_qt.cpp
+            src/ui/qt/crosshair_widget_qt.cpp
+            src/core/platform/ipc_channel_interface.cpp
+            src/core/platform/linux/ipc_channel_qt.cpp
+            src/platform/linux/window_system_linux.cpp
+            src/platform/linux/window_system_linux_queries.cpp
+            src/platform/linux/window_system_linux_hierarchy.cpp
+            src/platform/linux/x11_connection.cpp
+            src/tests/googletest/src/gtest-all.cc
+            src/tests/googlemock/src/gmock-all.cc
+        )
+
+        # Enable AUTOMOC for Qt-based tests (MockIPCChannel uses Q_OBJECT)
+        set_target_properties(yamy_investigate_workflow_test PROPERTIES AUTOMOC ON)
+
+        target_include_directories(yamy_investigate_workflow_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            ${GMOCK_DIR}/include
+            ${GMOCK_DIR}
+            src
+            src/core
+            src/core/platform
+            src/core/input
+            src/core/settings
+            src/core/functions
+            src/core/engine
+            src/core/window
+            src/utils
+            src/platform/linux
+            src/ui/qt
+        )
+
+        target_link_libraries(yamy_investigate_workflow_test PRIVATE
+            pthread
+            ${X11_LIBRARIES}
+            Qt5::Core
+            Qt5::Widgets
+            Qt5::Gui
+            Qt5::Network
+            Qt5::X11Extras
+            Qt5::Test
+        )
+
+        add_test(NAME yamy_investigate_workflow_test COMMAND yamy_investigate_workflow_test)
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_log_test (Log Dialog Unit Tests)
         # Comprehensive tests for Logger and DialogLogQt
         # -----------------------------------------------------------------------------

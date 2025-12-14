@@ -1080,7 +1080,7 @@
     6. Mark complete
     ```
 
-- [ ] 4.3 Write integration test for full investigate workflow
+- [x] 4.3 Write integration test for full investigate workflow
   - Files:
     - tests/integration/investigate_workflow_test.cpp (new)
   - Description:

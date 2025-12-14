@@ -6,6 +6,7 @@ find_package(Qt5 REQUIRED COMPONENTS
     Core
     Widgets
     Gui
+    Network
 )
 
 if(UNIX AND NOT WIN32)
@@ -95,6 +96,7 @@ target_link_libraries(yamy_qt_gui PUBLIC
     Qt5::Core
     Qt5::Widgets
     Qt5::Gui
+    Qt5::Network
 )
 
 if(UNIX AND NOT WIN32)
