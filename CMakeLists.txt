@@ -1400,6 +1400,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/device_manager_linux.cpp
             src/platform/linux/keycode_mapping.cpp
             src/utils/metrics.cpp
+            src/core/logger/journey_logger.cpp
         )
 
         add_executable(yamy_leak_test
@@ -1446,6 +1447,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/keycode_mapping.cpp
             src/core/engine/engine_event_processor.cpp
             src/core/engine/modifier_key_handler.cpp
+            src/core/logger/journey_logger.cpp
         )
 
         add_executable(yamy_event_processor_ut
@@ -1483,6 +1485,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/keycode_mapping.cpp
             src/core/engine/engine_event_processor.cpp
             src/core/engine/modifier_key_handler.cpp
+            src/core/logger/journey_logger.cpp
         )
 
         add_executable(yamy_event_processor_it
@@ -1545,6 +1548,43 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_number_modifiers_test COMMAND yamy_number_modifiers_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_modifier_state_test (ModifierState Modal Modifier Tests)
+        # Unit tests for ModifierState modal modifier functionality (mod0-mod19)
+        # Part of task 1 in modal-modifier-remapping spec
+        # -----------------------------------------------------------------------------
+        set(MODIFIER_STATE_TEST_SOURCES
+            tests/test_modifier_state.cpp
+            src/core/input/modifier_state.cpp
+            src/core/input/keyboard.cpp
+            src/utils/stringtool.cpp
+            src/tests/platform/test_main_linux.cpp
+        )
+
+        add_executable(yamy_modifier_state_test
+            ${MODIFIER_STATE_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_modifier_state_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/input
+            src/utils
+        )
+
+        target_compile_definitions(yamy_modifier_state_test PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(yamy_modifier_state_test PRIVATE
+            pthread
+        )
+
+        add_test(NAME yamy_modifier_state_test COMMAND yamy_modifier_state_test)
+
+        # -----------------------------------------------------------------------------
         # Target: benchmark_event_processor (EventProcessor Performance Benchmark)
         # Standalone performance benchmark to measure event processing latency
         # Part of task 5.5 in key-remapping-consistency spec
@@ -1554,6 +1594,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/keycode_mapping.cpp
             src/core/engine/engine_event_processor.cpp
             src/core/engine/modifier_key_handler.cpp
+            src/core/logger/journey_logger.cpp
         )
 
         add_executable(benchmark_event_processor

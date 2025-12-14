@@ -105,6 +105,28 @@ public:
     /// Set lock key state (e.g., from system query)
     void setLockState(bool capsLock, bool numLock, bool scrollLock);
 
+    // Modal modifier methods (mod0-mod19)
+
+    /// Activate a modal modifier (sets the corresponding bit in m_modal)
+    /// @param type The modifier type (must be Type_Mod0..Type_Mod19)
+    void activate(Modifier::Type type);
+
+    /// Deactivate a modal modifier (clears the corresponding bit in m_modal)
+    /// @param type The modifier type (must be Type_Mod0..Type_Mod19)
+    void deactivate(Modifier::Type type);
+
+    /// Check if a modal modifier is active
+    /// @param type The modifier type (must be Type_Mod0..Type_Mod19)
+    /// @return true if the modal modifier is active, false otherwise
+    bool isActive(Modifier::Type type) const;
+
+    /// Get the active modal modifiers as a bitmask
+    /// @return 32-bit bitmask where bit N represents modN state
+    uint32_t getActiveBitmask() const { return m_modal; }
+
+    /// Clear all modifiers (standard and modal)
+    void clear();
+
     /// Convert internal modifier flags to Modifier object for engine compatibility
     Modifier toModifier() const;
 
@@ -126,7 +148,8 @@ private:
     /// @return The modifier flag, or MOD_NONE if not a modifier
     static ModifierFlag detectModifierFromKeycode(uint32_t keycode);
 
-    uint32_t m_flags;
+    uint32_t m_flags;  // Standard modifier flags (shift, ctrl, alt, win, locks)
+    uint32_t m_modal;  // Modal modifier bitmask (mod0-mod19, bits 0-19)
 };
 
 } // namespace yamy::input

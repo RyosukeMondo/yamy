@@ -55,13 +55,14 @@ namespace {
 namespace yamy::input {
 
 ModifierState::ModifierState()
-    : m_flags(MOD_NONE)
+    : m_flags(MOD_NONE), m_modal(0)
 {
 }
 
 void ModifierState::reset()
 {
     m_flags = MOD_NONE;
+    m_modal = 0;
 }
 
 bool ModifierState::updateFromKeyEvent(const yamy::platform::KeyEvent& event)
@@ -238,6 +239,70 @@ ModifierFlag ModifierState::detectModifierFromKeycode(uint32_t keycode)
     }
 
     return MOD_NONE;
+}
+
+// Modal modifier methods implementation
+
+void ModifierState::activate(Modifier::Type type)
+{
+    // Handle standard modifiers (backward compatibility)
+    if (type >= Modifier::Type_Shift && type < Modifier::Type_Mod0) {
+        // This is a standard modifier, not a modal modifier
+        // Could update m_flags here if needed, but for now we skip
+        return;
+    }
+
+    // Handle modal modifiers (Type_Mod0 through Type_Mod19)
+    if (type >= Modifier::Type_Mod0 && type <= Modifier::Type_Mod19) {
+        int bit = type - Modifier::Type_Mod0;
+        m_modal |= (1u << bit);
+    }
+}
+
+void ModifierState::deactivate(Modifier::Type type)
+{
+    // Handle standard modifiers (backward compatibility)
+    if (type >= Modifier::Type_Shift && type < Modifier::Type_Mod0) {
+        // This is a standard modifier, not a modal modifier
+        return;
+    }
+
+    // Handle modal modifiers (Type_Mod0 through Type_Mod19)
+    if (type >= Modifier::Type_Mod0 && type <= Modifier::Type_Mod19) {
+        int bit = type - Modifier::Type_Mod0;
+        m_modal &= ~(1u << bit);
+    }
+}
+
+bool ModifierState::isActive(Modifier::Type type) const
+{
+    // Handle standard modifiers
+    if (type == Modifier::Type_Shift) {
+        return isShiftPressed();
+    }
+    if (type == Modifier::Type_Control) {
+        return isCtrlPressed();
+    }
+    if (type == Modifier::Type_Alt) {
+        return isAltPressed();
+    }
+    if (type == Modifier::Type_Windows) {
+        return isWinPressed();
+    }
+
+    // Handle modal modifiers (Type_Mod0 through Type_Mod19)
+    if (type >= Modifier::Type_Mod0 && type <= Modifier::Type_Mod19) {
+        int bit = type - Modifier::Type_Mod0;
+        return (m_modal & (1u << bit)) != 0;
+    }
+
+    return false;
+}
+
+void ModifierState::clear()
+{
+    m_flags = MOD_NONE;
+    m_modal = 0;
 }
 
 } // namespace yamy::input
