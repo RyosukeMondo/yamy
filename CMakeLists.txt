@@ -288,6 +288,8 @@ set(ENGINE_SOURCES
     src/utils/logger.cpp
     src/core/engine/engine.cpp
     src/core/engine/engine_lifecycle.cpp
+    src/core/engine/engine_keyboard_handler.cpp
+    src/core/engine/engine_ipc_handler.cpp
     src/core/notification_dispatcher.cpp
     src/core/engine/engine_input.cpp
     src/core/engine/engine_modifier.cpp
@@ -501,6 +503,8 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/utils/logger.cpp
         src/core/engine/engine.cpp
         src/core/engine/engine_lifecycle.cpp
+        src/core/engine/engine_keyboard_handler.cpp
+        src/core/engine/engine_ipc_handler.cpp
         src/core/notification_dispatcher.cpp
         src/core/engine/engine_input.cpp
         src/core/engine/engine_modifier.cpp
