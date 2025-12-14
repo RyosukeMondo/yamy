@@ -151,7 +151,7 @@
 
 ## Phase 4: Full GUI Implementation (build on validated prototype)
 
-- [ ] 4.1. Expand MainWindowGUI with full UI layout
+- [x] 4.1. Expand MainWindowGUI with full UI layout
   - File: `src/ui/qt/main_window_gui.cpp`
   - Add configuration selector dropdown
   - Add reload button
