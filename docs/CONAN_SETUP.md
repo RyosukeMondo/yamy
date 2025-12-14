@@ -32,20 +32,20 @@ conan list "*" --cache
 ```
 
 ## Prime the cache for project presets
-Run an install per preset to populate the cache and generate the toolchain/deps files where CMake expects them:
+Run an install per preset to populate the cache and generate the toolchain/deps files where CMake expects them. Always match the preset's build type:
 ```bash
 # Linux
-conan install . --output-folder=build/linux-debug --build=missing
-conan install . --output-folder=build/linux-release --build=missing
+conan install . --output-folder=build/linux-debug --build=missing -s build_type=Debug
+conan install . --output-folder=build/linux-release --build=missing -s build_type=Release
 
 # Windows clang-cl (from PowerShell)
-conan install . --output-folder=build\\windows-clang-debug --build=missing
-conan install . --output-folder=build\\windows-clang-release --build=missing
+conan install . --output-folder=build\\windows-clang-debug --build=missing -s build_type=Debug
+conan install . --output-folder=build\\windows-clang-release --build=missing -s build_type=Release
 ```
 What each command does:
 - Downloads binaries from ConanCenter into `~/.conan2/p`.
 - Builds missing binaries once (stored in cache for reuse).
-- Emits `conan_toolchain.cmake` and `conan_deps*.cmake` into the chosen `build/<preset>` folder used by `CMakePresets.json`.
+- Emits `conan_toolchain.cmake` and `conan_deps*.cmake` into `build/<preset>` used by `CMakePresets.json`.
 
 ## Validate caching and performance
 1) Cold fetch (no cache):

@@ -94,7 +94,7 @@
   - _Requirements: 3_
   - _Prompt: **Role:** Build Engineer with CMake dependency management expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Update CMakeLists.txt to find and link Conan packages following requirement 3. Add find_package for quill, Microsoft.GSL, RapidCheck, Catch2. Link to appropriate targets. | **Restrictions:** Must use target_link_libraries with PRIVATE/PUBLIC correctly, must fail gracefully if package not found, must verify all headers found | **_Leverage:** find_package(quill REQUIRED), target_link_libraries, Conan package names | **_Requirements:** 3 | **Success:** All Conan packages found, libraries link correctly, build succeeds, can include headers (e.g., #include <quill/Quill.h>) | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 2.5. Test full dependency workflow
+- [x] 2.5. Test full dependency workflow
   - Test on clean machine (Linux and Windows)
   - Verify conan install → cmake → build workflow
   - Document any platform-specific issues

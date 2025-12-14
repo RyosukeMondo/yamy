@@ -1,5 +1,5 @@
 [requires]
-quill/4.1.0
+quill/3.9.0
 ms-gsl/4.0.0
 rapidcheck/cci.20230815
 catch2/3.5.0
@@ -8,10 +8,3 @@ fmt/10.2.1
 [generators]
 CMakeToolchain
 CMakeDeps
-
-[layout]
-cmake_layout
-
-[conf]
-tools.cmake.cmaketoolchain:generator_folder=.
-tools.cmake.cmakedeps:generator_folder=.
