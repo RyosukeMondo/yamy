@@ -6,6 +6,12 @@ if(WIN32)
     enable_language(RC)
 endif()
 
+if(CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "conan_toolchain\\.cmake$")
+    if(NOT EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+        message(FATAL_ERROR "Conan toolchain file missing at '${CMAKE_TOOLCHAIN_FILE}'. Run `conan install . --output-folder=build/<preset>` before configuring.")
+    endif()
+endif()
+
 # Standard Settings
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

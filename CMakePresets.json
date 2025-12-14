@@ -17,10 +17,19 @@
             }
         },
         {
+            "name": "conan-toolchain",
+            "hidden": true,
+            "inherits": "ninja-base",
+            "toolchainFile": "${sourceDir}/build/${presetName}/conan_toolchain.cmake",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/${presetName}/conan_toolchain.cmake"
+            }
+        },
+        {
             "name": "linux-debug",
             "displayName": "Linux Debug (Ninja)",
-            "description": "Debug build on Linux using Ninja generator",
-            "inherits": "ninja-base",
+            "description": "Debug build on Linux using Ninja generator (run `conan install . --output-folder=build/linux-debug` first)",
+            "inherits": "conan-toolchain",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -33,8 +42,8 @@
         {
             "name": "linux-release",
             "displayName": "Linux Release (Ninja)",
-            "description": "Release build on Linux using Ninja generator",
-            "inherits": "ninja-base",
+            "description": "Release build on Linux using Ninja generator (run `conan install . --output-folder=build/linux-release` first)",
+            "inherits": "conan-toolchain",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -47,7 +56,7 @@
         {
             "name": "windows-clang-base",
             "hidden": true,
-            "inherits": "ninja-base",
+            "inherits": "conan-toolchain",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -61,7 +70,7 @@
         {
             "name": "windows-clang-debug",
             "displayName": "Windows Clang Debug (Ninja)",
-            "description": "Debug build on Windows using Ninja + clang-cl",
+            "description": "Debug build on Windows using Ninja + clang-cl (run `conan install . --output-folder=build/windows-clang-debug` first)",
             "inherits": "windows-clang-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
@@ -70,7 +79,7 @@
         {
             "name": "windows-clang-release",
             "displayName": "Windows Clang Release (Ninja)",
-            "description": "Release build on Windows using Ninja + clang-cl",
+            "description": "Release build on Windows using Ninja + clang-cl (run `conan install . --output-folder=build/windows-clang-release` first)",
             "inherits": "windows-clang-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
