@@ -269,7 +269,7 @@
 
 ### Phase 2: Window System Implementation (X11/XCB)
 
-- [ ] 2.1 Implement X11 connection management in WindowSystemLinux
+- [x] 2.1 Implement X11 connection management in WindowSystemLinux
   - Files:
     - src/platform/linux/window_system_linux.cpp (modify)
   - Description:

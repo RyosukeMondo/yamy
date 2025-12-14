@@ -1,10 +1,63 @@
 ﻿#include "core/platform/window_system_interface.h"
 #include <iostream>
+#include <map>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
 
 namespace yamy::platform {
 
+// X11 error handler (static)
+static int windowSystemErrorHandler(Display* display, XErrorEvent* error) {
+    char errorText[256];
+    XGetErrorText(display, error->error_code, errorText, sizeof(errorText));
+    std::cerr << "[WindowSystemLinux] X11 Error: " << errorText
+              << " (request code: " << static_cast<int>(error->request_code)
+              << ", resource: 0x" << std::hex << error->resourceid << std::dec << ")" << std::endl;
+    return 0;  // Don't abort, just log
+}
+
 class WindowSystemLinux : public IWindowSystem {
+private:
+    Display* m_display;
+    Window m_rootWindow;
+    std::map<std::string, Atom> m_atomCache;
+
+    // Helper method for atom caching
+    Atom getAtom(const char* name) {
+        auto it = m_atomCache.find(name);
+        if (it != m_atomCache.end()) {
+            return it->second;
+        }
+        if (!m_display) {
+            return None;
+        }
+        Atom atom = XInternAtom(m_display, name, False);
+        m_atomCache[name] = atom;
+        return atom;
+    }
+
 public:
+    WindowSystemLinux() : m_display(nullptr), m_rootWindow(None) {
+        m_display = XOpenDisplay(nullptr);
+        if (!m_display) {
+            std::cerr << "[WindowSystemLinux] ERROR: Cannot open X11 display" << std::endl;
+            // Continue anyway, methods will handle null display
+        } else {
+            m_rootWindow = DefaultRootWindow(m_display);
+            // Install error handler
+            XSetErrorHandler(windowSystemErrorHandler);
+            std::cerr << "[WindowSystemLinux] X11 display opened successfully" << std::endl;
+        }
+    }
+
+    ~WindowSystemLinux() {
+        if (m_display) {
+            XCloseDisplay(m_display);
+            std::cerr << "[WindowSystemLinux] X11 display closed" << std::endl;
+        }
+    }
+
     WindowHandle getForegroundWindow() override {
         std::cerr << "[STUB] getForegroundWindow()" << std::endl;
         return nullptr;
