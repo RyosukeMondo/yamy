@@ -229,7 +229,7 @@
   - _Requirements: 6_
   - _Prompt: **Role:** QA Engineer with state machine testing expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Write RapidCheck properties for modifier state tracking following requirement 6. Properties: 1) all key-down events have matching key-up, 2) modifier state is consistent, 3) no stuck keys after event sequence. Use rc::gen for input events. | **Restrictions:** Must generate realistic input sequences (not just random bytes), must verify state after all events processed, must test shrinking | **_Leverage:** rc::check, rc::gen::container, Engine::process(), state inspection APIs | **_Requirements:** 6 | **Success:** 3 properties defined, tests find edge cases, shrinking reduces failure to minimal sequence, documented example of shrunk case | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions, tests), then mark task as complete [x]
 
-- [ ] 5.3. Write layer switching properties
+- [x] 5.3. Write layer switching properties
   - File: `tests/property_layer.cpp`
   - Define properties for layer activation/deactivation
   - Test layer stack invariants
