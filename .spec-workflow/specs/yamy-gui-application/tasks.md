@@ -32,7 +32,7 @@
   - _Requirements: 10_
   - _Prompt: **Role:** QA Engineer with expertise in protocol testing | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create IPC protocol test suite in tests/test_ipc_protocol.cpp that validates message serialization/deserialization for all command types following requirement 10. | **Restrictions:** Test both success and error scenarios, verify backward compatibility, ensure tests are fast and reliable | **_Leverage:** Qt Test (QTest), existing IPC message definitions | **_Requirements:** 10 | **Success:** All message types can be serialized and deserialized correctly, tests pass for all protocol operations, edge cases are covered | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions), then mark task as complete [x]
 
-- [ ] 0.4. Document IPC protocol specification
+- [x] 0.4. Document IPC protocol specification
   - File: `docs/IPC_PROTOCOL.md`
   - Document all GUI-specific IPC commands and responses
   - Add message format examples with actual data
