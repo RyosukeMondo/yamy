@@ -493,7 +493,7 @@
     6. Mark complete
     ```
 
-- [ ] 2.3 Implement window geometry and state queries
+- [x] 2.3 Implement window geometry and state queries
   - Files:
     - src/platform/linux/window_system_linux_queries.cpp (modify)
   - Description:
