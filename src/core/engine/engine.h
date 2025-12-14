@@ -505,7 +505,20 @@ public:
     void playSound(yamy::audio::NotificationType type);
 #endif
 
-    /// Handle incoming IPC messages
+    /**
+     * @brief Handle incoming IPC messages from the Qt dialog
+     *
+     * Processes IPC messages received from the investigate dialog via IPCChannelQt.
+     * Supports CmdInvestigateWindow requests by querying keymap status and sending
+     * RspInvestigateWindow responses.
+     *
+     * @param message IPC message containing command type and data
+     *
+     * @note This method is called via Qt signal/slot when messages arrive
+     * @note Connected in engine_lifecycle.cpp constructor
+     *
+     * @see queryKeymapForWindow()
+     */
     void handleIpcMessage(const yamy::ipc::Message& message);
 
     // StrExprSystem overrides
@@ -513,20 +526,36 @@ public:
     std::string getStrExprWindowClassName() const override;
     std::string getStrExprWindowTitleName() const override;
 
-    /// Keymap status information for investigate dialog
+    /**
+     * @brief Keymap status information for investigate dialog
+     *
+     * Contains detailed information about which keymap is active for a window
+     * and why it was selected. Used by the investigate dialog to display
+     * keymap matching details.
+     */
     struct KeymapStatus {
-        std::string keymapName;      /// Name of the matched keymap (empty if default)
-        std::string matchedClassRegex;  /// Window class regex that matched
-        std::string matchedTitleRegex;  /// Window title regex that matched
-        std::string activeModifiers;    /// Currently active modifiers as string
-        bool isDefault;              /// True if using default/global keymap
+        std::string keymapName;         ///< Name of the matched keymap (empty if default/global)
+        std::string matchedClassRegex;  ///< Window class regex that matched (from .mayu)
+        std::string matchedTitleRegex;  ///< Window title regex that matched (from .mayu)
+        std::string activeModifiers;    ///< Currently active modifiers as string (e.g., "Ctrl+Shift")
+        bool isDefault;                 ///< True if using default/global keymap (no specific match)
     };
 
-    /// Query keymap status for a given window
-    /// @param hwnd Window handle to query keymap for
-    /// @param className Window class name
-    /// @param titleName Window title name
-    /// @return KeymapStatus with matched keymap information
+    /**
+     * @brief Query keymap status for a given window
+     *
+     * Determines which keymap would be active for the specified window by
+     * matching window class and title against configured keymap rules.
+     * Returns detailed status including matched regex patterns and active modifiers.
+     *
+     * @param hwnd Window handle to query keymap for
+     * @param className Window class name (from getClassName())
+     * @param titleName Window title name (from getWindowText())
+     * @return KeymapStatus structure with matched keymap information
+     *
+     * @note This method does not change engine state, only queries current keymap rules
+     * @note Used by investigate dialog to display keymap debugging information
+     */
     KeymapStatus queryKeymapForWindow(yamy::platform::WindowHandle hwnd,
                                       const std::string& className,
                                       const std::string& titleName) const;
