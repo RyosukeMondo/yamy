@@ -241,7 +241,7 @@
 
 ## Phase 7: Desktop Integration
 
-- [ ] 7.1. Create desktop entry file
+- [x] 7.1. Create desktop entry file
   - File: `resources/yamy-gui.desktop`
   - Create freedesktop.org compliant .desktop file
   - Add metadata (name, icon, categories, exec command)

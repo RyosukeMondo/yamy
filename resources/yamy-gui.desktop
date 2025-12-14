@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=YAMY GUI
+Comment=Configure and control YAMY daemon
+Exec=yamy-gui
+TryExec=yamy-gui
+Icon=yamy-gui
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=true
+Keywords=keyboard;remap;daemon;configuration;
