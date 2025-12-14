@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/yamy-gui-application/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-14T11:16:06.174Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765710966064_97rbjvbxw",
+      "approvalTitle": "Requirements - YAMY GUI Application"
+    }
+  ]
+}

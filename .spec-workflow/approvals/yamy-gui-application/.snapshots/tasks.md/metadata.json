@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/yamy-gui-application/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-14T11:16:06.985Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765710966969_gezfjw564",
+      "approvalTitle": "Tasks - YAMY GUI Application"
+    }
+  ]
+}
