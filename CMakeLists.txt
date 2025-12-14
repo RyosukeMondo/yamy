@@ -1057,6 +1057,38 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_ipc_channel_qt_test COMMAND yamy_ipc_channel_qt_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_mock_ipc_server (mock daemon for GUI IPC testing)
+        # Provides deterministic responses for GUI client integration tests
+        # -----------------------------------------------------------------------------
+        set(MOCK_IPC_SERVER_SOURCES
+            tests/mock_ipc_server.cpp
+            src/core/platform/linux/ipc_channel_qt.cpp
+            src/core/platform/ipc_channel_interface.cpp
+        )
+
+        add_executable(yamy_mock_ipc_server
+            ${MOCK_IPC_SERVER_SOURCES}
+        )
+
+        set_target_properties(yamy_mock_ipc_server PROPERTIES
+            AUTOMOC ON
+        )
+
+        target_include_directories(yamy_mock_ipc_server PRIVATE
+            src
+            src/core
+            src/core/platform
+            src/utils
+            tests
+        )
+
+        target_link_libraries(yamy_mock_ipc_server PRIVATE
+            pthread
+            Qt5::Core
+            Qt5::Network
+        )
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_ipc_protocol_test (IPC message contract tests)
         # Validates serialization/deserialization for all IPC command/response types
         # -----------------------------------------------------------------------------
@@ -1092,6 +1124,47 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
 
         add_test(NAME yamy_ipc_protocol_test COMMAND yamy_ipc_protocol_test)
+
+        # -----------------------------------------------------------------------------
+        # Target: yamy_ipc_client_gui_test (IPCClientGUI integration with mock server)
+        # Exercises Qt signals/slots against deterministic mock server responses
+        # -----------------------------------------------------------------------------
+        set(IPC_CLIENT_GUI_TEST_SOURCES
+            tests/test_ipc_client_gui.cpp
+            src/ui/qt/ipc_client_gui.cpp
+            src/core/platform/linux/ipc_channel_qt.cpp
+            src/core/platform/ipc_channel_interface.cpp
+        )
+
+        add_executable(yamy_ipc_client_gui_test
+            ${IPC_CLIENT_GUI_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        set_target_properties(yamy_ipc_client_gui_test PROPERTIES
+            AUTOMOC ON
+        )
+
+        target_include_directories(yamy_ipc_client_gui_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/ui
+            src/ui/qt
+            src/utils
+        )
+
+        target_link_libraries(yamy_ipc_client_gui_test PRIVATE
+            pthread
+            Qt5::Core
+            Qt5::Network
+            Qt5::Test
+        )
+
+        add_dependencies(yamy_ipc_client_gui_test yamy_mock_ipc_server)
+        add_test(NAME yamy_ipc_client_gui_test COMMAND yamy_ipc_client_gui_test)
 
         # -----------------------------------------------------------------------------
         # Target: yamy_notification_dispatcher_test (NotificationDispatcher Tests)
