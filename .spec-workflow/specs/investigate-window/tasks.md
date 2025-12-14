@@ -935,7 +935,7 @@
     6. Mark complete
     ```
 
-- [ ] 4.2 Write unit tests for IPCChannelQt message serialization
+- [x] 4.2 Write unit tests for IPCChannelQt message serialization
   - Files:
     - tests/platform/ipc_channel_qt_test.cpp (new)
   - Description:

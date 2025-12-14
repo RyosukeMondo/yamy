@@ -484,6 +484,10 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     find_package(Qt5 REQUIRED COMPONENTS Core)
     message(STATUS "Qt5 Core found - version ${Qt5Core_VERSION}")
 
+    # Qt5 Network is required for IPC (QLocalSocket/QLocalServer)
+    find_package(Qt5 REQUIRED COMPONENTS Network)
+    message(STATUS "Qt5 Network found - version ${Qt5Network_VERSION}")
+
     # Qt5 Test is required for test builds
     find_package(Qt5 REQUIRED COMPONENTS Test)
     message(STATUS "Qt5 Test found - version ${Qt5Test_VERSION}")
@@ -516,6 +520,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
             target_link_libraries(yamy PRIVATE
                 pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
                 Qt5::Core
+                Qt5::Network
                 yamy_qt_gui
             )
         else()
@@ -525,6 +530,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
             target_link_libraries(yamy PRIVATE
                 pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
                 Qt5::Core
+                Qt5::Network
             )
         endif()
     else()
@@ -534,6 +540,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         target_link_libraries(yamy PRIVATE
             pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
             Qt5::Core
+            Qt5::Network
         )
     endif()
 
@@ -937,6 +944,43 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
 
         add_test(NAME yamy_tray_test COMMAND yamy_tray_test)
+
+        # -----------------------------------------------------------------------------
+        # Target: yamy_ipc_channel_qt_test (IPCChannelQt Message Serialization Tests)
+        # Tests for Qt-based IPC channel message send/receive, framing, and connection handling
+        # -----------------------------------------------------------------------------
+        set(IPC_CHANNEL_QT_TEST_SOURCES
+            tests/platform/ipc_channel_qt_test.cpp
+            src/core/platform/linux/ipc_channel_qt.cpp
+            src/core/platform/ipc_channel_interface.cpp
+        )
+
+        add_executable(yamy_ipc_channel_qt_test
+            ${IPC_CHANNEL_QT_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        set_target_properties(yamy_ipc_channel_qt_test PROPERTIES
+            AUTOMOC ON
+        )
+
+        target_include_directories(yamy_ipc_channel_qt_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/utils
+        )
+
+        target_link_libraries(yamy_ipc_channel_qt_test PRIVATE
+            pthread
+            Qt5::Core
+            Qt5::Network
+            Qt5::Test
+        )
+
+        add_test(NAME yamy_ipc_channel_qt_test COMMAND yamy_ipc_channel_qt_test)
 
         # -----------------------------------------------------------------------------
         # Target: yamy_notification_dispatcher_test (NotificationDispatcher Tests)
