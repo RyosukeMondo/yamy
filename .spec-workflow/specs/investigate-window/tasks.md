@@ -79,7 +79,7 @@
     7. Mark task as complete: Edit tasks.md, change [-] to [x]
     ```
 
-- [ ] 1.2 Update IPC channel factory to return IPCChannelQt on Linux
+- [x] 1.2 Update IPC channel factory to return IPCChannelQt on Linux
   - Files:
     - src/core/platform/ipc_channel_factory.h (modify)
   - Description:
