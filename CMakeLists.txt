@@ -1057,6 +1057,43 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_ipc_channel_qt_test COMMAND yamy_ipc_channel_qt_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_ipc_protocol_test (IPC message contract tests)
+        # Validates serialization/deserialization for all IPC command/response types
+        # -----------------------------------------------------------------------------
+        set(IPC_PROTOCOL_TEST_SOURCES
+            tests/test_ipc_protocol.cpp
+            src/core/platform/linux/ipc_channel_qt.cpp
+            src/core/platform/ipc_channel_interface.cpp
+        )
+
+        add_executable(yamy_ipc_protocol_test
+            ${IPC_PROTOCOL_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        set_target_properties(yamy_ipc_protocol_test PROPERTIES
+            AUTOMOC ON
+        )
+
+        target_include_directories(yamy_ipc_protocol_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/platform
+            src/utils
+        )
+
+        target_link_libraries(yamy_ipc_protocol_test PRIVATE
+            pthread
+            Qt5::Core
+            Qt5::Network
+            Qt5::Test
+        )
+
+        add_test(NAME yamy_ipc_protocol_test COMMAND yamy_ipc_protocol_test)
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_notification_dispatcher_test (NotificationDispatcher Tests)
         # Tests for core NotificationDispatcher callback system
         # -----------------------------------------------------------------------------
