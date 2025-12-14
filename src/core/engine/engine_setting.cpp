@@ -298,6 +298,54 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
               << " number modifiers" << std::endl;
     }
 
+    // Register modal modifiers from .mayu configuration
+    // Modal modifiers (mod mod9 = !!A) are stored in keymap modifier assignments
+    // Iterate through all keymaps to find modal modifier assignments
+    int modalModCount = 0;
+    const auto& keymapList = m_setting->m_keymaps.getKeymapList();
+    for (const auto& keymap : keymapList) {
+        // Check for modal modifiers (Type_Mod0 through Type_Mod19)
+        for (int modType = Modifier::Type_Mod0; modType <= Modifier::Type_Mod19; ++modType) {
+            const auto& modAssignments = keymap.getModAssignments(static_cast<Modifier::Type>(modType));
+
+            for (const auto& assignment : modAssignments) {
+                if (assignment.m_key && assignment.m_assignMode == Keymap::AM_oneShot) {
+                    // Found a modal modifier assignment (!! operator)
+                    // Extract trigger key scan code
+                    const ScanCode* scans = assignment.m_key->getScanCodes();
+                    size_t scanSize = assignment.m_key->getScanCodesSize();
+
+                    if (scanSize > 0) {
+                        uint16_t triggerYamyScan = scans[0].m_scan;
+
+                        // TODO: Register modal modifier with EventProcessor
+                        // Currently ModifierKeyHandler only supports HardwareModifier enum
+                        // Need to extend API to support Modifier::Type_Mod0-Mod19
+                        // For now, just log the modal modifier definition
+
+                        {
+                            Acquire a(&m_log, 1);
+                            m_log << "Modal Modifier: mod" << (modType - Modifier::Type_Mod0)
+                                  << " = !!" << assignment.m_key->getName()
+                                  << " (0x" << std::hex << std::setfill('0')
+                                  << std::setw(4) << triggerYamyScan
+                                  << std::dec << ")" << std::endl;
+                        }
+
+                        modalModCount++;
+                    }
+                }
+            }
+        }
+    }
+
+    {
+        Acquire a(&m_log, 0);
+        m_log << "Found " << modalModCount
+              << " modal modifier definitions (registration pending API extension)"
+              << std::endl;
+    }
+
     // Enable debug logging if YAMY_DEBUG_KEYCODE env var is set
     const char* debugEnv = std::getenv("YAMY_DEBUG_KEYCODE");
     if (debugEnv && std::string(debugEnv) == "1") {
