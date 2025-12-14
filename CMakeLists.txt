@@ -174,6 +174,16 @@ target_link_libraries(yamy_dependencies INTERFACE
     quill::quill
 )
 
+# Configure GSL contract behavior based on build type
+# Debug builds: throw on contract violations for testing
+# Release builds: unenforced contracts (zero runtime overhead)
+target_compile_definitions(yamy_dependencies INTERFACE
+    $<$<CONFIG:Debug>:GSL_THROW_ON_CONTRACT_VIOLATION>
+    $<$<CONFIG:Release>:GSL_UNENFORCED_ON_CONTRACT_VIOLATION>
+    $<$<CONFIG:RelWithDebInfo>:GSL_UNENFORCED_ON_CONTRACT_VIOLATION>
+    $<$<CONFIG:MinSizeRel>:GSL_UNENFORCED_ON_CONTRACT_VIOLATION>
+)
+
 add_library(yamy_test_dependencies INTERFACE)
 target_link_libraries(yamy_test_dependencies INTERFACE
     ${CATCH2_IMPORTED_TARGET}

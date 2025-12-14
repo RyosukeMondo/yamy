@@ -187,7 +187,7 @@
   - _Requirements: 5_
   - _Prompt: **Role:** C++ Developer with modern C++ expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Replace pointer+size parameters with gsl::span following requirement 5. Search for functions taking (T* ptr, size_t size), replace with gsl::span<T>. Update callers to use gsl::make_span or direct construction. | **Restrictions:** Use const span where appropriate, don't break existing API unless necessary, update all callers | **_Leverage:** gsl::span, gsl::make_span, range-based for loops with span | **_Requirements:** 5 | **Success:** All array parameters use span, bounds checks in debug builds, code is cleaner and safer | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 4.4. Configure debug vs release contract behavior
+- [x] 4.4. Configure debug vs release contract behavior
   - File: `CMakeLists.txt`
   - Add compile definitions for GSL contract behavior
   - Debug: GSL_THROW_ON_CONTRACT_VIOLATION
