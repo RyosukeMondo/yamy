@@ -13,6 +13,23 @@ if(UNIX AND NOT WIN32)
     find_package(Qt5 REQUIRED COMPONENTS X11Extras)
     # Find X11 for global hotkeys
     find_package(X11 REQUIRED)
+
+    # Find GTK3 and libnotify for AppIndicator system tray
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTK3 gtk+-3.0)
+    pkg_check_modules(LIBNOTIFY libnotify)
+
+    if(GTK3_FOUND)
+        message(STATUS "GTK3 found - version ${GTK3_VERSION}")
+    else()
+        message(WARNING "GTK3 not found - install with: sudo apt install libgtk-3-dev")
+    endif()
+
+    if(LIBNOTIFY_FOUND)
+        message(STATUS "libnotify found - version ${LIBNOTIFY_VERSION}")
+    else()
+        message(WARNING "libnotify not found - install with: sudo apt install libnotify-dev")
+    endif()
 endif()
 
 # Enable Qt MOC (Meta-Object Compiler)
@@ -23,6 +40,7 @@ set(CMAKE_AUTOUIC ON)
 # Qt source files
 set(QT_GUI_SOURCES
     tray_icon_qt.cpp
+    system_tray_appindicator.cpp
     dialog_settings_qt.cpp
     dialog_log_qt.cpp
     log_stats_panel.cpp
@@ -50,6 +68,7 @@ set(QT_GUI_SOURCES
 # Qt header files
 set(QT_GUI_HEADERS
     tray_icon_qt.h
+    system_tray_appindicator.h
     dialog_settings_qt.h
     dialog_log_qt.h
     log_stats_panel.h
@@ -107,6 +126,23 @@ if(UNIX AND NOT WIN32)
         ${X11_LIBRARIES}
         xcb
     )
+
+    # Link GTK3 and libnotify if available for AppIndicator support
+    if(GTK3_FOUND)
+        target_link_libraries(yamy_qt_gui PUBLIC ${GTK3_LIBRARIES})
+        target_include_directories(yamy_qt_gui PUBLIC ${GTK3_INCLUDE_DIRS})
+    endif()
+
+    if(LIBNOTIFY_FOUND)
+        target_link_libraries(yamy_qt_gui PUBLIC ${LIBNOTIFY_LIBRARIES})
+        target_include_directories(yamy_qt_gui PUBLIC ${LIBNOTIFY_INCLUDE_DIRS})
+    endif()
+
+    # Add AppIndicator libraries if available (from parent CMakeLists)
+    if(APPINDICATOR3_FOUND)
+        target_link_libraries(yamy_qt_gui PUBLIC ${APPINDICATOR3_LIBRARIES})
+        target_include_directories(yamy_qt_gui PUBLIC ${APPINDICATOR3_INCLUDE_DIRS})
+    endif()
 endif()
 
 # Optionally link Qt Multimedia if available

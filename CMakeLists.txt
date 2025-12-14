@@ -504,6 +504,15 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND)
             message(STATUS "Qt5 GUI components found - building with GUI support")
 
+            # Find libappindicator3 for native system tray (avoids Qt/DBus crashes)
+            pkg_check_modules(APPINDICATOR3 appindicator3-0.1)
+            if(APPINDICATOR3_FOUND)
+                message(STATUS "libappindicator3 found - native system tray enabled")
+                add_compile_definitions(HAVE_APPINDICATOR3)
+            else()
+                message(WARNING "libappindicator3-dev not found - system tray will be disabled. Install with: sudo apt install libappindicator3-dev")
+            endif()
+
             # Remove Qt-dependent sources from STUB_SOURCES - they're already compiled in yamy_qt_gui
             # This prevents duplicate MOC compilation and linker errors
             list(REMOVE_ITEM STUB_SOURCES
@@ -518,9 +527,9 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
             list(APPEND STUB_SOURCES src/app/main_qt.cpp src/app/engine_adapter.cpp)
 
             add_executable(yamy ${STUB_SOURCES})
-            target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS})
+            target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS} ${APPINDICATOR3_INCLUDE_DIRS})
             target_link_libraries(yamy PRIVATE
-                pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
+                pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES} ${APPINDICATOR3_LIBRARIES}
                 Qt5::Core
                 Qt5::Network
                 yamy_qt_gui

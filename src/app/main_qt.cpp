@@ -22,6 +22,9 @@
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
 #include "ui/qt/tray_icon_qt.h"
+#ifdef HAVE_APPINDICATOR3
+#include "ui/qt/system_tray_appindicator.h"
+#endif
 #include "ui/qt/crash_report_dialog.h"
 #include "core/settings/session_manager.h"
 #include "core/settings/config_manager.h"
@@ -311,20 +314,23 @@ int main(int argc, char* argv[])
     // Restore session state (unless --no-restore is specified)
     bool sessionRestored = restoreSessionState(engine, cmdOptions);
 
-    // DISABLED: TrayIcon causes Qt/DBus crashes - testing without it
-    // TrayIconQt trayIcon(realEngine);
-    // trayIcon.show();
+    // Create system tray icon using libappindicator (native DBus, no Qt/DBus crashes)
+#ifdef HAVE_APPINDICATOR3
+    SystemTrayAppIndicator trayIcon(realEngine);
+    trayIcon.show();
 
-    // Connect EngineAdapter notifications to TrayIconQt
-    // DISABLED: No tray icon for now
-    // engine->setNotificationCallback(
-    //     [](yamy::MessageType type, const std::string& data) {
-    //         // Convert std::string to QString for Qt
-    //         QString qdata = QString::fromStdString(data);
-    //         // Forward to tray icon's message handler
-    //         trayIcon.handleEngineMessage(type, qdata);
-    //     }
-    // );
+    // Connect EngineAdapter notifications to SystemTrayAppIndicator
+    engine->setNotificationCallback(
+        [&trayIcon](yamy::MessageType type, const std::string& data) {
+            QString qdata = QString::fromStdString(data);
+            trayIcon.handleEngineMessage(type, qdata);
+        }
+    );
+#else
+    // Fallback: No system tray if libappindicator is not available
+    std::cout << "WARNING: System tray disabled (libappindicator3 not available)" << std::endl;
+    std::cout << "Install libappindicator3-dev to enable system tray support" << std::endl;
+#endif
 
     // Initialize plugin system
     std::ofstream(debugLogPath.toStdString(), std::ios::app) << "MAIN: Initializing plugin system" << std::endl;
