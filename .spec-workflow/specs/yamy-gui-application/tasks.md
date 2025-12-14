@@ -250,7 +250,7 @@
   - _Requirements: 1_
   - _Prompt: **Role:** Linux Desktop Integration Specialist | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create desktop entry file at resources/yamy-gui.desktop following freedesktop.org spec and requirement 1. Include all required metadata. | **Restrictions:** Follow spec exactly, use standard categories, validate with desktop-file-validate | **_Leverage:** Freedesktop.org desktop entry spec | **_Requirements:** 1 | **Success:** Desktop file validates, yamy-gui appears in launcher, launches correctly | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 7.2. Add desktop file installation to CMake
+- [x] 7.2. Add desktop file installation to CMake
   - File: `CMakeLists.txt`
   - Add install rules for desktop file and icon
   - Install to correct system locations

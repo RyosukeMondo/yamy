@@ -2261,8 +2261,21 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         COMPONENT desktop
     )
 
+    # Install GUI desktop icon (reuses enabled icon asset)
+    install(FILES src/resources/icons/yamy_enabled.png
+        DESTINATION share/icons/hicolor/48x48/apps
+        RENAME yamy-gui.png
+        COMPONENT desktop
+    )
+
     # Install desktop entry
     install(FILES packaging/yamy.desktop
+        DESTINATION share/applications
+        COMPONENT desktop
+    )
+
+    # Install GUI desktop entry
+    install(FILES resources/yamy-gui.desktop
         DESTINATION share/applications
         COMPONENT desktop
     )
