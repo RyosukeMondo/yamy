@@ -342,7 +342,7 @@
   - _Requirements: 9_
   - _Prompt: **Role:** DevOps Engineer with CI/CD expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Add code metrics check to CI pipeline following requirement 9. Run cmake --build --target check-metrics, fail build on violations, report violations clearly in logs. | **Restrictions:** Must run after build succeeds, must report all violations (not just first), must fail PR on violations, must be clear in logs | **_Leverage:** CI YAML syntax, CMake build targets, lizard output parsing | **_Requirements:** 9 | **Success:** CI runs metrics check, violations fail the build, violations reported clearly, blocks PR merges | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 7.4. Refactor violations in existing code
+- [x] 7.4. Refactor violations in existing code
   - Identify files/functions exceeding limits
   - Refactor to meet metrics (split files/functions)
   - Preserve behavior (no functional changes)
