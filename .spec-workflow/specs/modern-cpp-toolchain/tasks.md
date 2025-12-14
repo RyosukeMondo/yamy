@@ -197,7 +197,7 @@
   - _Requirements: 5_
   - _Prompt: **Role:** Build Engineer with C++ optimization expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Configure GSL contract behavior for debug/release builds following requirement 5. Set GSL_THROW_ON_CONTRACT_VIOLATION in debug, GSL_UNENFORCED_ON_CONTRACT_VIOLATION in release. Verify zero overhead in release. | **Restrictions:** Must be conditional on CMAKE_BUILD_TYPE, must apply to all targets using GSL, verify no runtime overhead in release | **_Leverage:** target_compile_definitions, CMAKE_BUILD_TYPE variable, benchmarks to verify zero cost | **_Requirements:** 5 | **Success:** Debug builds trap on contract violations, release builds have zero overhead, configuration verified in both modes | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 4.5. Document contract usage guidelines
+- [x] 4.5. Document contract usage guidelines
   - File: `docs/CONTRACTS_GUIDE.md` (new)
   - Explain when to use Expects vs Ensures vs assert
   - Provide examples for common patterns
