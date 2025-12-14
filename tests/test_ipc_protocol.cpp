@@ -6,11 +6,14 @@
 #include <gtest/gtest.h>
 #include <QCoreApplication>
 #include <QTest>
+#include <algorithm>
+#include <functional>
 #include <cstring>
 #include <string>
 #include <vector>
 
 #include "core/ipc_messages.h"
+#include "core/platform/ipc_defs.h"
 #include "core/platform/linux/ipc_channel_qt.h"
 
 using yamy::ipc::InvestigateWindowRequest;
@@ -18,6 +21,12 @@ using yamy::ipc::KeyEventNotification;
 using yamy::ipc::Message;
 using yamy::ipc::MessageType;
 using yamy::platform::IPCChannelQt;
+using GuiMessageType = yamy::MessageType;
+using yamy::CmdReloadConfigRequest;
+using yamy::CmdSetEnabledRequest;
+using yamy::CmdSwitchConfigRequest;
+using yamy::RspConfigListPayload;
+using yamy::RspStatusPayload;
 
 class IPCProtocolTest : public ::testing::Test {
 protected:
@@ -57,6 +66,25 @@ protected:
 
 QCoreApplication* IPCProtocolTest::app = nullptr;
 
+namespace {
+yamy::ipc::MessageType toWireType(GuiMessageType type) {
+    return static_cast<yamy::ipc::MessageType>(static_cast<uint32_t>(type));
+}
+
+template <size_t N>
+std::string toString(const std::array<char, N>& buffer) {
+    auto end = std::find(buffer.begin(), buffer.end(), '\0');
+    return std::string(buffer.begin(), end);
+}
+
+template <size_t N>
+void copyString(const std::string& value, std::array<char, N>& buffer) {
+    std::fill(buffer.begin(), buffer.end(), '\0');
+    const auto copyLen = std::min(value.size(), buffer.size() - 1);
+    std::copy_n(value.c_str(), copyLen, buffer.data());
+}
+} // namespace
+
 // Ensure numeric compatibility to guard against accidental enum changes
 TEST_F(IPCProtocolTest, MessageIdsAreStable) {
     EXPECT_EQ(static_cast<uint32_t>(MessageType::CmdInvestigateWindow), 0x1001u);
@@ -79,6 +107,15 @@ TEST_F(IPCProtocolTest, MessageIdsAreStable) {
     EXPECT_EQ(static_cast<uint32_t>(MessageType::RspConfig), 0x2103u);
     EXPECT_EQ(static_cast<uint32_t>(MessageType::RspKeymaps), 0x2104u);
     EXPECT_EQ(static_cast<uint32_t>(MessageType::RspMetrics), 0x2105u);
+}
+
+TEST_F(IPCProtocolTest, GuiMessageIdsAreStable) {
+    EXPECT_EQ(static_cast<uint32_t>(GuiMessageType::CmdGetStatus), 0x5001u);
+    EXPECT_EQ(static_cast<uint32_t>(GuiMessageType::CmdSetEnabled), 0x5002u);
+    EXPECT_EQ(static_cast<uint32_t>(GuiMessageType::CmdSwitchConfig), 0x5003u);
+    EXPECT_EQ(static_cast<uint32_t>(GuiMessageType::CmdReloadConfig), 0x5004u);
+    EXPECT_EQ(static_cast<uint32_t>(GuiMessageType::RspStatus), 0x5101u);
+    EXPECT_EQ(static_cast<uint32_t>(GuiMessageType::RspConfigList), 0x5102u);
 }
 
 TEST_F(IPCProtocolTest, ControlCommandRoundTripsPreservePayload) {
@@ -251,6 +288,132 @@ TEST_F(IPCProtocolTest, EmptyCommandHasZeroLengthPayload) {
 
     EXPECT_TRUE(received);
     EXPECT_EQ(0u, receivedSize);
+}
+
+TEST_F(IPCProtocolTest, GuiCommandStructRoundTripsPreservePayloads) {
+    CmdSetEnabledRequest enableRequest{};
+    enableRequest.enabled = true;
+
+    CmdSwitchConfigRequest switchRequest{};
+    copyString("gui-config.mayu", switchRequest.configName);
+
+    CmdReloadConfigRequest reloadRequest{};
+    copyString("reload.mayu", reloadRequest.configName);
+
+    struct CommandCase {
+        GuiMessageType type;
+        const void* data;
+        size_t size;
+        std::function<void(const Message&)> validate;
+    };
+
+    std::vector<CommandCase> cases = {
+        {GuiMessageType::CmdSetEnabled,
+         &enableRequest,
+         sizeof(enableRequest),
+         [&](const Message& msg) {
+             ASSERT_EQ(sizeof(CmdSetEnabledRequest), msg.size);
+             auto* payload = static_cast<const CmdSetEnabledRequest*>(msg.data);
+             EXPECT_TRUE(payload->enabled);
+         }},
+        {GuiMessageType::CmdSwitchConfig,
+         &switchRequest,
+         sizeof(switchRequest),
+         [&](const Message& msg) {
+             ASSERT_EQ(sizeof(CmdSwitchConfigRequest), msg.size);
+             auto* payload = static_cast<const CmdSwitchConfigRequest*>(msg.data);
+             EXPECT_EQ("gui-config.mayu", toString(payload->configName));
+         }},
+        {GuiMessageType::CmdReloadConfig,
+         &reloadRequest,
+         sizeof(reloadRequest),
+         [&](const Message& msg) {
+             ASSERT_EQ(sizeof(CmdReloadConfigRequest), msg.size);
+             auto* payload = static_cast<const CmdReloadConfigRequest*>(msg.data);
+             EXPECT_EQ("reload.mayu", toString(payload->configName));
+         }},
+    };
+
+    for (const auto& testCase : cases) {
+        bool received = false;
+
+        auto conn = QObject::connect(
+            server, &IPCChannelQt::messageReceived,
+            [&](const Message& msg) {
+                received = true;
+                EXPECT_EQ(toWireType(testCase.type), msg.type);
+                testCase.validate(msg);
+            });
+
+        Message msg{toWireType(testCase.type), testCase.data, testCase.size};
+        client->send(msg);
+        QTest::qWait(50);
+
+        QObject::disconnect(conn);
+        EXPECT_TRUE(received);
+    }
+}
+
+TEST_F(IPCProtocolTest, GuiStatusResponseRoundTrip) {
+    RspStatusPayload status{};
+    status.engineRunning = true;
+    status.enabled = false;
+    copyString("active.mayu", status.activeConfig);
+    copyString("last-error", status.lastError);
+
+    bool received = false;
+    RspStatusPayload receivedPayload{};
+
+    auto conn = QObject::connect(
+        client, &IPCChannelQt::messageReceived,
+        [&](const Message& msg) {
+            received = true;
+            ASSERT_EQ(sizeof(RspStatusPayload), msg.size);
+            auto* payload = static_cast<const RspStatusPayload*>(msg.data);
+            receivedPayload = *payload;
+        });
+
+    Message msg{toWireType(GuiMessageType::RspStatus), &status, sizeof(status)};
+    server->send(msg);
+    QTest::qWait(50);
+
+    QObject::disconnect(conn);
+
+    EXPECT_TRUE(received);
+    EXPECT_TRUE(receivedPayload.engineRunning);
+    EXPECT_FALSE(receivedPayload.enabled);
+    EXPECT_EQ("active.mayu", toString(receivedPayload.activeConfig));
+    EXPECT_EQ("last-error", toString(receivedPayload.lastError));
+}
+
+TEST_F(IPCProtocolTest, GuiConfigListResponseRoundTrip) {
+    RspConfigListPayload configList{};
+    configList.count = 2;
+    copyString("first.mayu", configList.configs[0]);
+    copyString("second.mayu", configList.configs[1]);
+
+    bool received = false;
+    RspConfigListPayload receivedPayload{};
+
+    auto conn = QObject::connect(
+        client, &IPCChannelQt::messageReceived,
+        [&](const Message& msg) {
+            received = true;
+            ASSERT_EQ(sizeof(RspConfigListPayload), msg.size);
+            auto* payload = static_cast<const RspConfigListPayload*>(msg.data);
+            receivedPayload = *payload;
+        });
+
+    Message msg{toWireType(GuiMessageType::RspConfigList), &configList, sizeof(configList)};
+    server->send(msg);
+    QTest::qWait(50);
+
+    QObject::disconnect(conn);
+
+    EXPECT_TRUE(received);
+    EXPECT_EQ(2u, receivedPayload.count);
+    EXPECT_EQ("first.mayu", toString(receivedPayload.configs[0]));
+    EXPECT_EQ("second.mayu", toString(receivedPayload.configs[1]));
 }
 
 int main(int argc, char** argv) {

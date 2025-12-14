@@ -54,7 +54,7 @@
   - _Requirements: 10_
   - _Prompt: **Role:** IPC Protocol Designer specializing in message-based communication | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Extend the existing IPC message protocol in src/core/platform/ipc_defs.h to add GUI-specific command and response types following requirement 10. Define CmdGetStatus, CmdSetEnabled, CmdSwitchConfig, CmdReloadConfig commands and RspStatus, RspConfigList responses with proper data structures for serialization. | **Restrictions:** Must maintain backward compatibility with existing IPC protocol, do not modify existing message types, follow established naming conventions for message types | **_Leverage:** Examine existing message definitions in src/core/platform/ipc_defs.h for patterns | **_Requirements:** 10 | **Success:** New message types compile without errors, data structures support all required GUI operations, protocol documentation is clear | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (classes, integrations), then mark task as complete [x]
 
-- [ ] 1.2. Validate IPC protocol extensions with test suite
+- [x] 1.2. Validate IPC protocol extensions with test suite
   - File: `tests/test_ipc_protocol.cpp` (update from Phase 0)
   - Add tests for new message types from task 1.1
   - Verify serialization/deserialization works correctly

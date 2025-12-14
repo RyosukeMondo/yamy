@@ -5,6 +5,7 @@
 // Responses can be customized via command-line overrides or a JSON fixture.
 
 #include "core/ipc_messages.h"
+#include "core/platform/ipc_defs.h"
 #include "core/platform/linux/ipc_channel_qt.h"
 
 #include <QCommandLineParser>
@@ -14,16 +15,46 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include <algorithm>
 #include <iostream>
 #include <unistd.h>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace {
 
 using yamy::ipc::MessageType;
+using GuiMessageType = yamy::MessageType;
+
+constexpr MessageType kGuiCmdGetStatus =
+    static_cast<MessageType>(static_cast<uint32_t>(GuiMessageType::CmdGetStatus));
+constexpr MessageType kGuiCmdSetEnabled =
+    static_cast<MessageType>(static_cast<uint32_t>(GuiMessageType::CmdSetEnabled));
+constexpr MessageType kGuiCmdSwitchConfig =
+    static_cast<MessageType>(static_cast<uint32_t>(GuiMessageType::CmdSwitchConfig));
+constexpr MessageType kGuiCmdReloadConfig =
+    static_cast<MessageType>(static_cast<uint32_t>(GuiMessageType::CmdReloadConfig));
+
+constexpr MessageType kGuiRspStatus =
+    static_cast<MessageType>(static_cast<uint32_t>(GuiMessageType::RspStatus));
+constexpr MessageType kGuiRspConfigList =
+    static_cast<MessageType>(static_cast<uint32_t>(GuiMessageType::RspConfigList));
+
+template <size_t N>
+std::string toString(const std::array<char, N>& buffer) {
+    auto end = std::find(buffer.begin(), buffer.end(), '\0');
+    return std::string(buffer.begin(), end);
+}
+
+template <size_t N>
+void copyString(const std::string& value, std::array<char, N>& buffer) {
+    std::fill(buffer.begin(), buffer.end(), '\0');
+    const auto copyLen = std::min(value.size(), buffer.size() - 1);
+    std::copy_n(value.c_str(), copyLen, buffer.data());
+}
 
 struct ResponseConfig {
     std::string statusJson =
@@ -36,6 +67,11 @@ struct ResponseConfig {
     std::string okMessage = "OK";
     std::string errorMessage = "Mock server error";
     std::unordered_set<MessageType> forcedErrors;
+    bool guiEngineRunning = true;
+    bool guiEnabled = true;
+    std::string guiActiveConfig = "mock.mayu";
+    std::vector<std::string> guiConfigs{"mock.mayu", "layered.mayu"};
+    std::string guiLastError{};
 };
 
 std::optional<MessageType> parseCommandName(const QString& name) {
@@ -44,6 +80,10 @@ std::optional<MessageType> parseCommandName(const QString& name) {
         {"CmdStart", MessageType::CmdStart},         {"CmdGetStatus", MessageType::CmdGetStatus},
         {"CmdGetConfig", MessageType::CmdGetConfig}, {"CmdGetKeymaps", MessageType::CmdGetKeymaps},
         {"CmdGetMetrics", MessageType::CmdGetMetrics},
+        {"CmdSetEnabled", kGuiCmdSetEnabled},
+        {"CmdSwitchConfig", kGuiCmdSwitchConfig},
+        {"CmdReloadConfig", kGuiCmdReloadConfig},
+        {"CmdGetStatusGui", kGuiCmdGetStatus},
     };
 
     auto it = kMap.find(name.toStdString());
@@ -62,6 +102,12 @@ QString commandName(MessageType type) {
         case MessageType::CmdGetConfig: return "CmdGetConfig";
         case MessageType::CmdGetKeymaps: return "CmdGetKeymaps";
         case MessageType::CmdGetMetrics: return "CmdGetMetrics";
+        case kGuiCmdGetStatus: return "CmdGetStatusGui";
+        case kGuiCmdSetEnabled: return "CmdSetEnabled";
+        case kGuiCmdSwitchConfig: return "CmdSwitchConfig";
+        case kGuiCmdReloadConfig: return "CmdReloadConfig";
+        case kGuiRspStatus: return "RspStatus";
+        case kGuiRspConfigList: return "RspConfigList";
         default: return "Unknown";
     }
 }
@@ -153,6 +199,38 @@ private slots:
             case MessageType::CmdGetMetrics:
                 send(MessageType::RspMetrics, m_config.metricsJson);
                 break;
+            case kGuiCmdGetStatus: {
+                sendGuiStatus();
+                sendGuiConfigList();
+                break;
+            }
+            case kGuiCmdSetEnabled: {
+                if (message.size == sizeof(yamy::CmdSetEnabledRequest)) {
+                    auto* request = static_cast<const yamy::CmdSetEnabledRequest*>(message.data);
+                    m_config.guiEnabled = request->enabled;
+                }
+                sendGuiStatus();
+                sendGuiConfigList();
+                break;
+            }
+            case kGuiCmdSwitchConfig: {
+                if (message.size == sizeof(yamy::CmdSwitchConfigRequest)) {
+                    auto* request = static_cast<const yamy::CmdSwitchConfigRequest*>(message.data);
+                    m_config.guiActiveConfig = toString(request->configName);
+                }
+                sendGuiStatus();
+                sendGuiConfigList();
+                break;
+            }
+            case kGuiCmdReloadConfig: {
+                if (message.size == sizeof(yamy::CmdReloadConfigRequest)) {
+                    auto* request = static_cast<const yamy::CmdReloadConfigRequest*>(message.data);
+                    m_config.guiActiveConfig = toString(request->configName);
+                }
+                sendGuiStatus();
+                sendGuiConfigList();
+                break;
+            }
             default:
                 send(MessageType::RspError, "Unsupported command");
                 break;
@@ -160,6 +238,28 @@ private slots:
     }
 
 private:
+    void sendGuiStatus() {
+        yamy::RspStatusPayload status{};
+        status.engineRunning = m_config.guiEngineRunning;
+        status.enabled = m_config.guiEnabled;
+        copyString(m_config.guiActiveConfig, status.activeConfig);
+        copyString(m_config.guiLastError, status.lastError);
+
+        yamy::ipc::Message response{kGuiRspStatus, &status, sizeof(status)};
+        m_channel.send(response);
+    }
+
+    void sendGuiConfigList() {
+        yamy::RspConfigListPayload configs{};
+        configs.count = static_cast<uint32_t>(std::min(m_config.guiConfigs.size(),
+                                                       configs.configs.size()));
+        for (size_t i = 0; i < configs.count; ++i) {
+            copyString(m_config.guiConfigs[i], configs.configs[i]);
+        }
+        yamy::ipc::Message response{kGuiRspConfigList, &configs, sizeof(configs)};
+        m_channel.send(response);
+    }
+
     void send(MessageType type, const std::string& data) {
         yamy::ipc::Message response{type, data.data(), data.size()};
         m_channel.send(response);
