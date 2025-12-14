@@ -313,7 +313,7 @@
 
 ## Phase 7: Code Metrics Enforcement
 
-- [ ] 7.1. Install and configure lizard
+- [x] 7.1. Install and configure lizard
   - Install lizard on development machines
   - Create CMake custom target for metrics check
   - Configure limits: 500 lines/file, 50 lines/function, CCN ≤15

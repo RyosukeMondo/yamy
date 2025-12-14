@@ -2676,6 +2676,31 @@ if(WIN32)
 endif()
 
 # -----------------------------------------------------------------------------
+# Code Metrics Check (Lizard)
+# -----------------------------------------------------------------------------
+find_program(LIZARD_PROGRAM lizard)
+if(LIZARD_PROGRAM)
+    message(STATUS "Found lizard: ${LIZARD_PROGRAM}")
+    add_custom_target(check-metrics
+        COMMAND ${LIZARD_PROGRAM}
+            --length 500        # Max lines per file
+            --arguments 50      # Max lines per function
+            --CCN 15            # Max cyclomatic complexity
+            --exclude "*/build/*"
+            --exclude "*/third_party/*"
+            --exclude "*/tests/*"
+            --ignore_warnings 1000  # Allow warnings for now (violations will be fixed in task 7.4)
+            ${CMAKE_SOURCE_DIR}/src
+        COMMENT "Running code metrics check with lizard (max 500 lines/file, 50 lines/function, CCN ≤15)"
+        VERBATIM
+    )
+    message(STATUS "Added custom target 'check-metrics' - run 'make check-metrics' or 'cmake --build . --target check-metrics'")
+else()
+    message(STATUS "lizard not found; code metrics check will not be available")
+    message(STATUS "Install lizard with: pip install lizard (or pipx install lizard)")
+endif()
+
+# -----------------------------------------------------------------------------
 # CPack Configuration for Package Generation
 # -----------------------------------------------------------------------------
 set(CPACK_PACKAGE_NAME "yamy")
