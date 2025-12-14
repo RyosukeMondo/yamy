@@ -301,7 +301,7 @@
   - _Requirements: 8_
   - _Prompt: **Role:** C++ Developer with documentation expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Add comprehensive Doxygen comments to all core headers following requirement 8. File comments, class comments, method documentation with @param/@return/@pre/@post, usage examples. Focus on public APIs. | **Restrictions:** Only document public APIs (not private methods), be concise but complete, include examples for complex APIs, follow Doxygen best practices | **_Leverage:** Doxygen documentation, existing header comments, C++ documentation standards | **_Requirements:** 8 | **Success:** All public APIs documented, examples compile, Doxygen generates clean documentation, AI agents understand APIs from headers alone | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 6.5. Remove redundant implementation comments
+- [x] 6.5. Remove redundant implementation comments
   - Files: All `.cpp` files in `src/core/`
   - Remove comments that just repeat code
   - Keep only "why" comments (not "what")
