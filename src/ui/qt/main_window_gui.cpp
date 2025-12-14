@@ -14,11 +14,21 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include "config_manager_dialog.h"
+#include "dialog_about_qt.h"
+#include "dialog_examples_qt.h"
+#include "dialog_investigate_qt.h"
+#include "dialog_log_qt.h"
+#include "dialog_settings_qt.h"
+#include "dialog_shortcuts_qt.h"
 #include "ipc_client_gui.h"
+#include "notification_history.h"
+#include "preferences_dialog.h"
 
-MainWindowGUI::MainWindowGUI(const QString& serverName, QWidget* parent)
+MainWindowGUI::MainWindowGUI(const QString& serverName, Engine* engine, QWidget* parent)
     : QMainWindow(parent),
       m_ipcClient(std::make_unique<IPCClientGUI>(this)),
+      m_engine(engine),
       m_connectionLabel(new QLabel(this)),
       m_statusLabel(new QLabel(this)),
       m_configLabel(new QLabel(this)),
@@ -280,9 +290,9 @@ void MainWindowGUI::setIndicatorState(QLabel* indicator, const QColor& color, co
 }
 
 void MainWindowGUI::createMenuBarStructure() {
-    auto* menu = new QMenuBar(this);
+    auto* menuBar = new QMenuBar(this);
 
-    auto* fileMenu = menu->addMenu(tr("&File"));
+    auto* fileMenu = menuBar->addMenu(tr("&File"));
     auto* reconnectAction = fileMenu->addAction(tr("Reconnect"));
     reconnectAction->setShortcut(QKeySequence::Refresh);
     connect(reconnectAction, &QAction::triggered, this, [this]() {
@@ -291,19 +301,142 @@ void MainWindowGUI::createMenuBarStructure() {
             m_ipcClient->connectToDaemon();
         }
     });
+    fileMenu->addSeparator();
     auto* quitAction = fileMenu->addAction(tr("Quit"));
     connect(quitAction, &QAction::triggered, this, &QWidget::close);
 
-    auto* viewMenu = menu->addMenu(tr("&View"));
-    viewMenu->addAction(tr("Status Panel"))->setEnabled(false);
-    viewMenu->addAction(tr("Config Panel"))->setEnabled(false);
+    auto* toolsMenu = menuBar->addMenu(tr("&Tools"));
+    auto* settingsAction = toolsMenu->addAction(tr("Settings..."));
+    connect(settingsAction, &QAction::triggered, this, &MainWindowGUI::showSettingsDialog);
 
-    auto* toolsMenu = menu->addMenu(tr("&Tools"));
-    toolsMenu->addAction(tr("Logs"))->setEnabled(false);
-    toolsMenu->addAction(tr("Investigate"))->setEnabled(false);
+    auto* preferencesAction = toolsMenu->addAction(tr("Preferences..."));
+    preferencesAction->setShortcut(QKeySequence(tr("Ctrl+,")));
+    connect(preferencesAction, &QAction::triggered, this, &MainWindowGUI::showPreferencesDialog);
 
-    auto* helpMenu = menu->addMenu(tr("&Help"));
-    helpMenu->addAction(tr("About"))->setEnabled(false);
+    toolsMenu->addSeparator();
+    auto* logAction = toolsMenu->addAction(tr("Logs..."));
+    connect(logAction, &QAction::triggered, this, &MainWindowGUI::showLogDialog);
 
-    setMenuBar(menu);
+    auto* investigateAction = toolsMenu->addAction(tr("Investigate..."));
+    connect(investigateAction, &QAction::triggered, this, &MainWindowGUI::showInvestigateDialog);
+
+    auto* configManagerAction = toolsMenu->addAction(tr("Manage Configurations..."));
+    connect(configManagerAction, &QAction::triggered, this, &MainWindowGUI::showConfigManagerDialog);
+
+    auto* notificationHistoryAction = toolsMenu->addAction(tr("Notification History..."));
+    connect(notificationHistoryAction, &QAction::triggered, this, &MainWindowGUI::showNotificationHistoryDialog);
+
+    auto* helpMenu = menuBar->addMenu(tr("&Help"));
+    auto* shortcutsAction = helpMenu->addAction(tr("Keyboard Shortcuts..."));
+    connect(shortcutsAction, &QAction::triggered, this, &MainWindowGUI::showKeyboardShortcutsDialog);
+
+    auto* examplesAction = helpMenu->addAction(tr("Configuration Examples..."));
+    connect(examplesAction, &QAction::triggered, this, &MainWindowGUI::showExamplesDialog);
+
+    helpMenu->addSeparator();
+    auto* aboutAction = helpMenu->addAction(tr("About YAMY..."));
+    connect(aboutAction, &QAction::triggered, this, &MainWindowGUI::showAboutDialog);
+
+    setMenuBar(menuBar);
+}
+
+void MainWindowGUI::showLogDialog() {
+    if (!m_logDialog) {
+        m_logDialog = new DialogLogQt(this);
+        m_logDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_logDialog, &QObject::destroyed, this, [this]() { m_logDialog = nullptr; });
+    }
+    m_logDialog->show();
+    m_logDialog->raise();
+    m_logDialog->activateWindow();
+}
+
+void MainWindowGUI::showInvestigateDialog() {
+    if (!m_investigateDialog) {
+        m_investigateDialog = new DialogInvestigateQt(m_engine, this);
+        m_investigateDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_investigateDialog, &QObject::destroyed, this, [this]() { m_investigateDialog = nullptr; });
+    } else if (m_engine) {
+        m_investigateDialog->setEngine(m_engine);
+    }
+    m_investigateDialog->show();
+    m_investigateDialog->raise();
+    m_investigateDialog->activateWindow();
+}
+
+void MainWindowGUI::showSettingsDialog() {
+    if (!m_settingsDialog) {
+        m_settingsDialog = new DialogSettingsQt(this);
+        m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_settingsDialog, &QObject::destroyed, this, [this]() { m_settingsDialog = nullptr; });
+    }
+    m_settingsDialog->show();
+    m_settingsDialog->raise();
+    m_settingsDialog->activateWindow();
+}
+
+void MainWindowGUI::showPreferencesDialog() {
+    if (!m_preferencesDialog) {
+        m_preferencesDialog = new PreferencesDialog(this);
+        m_preferencesDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_preferencesDialog, &QObject::destroyed, this, [this]() { m_preferencesDialog = nullptr; });
+    }
+    m_preferencesDialog->show();
+    m_preferencesDialog->raise();
+    m_preferencesDialog->activateWindow();
+}
+
+void MainWindowGUI::showAboutDialog() {
+    if (!m_aboutDialog) {
+        m_aboutDialog = new DialogAboutQt(this);
+        m_aboutDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_aboutDialog, &QObject::destroyed, this, [this]() { m_aboutDialog = nullptr; });
+    }
+    m_aboutDialog->show();
+    m_aboutDialog->raise();
+    m_aboutDialog->activateWindow();
+}
+
+void MainWindowGUI::showKeyboardShortcutsDialog() {
+    if (!m_shortcutsDialog) {
+        m_shortcutsDialog = new DialogShortcutsQt(this);
+        m_shortcutsDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_shortcutsDialog, &QObject::destroyed, this, [this]() { m_shortcutsDialog = nullptr; });
+    }
+    m_shortcutsDialog->show();
+    m_shortcutsDialog->raise();
+    m_shortcutsDialog->activateWindow();
+}
+
+void MainWindowGUI::showExamplesDialog() {
+    if (!m_examplesDialog) {
+        m_examplesDialog = new DialogExamplesQt(this);
+        m_examplesDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_examplesDialog, &QObject::destroyed, this, [this]() { m_examplesDialog = nullptr; });
+    }
+    m_examplesDialog->show();
+    m_examplesDialog->raise();
+    m_examplesDialog->activateWindow();
+}
+
+void MainWindowGUI::showConfigManagerDialog() {
+    if (!m_configManagerDialog) {
+        m_configManagerDialog = new ConfigManagerDialog(this);
+        m_configManagerDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_configManagerDialog, &QObject::destroyed, this, [this]() { m_configManagerDialog = nullptr; });
+    }
+    m_configManagerDialog->show();
+    m_configManagerDialog->raise();
+    m_configManagerDialog->activateWindow();
+}
+
+void MainWindowGUI::showNotificationHistoryDialog() {
+    if (!m_notificationHistoryDialog) {
+        m_notificationHistoryDialog = new yamy::ui::NotificationHistoryDialog(this);
+        m_notificationHistoryDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_notificationHistoryDialog, &QObject::destroyed, this, [this]() { m_notificationHistoryDialog = nullptr; });
+    }
+    m_notificationHistoryDialog->show();
+    m_notificationHistoryDialog->raise();
+    m_notificationHistoryDialog->activateWindow();
 }

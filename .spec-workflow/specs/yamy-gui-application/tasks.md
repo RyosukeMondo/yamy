@@ -173,7 +173,7 @@
   - _Requirements: 4, 5_
   - _Prompt: **Role:** Qt Developer with expertise in data binding and error handling | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Implement configuration management features in MainWindowGUI following requirements 4, 5. Query configs via IPC, handle switch/reload operations, show error dialogs on failure. | **Restrictions:** Query configs through IPC (not directly), disable controls during operations, provide clear error messages | **_Leverage:** IPCClientGUI for commands, QMessageBox for user feedback | **_Requirements:** 4, 5 | **Success:** Config selector shows all configs, switching works correctly, reload works, errors are handled gracefully | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions), then mark task as complete [x]
 
-- [ ] 4.3. Integrate existing dialogs into menu
+- [x] 4.3. Integrate existing dialogs into menu
   - File: `src/ui/qt/main_window_gui.cpp`
   - Add menu actions for all dialogs (Log, Investigate, Settings, etc.)
   - Implement slots to launch each dialog
