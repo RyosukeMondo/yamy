@@ -2085,6 +2085,45 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         add_test(NAME yamy_property_keymap_test COMMAND yamy_property_keymap_test)
 
+        # -----------------------------------------------------------------------------
+        # Target: yamy_property_modifier_test (Modifier State Property-Based Tests)
+        # Property-based tests using RapidCheck for modifier state tracking
+        # Part of task 5.2 in modern-cpp-toolchain spec
+        # -----------------------------------------------------------------------------
+        set(PROPERTY_MODIFIER_SOURCES
+            tests/property_modifier.cpp
+            tests/property_keymap_main.cpp
+        )
+
+        add_executable(yamy_property_modifier_test
+            ${PROPERTY_MODIFIER_SOURCES}
+            src/core/input/modifier_state.cpp
+            src/core/input/keyboard.cpp
+            src/utils/stringtool.cpp
+        )
+
+        target_include_directories(yamy_property_modifier_test PRIVATE
+            src
+            src/core
+            src/core/input
+            src/core/functions
+            src/core/engine
+            src/platform/linux
+            src/utils
+        )
+
+        target_compile_definitions(yamy_property_modifier_test PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(yamy_property_modifier_test PRIVATE
+            yamy_test_dependencies
+            yamy_dependencies
+            pthread
+        )
+
+        add_test(NAME yamy_property_modifier_test COMMAND yamy_property_modifier_test)
+
         else()
             message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/not found)")
         endif() # Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6Gui_FOUND

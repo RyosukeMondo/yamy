@@ -74,7 +74,7 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_isPerfThreadRunning(false) {
     // Preconditions
     Expects(i_windowSystem != nullptr);
-    Expects(i_configStore != nullptr);
+    // Note: i_configStore can be nullptr - only needed for config switching (Engine::switchConfiguration)
     Expects(i_inputInjector != nullptr);
     Expects(i_inputHook != nullptr);
     Expects(i_inputDriver != nullptr);
@@ -84,6 +84,8 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
     m_windowSystem->changeMessageFilter(yamy::platform::MSG_COPYDATA,
                                        yamy::platform::MSGFLT_ADD);
     
+    // IPC channel creation - but DON'T call listen() yet
+    // listen() must be called AFTER Qt event loop starts to avoid QSocketNotifier threading issues
     m_ipcChannel = yamy::platform::createIPCChannel("yamy-engine");
     if (m_ipcChannel) {
 #if defined(QT_CORE_LIB)
@@ -93,7 +95,7 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
                              this->handleIpcMessage(msg);
                          });
 #endif
-        m_ipcChannel->listen();
+        // NOTE: listen() will be called later via initializeIPC() after event loop starts
     }
 
     for (size_t i = 0; i < NUMBER_OF(m_lastPressedKey); ++ i)
@@ -233,6 +235,15 @@ void Engine::start() {
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Engine started successfully!");
     setState(yamy::EngineState::Running);
     notifyGUI(yamy::MessageType::EngineStarted);
+}
+
+
+// Initialize IPC channel - must be called AFTER Qt event loop starts
+void Engine::initializeIPC() {
+    if (m_ipcChannel) {
+        m_ipcChannel->listen();
+        yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "IPC channel initialized and listening");
+    }
 }
 
 

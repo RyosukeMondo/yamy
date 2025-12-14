@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QTimer>
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>
@@ -334,6 +335,12 @@ int main(int argc, char* argv[]) {
     } else {
         std::cerr << "Warning: Failed to start IPC control server" << std::endl;
     }
+
+    // Initialize IPC channel AFTER event loop starts to avoid Qt threading issues
+    // QTimer::singleShot(0, ...) schedules execution on next event loop iteration
+    QTimer::singleShot(0, [realEngine]() {
+        realEngine->initializeIPC();
+    });
 
     int result = app.exec();
 

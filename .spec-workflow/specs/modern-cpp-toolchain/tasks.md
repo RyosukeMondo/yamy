@@ -219,7 +219,7 @@
   - _Requirements: 6_
   - _Prompt: **Role:** QA Engineer with property-based testing expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Write RapidCheck properties for keymap invariants following requirement 6. Define properties: 1) lookup(key) is idempotent, 2) define(key, action) is unique, 3) parent chain is acyclic. Integrate with Catch2, run 1000 iterations. | **Restrictions:** Properties must be mathematically sound, must use RC_ASSERT, must integrate with existing test suite, must run in reasonable time | **_Leverage:** rc::check, rc::gen::arbitrary, Catch2 TEST_CASE wrapper, Keymap class API | **_Requirements:** 6 | **Success:** 3 properties defined and passing, RapidCheck finds and shrinks bugs (if any), tests run in <30s | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions, tests), then mark task as complete [x]
 
-- [ ] 5.2. Write modifier tracking properties
+- [x] 5.2. Write modifier tracking properties
   - File: `tests/property_modifier.cpp`
   - Define 3 properties: all key-down have key-up, modifier state consistency, no stuck keys
   - Generate random input event sequences

@@ -413,6 +413,10 @@ public:
     /// resume keyboard handler thread and re-open device
     bool resume();
 
+    /// Initialize IPC channel (must be called AFTER Qt event loop starts)
+    /// This is separated from constructor to avoid QSocketNotifier threading issues
+    void initializeIPC();
+
     /// do some procedure before quit which must be done synchronously
     /// (i.e. not on WM_QUIT)
     bool prepairQuit();
