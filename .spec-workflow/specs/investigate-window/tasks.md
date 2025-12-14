@@ -604,7 +604,7 @@
     6. Mark complete
     ```
 
-- [ ] 2.4 Implement windowFromPoint for crosshair selection
+- [x] 2.4 Implement windowFromPoint for crosshair selection
   - Files:
     - src/platform/linux/window_system_linux_hierarchy.cpp (modify)
   - Description:
