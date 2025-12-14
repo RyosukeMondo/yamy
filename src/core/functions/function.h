@@ -1,7 +1,15 @@
 ﻿#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// keymap.h
+// function.h
 
+/**
+ * @file function.h
+ * @brief Core function/command interface for YAMY.
+ *
+ * Defines the FunctionData abstract base class that all YAMY commands
+ * and functions must implement. Also provides factory functions and
+ * utility types for the function system.
+ */
 
 #ifndef _FUNCTION_H
 #  define _FUNCTION_H
@@ -15,29 +23,80 @@ class SettingLoader;
 class Engine;
 class FunctionParam;
 
-///
+/**
+ * @brief Abstract base class for all YAMY functions/commands.
+ *
+ * This is the core interface that all commands must implement. Functions
+ * represent actions that can be bound to keys in the keymap configuration.
+ *
+ * Derived classes should use the Command<> template for boilerplate reduction.
+ *
+ * @see Command
+ * @see createFunctionData
+ */
 class FunctionData
 {
 public:
-    /// virtual destructor
+    /**
+     * @brief Virtual destructor.
+     */
     virtual ~FunctionData() = 0;
-    ///
+
+    /**
+     * @brief Load function arguments from configuration.
+     *
+     * @param i_sl SettingLoader for parsing configuration
+     */
     virtual void load(SettingLoader *i_sl) = 0;
-    ///
+
+    /**
+     * @brief Execute the function.
+     *
+     * @param i_engine Engine instance for accessing system state
+     * @param i_param Function parameters (key event context, etc.)
+     */
     virtual void exec(Engine *i_engine, FunctionParam *i_param) const = 0;
-    ///
+
+    /**
+     * @brief Get the function name.
+     *
+     * @return Function name as UTF-8 string
+     */
     virtual std::string getName() const = 0;
-    ///
+
+    /**
+     * @brief Serialize function to output stream.
+     *
+     * @param i_ost Output stream
+     * @return Reference to output stream (for chaining)
+     */
     virtual std::ostream &output(std::ostream &i_ost) const = 0;
-    ///
+
+    /**
+     * @brief Clone this function instance.
+     *
+     * @return Deep copy of this function
+     */
     virtual FunctionData *clone() const = 0;
 };
 
-/// stream output
+/**
+ * @brief Stream output operator for FunctionData.
+ *
+ * @param i_ost Output stream
+ * @param i_data Function to serialize
+ * @return Reference to output stream
+ */
 extern std::ostream &operator<<(std::ostream &i_ost, const FunctionData *i_data);
 
-
-// create function
+/**
+ * @brief Factory function for creating FunctionData instances by name.
+ *
+ * @param i_name Function name (e.g., "Default", "Keymap", "MouseMove")
+ * @return New FunctionData instance, or nullptr if name not found
+ *
+ * @note Caller is responsible for deleting the returned pointer
+ */
 extern FunctionData *createFunctionData(const std::string &i_name);
 
 ///
