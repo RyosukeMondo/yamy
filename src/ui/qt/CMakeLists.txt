@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # Find Qt5 packages
-find_package(Qt5 REQUIRED COMPONENTS
+find_package(Qt6 REQUIRED COMPONENTS
     Core
     Widgets
     Gui
@@ -10,7 +10,7 @@ find_package(Qt5 REQUIRED COMPONENTS
 )
 
 if(UNIX AND NOT WIN32)
-    find_package(Qt5 REQUIRED COMPONENTS X11Extras)
+    find_package(Qt6 REQUIRED COMPONENTS)
     # Find X11 for global hotkeys
     find_package(X11 REQUIRED)
 
@@ -138,15 +138,15 @@ add_library(yamy_qt_gui STATIC
 # Link Qt libraries and X11
 target_link_libraries(yamy_qt_gui PUBLIC
     yamy_core
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::Gui
-    Qt5::Network
+    Qt6::Core
+    Qt6::Widgets
+    Qt6::Gui
+    Qt6::Network
 )
 
 if(UNIX AND NOT WIN32)
     target_link_libraries(yamy_qt_gui PUBLIC
-        Qt5::X11Extras
+        Qt6::Gui
         ${X11_LIBRARIES}
         xcb
     )
@@ -172,7 +172,7 @@ endif()
 
 # Optionally link Qt Multimedia if available
 if(Qt5Multimedia_FOUND)
-    target_link_libraries(yamy_qt_gui PUBLIC Qt5::Multimedia)
+    target_link_libraries(yamy_qt_gui PUBLIC Qt6::Multimedia)
     target_compile_definitions(yamy_qt_gui PRIVATE QT_MULTIMEDIA_AVAILABLE)
 endif()
 

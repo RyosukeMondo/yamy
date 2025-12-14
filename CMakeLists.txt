@@ -270,7 +270,7 @@ if(WIN32)
     option(BUILD_QT_GUI "Build with Modern Qt GUI" ON)
 
     if(BUILD_QT_GUI)
-        find_package(Qt5 COMPONENTS Widgets Gui Core REQUIRED)
+        find_package(Qt6 COMPONENTS Widgets Gui Core REQUIRED)
         
         # Add Qt sources
         add_subdirectory(src/ui/qt)
@@ -309,7 +309,7 @@ if(WIN32)
     if(BUILD_QT_GUI)
         target_link_libraries(yamy_engine_new PRIVATE 
             yamy_hook wtsapi32 advapi32 comctl32 shell32 ole32 shlwapi comdlg32 gdi32
-            Qt5::Widgets Qt5::Gui Qt5::Core yamy_qt_gui
+            Qt6::Widgets Qt6::Gui Qt6::Core yamy_qt_gui
         )
         target_compile_definitions(yamy_engine_new PRIVATE BUILD_QT_GUI)
     else()
@@ -481,16 +481,16 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     )
 
     # Qt5 Core is required for all builds (config_watcher uses QObject)
-    find_package(Qt5 REQUIRED COMPONENTS Core)
-    message(STATUS "Qt5 Core found - version ${Qt5Core_VERSION}")
+    find_package(Qt6 REQUIRED COMPONENTS Core)
+    message(STATUS "Qt5 Core found - version ${Qt6Core_VERSION}")
 
     # Qt5 Network is required for IPC (QLocalSocket/QLocalServer)
-    find_package(Qt5 REQUIRED COMPONENTS Network)
-    message(STATUS "Qt5 Network found - version ${Qt5Network_VERSION}")
+    find_package(Qt6 REQUIRED COMPONENTS Network)
+    message(STATUS "Qt5 Network found - version ${Qt6Network_VERSION}")
 
     # Qt5 Test is required for test builds
-    find_package(Qt5 REQUIRED COMPONENTS Test)
-    message(STATUS "Qt5 Test found - version ${Qt5Test_VERSION}")
+    find_package(Qt6 REQUIRED COMPONENTS Test)
+    message(STATUS "Qt5 Test found - version ${Qt6Test_VERSION}")
 
     # Qt5 GUI for Linux (optional)
     option(BUILD_QT_GUI "Build Qt5 GUI for Linux" ON)
@@ -519,8 +519,8 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     )
     target_link_libraries(yamy_core PUBLIC
         pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
-        Qt5::Core
-        Qt5::Network
+        Qt6::Core
+        Qt6::Network
     )
 
     add_executable(yamy src/app/main.cpp)
@@ -528,9 +528,9 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
 
     if(BUILD_QT_GUI)
         # Find optional Qt5 GUI packages
-        find_package(Qt5 COMPONENTS Widgets Gui X11Extras Test)
+        find_package(Qt6 COMPONENTS Widgets Gui Test)
 
-        if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND)
+        if(Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6Gui_FOUND)
             message(STATUS "Qt5 GUI components found - building GUI executables")
 
             add_subdirectory(src/ui/qt)
@@ -540,10 +540,10 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
             )
             set_target_properties(yamy-gui PROPERTIES AUTOMOC ON)
             target_link_libraries(yamy-gui PRIVATE
-                Qt5::Widgets
-                Qt5::Gui
-                Qt5::Core
-                Qt5::Network
+                Qt6::Widgets
+                Qt6::Gui
+                Qt6::Core
+                Qt6::Network
                 yamy_core
                 yamy_qt_gui
             )
@@ -563,10 +563,10 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
                 src/core/platform/linux
             )
             target_link_libraries(yamy_gui_probe PRIVATE
-                Qt5::Widgets
-                Qt5::Gui
-                Qt5::Core
-                Qt5::Network
+                Qt6::Widgets
+                Qt6::Gui
+                Qt6::Core
+                Qt6::Network
             )
         else()
             message(WARNING "Qt5 GUI components not found - building headless version only")
@@ -787,14 +787,14 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             pthread
             ${X11_LIBRARIES}
             ${UDEV_LIBRARIES}
-            Qt5::Core
+            Qt6::Core
         )
 
         # Add test to CTest
         add_test(NAME yamy_linux_test COMMAND yamy_linux_test)
 
         # Qt5 GUI-dependent tests (only build if Qt5 GUI components are available)
-        if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND)
+        if(Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6Gui_FOUND)
             message(STATUS "Building Qt5 GUI-dependent tests")
 
         # -----------------------------------------------------------------------------
@@ -838,10 +838,10 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             pthread
             ${X11_LIBRARIES}
             yamy_qt_gui
-            Qt5::Core
-            Qt5::Widgets
-            Qt5::Gui
-            Qt5::X11Extras
+            Qt6::Core
+            Qt6::Widgets
+            Qt6::Gui
+            Qt6::Gui
         )
 
         add_test(NAME yamy_ui_test COMMAND yamy_ui_test)
@@ -889,12 +889,12 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         target_link_libraries(yamy_investigate_workflow_test PRIVATE
             pthread
             ${X11_LIBRARIES}
-            Qt5::Core
-            Qt5::Widgets
-            Qt5::Gui
-            Qt5::Network
-            Qt5::X11Extras
-            Qt5::Test
+            Qt6::Core
+            Qt6::Widgets
+            Qt6::Gui
+            Qt6::Network
+            Qt6::Gui
+            Qt6::Test
         )
 
         add_test(NAME yamy_investigate_workflow_test COMMAND yamy_investigate_workflow_test)
@@ -932,9 +932,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_log_test PRIVATE
             pthread
-            Qt5::Core
-            Qt5::Widgets
-            Qt5::Gui
+            Qt6::Core
+            Qt6::Widgets
+            Qt6::Gui
         )
 
         add_test(NAME yamy_log_test COMMAND yamy_log_test)
@@ -969,9 +969,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_notification_history_test PRIVATE
             pthread
-            Qt5::Core
-            Qt5::Widgets
-            Qt5::Gui
+            Qt6::Core
+            Qt6::Widgets
+            Qt6::Gui
         )
 
         add_test(NAME yamy_notification_history_test COMMAND yamy_notification_history_test)
@@ -1022,10 +1022,10 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_tray_test PRIVATE
             pthread
-            Qt5::Core
-            Qt5::Widgets
-            Qt5::Gui
-            Qt5::Test
+            Qt6::Core
+            Qt6::Widgets
+            Qt6::Gui
+            Qt6::Test
         )
 
         add_test(NAME yamy_tray_test COMMAND yamy_tray_test)
@@ -1060,9 +1060,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_ipc_channel_qt_test PRIVATE
             pthread
-            Qt5::Core
-            Qt5::Network
-            Qt5::Test
+            Qt6::Core
+            Qt6::Network
+            Qt6::Test
         )
 
         add_test(NAME yamy_ipc_channel_qt_test COMMAND yamy_ipc_channel_qt_test)
@@ -1095,8 +1095,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_mock_ipc_server PRIVATE
             pthread
-            Qt5::Core
-            Qt5::Network
+            Qt6::Core
+            Qt6::Network
         )
 
         # -----------------------------------------------------------------------------
@@ -1129,9 +1129,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_ipc_protocol_test PRIVATE
             pthread
-            Qt5::Core
-            Qt5::Network
-            Qt5::Test
+            Qt6::Core
+            Qt6::Network
+            Qt6::Test
         )
 
         add_test(NAME yamy_ipc_protocol_test COMMAND yamy_ipc_protocol_test)
@@ -1169,9 +1169,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_ipc_client_gui_test PRIVATE
             pthread
-            Qt5::Core
-            Qt5::Network
-            Qt5::Test
+            Qt6::Core
+            Qt6::Network
+            Qt6::Test
         )
 
         add_dependencies(yamy_ipc_client_gui_test yamy_mock_ipc_server)
@@ -1267,10 +1267,10 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_notification_prefs_test PRIVATE
             pthread
-            Qt5::Core
-            Qt5::Widgets
-            Qt5::Gui
-            Qt5::Test
+            Qt6::Core
+            Qt6::Widgets
+            Qt6::Gui
+            Qt6::Test
         )
 
         add_test(NAME yamy_notification_prefs_test COMMAND yamy_notification_prefs_test)
@@ -1311,9 +1311,9 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         target_link_libraries(yamy_investigate_performance_test PRIVATE
             pthread
             ${X11_LIBRARIES}
-            Qt5::Core
-            Qt5::Network
-            Qt5::Test
+            Qt6::Core
+            Qt6::Network
+            Qt6::Test
         )
 
         add_test(NAME yamy_investigate_performance_test COMMAND yamy_investigate_performance_test)
@@ -1346,8 +1346,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             target_link_libraries(yamy_plugin_test PRIVATE
                 pthread
                 dl
-                Qt5::Core
-                Qt5::Test
+                Qt6::Core
+                Qt6::Test
             )
 
             add_test(NAME yamy_plugin_test COMMAND yamy_plugin_test)
@@ -1515,7 +1515,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             pthread
             ${X11_LIBRARIES}
             ${XRANDR_LIBRARIES}
-            Qt5::Core
+            Qt6::Core
         )
 
         add_test(NAME yamy_keyremap_test COMMAND yamy_keyremap_test)
@@ -1877,8 +1877,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
 
         else()
-            message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/X11Extras not found)")
-        endif() # Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND
+            message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/not found)")
+        endif() # Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6Gui_FOUND
     endif() # BUILD_LINUX_TESTING
 
     # -----------------------------------------------------------------------------
@@ -2083,8 +2083,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             ${X11_LIBRARIES}
             ${XRANDR_LIBRARIES}
             ${UDEV_LIBRARIES}
-            Qt5::Core
-            Qt5::Test
+            Qt6::Core
+            Qt6::Test
         )
 
         # Register with CTest

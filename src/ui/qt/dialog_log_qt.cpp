@@ -13,7 +13,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTextCharFormat>
-#include <QTextCodec>
+// QTextCodec removed in Qt 6 - QTextStream uses UTF-8 by default
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextStream>
@@ -631,7 +631,8 @@ void DialogLogQt::onExport()
 
     // Use QTextStream with UTF-8 encoding
     QTextStream out(&file);
-    out.setCodec(QTextCodec::codecForName("UTF-8"));
+    // Qt 6: QTextStream uses UTF-8 by default, no need to set codec
+    out.setEncoding(QStringConverter::Utf8);
 
     int exportedCount = 0;
 

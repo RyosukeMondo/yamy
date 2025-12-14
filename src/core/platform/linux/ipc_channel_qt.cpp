@@ -50,7 +50,7 @@ void IPCChannelQt::connect(const std::string& name) {
         QObject::connect(m_clientSocket, &QLocalSocket::readyRead,
                         this, &IPCChannelQt::onReadyRead);
         QObject::connect(m_clientSocket,
-                        QOverload<QLocalSocket::LocalSocketError>::of(&QLocalSocket::error),
+                        &QLocalSocket::errorOccurred,
                         this, &IPCChannelQt::onError);
     }
 

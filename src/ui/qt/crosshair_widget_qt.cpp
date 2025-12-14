@@ -7,7 +7,8 @@
 #include <QScreen>
 #include <QApplication>
 #ifndef _WIN32
-#include <QX11Info>
+// Qt 6: QX11Info removed, use QNativeInterface
+#include <QGuiApplication>
 #endif
 
 #ifndef _WIN32
@@ -187,7 +188,8 @@ void CrosshairWidget::mouseMoveEvent(QMouseEvent* /*event*/)
 {
 #ifndef _WIN32
     // Simplified getWindowAtCursor logic that doesn't hide the overlay
-    Display* display = QX11Info::display();
+    // Qt 6: Get X11 display via QNativeInterface
+    Display* display = qGuiApp ? qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->display() : nullptr;
     yamy::platform::WindowHandle hwnd = nullptr;
     if (display) {
         Window root = DefaultRootWindow(display);
@@ -235,7 +237,8 @@ void CrosshairWidget::keyPressEvent(QKeyEvent* event)
 yamy::platform::WindowHandle CrosshairWidget::getWindowAtCursor()
 {
 #ifndef _WIN32
-    Display* display = QX11Info::display();
+    // Qt 6: Get X11 display via QNativeInterface
+    Display* display = qGuiApp ? qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->display() : nullptr;
     if (!display) {
         return nullptr;
     }
