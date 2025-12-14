@@ -80,6 +80,33 @@ if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     endif()
 endif()
 
+# Compilation cache (ccache): optional, works when available on Linux/Windows
+find_program(CCACHE_PROGRAM NAMES ccache)
+if(CCACHE_PROGRAM)
+    message(STATUS "Enabling ccache: ${CCACHE_PROGRAM}")
+    # Configure recommended cache size (5GB) at configure time
+    execute_process(
+        COMMAND ${CCACHE_PROGRAM} -M 5G
+        RESULT_VARIABLE CCACHE_RESULT
+        OUTPUT_QUIET ERROR_QUIET
+    )
+    if(CCACHE_RESULT EQUAL 0)
+        message(STATUS "ccache configured with 5G max size")
+    else()
+        message(WARNING "Failed to configure ccache max size; continuing with defaults")
+    endif()
+
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    add_custom_target(ccache-stats
+        COMMAND ${CCACHE_PROGRAM} -s
+        COMMENT "Display ccache statistics"
+        VERBATIM
+    )
+else()
+    message(STATUS "ccache not found; builds will proceed without compilation caching")
+endif()
+
 # Output Directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

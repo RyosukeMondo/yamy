@@ -32,7 +32,7 @@
   - _Requirements: 7, 10_
   - _Prompt: **Role:** Build Engineer with CMake presets expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create CMakePresets.json configuring Ninja as build generator for all platforms following requirements 7, 10. Add presets for debug and release configurations on Linux and Windows. | **Restrictions:** Must specify generator explicitly, presets must be self-contained, must work with Conan toolchain integration | **_Leverage:** CMake presets version 3, generator field, Ninja documentation | **_Requirements:** 7, 10 | **Success:** Ninja used for all builds, cmake --preset linux-debug works without additional flags, null build completes in <1s | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 1.4. Integrate ccache for compilation caching
+- [x] 1.4. Integrate ccache for compilation caching
   - File: `CMakeLists.txt`
   - Add CMake detection for ccache
   - Configure ccache as compiler launcher
