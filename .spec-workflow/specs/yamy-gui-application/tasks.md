@@ -64,7 +64,7 @@
   - _Requirements: 10_
   - _Prompt: **Role:** QA Engineer with protocol testing expertise | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Update IPC protocol test suite to validate new message types from task 1.1 following requirement 10. Test serialization, deserialization, and mock server responses. | **Restrictions:** All new message types must have test coverage, tests must pass before proceeding to next phase | **_Leverage:** Existing test framework from task 0.3, mock server from 0.2 | **_Requirements:** 10 | **Success:** All new message types are tested, tests pass successfully, mock server handles new messages correctly | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 1.3. Implement daemon-side IPC command handlers
+- [x] 1.3. Implement daemon-side IPC command handlers
   - Files: `src/core/platform/linux/ipc_control_server.cpp`, `src/core/platform/linux/ipc_control_server.h`
   - Add handler methods for each new GUI command type
   - Integrate with Engine for enable/disable, ConfigManager for config operations
