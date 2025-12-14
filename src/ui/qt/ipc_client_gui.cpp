@@ -14,7 +14,9 @@ IPCClientGUI::IPCClientGUI(QObject* parent)
     : QObject(parent)
     , m_channel(yamy::platform::createIPCChannel("yamy-gui"))
     , m_serverName(QStringLiteral("yamy-engine"))
+    , m_reconnectAttempts(0)
     , m_lastConnected(false)
+    , m_shouldReconnect(false)
 {
     if (m_channel) {
         connect(m_channel.get(),
@@ -28,6 +30,10 @@ IPCClientGUI::IPCClientGUI(QObject* parent)
     m_connectionPoller.setSingleShot(false);
     connect(&m_connectionPoller, &QTimer::timeout,
             this, &IPCClientGUI::pollConnectionState);
+
+    m_reconnectTimer.setSingleShot(true);
+    connect(&m_reconnectTimer, &QTimer::timeout,
+            this, &IPCClientGUI::attemptReconnect);
 }
 
 void IPCClientGUI::connectToDaemon(const std::string& serverName)
@@ -35,6 +41,10 @@ void IPCClientGUI::connectToDaemon(const std::string& serverName)
     if (!serverName.empty()) {
         m_serverName = QString::fromStdString(serverName);
     }
+
+    m_shouldReconnect = true;
+    m_reconnectAttempts = 0;
+    m_reconnectTimer.stop();
 
     if (m_channel) {
         m_channel->connect(m_serverName.toStdString());
@@ -45,6 +55,9 @@ void IPCClientGUI::connectToDaemon(const std::string& serverName)
 
 void IPCClientGUI::disconnectFromDaemon()
 {
+    m_shouldReconnect = false;
+    m_reconnectAttempts = 0;
+    m_reconnectTimer.stop();
     m_connectionPoller.stop();
     if (m_channel) {
         m_channel->disconnect();
@@ -107,7 +120,24 @@ void IPCClientGUI::pollConnectionState()
     if (connected != m_lastConnected) {
         m_lastConnected = connected;
         emit connectionStateChanged(connected);
+        if (connected) {
+            m_reconnectAttempts = 0;
+            m_reconnectTimer.stop();
+        }
     }
+
+    if (!connected && m_shouldReconnect) {
+        scheduleReconnectAttempt();
+    }
+}
+
+void IPCClientGUI::attemptReconnect()
+{
+    if (!m_channel || !m_shouldReconnect) {
+        return;
+    }
+
+    m_channel->connect(m_serverName.toStdString());
 }
 
 template <size_t N>
@@ -130,4 +160,18 @@ void IPCClientGUI::sendMessage(yamy::MessageType type, const void* data, size_t 
     msg.data = data;
     msg.size = size;
     m_channel->send(msg);
+}
+
+void IPCClientGUI::scheduleReconnectAttempt()
+{
+    static constexpr int kMaxAttempts = 3;
+    static constexpr int kBackoffMs[kMaxAttempts] = {1000, 2000, 4000};
+
+    if (m_reconnectTimer.isActive() || m_reconnectAttempts >= kMaxAttempts) {
+        return;
+    }
+
+    const int delay = kBackoffMs[m_reconnectAttempts];
+    ++m_reconnectAttempts;
+    m_reconnectTimer.start(delay);
 }

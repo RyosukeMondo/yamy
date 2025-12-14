@@ -107,7 +107,7 @@
   - _Requirements: 10_
   - _Prompt: **Role:** Qt Test Engineer with signals/slots expertise | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create test program to validate IPCClientGUI using mock server from task 0.2 following requirement 10. Test all commands and verify signal emission. | **Restrictions:** Test must be automated and repeatable, verify all signals are emitted, test error scenarios | **_Leverage:** Mock server from tests/mock_ipc_server.cpp, IPCClientGUI API | **_Requirements:** 10 | **Success:** Test program successfully sends commands via IPCClientGUI, signals are emitted correctly, connection handling works properly | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions, integrations), then mark task as complete [x]
 
-- [ ] 2.3. Add auto-reconnection logic to IPCClientGUI
+- [x] 2.3. Add auto-reconnection logic to IPCClientGUI
   - File: `src/ui/qt/ipc_client_gui.cpp`
   - Implement exponential backoff retry logic for connection failures
   - Add QTimer-based periodic reconnection attempts

@@ -50,14 +50,19 @@ signals:
 private slots:
     void handleMessage(const yamy::ipc::Message& message);
     void pollConnectionState();
+    void attemptReconnect();
 
 private:
     template <size_t N>
     void copyStringField(const QString& value, std::array<char, N>& buffer);
     void sendMessage(yamy::MessageType type, const void* data, size_t size);
+    void scheduleReconnectAttempt();
 
     std::unique_ptr<yamy::platform::IIPCChannel> m_channel;
     QString m_serverName;
     QTimer m_connectionPoller;
+    QTimer m_reconnectTimer;
+    int m_reconnectAttempts;
     bool m_lastConnected;
+    bool m_shouldReconnect;
 };
