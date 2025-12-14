@@ -22,7 +22,7 @@
   - _Requirements: 1, 10_
   - _Prompt: **Role:** Build Engineer with expertise in Windows C++ toolchains and LLVM | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Configure CMake to use LLD linker with clang-cl on Windows following requirements 1, 10. Ensure compatibility with existing YAMY build, verify performance improvement over MSVC linker. | **Restrictions:** Must detect clang-cl compiler, must not break MSVC builds if clang-cl unavailable, provide clear installation instructions | **_Leverage:** Use CMAKE_CXX_COMPILER_ID check, add_link_options with /clang: prefix, LLVM toolchain documentation | **_Requirements:** 1, 10 | **Success:** LLD used automatically with clang-cl on Windows, linking time reduced by >3x vs MSVC link.exe, existing build still works | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 1.3. Configure Ninja build generator
+- [x] 1.3. Configure Ninja build generator
   - File: `CMakePresets.json`
   - Create CMakePresets.json with Ninja as default generator
   - Add presets for debug and release builds on Linux/Windows

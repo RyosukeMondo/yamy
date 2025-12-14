@@ -2,128 +2,97 @@
     "version": 6,
     "cmakeMinimumRequired": {
         "major": 3,
-        "minor": 25,
+        "minor": 28,
         "patch": 0
     },
     "configurePresets": [
         {
-            "name": "windows-base",
+            "name": "ninja-base",
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "installDir": "${sourceDir}/dist/${presetName}",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true
             }
         },
         {
-            "name": "windows-msvc-release",
-            "displayName": "Windows MSVC Release",
-            "description": "Build using MSVC 2022 (x64 Release)",
-            "generator": "Visual Studio 17 2022",
-            "architecture": "x64",
-            "binaryDir": "${sourceDir}/build/windows-msvc-release",
-            "installDir": "${sourceDir}/dist/windows-msvc-release"
-        },
-        {
-            "name": "windows-msvc-release-x86",
-            "displayName": "Windows MSVC Release x86",
-            "description": "Build using MSVC 2022 (x86 Release) for 32-bit helper",
-            "generator": "Visual Studio 17 2022",
-            "architecture": "Win32",
-            "binaryDir": "${sourceDir}/build/windows-msvc-release-x86",
-            "installDir": "${sourceDir}/dist/windows-msvc-release-x86"
-        },
-        {
-            "name": "windows-msvc-debug",
-            "displayName": "Windows MSVC Debug",
-            "description": "Build using MSVC 2022 (x64 Debug)",
-            "generator": "Visual Studio 17 2022",
-            "architecture": "x64",
-            "binaryDir": "${sourceDir}/build/windows-msvc-debug",
-            "installDir": "${sourceDir}/dist/windows-msvc-debug",
+            "name": "linux-debug",
+            "displayName": "Linux Debug (Ninja)",
+            "description": "Debug build on Linux using Ninja generator",
+            "inherits": "ninja-base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-            "name": "windows-mingw-release",
-            "displayName": "Windows MinGW Release",
-            "description": "Build using MinGW (Release)",
-            "generator": "MinGW Makefiles",
-            "binaryDir": "${sourceDir}/build/windows-mingw-release",
-            "installDir": "${sourceDir}/dist/windows-mingw-release",
+            "name": "linux-release",
+            "displayName": "Linux Release (Ninja)",
+            "description": "Release build on Linux using Ninja generator",
+            "inherits": "ninja-base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {
-            "name": "windows-mingw-debug",
-            "displayName": "Windows MinGW Debug",
-            "description": "Build using MinGW (Debug)",
-            "generator": "MinGW Makefiles",
-            "binaryDir": "${sourceDir}/build/windows-mingw-debug",
-            "installDir": "${sourceDir}/dist/windows-mingw-debug",
+            "name": "windows-clang-base",
+            "hidden": true,
+            "inherits": "ninja-base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-cl",
+                "CMAKE_CXX_COMPILER": "clang-cl"
+            }
+        },
+        {
+            "name": "windows-clang-debug",
+            "displayName": "Windows Clang Debug (Ninja)",
+            "description": "Debug build on Windows using Ninja + clang-cl",
+            "inherits": "windows-clang-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "windows-clang-release",
+            "displayName": "Windows Clang Release (Ninja)",
+            "description": "Release build on Windows using Ninja + clang-cl",
+            "inherits": "windows-clang-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
             }
         }
     ],
     "buildPresets": [
         {
-            "name": "windows-msvc-release",
-            "configurePreset": "windows-msvc-release",
-            "configuration": "Release"
+            "name": "linux-debug",
+            "configurePreset": "linux-debug"
         },
         {
-            "name": "windows-msvc-release-x86",
-            "configurePreset": "windows-msvc-release-x86",
-            "configuration": "Release"
+            "name": "linux-release",
+            "configurePreset": "linux-release"
         },
         {
-            "name": "windows-msvc-debug",
-            "configurePreset": "windows-msvc-debug",
-            "configuration": "Debug"
+            "name": "windows-clang-debug",
+            "configurePreset": "windows-clang-debug"
         },
         {
-            "name": "windows-mingw-release",
-            "configurePreset": "windows-mingw-release",
-            "configuration": "Release"
-        },
-        {
-            "name": "windows-mingw-debug",
-            "configurePreset": "windows-mingw-debug",
-            "configuration": "Debug"
-        }
-    ],
-    "packagePresets": [
-        {
-            "name": "windows-msvc-release",
-            "configurePreset": "windows-msvc-release",
-            "generators": [
-                "ZIP"
-            ]
-        },
-        {
-            "name": "windows-msvc-debug",
-            "configurePreset": "windows-msvc-debug",
-            "generators": [
-                "ZIP"
-            ]
-        },
-        {
-            "name": "windows-mingw-release",
-            "configurePreset": "windows-mingw-release",
-            "generators": [
-                "ZIP"
-            ]
-        },
-        {
-            "name": "windows-mingw-debug",
-            "configurePreset": "windows-mingw-debug",
-            "generators": [
-                "ZIP"
-            ]
+            "name": "windows-clang-release",
+            "configurePreset": "windows-clang-release"
         }
     ]
 }
