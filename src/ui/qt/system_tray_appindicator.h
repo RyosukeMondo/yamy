@@ -8,12 +8,12 @@
 #include <QActionGroup>
 #include <memory>
 
-// Support both Ayatana AppIndicator (Ubuntu) and original libappindicator
-#ifdef HAVE_AYATANA_APPINDICATOR3
-#include <libayatana-appindicator/app-indicator.h>
-#else
-#include <libappindicator/app-indicator.h>
-#endif
+// Forward declare AppIndicator to avoid including GTK headers in header file
+// (GTK headers conflict with Qt's signals/slots keywords)
+struct _AppIndicator;
+struct _GtkMenu;
+typedef _AppIndicator AppIndicator;
+typedef _GtkMenu GtkMenu;
 
 #include "../../core/platform/ipc_defs.h"
 

@@ -7,12 +7,12 @@
 #include "dialog_settings_qt.h"
 #include "dialog_log_qt.h"
 #include "dialog_investigate_qt.h"
-#include "dialog_notification_history_qt.h"
+#include "notification_history.h"
 #include "dialog_about_qt.h"
-#include "dialog_config_manager_qt.h"
+#include "config_manager_dialog.h"
 #include "dialog_shortcuts_qt.h"
 #include "dialog_examples_qt.h"
-#include "dialog_preferences_qt.h"
+#include "preferences_dialog.h"
 
 #include <QApplication>
 #include <QDesktopServices>
@@ -22,8 +22,27 @@
 #include <QStandardPaths>
 #include <QPixmap>
 #include <QDebug>
+
+// Temporarily undefine Qt's signals/slots macros to avoid conflicts with GTK headers
+#ifdef signals
+#undef signals
+#endif
+#ifdef slots
+#undef slots
+#endif
+
+// Include GTK and AppIndicator headers
 #include <gtk/gtk.h>
 #include <libnotify/notify.h>
+#ifdef HAVE_AYATANA_APPINDICATOR3
+#include <libayatana-appindicator/app-indicator.h>
+#else
+#include <libappindicator/app-indicator.h>
+#endif
+
+// Restore Qt macros
+#define signals Q_SIGNALS
+#define slots Q_SLOTS
 
 // GTK callback wrapper - forwards to Qt slot
 extern "C" {
@@ -55,7 +74,7 @@ SystemTrayAppIndicator::SystemTrayAppIndicator(Engine* engine, QObject* parent)
     , m_actionAbout(nullptr)
     , m_actionExit(nullptr)
     , m_enabled(false)
-    , m_currentState(yamy::MessageType::EngineLoading)
+    , m_currentState(yamy::MessageType::EngineStarting)
 {
     // Initialize GTK if not already initialized
     if (!gtk_init_check(nullptr, nullptr)) {
@@ -427,12 +446,12 @@ void SystemTrayAppIndicator::handleEngineMessage(yamy::MessageType type, const Q
     m_currentState = type;
 
     switch (type) {
-        case yamy::MessageType::EngineStarted:
+        case yamy::MessageType::EngineStarting:
             updateIcon(false);
-            updateTooltip("YAMY - Disabled");
+            updateTooltip("YAMY - Starting...");
             break;
 
-        case yamy::MessageType::EngineEnabled:
+        case yamy::MessageType::EngineStarted:
             updateIcon(true);
             if (m_actionEnable) {
                 m_actionEnable->setChecked(true);
@@ -441,7 +460,7 @@ void SystemTrayAppIndicator::handleEngineMessage(yamy::MessageType type, const Q
             m_currentConfigName = data;
             break;
 
-        case yamy::MessageType::EngineDisabled:
+        case yamy::MessageType::EngineStopped:
             updateIcon(false);
             if (m_actionEnable) {
                 m_actionEnable->setChecked(false);
@@ -508,17 +527,9 @@ void SystemTrayAppIndicator::populateConfigMenu()
         delete action;
     }
 
-    // Get configs from engine
-    if (!m_engine) {
-        return;
-    }
-
-    ConfigManager* configManager = m_engine->getConfigManager();
-    if (!configManager) {
-        return;
-    }
-
-    const auto& configs = configManager->getConfigurations();
+    // Get configs from ConfigManager singleton
+    ConfigManager& configManager = ConfigManager::instance();
+    auto configs = configManager.listConfigs();
 
     for (size_t i = 0; i < configs.size(); ++i) {
         const auto& config = configs[i];
@@ -581,20 +592,44 @@ QString SystemTrayAppIndicator::findLocalDocumentationPath() const
 void SystemTrayAppIndicator::onToggleEnable()
 {
     if (m_engine) {
-        m_engine->toggleEnabled();
+        m_enabled = !m_enabled;
+        m_engine->enable(m_enabled);
+        updateIcon(m_enabled);
     }
 }
 
 void SystemTrayAppIndicator::onReload()
 {
-    if (m_engine) {
-        m_engine->reload();
+    if (!m_engine) {
+        return;
+    }
+
+    // Get current configuration from ConfigManager
+    ConfigManager& configMgr = ConfigManager::instance();
+    int activeIndex = configMgr.getActiveIndex();
+    auto configs = configMgr.listConfigs();
+
+    if (activeIndex >= 0 && activeIndex < static_cast<int>(configs.size())) {
+        std::string currentConfigPath = configs[activeIndex].path;
+
+        // Reload configuration via Engine
+        bool success = m_engine->switchConfiguration(currentConfigPath);
+
+        if (success) {
+            showNotification("Configuration Reloaded",
+                           QString::fromStdString(configs[activeIndex].name),
+                           Information);
+        } else {
+            showNotification("Reload Failed",
+                           "Failed to reload configuration",
+                           Critical);
+        }
     }
 }
 
 void SystemTrayAppIndicator::onSettings()
 {
-    DialogSettingsQt dialog(m_engine);
+    DialogSettingsQt dialog(nullptr);
     dialog.exec();
 }
 
@@ -602,7 +637,7 @@ void SystemTrayAppIndicator::onShowLog()
 {
     static DialogLogQt* logDialog = nullptr;
     if (!logDialog) {
-        logDialog = new DialogLogQt(m_engine);
+        logDialog = new DialogLogQt(nullptr);
     }
     logDialog->show();
     logDialog->raise();
@@ -622,7 +657,7 @@ void SystemTrayAppIndicator::onInvestigate()
 
 void SystemTrayAppIndicator::onNotificationHistory()
 {
-    DialogNotificationHistoryQt dialog;
+    yamy::ui::NotificationHistoryDialog dialog;
     dialog.exec();
 }
 
@@ -674,7 +709,7 @@ void SystemTrayAppIndicator::onReportBug()
 
 void SystemTrayAppIndicator::onPreferences()
 {
-    DialogPreferencesQt dialog(m_engine);
+    PreferencesDialog dialog(nullptr);
     dialog.exec();
 }
 
@@ -685,21 +720,13 @@ void SystemTrayAppIndicator::onExit()
 
 void SystemTrayAppIndicator::onSwitchConfig(int index)
 {
-    if (!m_engine) {
-        return;
-    }
-
-    ConfigManager* configManager = m_engine->getConfigManager();
-    if (!configManager) {
-        return;
-    }
-
-    configManager->switchConfiguration(index);
+    ConfigManager& configManager = ConfigManager::instance();
+    configManager.setActiveConfig(index);
 }
 
 void SystemTrayAppIndicator::onManageConfigs()
 {
-    DialogConfigManagerQt dialog(m_engine);
+    ConfigManagerDialog dialog(nullptr);
     dialog.exec();
 
     // Refresh config menu after management
@@ -708,24 +735,17 @@ void SystemTrayAppIndicator::onManageConfigs()
 
 void SystemTrayAppIndicator::onQuickSwitchHotkey()
 {
-    if (!m_engine) {
-        return;
-    }
-
-    ConfigManager* configManager = m_engine->getConfigManager();
-    if (!configManager) {
-        return;
-    }
+    ConfigManager& configManager = ConfigManager::instance();
 
     // Cycle to next configuration
-    const auto& configs = configManager->getConfigurations();
+    auto configs = configManager.listConfigs();
     if (configs.empty()) {
         return;
     }
 
-    int currentIndex = configManager->getCurrentConfigurationIndex();
+    int currentIndex = configManager.getActiveIndex();
     int nextIndex = (currentIndex + 1) % static_cast<int>(configs.size());
-    configManager->switchConfiguration(nextIndex);
+    configManager.setActiveConfig(nextIndex);
 }
 
 #endif // HAVE_APPINDICATOR3

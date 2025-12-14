@@ -272,7 +272,12 @@ int main(int argc, char* argv[])
     app.setQuitOnLastWindowClosed(false);
 
     // Check if system tray is available
+#ifdef HAVE_APPINDICATOR3
+    // Use AppIndicator's check to avoid Qt/DBus crashes
+    if (!SystemTrayAppIndicator::isSystemTrayAvailable()) {
+#else
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
+#endif
         QMessageBox::critical(
             nullptr,
             "YAMY",
