@@ -322,7 +322,7 @@
   - _Requirements: 9_
   - _Prompt: **Role:** Build Engineer with code quality tooling expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Install lizard and create CMake metrics check target following requirement 9. Configure limits: max 500 lines per file, 50 lines per function, cyclomatic complexity ≤15. Add check-metrics target. | **Restrictions:** Must work on Linux and Windows, must be optional (build works without lizard), must provide clear error messages on violations | **_Leverage:** lizard --length --CCN flags, CMake add_custom_target, find_program | **_Requirements:** 9 | **Success:** make check-metrics runs successfully, violations reported clearly, limits enforced correctly | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 7.2. Create pre-commit hook for metrics
+- [x] 7.2. Create pre-commit hook for metrics
   - File: `scripts/pre-commit-metrics.sh`
   - Create Git pre-commit hook running lizard
   - Check only staged files (not entire repo)
