@@ -85,7 +85,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake g++ make \
-          libx11-dev libxrandr-dev qtbase5-dev
+          libx11-dev libxrandr-dev qtbase5-dev \
+          mold lld
 
     - name: Configure CMake
       run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=OFF
@@ -146,7 +147,7 @@ jobs:
         sudo apt-get install -y cmake g++ make \
           libx11-dev libxrandr-dev libudev-dev \
           qtbase5-dev \
-          xvfb
+          xvfb mold lld
 
     - name: Configure CMake
       run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_REGRESSION_TESTS=ON
@@ -197,7 +198,7 @@ jobs:
         sudo apt-get install -y cmake g++ make \
           libx11-dev libxrandr-dev libudev-dev \
           qtbase5-dev \
-          xvfb lcov bc
+          xvfb lcov bc mold lld
 
     - name: Configure CMake with coverage
       run: |

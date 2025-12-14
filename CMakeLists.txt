@@ -46,6 +46,23 @@ if(ENABLE_ASAN)
     endif()
 endif()
 
+# Linker Configuration (Linux): prefer mold, fallback to LLD
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    find_program(MOLD_LINKER NAMES mold ld.mold)
+    if(MOLD_LINKER)
+        message(STATUS "Using mold linker: ${MOLD_LINKER}")
+        add_link_options("-fuse-ld=mold")
+    else()
+        find_program(LLD_LINKER NAMES ld.lld lld)
+        if(LLD_LINKER)
+            message(WARNING "Mold linker not found; falling back to LLD: ${LLD_LINKER}")
+            add_link_options("-fuse-ld=lld")
+        else()
+            message(WARNING "Neither mold nor LLD found. Using default system linker; install mold for fastest builds.")
+        endif()
+    endif()
+endif()
+
 # Output Directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
