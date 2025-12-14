@@ -1387,7 +1387,7 @@
 
 ### Phase 5: Documentation and Cleanup
 
-- [ ] 5.1 Update code documentation (Doxygen comments)
+- [x] 5.1 Update code documentation (Doxygen comments)
   - Files:
     - All new/modified files (add /** */ comments to public APIs)
   - Description:
@@ -1473,7 +1473,7 @@
     6. Mark complete
     ```
 
-- [ ] 5.2 Update CHANGELOG.md and user documentation
+- [x] 5.2 Update CHANGELOG.md and user documentation
   - Files:
     - CHANGELOG.md (add entry for investigate window feature)
     - docs/LINUX-QT-GUI-MANUAL.md (update with investigate dialog usage)
