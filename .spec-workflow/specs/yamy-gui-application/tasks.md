@@ -196,7 +196,7 @@
   - _Requirements: 1_
   - _Prompt: **Role:** Application Developer with expertise in Qt application lifecycle | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create main_gui.cpp entry point in src/app/ following requirement 1. Set up QApplication, initialize MainWindowGUI, run event loop. | **Restrictions:** Do not include system tray code, use QApplication for full widget support, handle cleanup properly | **_Leverage:** Qt QApplication, MainWindowGUI from Phase 4 | **_Requirements:** 1 | **Success:** yamy-gui launches successfully, main window shows, application exits cleanly | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (components), then mark task as complete [x]
 
-- [ ] 5.2. Add CMake build target for yamy-gui
+- [x] 5.2. Add CMake build target for yamy-gui
   - File: `CMakeLists.txt`
   - Add executable target for yamy-gui
   - Link necessary libraries (yamy_qt_gui, Qt5::Widgets, Qt5::Network)

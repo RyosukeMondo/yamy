@@ -544,6 +544,18 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
                 yamy_qt_gui
             )
 
+            add_executable(yamy-gui
+                src/app/main_gui.cpp
+            )
+            set_target_properties(yamy-gui PROPERTIES AUTOMOC ON)
+            target_link_libraries(yamy-gui PRIVATE
+                Qt5::Widgets
+                Qt5::Gui
+                Qt5::Core
+                Qt5::Network
+                yamy_qt_gui
+            )
+
             add_executable(yamy_gui_probe
                 tools/main_window_gui_probe.cpp
                 src/ui/qt/main_window_gui.cpp
@@ -2230,6 +2242,13 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         RUNTIME DESTINATION bin
         COMPONENT runtime
     )
+
+    if(TARGET yamy-gui)
+        install(TARGETS yamy-gui
+            RUNTIME DESTINATION bin
+            COMPONENT runtime
+        )
+    endif()
 
     # Install control tool
     install(TARGETS yamy-ctl
