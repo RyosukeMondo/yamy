@@ -1586,6 +1586,48 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_modifier_state_test COMMAND yamy_modifier_state_test)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_event_processor_modal_test (EventProcessor Modal Integration Tests)
+        # Integration tests for EventProcessor with modal modifier detection
+        # Part of task 7 in modal-modifier-remapping spec
+        # -----------------------------------------------------------------------------
+        set(EVENT_PROCESSOR_MODAL_TEST_SOURCES
+            tests/test_event_processor_modal.cpp
+            src/platform/linux/keycode_mapping.cpp
+            src/core/engine/engine_event_processor.cpp
+            src/core/engine/modifier_key_handler.cpp
+            src/core/input/modifier_state.cpp
+            src/core/input/keyboard.cpp
+            src/core/logger/journey_logger.cpp
+            src/utils/stringtool.cpp
+        )
+
+        add_executable(yamy_event_processor_modal_test
+            ${EVENT_PROCESSOR_MODAL_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_event_processor_modal_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/engine
+            src/core/input
+            src/platform/linux
+            src/utils
+        )
+
+        target_compile_definitions(yamy_event_processor_modal_test PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(yamy_event_processor_modal_test PRIVATE
+            pthread
+        )
+
+        add_test(NAME yamy_event_processor_modal_test COMMAND yamy_event_processor_modal_test)
+
+        # -----------------------------------------------------------------------------
         # Target: benchmark_event_processor (EventProcessor Performance Benchmark)
         # Standalone performance benchmark to measure event processing latency
         # Part of task 5.5 in key-remapping-consistency spec
