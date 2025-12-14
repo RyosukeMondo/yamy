@@ -139,7 +139,7 @@
   - _Requirements: 1, 2, 10_
   - _Prompt: **Role:** Integration Tester with Linux daemon expertise | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Test minimal GUI prototype from task 3.1 with real yamy daemon following requirements 1, 2, 10. Verify connection, status updates, and reconnection. Document results. | **Restrictions:** Test on clean system state, verify daemon doesn't crash, document any issues found | **_Leverage:** Running yamy daemon, minimal GUI prototype | **_Requirements:** 1, 2, 10 | **Success:** Prototype connects to daemon successfully, status updates work, reconnection works after daemon restart, no crashes | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts documenting test results, then mark task as complete [x]
 
-- [ ] 3.3. Add status display and enable/disable to prototype
+- [x] 3.3. Add status display and enable/disable to prototype
   - File: `src/ui/qt/main_window_gui.cpp`
   - Add daemon status labels (enabled/disabled, config name)
   - Add enable/disable toggle button
