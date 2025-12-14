@@ -1,0 +1,8 @@
+Component,P50,P95,P99,P99.9
+FullPipeline,1140,3580,4210,7680
+HoldDetection,1070,2930,3440,5710
+HoldWithThreshold,18630,27820,49209,166459
+MultipleModifiers,30,30,40,60
+StateActivate,20,30,30,30
+StateDeactivate,20,30,30,30
+StateQuery,20,30,30,30

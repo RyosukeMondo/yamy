@@ -800,7 +800,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
     8. Mark task 11 as complete
     ```
 
-- [ ] 12. Add performance benchmark for modal modifier pipeline
+- [x] 12. Add performance benchmark for modal modifier pipeline
   - **Files**:
     - `benchmarks/bench_modal_modifier.cpp` (create new file, or add to existing benchmark)
   - **Description**: Automated benchmark measuring latency of modal modifier detection

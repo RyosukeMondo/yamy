@@ -1702,6 +1702,41 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             pthread
         )
 
+        # -----------------------------------------------------------------------------
+        # Target: benchmark_modal_modifier (Modal Modifier Performance Benchmark)
+        # Standalone performance benchmark to measure modal modifier pipeline latency
+        # Part of task 12 in modal-modifier-remapping spec
+        # -----------------------------------------------------------------------------
+        set(BENCHMARK_MODAL_MODIFIER_SOURCES
+            tests/benchmark_modal_modifier.cpp
+            src/core/engine/modifier_key_handler.cpp
+            src/core/input/modifier_state.cpp
+            src/core/input/keyboard.cpp
+            src/core/logger/journey_logger.cpp
+            src/utils/stringtool.cpp
+        )
+
+        add_executable(benchmark_modal_modifier
+            ${BENCHMARK_MODAL_MODIFIER_SOURCES}
+        )
+
+        target_include_directories(benchmark_modal_modifier PRIVATE
+            src
+            src/core
+            src/core/engine
+            src/core/input
+            src/platform
+            src/utils
+        )
+
+        target_compile_definitions(benchmark_modal_modifier PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(benchmark_modal_modifier PRIVATE
+            pthread
+        )
+
         else()
             message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/X11Extras not found)")
         endif() # Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND
