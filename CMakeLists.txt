@@ -275,6 +275,7 @@ endif()
 # -----------------------------------------------------------------------------
 set(ENGINE_SOURCES
     src/utils/compiler_specific_func.cpp
+    src/utils/logger.cpp
     src/core/engine/engine.cpp
     src/core/engine/engine_lifecycle.cpp
     src/core/notification_dispatcher.cpp
@@ -487,6 +488,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     # Core module sources (platform-independent)
     set(CORE_SOURCES
         src/utils/compiler_specific_func.cpp
+        src/utils/logger.cpp
         src/core/engine/engine.cpp
         src/core/engine/engine_lifecycle.cpp
         src/core/notification_dispatcher.cpp
