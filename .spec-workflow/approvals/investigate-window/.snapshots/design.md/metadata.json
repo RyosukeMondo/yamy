@@ -1,12 +1,20 @@
 {
   "filePath": ".spec-workflow/specs/investigate-window/design.md",
-  "currentVersion": 1,
+  "currentVersion": 2,
   "snapshots": [
     {
       "version": 1,
       "filename": "snapshot-001.json",
       "timestamp": "2025-12-14T02:59:43.105Z",
       "trigger": "initial",
+      "approvalId": "approval_1765681183101_ogr5fs34d",
+      "approvalTitle": "Design Document - Investigate Window Feature"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-12-14T07:53:06.953Z",
+      "trigger": "approved",
       "approvalId": "approval_1765681183101_ogr5fs34d",
       "approvalTitle": "Design Document - Investigate Window Feature"
     }

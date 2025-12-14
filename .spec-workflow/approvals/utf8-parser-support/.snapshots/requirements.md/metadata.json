@@ -1,12 +1,20 @@
 {
   "filePath": ".spec-workflow/specs/utf8-parser-support/requirements.md",
-  "currentVersion": 1,
+  "currentVersion": 2,
   "snapshots": [
     {
       "version": 1,
       "filename": "snapshot-001.json",
       "timestamp": "2025-12-13T04:39:23.940Z",
       "trigger": "initial",
+      "approvalId": "approval_1765600763936_3iamfaxqd",
+      "approvalTitle": "UTF-8 Parser Support - Requirements"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-12-14T07:50:21.491Z",
+      "trigger": "approved",
       "approvalId": "approval_1765600763936_3iamfaxqd",
       "approvalTitle": "UTF-8 Parser Support - Requirements"
     }

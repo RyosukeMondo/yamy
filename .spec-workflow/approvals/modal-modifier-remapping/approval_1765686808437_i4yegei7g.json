@@ -3,8 +3,10 @@
   "title": "Requirements: Modal Modifier Remapping",
   "filePath": ".spec-workflow/specs/modal-modifier-remapping/requirements.md",
   "type": "document",
-  "status": "pending",
+  "status": "approved",
   "createdAt": "2025-12-14T04:33:28.437Z",
   "category": "spec",
-  "categoryName": "modal-modifier-remapping"
+  "categoryName": "modal-modifier-remapping",
+  "response": "ダッシュボードから承認",
+  "respondedAt": "2025-12-14T07:53:03.499Z"
 }

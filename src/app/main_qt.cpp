@@ -207,6 +207,11 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
 int main(int argc, char* argv[])
 {
+    // CRITICAL: Disable Qt's DBus-based system tray to prevent crashes
+    // Force Qt to use legacy XEmbed protocol instead of StatusNotifierItem
+    qputenv("QT_QPA_PLATFORMTHEME", "");
+    qputenv("QT_LOGGING_RULES", "qt.qpa.dbus=false");
+
     // Initialize logging functionality immediately
     std::string logPath;
 #ifdef _WIN32
@@ -306,19 +311,20 @@ int main(int argc, char* argv[])
     // Restore session state (unless --no-restore is specified)
     bool sessionRestored = restoreSessionState(engine, cmdOptions);
 
-    // Create and show tray icon (uses real Engine directly)
-    TrayIconQt trayIcon(realEngine);
-    trayIcon.show();
+    // DISABLED: TrayIcon causes Qt/DBus crashes - testing without it
+    // TrayIconQt trayIcon(realEngine);
+    // trayIcon.show();
 
     // Connect EngineAdapter notifications to TrayIconQt
-    engine->setNotificationCallback(
-        [&trayIcon](yamy::MessageType type, const std::string& data) {
-            // Convert std::string to QString for Qt
-            QString qdata = QString::fromStdString(data);
-            // Forward to tray icon's message handler
-            trayIcon.handleEngineMessage(type, qdata);
-        }
-    );
+    // DISABLED: No tray icon for now
+    // engine->setNotificationCallback(
+    //     [](yamy::MessageType type, const std::string& data) {
+    //         // Convert std::string to QString for Qt
+    //         QString qdata = QString::fromStdString(data);
+    //         // Forward to tray icon's message handler
+    //         trayIcon.handleEngineMessage(type, qdata);
+    //     }
+    // );
 
     // Initialize plugin system
     std::ofstream(debugLogPath.toStdString(), std::ios::app) << "MAIN: Initializing plugin system" << std::endl;
@@ -359,7 +365,7 @@ int main(int argc, char* argv[])
     std::ofstream(debugLogPath.toStdString(), std::ios::app) << "MAIN: Creating IPC control server" << std::endl;
     yamy::platform::IPCControlServer controlServer;
     controlServer.setCommandCallback(
-        [engine, &trayIcon](yamy::platform::ControlCommand cmd, const std::string& data)
+        [engine](yamy::platform::ControlCommand cmd, const std::string& data)
             -> yamy::platform::ControlResult {
         yamy::platform::ControlResult result;
 
@@ -481,14 +487,15 @@ int main(int argc, char* argv[])
     QString notificationMsg = sessionRestored
         ? "YAMY started (session restored)"
         : "YAMY Qt GUI started (demo mode)";
-    trayIcon.showNotification(
-        "YAMY",
-        notificationMsg,
-        QSystemTrayIcon::Information
-    );
+    // DISABLED: No tray icon for testing
+    // trayIcon.showNotification(
+    //     "YAMY",
+    //     notificationMsg,
+    //     QSystemTrayIcon::Information
+    // );
 
     // Force icon refresh after a short delay to ensure tray is ready
-    QTimer::singleShot(500, &trayIcon, &TrayIconQt::forceIconRefresh);
+    // QTimer::singleShot(500, &trayIcon, &TrayIconQt::forceIconRefresh);
 
     std::cout << "YAMY Qt GUI initialized. Running..." << std::endl;
 

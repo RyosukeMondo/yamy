@@ -47,6 +47,20 @@ public:
      */
     void setEngine(Engine* engine);
 
+    /**
+     * @brief Override toolTip to ensure it never returns null
+     * @return Valid tooltip string (never null)
+     */
+    QString toolTip() const;
+
+protected:
+    /**
+     * @brief Override event handler to prevent Qt/DBus crashes
+     * @param e Event to handle
+     * @return true if event was handled
+     */
+    bool event(QEvent* e) override;
+
 public slots:
     /**
      * @brief Update icon state (enabled/disabled)
@@ -233,6 +247,9 @@ private:
 
     // Engine instance (not owned)
     Engine* m_engine;
+
+    // Cached tooltip to prevent Qt/DBus crashes
+    mutable QString m_cachedTooltip;
 
     // Global hotkey for quick config switch
     GlobalHotkey* m_quickSwitchHotkey;

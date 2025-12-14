@@ -30,6 +30,7 @@
 TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
     : QSystemTrayIcon(parent)
     , m_engine(engine)
+    , m_cachedTooltip("YAMY")
     , m_quickSwitchHotkey(nullptr)
     , m_menu(nullptr)
     , m_configMenu(nullptr)
@@ -53,7 +54,10 @@ TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
 
     // Set initial state
     setIcon(m_iconStopped);
-    setToolTip("YAMY - Stopped");
+
+    // Set STATIC tooltip - never change it to avoid Qt/DBus crashes
+    m_cachedTooltip = QString("YAMY Keyboard Remapper");
+    QSystemTrayIcon::setToolTip(m_cachedTooltip);
 
     // Create context menu
     createMenu();
@@ -75,10 +79,45 @@ TrayIconQt::~TrayIconQt()
     delete m_menu;
 }
 
+bool TrayIconQt::event(QEvent* e)
+{
+    // Defensive: Ensure all properties are valid before any event processing
+    // This prevents Qt/DBus crashes when serializing tray icon properties
+
+    // Use cached tooltip to avoid accessing potentially corrupted Qt internal state
+    if (m_cachedTooltip.isNull() || m_cachedTooltip.isEmpty()) {
+        m_cachedTooltip = QString("YAMY");
+        QSystemTrayIcon::setToolTip(m_cachedTooltip);
+    }
+
+    // Ensure icon is valid
+    if (icon().isNull()) {
+        QSystemTrayIcon::setIcon(m_iconStopped);
+    }
+
+    // Call base class event handler with defensive error handling
+    try {
+        return QSystemTrayIcon::event(e);
+    } catch (...) {
+        // Silently ignore any exceptions to prevent crashes
+        return false;
+    }
+}
+
 void TrayIconQt::setEngine(Engine* engine)
 {
     m_engine = engine;
     updateMenuState();
+}
+
+QString TrayIconQt::toolTip() const
+{
+    // Always return cached tooltip - never access Qt's internal state
+    // This prevents Qt/DBus crashes from corrupted internal tooltip
+    if (m_cachedTooltip.isNull() || m_cachedTooltip.isEmpty()) {
+        m_cachedTooltip = QString("YAMY");
+    }
+    return m_cachedTooltip;
 }
 
 void TrayIconQt::updateIcon(bool enabled)
@@ -105,13 +144,10 @@ void TrayIconQt::forceIconRefresh()
 
 void TrayIconQt::updateTooltip(const QString& text)
 {
-    // Defensive: ensure text is not null before setting tooltip
-    // Qt's DBus code can crash on QVariant::toString() with null strings
-    if (!text.isNull() && !text.isEmpty()) {
-        setToolTip(text);
-    } else {
-        setToolTip("YAMY");  // Fallback to simple non-null string
-    }
+    // DISABLED: Keep static tooltip to avoid Qt/DBus crashes
+    // Tooltip is set once in constructor and never changes
+    // Users can check status via Investigate Window or Settings dialog
+    (void)text;  // Suppress unused warning
 }
 
 void TrayIconQt::showNotification(
@@ -120,7 +156,16 @@ void TrayIconQt::showNotification(
     QSystemTrayIcon::MessageIcon icon,
     int millisecondsTimeoutHint)
 {
-    showMessage(title, message, icon, millisecondsTimeoutHint);
+    // Defensive: Qt's DBus can crash on null/invalid QStrings in showMessage
+    // Ensure both title and message are valid, non-null strings
+    QString safeTitle = (title.isNull() || title.isEmpty()) ? QString("YAMY") : title;
+    QString safeMessage = (message.isNull() || message.isEmpty()) ? QString(" ") : message;
+
+    try {
+        showMessage(safeTitle, safeMessage, icon, millisecondsTimeoutHint);
+    } catch (...) {
+        // Silently ignore notification failures to prevent crashes
+    }
 }
 
 void TrayIconQt::onActivated(QSystemTrayIcon::ActivationReason reason)
@@ -567,7 +612,12 @@ void TrayIconQt::populateConfigMenu()
 
         for (int i = 0; i < displayCount; ++i) {
             const ConfigEntry& config = configs[i];
-            QString displayName = QString::fromStdString(config.name);
+
+            // Defensive: prevent null QString to avoid Qt/DBus crashes
+            QString displayName = config.name.empty() ? QString("(unnamed)") : QString::fromStdString(config.name);
+            if (displayName.isNull() || displayName.isEmpty()) {
+                displayName = QString("Config %1").arg(i + 1);
+            }
 
             // Show path for duplicate names or truncate long names
             if (displayName.length() > 30) {
@@ -580,8 +630,12 @@ void TrayIconQt::populateConfigMenu()
             action->setData(i);  // Store index for switching
             action->setEnabled(config.exists);  // Disable if file doesn't exist
 
-            // Add tooltip with full path
-            action->setToolTip(QString::fromStdString(config.path));
+            // Add tooltip with full path - defensive against null
+            QString tooltipPath = config.path.empty() ? QString("(no path)") : QString::fromStdString(config.path);
+            if (tooltipPath.isNull() || tooltipPath.isEmpty()) {
+                tooltipPath = QString("Configuration file");
+            }
+            action->setToolTip(tooltipPath);
 
             m_configActionGroup->addAction(action);
 
@@ -613,7 +667,11 @@ void TrayIconQt::onSwitchConfig(int index)
     if (configMgr.setActiveConfig(index)) {
         std::vector<ConfigEntry> configs = configMgr.listConfigs();
         if (index >= 0 && index < static_cast<int>(configs.size())) {
-            QString configName = QString::fromStdString(configs[index].name);
+            // Defensive: prevent null QString
+            QString configName = configs[index].name.empty() ? QString("(unnamed)") : QString::fromStdString(configs[index].name);
+            if (configName.isNull() || configName.isEmpty()) {
+                configName = QString("Configuration");
+            }
 
             // Show notification
             showNotification(
@@ -651,7 +709,11 @@ void TrayIconQt::onQuickSwitchHotkey()
         int newIndex = configMgr.getActiveIndex();
 
         if (newIndex >= 0 && newIndex < static_cast<int>(configs.size())) {
-            QString configName = QString::fromStdString(configs[newIndex].name);
+            // Defensive: prevent null QString
+            QString configName = configs[newIndex].name.empty() ? QString("(unnamed)") : QString::fromStdString(configs[newIndex].name);
+            if (configName.isNull() || configName.isEmpty()) {
+                configName = QString("Configuration");
+            }
 
             // Show brief notification
             showNotification(
@@ -727,20 +789,16 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
     switch (type) {
         case yamy::MessageType::EngineStarting:
             setIcon(m_iconLoading);
-            setToolTip("YAMY - Starting...");
+            updateTooltip("YAMY - Starting...");
             break;
 
         case yamy::MessageType::EngineStarted:
             setIcon(m_iconRunning);
             if (m_currentConfigName.isEmpty() || m_currentConfigName.isNull()) {
-                setToolTip("YAMY - Running");
+                updateTooltip("YAMY - Running");
             } else {
                 QString tooltip = QString("YAMY - Running (%1)").arg(m_currentConfigName);
-                if (!tooltip.isNull()) {
-                    setToolTip(tooltip);
-                } else {
-                    setToolTip("YAMY - Running");
-                }
+                updateTooltip(tooltip);
             }
             m_enabled = true;
             updateMenuState();
@@ -757,12 +815,12 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
 
         case yamy::MessageType::EngineStopping:
             setIcon(m_iconLoading);
-            setToolTip("YAMY - Stopping...");
+            updateTooltip("YAMY - Stopping...");
             break;
 
         case yamy::MessageType::EngineStopped:
             setIcon(m_iconStopped);
-            setToolTip("YAMY - Stopped");
+            updateTooltip("YAMY - Stopped");
             m_enabled = false;
             updateMenuState();
             // Show desktop notification if enabled
@@ -779,9 +837,9 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
         case yamy::MessageType::EngineError:
             setIcon(m_iconError);
             if (!data.isNull() && !data.isEmpty()) {
-                setToolTip(QString("YAMY - Error: %1").arg(data));
+                updateTooltip(QString("YAMY - Error: %1").arg(data));
             } else {
-                setToolTip("YAMY - Error");
+                updateTooltip("YAMY - Error");
             }
             // Show error notification if enabled (default: enabled)
             if (prefs.shouldShowDesktopNotification(type)) {
@@ -797,9 +855,9 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
         case yamy::MessageType::ConfigLoading:
             setIcon(m_iconLoading);
             if (!data.isNull() && !data.isEmpty()) {
-                setToolTip(QString("YAMY - Loading config: %1").arg(data));
+                updateTooltip(QString("YAMY - Loading config: %1").arg(data));
             } else {
-                setToolTip("YAMY - Loading config");
+                updateTooltip("YAMY - Loading config");
             }
             break;
 
@@ -810,14 +868,10 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
                 setIcon(m_iconRunning);
             }
             if (data.isEmpty() || data.isNull()) {
-                setToolTip("YAMY - Running");
+                updateTooltip("YAMY - Running");
             } else {
                 QString tooltip = QString("YAMY - %1").arg(data);
-                if (!tooltip.isNull()) {
-                    setToolTip(tooltip);
-                } else {
-                    setToolTip("YAMY - Running");
-                }
+                updateTooltip(tooltip);
             }
             updateMenuState();
             // Show desktop notification if enabled
@@ -834,9 +888,9 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
         case yamy::MessageType::ConfigError:
             setIcon(m_iconError);
             if (!data.isNull() && !data.isEmpty()) {
-                setToolTip(QString("YAMY - Config Error: %1").arg(data));
+                updateTooltip(QString("YAMY - Config Error: %1").arg(data));
             } else {
-                setToolTip("YAMY - Config Error");
+                updateTooltip("YAMY - Config Error");
             }
             // Show config error notification if enabled (uses error prefs)
             if (prefs.shouldShowDesktopNotification(type)) {
@@ -858,9 +912,7 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
                 } else {
                     tooltip = QString("YAMY - %1 [%2]").arg(m_currentConfigName, data);
                 }
-                if (!tooltip.isNull()) {
-                    setToolTip(tooltip);
-                }
+                updateTooltip(tooltip);
             }
             // Show desktop notification if enabled
             if (prefs.shouldShowDesktopNotification(type)) {

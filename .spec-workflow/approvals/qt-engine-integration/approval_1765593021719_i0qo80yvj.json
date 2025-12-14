@@ -3,8 +3,10 @@
   "title": "Design: Qt Engine Integration",
   "filePath": ".spec-workflow/specs/qt-engine-integration/design.md",
   "type": "document",
-  "status": "pending",
+  "status": "approved",
   "createdAt": "2025-12-13T02:30:21.719Z",
   "category": "spec",
-  "categoryName": "qt-engine-integration"
+  "categoryName": "qt-engine-integration",
+  "response": "ダッシュボードから承認",
+  "respondedAt": "2025-12-14T07:50:17.788Z"
 }

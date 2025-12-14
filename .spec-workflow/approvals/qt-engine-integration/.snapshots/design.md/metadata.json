@@ -1,12 +1,20 @@
 {
   "filePath": ".spec-workflow/specs/qt-engine-integration/design.md",
-  "currentVersion": 1,
+  "currentVersion": 2,
   "snapshots": [
     {
       "version": 1,
       "filename": "snapshot-001.json",
       "timestamp": "2025-12-13T02:30:21.723Z",
       "trigger": "initial",
+      "approvalId": "approval_1765593021719_i0qo80yvj",
+      "approvalTitle": "Design: Qt Engine Integration"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-12-14T07:50:17.787Z",
+      "trigger": "approved",
       "approvalId": "approval_1765593021719_i0qo80yvj",
       "approvalTitle": "Design: Qt Engine Integration"
     }

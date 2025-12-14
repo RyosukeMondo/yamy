@@ -3,8 +3,10 @@
   "title": "Requirements: Key Remapping Consistency - 9 requirements including systematic investigation, autonomous testing, and number-to-modifier feature",
   "filePath": ".spec-workflow/specs/key-remapping-consistency/requirements.md",
   "type": "document",
-  "status": "pending",
+  "status": "approved",
   "createdAt": "2025-12-13T17:45:23.299Z",
   "category": "spec",
-  "categoryName": "key-remapping-consistency"
+  "categoryName": "key-remapping-consistency",
+  "response": "ダッシュボードから承認",
+  "respondedAt": "2025-12-14T07:53:09.754Z"
 }

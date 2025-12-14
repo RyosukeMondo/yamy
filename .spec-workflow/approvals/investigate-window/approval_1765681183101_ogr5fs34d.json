@@ -3,8 +3,10 @@
   "title": "Design Document - Investigate Window Feature",
   "filePath": ".spec-workflow/specs/investigate-window/design.md",
   "type": "document",
-  "status": "pending",
+  "status": "approved",
   "createdAt": "2025-12-14T02:59:43.101Z",
   "category": "spec",
-  "categoryName": "investigate-window"
+  "categoryName": "investigate-window",
+  "response": "ダッシュボードから承認",
+  "respondedAt": "2025-12-14T07:53:06.954Z"
 }

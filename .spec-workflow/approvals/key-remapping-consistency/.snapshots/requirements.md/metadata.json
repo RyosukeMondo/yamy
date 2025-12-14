@@ -1,12 +1,20 @@
 {
   "filePath": ".spec-workflow/specs/key-remapping-consistency/requirements.md",
-  "currentVersion": 1,
+  "currentVersion": 2,
   "snapshots": [
     {
       "version": 1,
       "filename": "snapshot-001.json",
       "timestamp": "2025-12-13T17:45:23.309Z",
       "trigger": "initial",
+      "approvalId": "approval_1765647923299_ww3u1xvr4",
+      "approvalTitle": "Requirements: Key Remapping Consistency - 9 requirements including systematic investigation, autonomous testing, and number-to-modifier feature"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-12-14T07:53:09.753Z",
+      "trigger": "approved",
       "approvalId": "approval_1765647923299_ww3u1xvr4",
       "approvalTitle": "Requirements: Key Remapping Consistency - 9 requirements including systematic investigation, autonomous testing, and number-to-modifier feature"
     }

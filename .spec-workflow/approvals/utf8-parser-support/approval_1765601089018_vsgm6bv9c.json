@@ -3,8 +3,10 @@
   "title": "UTF-8 Parser Support - Design",
   "filePath": ".spec-workflow/specs/utf8-parser-support/design.md",
   "type": "document",
-  "status": "pending",
+  "status": "approved",
   "createdAt": "2025-12-13T04:44:49.018Z",
   "category": "spec",
-  "categoryName": "utf8-parser-support"
+  "categoryName": "utf8-parser-support",
+  "response": "ダッシュボードから承認",
+  "respondedAt": "2025-12-14T07:53:12.394Z"
 }
