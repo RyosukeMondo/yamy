@@ -239,7 +239,7 @@
   - _Requirements: 6_
   - _Prompt: **Role:** QA Engineer with keyboard remapper testing expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Write RapidCheck properties for layer switching following requirement 6. Properties for layer stack consistency, prefix key isolation, layer activation/deactivation. Generate sequences with layer-switching keys. | **Restrictions:** Must understand YAMY layer semantics, properties must capture actual requirements, must test error conditions | **_Leverage:** rc::check, Engine layer API, layer switching documentation | **_Requirements:** 6 | **Success:** Layer switching properties defined and passing, edge cases discovered (if any), comprehensive coverage of layer logic | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions, tests), then mark task as complete [x]
 
-- [ ] 5.4. Configure CI to run property tests
+- [x] 5.4. Configure CI to run property tests
   - File: `.github/workflows/ci.yml` or equivalent
   - Add property test step to CI pipeline
   - Configure 1000 iterations per property (5min max)
