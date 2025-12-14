@@ -105,7 +105,13 @@ void TrayIconQt::forceIconRefresh()
 
 void TrayIconQt::updateTooltip(const QString& text)
 {
-    setToolTip(text);
+    // Defensive: ensure text is not null before setting tooltip
+    // Qt's DBus code can crash on QVariant::toString() with null strings
+    if (!text.isNull() && !text.isEmpty()) {
+        setToolTip(text);
+    } else {
+        setToolTip("YAMY");  // Fallback to simple non-null string
+    }
 }
 
 void TrayIconQt::showNotification(
@@ -726,10 +732,15 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
 
         case yamy::MessageType::EngineStarted:
             setIcon(m_iconRunning);
-            if (m_currentConfigName.isEmpty()) {
+            if (m_currentConfigName.isEmpty() || m_currentConfigName.isNull()) {
                 setToolTip("YAMY - Running");
             } else {
-                setToolTip(QString("YAMY - Running (%1)").arg(m_currentConfigName));
+                QString tooltip = QString("YAMY - Running (%1)").arg(m_currentConfigName);
+                if (!tooltip.isNull()) {
+                    setToolTip(tooltip);
+                } else {
+                    setToolTip("YAMY - Running");
+                }
             }
             m_enabled = true;
             updateMenuState();
@@ -767,7 +778,11 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
 
         case yamy::MessageType::EngineError:
             setIcon(m_iconError);
-            setToolTip(QString("YAMY - Error: %1").arg(data));
+            if (!data.isNull() && !data.isEmpty()) {
+                setToolTip(QString("YAMY - Error: %1").arg(data));
+            } else {
+                setToolTip("YAMY - Error");
+            }
             // Show error notification if enabled (default: enabled)
             if (prefs.shouldShowDesktopNotification(type)) {
                 showNotification(
@@ -781,7 +796,11 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
 
         case yamy::MessageType::ConfigLoading:
             setIcon(m_iconLoading);
-            setToolTip(QString("YAMY - Loading config: %1").arg(data));
+            if (!data.isNull() && !data.isEmpty()) {
+                setToolTip(QString("YAMY - Loading config: %1").arg(data));
+            } else {
+                setToolTip("YAMY - Loading config");
+            }
             break;
 
         case yamy::MessageType::ConfigLoaded:
@@ -790,10 +809,15 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
                 m_currentState == yamy::MessageType::ConfigLoaded) {
                 setIcon(m_iconRunning);
             }
-            if (data.isEmpty()) {
+            if (data.isEmpty() || data.isNull()) {
                 setToolTip("YAMY - Running");
             } else {
-                setToolTip(QString("YAMY - %1").arg(data));
+                QString tooltip = QString("YAMY - %1").arg(data);
+                if (!tooltip.isNull()) {
+                    setToolTip(tooltip);
+                } else {
+                    setToolTip("YAMY - Running");
+                }
             }
             updateMenuState();
             // Show desktop notification if enabled
@@ -809,7 +833,11 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
 
         case yamy::MessageType::ConfigError:
             setIcon(m_iconError);
-            setToolTip(QString("YAMY - Config Error: %1").arg(data));
+            if (!data.isNull() && !data.isEmpty()) {
+                setToolTip(QString("YAMY - Config Error: %1").arg(data));
+            } else {
+                setToolTip("YAMY - Config Error");
+            }
             // Show config error notification if enabled (uses error prefs)
             if (prefs.shouldShowDesktopNotification(type)) {
                 showNotification(
@@ -823,11 +851,16 @@ void TrayIconQt::handleEngineMessage(yamy::MessageType type, const QString& data
 
         case yamy::MessageType::KeymapSwitched:
             // Update tooltip with keymap info but don't change icon
-            if (!data.isEmpty()) {
-                QString tooltip = m_currentConfigName.isEmpty() ?
-                    QString("YAMY - Running [%1]").arg(data) :
-                    QString("YAMY - %1 [%2]").arg(m_currentConfigName, data);
-                setToolTip(tooltip);
+            if (!data.isEmpty() && !data.isNull()) {
+                QString tooltip;
+                if (m_currentConfigName.isEmpty() || m_currentConfigName.isNull()) {
+                    tooltip = QString("YAMY - Running [%1]").arg(data);
+                } else {
+                    tooltip = QString("YAMY - %1 [%2]").arg(m_currentConfigName, data);
+                }
+                if (!tooltip.isNull()) {
+                    setToolTip(tooltip);
+                }
             }
             // Show desktop notification if enabled
             if (prefs.shouldShowDesktopNotification(type)) {

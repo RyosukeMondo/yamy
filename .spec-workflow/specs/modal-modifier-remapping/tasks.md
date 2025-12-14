@@ -714,7 +714,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
 
 ## Phase 4: End-to-End Integration and Testing (Tasks 11-12)
 
-- [ ] 11. Create full integration test with mock evdev device
+- [-] 11. Create full integration test with mock evdev device
   - **Files**:
     - `tests/test_modal_e2e.cpp` (create new file)
   - **Description**: End-to-end test using mock evdev device to simulate real keyboard input

@@ -11,6 +11,7 @@
 #include "../platform/sync.h"
 #include "../platform/ipc.h"
 #include "core/logging/logger.h"
+#include "core/logger/journey_logger.h"
 #include "../../utils/metrics.h"
 
 #include <iomanip>
@@ -501,9 +502,38 @@ void Engine::handleIpcMessage(const yamy::ipc::Message& message)
     switch (message.type) {
         case yamy::ipc::CmdEnableInvestigateMode:
             m_isInvestigateMode = true;
+
+            // Register journey event callback to send formatted events to Investigate Window
+            if (m_eventProcessor) {
+                m_eventProcessor->setJourneyEventCallback(
+                    [this](const yamy::logger::JourneyEvent& journey) {
+                        if (m_ipcChannel && m_ipcChannel->isConnected()) {
+                            // Format the journey event using the same formatter as console output
+                            std::string formattedLine = yamy::logger::JourneyLogger::formatJourneyLine(journey);
+
+                            yamy::ipc::KeyEventNotification notification;
+                            strncpy(notification.keyEvent, formattedLine.c_str(), sizeof(notification.keyEvent) - 1);
+                            notification.keyEvent[sizeof(notification.keyEvent) - 1] = '\0';
+
+                            yamy::ipc::Message msg;
+                            msg.type = yamy::ipc::NtfKeyEvent;
+                            msg.data = &notification;
+                            msg.size = sizeof(notification);
+
+                            m_ipcChannel->send(msg);
+                        }
+                    }
+                );
+            }
             break;
+
         case yamy::ipc::CmdDisableInvestigateMode:
             m_isInvestigateMode = false;
+
+            // Clear journey event callback
+            if (m_eventProcessor) {
+                m_eventProcessor->setJourneyEventCallback(nullptr);
+            }
             break;
         case yamy::ipc::CmdInvestigateWindow:
         {

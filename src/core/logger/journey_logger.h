@@ -113,6 +113,13 @@ public:
      */
     static std::string getDeviceId(int event_number);
 
+    /**
+     * @brief Format a single journey line for display
+     * @param event The journey event to format
+     * @return Formatted string representing the complete journey
+     */
+    static std::string formatJourneyLine(const JourneyEvent& event);
+
 private:
     static bool s_enabled;
     static bool s_use_color;
@@ -126,11 +133,6 @@ private:
     static const char* COLOR_CYAN;    // Number modifier HOLD
     static const char* COLOR_RED;     // Failed/dropped events
     static const char* COLOR_GRAY;    // Passthrough
-
-    /**
-     * @brief Format a single journey line
-     */
-    static std::string formatJourneyLine(const JourneyEvent& event);
 
     /**
      * @brief Get color code based on event type

@@ -32,9 +32,9 @@ EventProcessor::~EventProcessor() = default;
 
 EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev, EventType type, input::ModifierState* io_modState)
 {
-    // Create journey event for tracking (if enabled)
+    // Create journey event for tracking (if console logging OR investigate window is active)
     yamy::logger::JourneyEvent journey;
-    if (yamy::logger::JourneyLogger::isEnabled()) {
+    if (yamy::logger::JourneyLogger::isEnabled() || m_journeyCallback) {
         journey.start_time = std::chrono::steady_clock::now();
         journey.evdev_input = input_evdev;
         journey.is_key_down = (type == EventType::PRESS);
@@ -56,14 +56,14 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
         return ProcessedEvent(0, 0, type, false);
     }
 
-    if (yamy::logger::JourneyLogger::isEnabled()) {
+    if (yamy::logger::JourneyLogger::isEnabled() || m_journeyCallback) {
         journey.yamy_input = yamy_l1;
     }
 
     // Layer 2: Apply substitution (with number modifier support)
     uint16_t yamy_l2 = layer2_applySubstitution(yamy_l1, type, io_modState);
 
-    if (yamy::logger::JourneyLogger::isEnabled()) {
+    if (yamy::logger::JourneyLogger::isEnabled() || m_journeyCallback) {
         journey.yamy_output = yamy_l2;
         journey.was_substituted = (yamy_l1 != yamy_l2);
         // Number modifier info will be filled by layer2 if applicable
@@ -78,7 +78,7 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
         return ProcessedEvent(0, 0, type, false);
     }
 
-    if (yamy::logger::JourneyLogger::isEnabled()) {
+    if (yamy::logger::JourneyLogger::isEnabled() || m_journeyCallback) {
         journey.evdev_output = output_evdev;
         journey.output_key_name = yamy::platform::getKeyName(output_evdev);
         journey.end_time = std::chrono::steady_clock::now();
@@ -86,8 +86,15 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
             journey.end_time - journey.start_time).count();
         journey.valid = true;
 
-        // Log the complete journey
-        yamy::logger::JourneyLogger::logJourney(journey);
+        // Log the complete journey to stdout (if enabled)
+        if (yamy::logger::JourneyLogger::isEnabled()) {
+            yamy::logger::JourneyLogger::logJourney(journey);
+        }
+
+        // Notify callback (for Investigate Window)
+        if (m_journeyCallback) {
+            m_journeyCallback(journey);
+        }
     }
 
     if (m_debugLogging) {

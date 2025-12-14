@@ -8,8 +8,15 @@
 #include <cstdint>
 #include <unordered_map>
 #include <memory>
+#include <functional>
+#include <string>
 
 namespace yamy {
+
+// Forward declaration for JourneyEvent
+namespace logger {
+struct JourneyEvent;
+}
 
 // Forward declaration for ModifierState
 namespace input {
@@ -83,6 +90,20 @@ public:
     /// @return true if handler is set, false otherwise
     bool hasModifierHandler() const { return m_modifierHandler != nullptr; }
 
+    /// Get pointer to modifier handler (for testing/configuration)
+    /// @return Pointer to handler, or nullptr if not set
+    engine::ModifierKeyHandler* getModifierHandler() { return m_modifierHandler.get(); }
+
+    /// Callback type for journey event notifications
+    /// Called after each event is processed with the journey data
+    using JourneyEventCallback = std::function<void(const logger::JourneyEvent&)>;
+
+    /// Set callback for journey event notifications
+    /// @param callback Function to call with journey events (or nullptr to disable)
+    void setJourneyEventCallback(JourneyEventCallback callback) {
+        m_journeyCallback = callback;
+    }
+
 private:
     /// Layer 1: Map evdev code to YAMY scan code
     /// @param evdev Input evdev code
@@ -109,6 +130,7 @@ private:
     const SubstitutionTable& m_substitutions;       ///< Reference to substitution table
     bool m_debugLogging;                            ///< Debug logging enabled flag
     std::unique_ptr<engine::ModifierKeyHandler> m_modifierHandler;  ///< Number modifier handler
+    JourneyEventCallback m_journeyCallback;         ///< Callback for journey event notifications
 };
 
 } // namespace yamy
