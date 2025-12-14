@@ -12,7 +12,7 @@
   - _Requirements: 1, 10_
   - _Prompt: **Role:** Build Engineer with expertise in modern C++ linkers and CMake | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Install Mold linker and configure CMake to automatically detect and use it on Linux following requirements 1, 10. Add fallback to LLD if Mold is not available. Verify linking performance improvement. | **Restrictions:** Must work on both development machines and CI, must provide clear error message if Mold installation fails, fallback must be automatic | **_Leverage:** Use find_program to detect Mold, add_link_options("-fuse-ld=mold") for configuration, test on Linux system | **_Requirements:** 1, 10 | **Success:** Mold is detected and used automatically on Linux, linking time for YAMY reduced by >5x compared to GNU ld, fallback to LLD works correctly | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 1.2. Install and configure LLD linker (Windows)
+- [x] 1.2. Install and configure LLD linker (Windows)
   - File: `CMakeLists.txt`
   - Install LLD (part of LLVM toolchain) on Windows
   - Configure CMake to use lld-link with clang-cl

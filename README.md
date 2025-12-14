@@ -123,6 +123,16 @@ yamy
 
 Download the latest release from the [Releases page](https://github.com/RyosukeMondo/yamy/releases).
 
+#### Fast builds with clang-cl + lld-link
+
+1. Install LLVM (includes clang-cl and lld-link):
+   ```powershell
+   # Default: winget. Use -PackageManager choco to prefer Chocolatey.
+   scripts/windows/install_llvm_lld.ps1
+   ```
+2. Ensure `%ProgramFiles%\\LLVM\\bin` is on your `PATH`.
+3. Configure with clang-cl; CMake auto-detects clang-cl and prefers `lld-link` (falls back to MSVC `link.exe` if LLD is missing).
+
 ## Directory Structure
 
 The project structure has been reorganized for better clarity and maintainability.

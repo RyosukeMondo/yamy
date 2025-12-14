@@ -63,6 +63,23 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
     endif()
 endif()
 
+# Linker Configuration (Windows): prefer lld-link when using clang-cl
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    find_program(CLANG_LLD_LINKER
+        NAMES lld-link lld-link.exe
+        HINTS
+            "$ENV{ProgramFiles}/LLVM/bin"
+            "$ENV{ProgramFiles(x86)}/LLVM/bin"
+    )
+    if(CLANG_LLD_LINKER)
+        message(STATUS "Using lld-link for clang-cl: ${CLANG_LLD_LINKER}")
+        set(CMAKE_LINKER "${CLANG_LLD_LINKER}")
+        add_link_options("/clang:-fuse-ld=lld")
+    else()
+        message(WARNING "clang-cl detected but lld-link not found. Install LLVM to enable fast linking; falling back to MSVC link.exe.")
+    endif()
+endif()
+
 # Output Directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
