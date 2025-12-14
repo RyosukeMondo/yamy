@@ -1,0 +1,444 @@
+# YAMY Engineering Rules for AI Agents
+
+You are an expert C++20 systems programmer working on YAMY, a cross-platform keyboard remapper with <1ms latency requirements.
+
+## Architecture Constraints
+
+### Platform Abstraction (CRITICAL)
+- **NEVER** include platform-specific headers in `src/core/` directory
+- **NEVER** use `#ifdef _WIN32` or `#ifdef __linux__` in core engine code
+- **MUST** place ALL platform-specific code in `src/platform/windows/` or `src/platform/linux/`
+- **MUST** use factory functions (`createWindowSystem()`) to instantiate platform implementations
+- Core engine (`src/core/`) **MUST** be platform-agnostic - compilable on all platforms without changes
+
+### Concurrency Model
+- Input processing loop is **single-threaded** (no mutexes on critical path)
+- Quill backend thread handles I/O asynchronously
+- Modifier state machine guarantees no stuck keys through lock-free atomic operations
+- **NEVER** introduce blocking I/O on the input event processing path
+
+### State Management
+- **NEVER** use global static variables (except constants)
+- All persistent state lives in `Engine` class or injected dependencies
+- Use RAII for resource management (files, OS handles, memory)
+- Prefer `std::unique_ptr` over raw pointers for ownership semantics
+
+### Performance Requirements
+- Keymap lookup **MUST** be O(1) average case (hash table required)
+- Event processing latency **MUST** be <1ms (99th percentile)
+- Logging latency **MUST** be <1μs on critical path (Quill SPSC ring buffer)
+- Build incremental changes **MUST** complete in <5 seconds
+
+## Coding Standards
+
+### Contracts (Microsoft GSL)
+- **MUST** add `Expects()` preconditions to ALL public API functions
+- **MUST** add `Ensures()` postconditions to critical functions (e.g., state invariants)
+- **MUST** use `gsl::span<T>` instead of pointer+size parameters
+- **MUST** use `gsl::not_null<T*>` for non-nullable pointer parameters
+- Example:
+  ```cpp
+  void processEvents(gsl::span<const InputEvent> events) {
+      Expects(!events.empty());
+      Expects(m_initialized);
+      // ... process events
+      Ensures(m_activeKeys.size() <= MAX_KEYS);
+  }
+  ```
+
+### Logging (Quill)
+- **MUST** use Quill logging macros: `LOG_INFO`, `LOG_ERROR`, `LOG_DEBUG`
+- **NEVER** use `printf`, `std::cout`, `std::cerr`, or `fprintf`
+- **MUST** use structured logging with named parameters:
+  ```cpp
+  LOG_INFO(logger, "Key {code} mapped to {action}", "code", key.code, "action", action.name);
+  ```
+- **NEVER** log on critical input path (inside event processing loop)
+- **MUST** log configuration changes, errors, and state transitions
+
+### Testing Requirements
+- **MUST** write property-based tests for state machines using RapidCheck
+- **MUST** write unit tests for pure functions using Catch2
+- **MUST** achieve minimum 80% code coverage (90% for critical paths)
+- Property test example:
+  ```cpp
+  rc::check("All key-down events have matching key-up",
+    [](const std::vector<InputEvent>& events) {
+      Engine engine;
+      for (auto e : events) engine.process(e);
+      RC_ASSERT(engine.activeKeys().empty());
+    });
+  ```
+
+### Error Handling
+- Core engine: **NO exceptions** (use return codes or `std::optional`)
+- UI layer: Exceptions OK (Qt uses them)
+- **MUST** validate all input at API boundaries
+- **MUST** log ALL error conditions with context
+- Prefer fail-fast over error recovery in debug builds
+
+## Naming Conventions
+
+### Files
+- Implementation files: `snake_case.cpp`
+- Header files: `snake_case.h`
+- Use `#pragma once` (NEVER use header guards)
+
+### Classes and Types
+- Classes: `PascalCase` (e.g., `WindowSystem`, `ModifierState`)
+- Structs: `PascalCase` (e.g., `InputEvent`, `KeyBinding`)
+- Enums: `PascalCase` with scoped enum class:
+  ```cpp
+  enum class KeyState { Released, Pressed };
+  ```
+- Interfaces: No `I` prefix (differs from Windows convention for new code)
+
+### Functions and Variables
+- Functions: `camelCase` (e.g., `processEvent`, `getForegroundWindow`)
+- Local variables: `camelCase` (e.g., `inputEvent`, `keyCode`)
+- Member variables: `m_` prefix (e.g., `m_isEnabled`, `m_keyBindings`)
+- Global constants: `UPPER_SNAKE_CASE` (e.g., `MAX_KEYS`, `DEFAULT_TIMEOUT`)
+- Function parameters:
+  - Input: `i_` prefix (e.g., `i_keyCode`, `i_action`)
+  - Output: `o_` prefix (e.g., `o_result`, `o_error`)
+  - Input/Output: `io_` prefix (e.g., `io_buffer`)
+
+### Example
+```cpp
+class InputProcessor {
+public:
+    void processEvent(const InputEvent& i_event, Action* o_action);
+
+private:
+    bool m_isEnabled;
+    std::unique_ptr<Keymap> m_currentKeymap;
+};
+```
+
+## File Organization
+
+### Include Order (Mandatory)
+1. Corresponding header (if .cpp file)
+2. Standard library headers (`<iostream>`, `<vector>`, etc.)
+3. Third-party library headers (`<quill/Quill.h>`, `<gsl/gsl>`, etc.)
+4. Local project headers (`"keymap.h"`, `"engine.h"`, etc.)
+
+### Header Pattern
+```cpp
+#pragma once
+
+// Standard library
+#include <vector>
+#include <memory>
+
+// Third-party
+#include <gsl/gsl>
+
+// Local
+#include "input_event.h"
+
+/**
+ * @file keymap.h
+ * @brief Key binding registry with O(1) lookup
+ *
+ * Usage:
+ * @code
+ * Keymap km;
+ * km.define(ModifiedKey(VK_A, M_Ctrl), action);
+ * @endcode
+ */
+class Keymap {
+public:
+    /**
+     * @brief Define a key binding
+     * @param i_key Key combination
+     * @param i_action Action to execute (takes ownership)
+     * @pre i_action must not be nullptr
+     */
+    void define(const ModifiedKey& i_key, gsl::not_null<Action*> i_action);
+
+private:
+    std::unordered_map<uint64_t, std::unique_ptr<Action>> m_bindings;
+};
+```
+
+### Implementation Pattern
+```cpp
+#include "keymap.h"
+
+// Other includes
+#include <algorithm>
+#include "logger.h"
+
+// Anonymous namespace for file-local helpers
+namespace {
+    uint64_t computeHash(const ModifiedKey& key) {
+        return static_cast<uint64_t>(key.code) |
+               (static_cast<uint64_t>(key.modifiers) << 32);
+    }
+}
+
+void Keymap::define(const ModifiedKey& i_key, gsl::not_null<Action*> i_action) {
+    Expects(i_action != nullptr);
+
+    const uint64_t hash = computeHash(i_key);
+    m_bindings[hash] = std::unique_ptr<Action>(i_action);
+
+    LOG_DEBUG(logger, "Defined binding for key {hash}", "hash", hash);
+}
+```
+
+## Code Style
+
+### Indentation
+- 4 spaces (NEVER tabs)
+- Continuation lines: +4 spaces
+
+### Braces
+- Function braces on new line (Windows convention retained)
+- Statement braces on same line:
+  ```cpp
+  void function()
+  {
+      if (condition) {
+          // statement
+      } else {
+          // statement
+      }
+  }
+  ```
+
+### Line Length
+- Target: 100 characters
+- Maximum: 120 characters
+- Break long lines at logical points
+
+### Comments
+- Headers: Doxygen comments explaining **intent** and **usage**
+- Implementation: Minimal comments - code should be self-documenting
+- Comment "why" not "what":
+  ```cpp
+  // Edge case: Windows sends duplicate key-down events on auto-repeat
+  if (event.repeat) {
+      return;
+  }
+  ```
+
+## Build System (CMake)
+
+### Target Configuration
+- **MUST** use `target_*` commands (not global `include_directories`)
+- Example:
+  ```cmake
+  target_link_libraries(yamy_core PRIVATE quill::quill Microsoft.GSL::GSL)
+  target_include_directories(yamy_core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_compile_definitions(yamy_core PRIVATE YAMY_VERSION="${PROJECT_VERSION}")
+  ```
+
+### Platform-Specific Sources
+- Use conditional source lists:
+  ```cmake
+  if(WIN32)
+      list(APPEND PLATFORM_SOURCES src/platform/windows/*.cpp)
+  elseif(UNIX AND NOT APPLE)
+      list(APPEND PLATFORM_SOURCES src/platform/linux/*.cpp)
+  endif()
+  ```
+
+### Configuration
+- **NEVER** modify `CMakeLists.txt` for personal build settings
+- **MUST** use `CMakePresets.json` for configuration
+- Use presets: `cmake --preset linux-debug`, `cmake --build --preset linux-debug`
+
+## Dependencies (Conan 2.0)
+
+### Adding Dependencies
+- **MUST** add to `conanfile.txt` with exact versions:
+  ```
+  [requires]
+  quill/4.1.0
+  ms-gsl/4.0.0
+  rapidcheck/cci.20230815
+  catch2/3.5.0
+  ```
+- **NEVER** vendor third-party libraries in source tree
+- **MUST** use Conan binary cache to reduce build times
+
+### Finding Dependencies
+- Use `find_package` in CMake:
+  ```cmake
+  find_package(quill REQUIRED)
+  target_link_libraries(yamy_core PRIVATE quill::quill)
+  ```
+
+## Code Metrics (Enforced by Pre-Commit Hooks)
+
+- **MUST** keep files ≤500 lines (excluding comments and blank lines)
+- **MUST** keep functions ≤50 lines
+- **MUST** keep cyclomatic complexity ≤15 per function (≤10 for critical paths)
+- Violations will **FAIL** pre-commit hooks and CI builds
+
+## Modern C++ Features (C++20)
+
+### Preferred Features
+- Use `auto` for iterators, explicit types for arithmetic/booleans
+- Use range-based for loops over index loops:
+  ```cpp
+  for (const auto& event : events) {  // Good
+      process(event);
+  }
+
+  for (size_t i = 0; i < events.size(); ++i) {  // Avoid unless index needed
+      process(events[i]);
+  }
+  ```
+- Use structured bindings:
+  ```cpp
+  auto [success, error] = parseConfig(path);
+  ```
+- Use `std::optional` for nullable values:
+  ```cpp
+  std::optional<Action*> lookup(const Key& key);
+  ```
+
+### Avoid
+- **NO** raw `new`/`delete` (use smart pointers)
+- **NO** C-style casts (use `static_cast`, `reinterpret_cast`)
+- **NO** `NULL` (use `nullptr`)
+- **NO** macros for constants (use `constexpr` or `const`)
+
+## Memory Safety
+
+### Ownership
+- Use `std::unique_ptr` for exclusive ownership
+- Use `std::shared_ptr` sparingly (prefer clear ownership)
+- Use `gsl::not_null<T*>` for non-owning pointers that cannot be null
+- Use `T*` for optional non-owning pointers
+- Use `gsl::span<T>` for array views (replaces pointer+size)
+
+### RAII Pattern
+```cpp
+class ResourceHolder {
+public:
+    ResourceHolder() : m_handle(acquire()) { }
+    ~ResourceHolder() { if (m_handle) release(m_handle); }
+
+    // Delete copy, allow move
+    ResourceHolder(const ResourceHolder&) = delete;
+    ResourceHolder& operator=(const ResourceHolder&) = delete;
+    ResourceHolder(ResourceHolder&& other) noexcept
+        : m_handle(std::exchange(other.m_handle, nullptr)) { }
+
+private:
+    Handle m_handle;
+};
+```
+
+## Documentation
+
+### Headers (High Density)
+- **MUST** include Doxygen file comment
+- **MUST** include Doxygen class comment with usage example
+- **MUST** document all public methods with `@param`, `@return`, `@pre`, `@post`
+- Example in file organization section above
+
+### Implementation (Low Density)
+- Remove comments that repeat code
+- Keep only "why" comments (performance notes, edge cases, algorithm explanations)
+- Preserve `TODO` comments with GitHub issue links
+
+## Anti-Patterns (NEVER DO THIS)
+
+### Platform Code in Core
+```cpp
+// ❌ WRONG - platform-specific code in core/
+void Engine::processEvent() {
+    #ifdef _WIN32
+        HWND hwnd = GetForegroundWindow();
+    #else
+        Window wid = getForegroundWindow();
+    #endif
+}
+
+// ✅ CORRECT - use platform abstraction
+void Engine::processEvent() {
+    WindowHandle hwnd = m_windowSystem->getForegroundWindow();
+}
+```
+
+### Blocking I/O on Critical Path
+```cpp
+// ❌ WRONG - synchronous file I/O in event loop
+void Engine::processEvent(const InputEvent& event) {
+    std::ofstream log("event.log", std::ios::app);
+    log << event.code << std::endl;  // BLOCKS!
+}
+
+// ✅ CORRECT - async logging via Quill
+void Engine::processEvent(const InputEvent& event) {
+    LOG_DEBUG(logger, "Event {code}", "code", event.code);  // <1μs
+}
+```
+
+### Magic Numbers
+```cpp
+// ❌ WRONG
+if (state == 9) { ... }
+
+// ✅ CORRECT
+enum class WindowState { Restore = 9 };
+if (state == WindowState::Restore) { ... }
+```
+
+### God Objects
+```cpp
+// ❌ WRONG - 5000 line class doing everything
+class Yamy {
+    void processInput();
+    void renderGUI();
+    void parseConfig();
+    void manageWindows();
+    // ... 100 more methods
+};
+
+// ✅ CORRECT - single responsibility
+class Engine { /* input processing */ };
+class ConfigParser { /* parsing */ };
+class WindowManager { /* window ops */ };
+```
+
+## When You're Stuck
+
+1. **Read `docs/map.md`** to locate relevant files
+2. **Check `tech.md`** for architecture and technology decisions
+3. **Check `structure.md`** for patterns and conventions
+4. **Search for similar existing code** - follow established patterns
+5. **Ask clarifying questions** before making architectural changes
+
+## Workflow
+
+1. Read relevant headers to understand interfaces
+2. Implement following established patterns
+3. Add contracts (`Expects`/`Ensures`) to new functions
+4. Add Quill logging for state changes and errors
+5. Write RapidCheck properties for state machines
+6. Write Catch2 unit tests for pure functions
+7. Run pre-commit hooks before committing
+8. Verify code metrics pass (`cmake --build --target check-metrics`)
+
+## Absolutely Forbidden
+
+- ❌ Platform-specific code in `src/core/`
+- ❌ Blocking I/O on input event processing path
+- ❌ Global static variables (except constants)
+- ❌ `printf`, `std::cout`, `std::cerr` for logging
+- ❌ Raw `new`/`delete` for memory management
+- ❌ Pointer+size parameters (use `gsl::span`)
+- ❌ Exceptions in core engine (return codes only)
+- ❌ Files >500 lines, functions >50 lines
+- ❌ Cyclomatic complexity >15
+- ❌ Code without tests (minimum 80% coverage)
+
+---
+
+**Remember**: YAMY is a high-performance system tool. Every microsecond matters on the critical path. Follow these rules to maintain code quality, performance, and cross-platform compatibility.
