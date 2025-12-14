@@ -802,7 +802,7 @@
 
 ### Phase 4: Testing and Validation
 
-- [ ] 4.1 Write unit tests for WindowSystemLinux property queries
+- [x] 4.1 Write unit tests for WindowSystemLinux property queries
   - Files:
     - tests/platform/window_system_linux_test.cpp (new)
   - Description:
