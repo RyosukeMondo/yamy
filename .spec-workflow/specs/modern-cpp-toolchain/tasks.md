@@ -261,7 +261,7 @@
 
 ## Phase 6: AI Compatibility
 
-- [ ] 6.1. Create docs/map.md codebase map
+- [x] 6.1. Create docs/map.md codebase map
   - File: `docs/map.md`
   - List all major source files with brief descriptions
   - Organize by subsystem (engine, platform, input, etc.)
@@ -271,7 +271,7 @@
   - _Requirements: 8_
   - _Prompt: **Role:** Technical Writer with AI-driven development expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create codebase map at docs/map.md following requirement 8. List all major files organized by subsystem. Include: file path, brief description (1 sentence), key constraint or characteristic. Keep total <100 lines. | **Restrictions:** Be concise (max 1 sentence per file), organize logically, include only important files, optimize for AI context window | **_Leverage:** Existing directory structure, source file headers, architecture knowledge | **_Requirements:** 8 | **Success:** Map file is <100 lines, covers all major subsystems, AI agent can locate files in <3 queries (tested empirically) | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 6.2. Create .clinerules coding guidelines
+- [x] 6.2. Create .clinerules coding guidelines
   - File: `.clinerules`
   - Define architecture constraints (platform abstraction, no hot reload)
   - Specify coding style (PascalCase classes, camelCase functions, m_ prefix)
