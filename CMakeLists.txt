@@ -2015,6 +2015,30 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             pthread
         )
 
+        # -----------------------------------------------------------------------------
+        # Target: benchmark_logging (Quill Logging Performance Benchmark)
+        # Standalone performance benchmark to measure LOG_INFO hot-path latency
+        # Part of task 3.4 in modern-cpp-toolchain spec
+        # -----------------------------------------------------------------------------
+        set(BENCHMARK_LOGGING_SOURCES
+            tests/benchmark_logging.cpp
+            src/utils/logger.cpp
+        )
+
+        add_executable(benchmark_logging
+            ${BENCHMARK_LOGGING_SOURCES}
+        )
+
+        target_include_directories(benchmark_logging PRIVATE
+            src
+            src/utils
+        )
+
+        target_link_libraries(benchmark_logging PRIVATE
+            yamy_dependencies
+            pthread
+        )
+
         else()
             message(STATUS "Skipping Qt5 GUI-dependent tests (Qt5 Widgets/Gui/not found)")
         endif() # Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6Gui_FOUND

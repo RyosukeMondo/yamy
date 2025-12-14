@@ -135,7 +135,7 @@
   - _Requirements: 4_
   - _Prompt: **Role:** C++ Developer with structured logging expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Configure Quill JSON output in logger wrapper following requirement 4. Use JsonFileHandler, set log file path to logs/yamy.json, configure rotation (10MB max). Verify JSON format includes timestamp, level, message, structured fields. | **Restrictions:** JSON must be valid (parseable by jq), rotation must work correctly, log directory must be created automatically | **_Leverage:** quill::JsonFileHandler, FileHandlerConfig for rotation, JSON validator | **_Requirements:** 4 | **Success:** Logs written to logs/yamy.json, JSON is valid, rotation works at 10MB, structured fields appear correctly | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 3.4. Benchmark logging performance
+- [x] 3.4. Benchmark logging performance
   - File: `tests/benchmark_logging.cpp`
   - Create microbenchmark for LOG_INFO latency
   - Measure hot-path overhead (99th percentile)
