@@ -1,6 +1,8 @@
 #include "ipc_client_gui.h"
 
 #include <algorithm>
+#include <QDebug>
+#include <QMetaType>
 
 #include "core/platform/ipc_channel_factory.h"
 
@@ -18,12 +20,14 @@ IPCClientGUI::IPCClientGUI(QObject* parent)
     , m_lastConnected(false)
     , m_shouldReconnect(false)
 {
+    qRegisterMetaType<yamy::ipc::Message>("yamy::ipc::Message");
+
     if (m_channel) {
         connect(m_channel.get(),
                 &yamy::platform::IIPCChannel::messageReceived,
                 this,
                 &IPCClientGUI::handleMessage,
-                Qt::QueuedConnection);
+                Qt::DirectConnection);
     }
 
     m_connectionPoller.setInterval(500);
@@ -72,6 +76,7 @@ bool IPCClientGUI::isConnected() const
 
 void IPCClientGUI::sendGetStatus()
 {
+    qInfo().noquote() << "[IPCClientGUI]" << "send CmdGetStatus";
     sendMessage(yamy::MessageType::CmdGetStatus, nullptr, 0);
 }
 
@@ -79,6 +84,7 @@ void IPCClientGUI::sendSetEnabled(bool enabled)
 {
     yamy::CmdSetEnabledRequest request{};
     request.enabled = enabled;
+    qInfo().noquote() << "[IPCClientGUI]" << "send CmdSetEnabled" << enabled;
     sendMessage(yamy::MessageType::CmdSetEnabled, &request, sizeof(request));
 }
 
@@ -86,6 +92,7 @@ void IPCClientGUI::sendSwitchConfig(const QString& configName)
 {
     yamy::CmdSwitchConfigRequest request{};
     copyStringField(configName, request.configName);
+    qInfo().noquote() << "[IPCClientGUI]" << "send CmdSwitchConfig" << configName;
     sendMessage(yamy::MessageType::CmdSwitchConfig, &request, sizeof(request));
 }
 
@@ -93,6 +100,7 @@ void IPCClientGUI::sendReloadConfig(const QString& configName)
 {
     yamy::CmdReloadConfigRequest request{};
     copyStringField(configName, request.configName);
+    qInfo().noquote() << "[IPCClientGUI]" << "send CmdReloadConfig" << configName;
     sendMessage(yamy::MessageType::CmdReloadConfig, &request, sizeof(request));
 }
 
@@ -102,6 +110,9 @@ void IPCClientGUI::handleMessage(const yamy::ipc::Message& message)
     if (rawType == static_cast<uint32_t>(yamy::MessageType::RspStatus) &&
         message.size >= sizeof(yamy::RspStatusPayload)) {
         const auto* payload = static_cast<const yamy::RspStatusPayload*>(message.data);
+        qInfo().noquote() << "[IPCClientGUI]" << "received RspStatus"
+                          << "engineRunning:" << payload->engineRunning
+                          << "enabled:" << payload->enabled;
         emit statusReceived(*payload);
         return;
     }
@@ -109,6 +120,8 @@ void IPCClientGUI::handleMessage(const yamy::ipc::Message& message)
     if (rawType == static_cast<uint32_t>(yamy::MessageType::RspConfigList) &&
         message.size >= sizeof(yamy::RspConfigListPayload)) {
         const auto* payload = static_cast<const yamy::RspConfigListPayload*>(message.data);
+        qInfo().noquote() << "[IPCClientGUI]" << "received RspConfigList count"
+                          << payload->count;
         emit configListReceived(*payload);
         return;
     }
@@ -127,6 +140,7 @@ void IPCClientGUI::pollConnectionState()
     }
 
     if (!connected && m_shouldReconnect) {
+        qInfo().noquote() << "[IPCClientGUI]" << "disconnected, scheduling reconnect";
         scheduleReconnectAttempt();
     }
 }
@@ -137,6 +151,7 @@ void IPCClientGUI::attemptReconnect()
         return;
     }
 
+    qInfo().noquote() << "[IPCClientGUI]" << "attempting reconnect to" << m_serverName;
     m_channel->connect(m_serverName.toStdString());
 }
 
@@ -168,10 +183,17 @@ void IPCClientGUI::scheduleReconnectAttempt()
     static constexpr int kBackoffMs[kMaxAttempts] = {1000, 2000, 4000};
 
     if (m_reconnectTimer.isActive() || m_reconnectAttempts >= kMaxAttempts) {
+        if (m_reconnectAttempts >= kMaxAttempts) {
+            qWarning().noquote() << "[IPCClientGUI]"
+                                 << "reconnect attempts exhausted";
+        }
         return;
     }
 
     const int delay = kBackoffMs[m_reconnectAttempts];
     ++m_reconnectAttempts;
+    qInfo().noquote() << "[IPCClientGUI]"
+                      << "schedule reconnect attempt" << m_reconnectAttempts
+                      << "in" << delay << "ms";
     m_reconnectTimer.start(delay);
 }

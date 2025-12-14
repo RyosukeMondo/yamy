@@ -543,6 +543,27 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
                 Qt5::Network
                 yamy_qt_gui
             )
+
+            add_executable(yamy_gui_probe
+                tools/main_window_gui_probe.cpp
+                src/ui/qt/main_window_gui.cpp
+                src/ui/qt/ipc_client_gui.cpp
+                src/core/platform/linux/ipc_channel_qt.cpp
+                src/core/platform/ipc_channel_interface.cpp
+            )
+            set_target_properties(yamy_gui_probe PROPERTIES AUTOMOC ON)
+            target_include_directories(yamy_gui_probe PRIVATE
+                src
+                src/ui/qt
+                src/core/platform
+                src/core/platform/linux
+            )
+            target_link_libraries(yamy_gui_probe PRIVATE
+                Qt5::Widgets
+                Qt5::Gui
+                Qt5::Core
+                Qt5::Network
+            )
         else()
             message(WARNING "Qt5 GUI components not found - building headless version")
             add_executable(yamy ${STUB_SOURCES})

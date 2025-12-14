@@ -6,11 +6,12 @@
 
 class QLabel;
 class IPCClientGUI;
+class QString;
 
 class MainWindowGUI : public QMainWindow {
     Q_OBJECT
 public:
-    explicit MainWindowGUI(QWidget* parent = nullptr);
+    explicit MainWindowGUI(const QString& serverName = QString(), QWidget* parent = nullptr);
     ~MainWindowGUI() override;
 
 private slots:

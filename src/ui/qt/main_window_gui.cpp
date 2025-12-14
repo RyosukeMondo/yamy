@@ -1,12 +1,13 @@
 #include "main_window_gui.h"
 
+#include <QDebug>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QWidget>
 
 #include "ipc_client_gui.h"
 
-MainWindowGUI::MainWindowGUI(QWidget* parent)
+MainWindowGUI::MainWindowGUI(const QString& serverName, QWidget* parent)
     : QMainWindow(parent),
       m_ipcClient(std::make_unique<IPCClientGUI>(this)),
       m_connectionLabel(new QLabel(this)) {
@@ -24,7 +25,11 @@ MainWindowGUI::MainWindowGUI(QWidget* parent)
     connect(m_ipcClient.get(), &IPCClientGUI::connectionStateChanged, this, &MainWindowGUI::handleConnectionChange);
     connect(m_ipcClient.get(), &IPCClientGUI::statusReceived, this, &MainWindowGUI::handleStatusReceived);
 
-    m_ipcClient->connectToDaemon();
+    if (!serverName.isEmpty()) {
+        m_ipcClient->connectToDaemon(serverName.toStdString());
+    } else {
+        m_ipcClient->connectToDaemon();
+    }
 }
 
 MainWindowGUI::~MainWindowGUI() {
@@ -49,4 +54,5 @@ void MainWindowGUI::updateStatusLabel(const QString& text) {
     if (m_connectionLabel) {
         m_connectionLabel->setText(text);
     }
+    qInfo().noquote() << "[MainWindowGUI]" << text;
 }

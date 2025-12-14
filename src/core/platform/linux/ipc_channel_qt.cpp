@@ -234,6 +234,12 @@ void IPCChannelQt::processReceiveBuffer() {
         msg.data = msgData;
         msg.size = dataSize;
 
+        std::cout << "[IPCChannelQt] Received message type 0x"
+                  << std::hex << messageType << std::dec
+                  << " size " << dataSize
+                  << (m_isServerMode ? " (server)" : " (client)")
+                  << std::endl;
+
         // Emit signal
         emit messageReceived(msg);
 

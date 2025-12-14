@@ -129,7 +129,7 @@
   - _Requirements: 1, 2_
   - _Prompt: **Role:** Qt UI Developer specializing in rapid prototyping | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create minimal MainWindowGUI prototype in src/ui/qt/main_window_gui.cpp with only connection status display following requirements 1, 2. Validate IPC communication before building full UI. | **Restrictions:** Keep UI minimal (just connection status), focus on validating IPC integration, no complex layouts yet | **_Leverage:** IPCClientGUI from task 2.1, Qt QLabel for status display | **_Requirements:** 1, 2 | **Success:** Prototype window shows connection status correctly, updates when daemon starts/stops, IPC communication is verified working | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (components, integrations), then mark task as complete [x]
 
-- [ ] 3.2. Test prototype with real daemon
+- [x] 3.2. Test prototype with real daemon
   - Start yamy daemon with IPC enabled
   - Launch minimal GUI prototype
   - Verify connection status updates correctly
