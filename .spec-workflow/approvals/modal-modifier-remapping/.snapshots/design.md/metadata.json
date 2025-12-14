@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/modal-modifier-remapping/design.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-14T04:33:28.492Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765686808486_5oahc8q2p",
+      "approvalTitle": "Design: Modal Modifier Remapping"
+    }
+  ]
+}

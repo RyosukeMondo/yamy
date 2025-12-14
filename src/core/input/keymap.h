@@ -7,7 +7,7 @@
 #  define _KEYMAP_H
 
 #  include "keyboard.h"
-#  include "function.h"
+#  include "../functions/function.h"
 #  include <vector>
 #  include <memory>
 

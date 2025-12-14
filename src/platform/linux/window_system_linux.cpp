@@ -1,4 +1,5 @@
 ﻿#include "core/platform/window_system_interface.h"
+#include "window_system_linux_queries.h"
 #include <iostream>
 #include <map>
 #include <X11/Xlib.h>
@@ -22,6 +23,9 @@ private:
     Display* m_display;
     Window m_rootWindow;
     std::map<std::string, Atom> m_atomCache;
+
+    // Real implementations
+    WindowSystemLinuxQueries m_queries;
 
     // Helper method for atom caching
     Atom getAtom(const char* name) {
@@ -59,46 +63,35 @@ public:
     }
 
     WindowHandle getForegroundWindow() override {
-        std::cerr << "[STUB] getForegroundWindow()" << std::endl;
-        return nullptr;
+        return m_queries.getForegroundWindow();
     }
 
     WindowHandle windowFromPoint(const Point& pt) override {
-        std::cerr << "[STUB] windowFromPoint(" << pt.x << ", " << pt.y << ")" << std::endl;
-        return nullptr;
+        return m_queries.windowFromPoint(pt);
     }
 
     bool getWindowRect(WindowHandle hwnd, Rect* rect) override {
-        std::cerr << "[STUB] getWindowRect()" << std::endl;
-        if (rect) {
-            *rect = Rect(0, 0, 800, 600); // Default rect
-        }
-        return false;
+        return m_queries.getWindowRect(hwnd, rect);
     }
 
     std::string getWindowText(WindowHandle hwnd) override {
-        std::cerr << "[STUB] getWindowText()" << std::endl;
-        return "Stub Window";
+        return m_queries.getWindowText(hwnd);
     }
 
     std::string getTitleName(WindowHandle hwnd) override {
-        std::cerr << "[STUB] getTitleName()" << std::endl;
-        return "Stub Title";
+        return m_queries.getTitleName(hwnd);
     }
 
     std::string getClassName(WindowHandle hwnd) override {
-        std::cerr << "[STUB] getClassName()" << std::endl;
-        return "StubClass";
+        return m_queries.getClassName(hwnd);
     }
 
     uint32_t getWindowThreadId(WindowHandle hwnd) override {
-        std::cerr << "[STUB] getWindowThreadId()" << std::endl;
-        return 0;
+        return m_queries.getWindowThreadId(hwnd);
     }
 
     uint32_t getWindowProcessId(WindowHandle hwnd) override {
-        std::cerr << "[STUB] getWindowProcessId()" << std::endl;
-        return 0;
+        return m_queries.getWindowProcessId(hwnd);
     }
 
     bool setForegroundWindow(WindowHandle hwnd) override {

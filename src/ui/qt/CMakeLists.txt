@@ -44,6 +44,7 @@ set(QT_GUI_SOURCES
     crash_report_dialog.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
     ${CMAKE_SOURCE_DIR}/src/core/platform/ipc_channel_interface.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/platform/linux/ipc_channel_qt.cpp
 )
 
 # Qt header files
@@ -70,6 +71,7 @@ set(QT_GUI_HEADERS
     crash_report_dialog.h
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
     ${CMAKE_SOURCE_DIR}/src/core/platform/ipc_channel_interface.h
+    ${CMAKE_SOURCE_DIR}/src/core/platform/linux/ipc_channel_qt.h
 )
 
 # Qt UI files (Designer) - Not used, using code-based layouts

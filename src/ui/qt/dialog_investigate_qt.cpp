@@ -530,6 +530,8 @@ void DialogInvestigateQt::showEvent(QShowEvent* event)
     if (m_ipcChannel && m_ipcChannel->isConnected()) {
         yamy::ipc::Message message;
         message.type = yamy::ipc::CmdEnableInvestigateMode;
+        message.data = nullptr;
+        message.size = 0;
         m_ipcChannel->send(message);
     }
 }
@@ -540,6 +542,8 @@ void DialogInvestigateQt::hideEvent(QHideEvent* event)
     if (m_ipcChannel && m_ipcChannel->isConnected()) {
         yamy::ipc::Message message;
         message.type = yamy::ipc::CmdDisableInvestigateMode;
+        message.data = nullptr;
+        message.size = 0;
         m_ipcChannel->send(message);
     }
 }

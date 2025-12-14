@@ -56,10 +56,10 @@ public slots:
 
 private slots:
     void onClearStats();
+    void updateUI();
 
 private:
     void setupUI();
-    void updateUI();
     void updateLevelDisplay();
     void updateCategoryDisplay();
     void updateBufferDisplay();

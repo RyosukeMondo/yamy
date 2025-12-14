@@ -7,7 +7,7 @@
 #  define _SETTING_H
 
 
-#  include "keymap.h"
+#  include "../input/keymap.h"
 #  include "parser.h"
 #  include "multithread.h"
 #  include "../utils/config_store.h"

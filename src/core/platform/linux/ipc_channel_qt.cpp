@@ -1,7 +1,9 @@
 #include "ipc_channel_qt.h"
 #include <QDataStream>
+#include <QBuffer>
 #include <QFile>
 #include <iostream>
+#include <climits>
 #include <unistd.h>
 
 namespace yamy::platform {
@@ -121,8 +123,10 @@ void IPCChannelQt::send(const ipc::Message& msg) {
     }
 
     // Serialize message: 4-byte length (big-endian) + MessageType (4 bytes) + data
-    QByteArray buffer;
-    QDataStream stream(&buffer, QIODevice::WriteOnly);
+    QByteArray bufferData;
+    QBuffer buffer(&bufferData);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
     stream.setByteOrder(QDataStream::BigEndian);
 
     // Calculate total size: MessageType (4 bytes) + data size
@@ -134,13 +138,17 @@ void IPCChannelQt::send(const ipc::Message& msg) {
     // Write message type
     stream << static_cast<uint32_t>(msg.type);
 
-    // Write message data
-    if (msg.data && msg.size > 0) {
-        stream.writeRawData(static_cast<const char*>(msg.data), msg.size);
+    // Write message data - validate size is within reasonable bounds
+    if (msg.data && msg.size > 0 && msg.size < INT_MAX) {
+        stream.writeRawData(static_cast<const char*>(msg.data), static_cast<int>(msg.size));
+    } else if (msg.size >= INT_MAX) {
+        std::cerr << "[IPCChannelQt] Error: Message size too large: " << msg.size << std::endl;
+        return;  // Drop message
     }
 
     // Send to socket
-    socket->write(buffer);
+    buffer.close();
+    socket->write(bufferData);
     socket->flush();
 }
 
@@ -176,8 +184,9 @@ void IPCChannelQt::processReceiveBuffer() {
             break;
         }
 
-        // Read length prefix (big-endian)
-        QDataStream lengthStream(m_receiveBuffer);
+        // Read length prefix (big-endian) - copy first 4 bytes to ensure read-only access
+        QByteArray lengthBytes = m_receiveBuffer.left(4);
+        QDataStream lengthStream(&lengthBytes, QIODevice::ReadOnly);
         lengthStream.setByteOrder(QDataStream::BigEndian);
         uint32_t messageSize;
         lengthStream >> messageSize;
@@ -193,19 +202,22 @@ void IPCChannelQt::processReceiveBuffer() {
         // Remove processed message from buffer
         m_receiveBuffer.remove(0, 4 + messageSize);
 
-        // Deserialize message
-        QDataStream messageStream(messageData);
+        // Deserialize message - use QDataStream with ReadOnly mode
+        QDataStream messageStream(&messageData, QIODevice::ReadOnly);
         messageStream.setByteOrder(QDataStream::BigEndian);
 
         uint32_t messageType;
         messageStream >> messageType;
 
-        // Read remaining data
+        // Read remaining data - validate size
         size_t dataSize = messageSize - sizeof(uint32_t);
         QByteArray data;
-        if (dataSize > 0) {
+        if (dataSize > 0 && dataSize < INT_MAX) {
             data.resize(dataSize);
-            messageStream.readRawData(data.data(), dataSize);
+            messageStream.readRawData(data.data(), static_cast<int>(dataSize));
+        } else if (dataSize >= INT_MAX) {
+            std::cerr << "[IPCChannelQt] Error: Data size too large: " << dataSize << std::endl;
+            continue;  // Skip this message
         }
 
         // Create message struct
