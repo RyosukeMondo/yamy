@@ -458,7 +458,8 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
 
     # Linux platform backend sources
     set(STUB_SOURCES
-        src/app/main_linux.cpp
+        src/app/main.cpp
+        src/app/engine_adapter.cpp
         src/platform/linux/x11_connection.cpp
         src/platform/linux/window_system_linux.cpp
         src/platform/linux/window_system_linux_queries.cpp
@@ -497,52 +498,22 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     # Qt5 GUI for Linux (optional)
     option(BUILD_QT_GUI "Build Qt5 GUI for Linux" ON)
 
+    add_executable(yamy ${STUB_SOURCES})
+    target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS})
+    target_link_libraries(yamy PRIVATE
+        pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
+        Qt5::Core
+        Qt5::Network
+    )
+
     if(BUILD_QT_GUI)
         # Find optional Qt5 GUI packages
         find_package(Qt5 COMPONENTS Widgets Gui X11Extras Test)
 
         if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5X11Extras_FOUND)
-            message(STATUS "Qt5 GUI components found - building with GUI support")
-
-            # Find libappindicator3 for native system tray (avoids Qt/DBus crashes)
-            # Try Ayatana AppIndicator first (actively maintained fork used by Ubuntu)
-            pkg_check_modules(APPINDICATOR3 ayatana-appindicator3-0.1)
-            if(APPINDICATOR3_FOUND)
-                message(STATUS "libayatana-appindicator3 found - native system tray enabled")
-                add_compile_definitions(HAVE_APPINDICATOR3)
-                add_compile_definitions(HAVE_AYATANA_APPINDICATOR3)
-            else()
-                # Fallback to original libappindicator3 (deprecated)
-                pkg_check_modules(APPINDICATOR3 appindicator3-0.1)
-                if(APPINDICATOR3_FOUND)
-                    message(STATUS "libappindicator3 found - native system tray enabled")
-                    add_compile_definitions(HAVE_APPINDICATOR3)
-                else()
-                    message(WARNING "libappindicator3-dev or libayatana-appindicator3-dev not found - system tray will be disabled. Install with: sudo apt install libayatana-appindicator3-dev libnotify-dev")
-                endif()
-            endif()
-
-            # Remove Qt-dependent sources from STUB_SOURCES - they're already compiled in yamy_qt_gui
-            # This prevents duplicate MOC compilation and linker errors
-            list(REMOVE_ITEM STUB_SOURCES
-                src/core/settings/config_watcher.cpp
-                src/core/platform/ipc_channel_interface.cpp
-            )
+            message(STATUS "Qt5 GUI components found - building GUI executables")
 
             add_subdirectory(src/ui/qt)
-
-            # Use Qt main instead of headless main
-            list(REMOVE_ITEM STUB_SOURCES src/app/main_linux.cpp)
-            list(APPEND STUB_SOURCES src/app/main_qt.cpp src/app/engine_adapter.cpp)
-
-            add_executable(yamy ${STUB_SOURCES})
-            target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS} ${APPINDICATOR3_INCLUDE_DIRS})
-            target_link_libraries(yamy PRIVATE
-                pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES} ${APPINDICATOR3_LIBRARIES}
-                Qt5::Core
-                Qt5::Network
-                yamy_qt_gui
-            )
 
             add_executable(yamy-gui
                 src/app/main_gui.cpp
@@ -577,24 +548,10 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
                 Qt5::Network
             )
         else()
-            message(WARNING "Qt5 GUI components not found - building headless version")
-            add_executable(yamy ${STUB_SOURCES})
-            target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS})
-            target_link_libraries(yamy PRIVATE
-                pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
-                Qt5::Core
-                Qt5::Network
-            )
+            message(WARNING "Qt5 GUI components not found - building headless version only")
         endif()
     else()
         message(STATUS "Building without Qt5 GUI (headless mode)")
-        add_executable(yamy ${STUB_SOURCES})
-        target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS})
-        target_link_libraries(yamy PRIVATE
-            pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
-            Qt5::Core
-            Qt5::Network
-        )
     endif()
 
     # Enable Qt MOC for Qt-based sources (ConfigWatcher, IIPCChannel)

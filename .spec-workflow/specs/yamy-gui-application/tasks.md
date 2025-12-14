@@ -218,7 +218,7 @@
   - _Requirements: 1_
   - _Prompt: **Role:** System Developer with expertise in daemon processes | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Refactor src/app/main.cpp to run as headless daemon following requirement 1. Use QCoreApplication, remove tray code, keep Engine/IPC working. | **Restrictions:** Do not break Engine functionality, ensure IPC still works, verify no Qt platform plugins loaded | **_Leverage:** QCoreApplication for minimal Qt, existing Engine initialization | **_Requirements:** 1 | **Success:** Daemon runs without GUI, no Qt/DBus crashes, IPC server functional | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (functions, integrations), then mark task as complete [x]
 
-- [ ] 6.2. Update CMakeLists.txt for headless daemon
+- [x] 6.2. Update CMakeLists.txt for headless daemon
   - File: `CMakeLists.txt`
   - Change yamy target to link Qt5::Core instead of Qt5::Widgets
   - Remove AppIndicator, GTK, libnotify dependencies
