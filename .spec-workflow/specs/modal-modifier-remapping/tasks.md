@@ -988,7 +988,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
     7. Mark task 13 as complete
     ```
 
-- [-] 14. Add integration test config files
+- [x] 14. Add integration test config files
   - **Files**:
     - `test_configs/modal_basic.mayu` (create)
     - `test_configs/modal_advanced.mayu` (create)
