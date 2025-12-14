@@ -44,7 +44,7 @@
 
 ## Phase 1: IPC Protocol Extensions (with validation)
 
-- [ ] 1.1. Extend IPC message types for GUI commands
+- [x] 1.1. Extend IPC message types for GUI commands
   - File: `src/core/platform/ipc_defs.h`
   - Add new message types: CmdGetStatus, CmdSetEnabled, CmdSwitchConfig, CmdReloadConfig
   - Add new response types: RspStatus, RspConfigList

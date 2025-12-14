@@ -32,10 +32,27 @@ This document describes the IPC contract between the GUI/CLI clients and the yam
 | `0x2104` RspKeymaps | Daemon → GUI/CLI | JSON string | Keymaps response. |
 | `0x2105` RspMetrics | Daemon → GUI/CLI | JSON string | Metrics response. |
 
+### GUI Control Extensions (Qt IPC channel)
+
+These message IDs are reserved for the GUI control surface and mirror the structs in `src/core/platform/ipc_defs.h`. They are additive and do not change the existing CLI control IDs above.
+
+| Type (hex) | Direction | Payload | Description |
+| --- | --- | --- | --- |
+| `0x5001` CmdGetStatus | GUI → Daemon | `CmdGetStatusRequest` (empty struct) | Request a status snapshot for GUI indicators. |
+| `0x5002` CmdSetEnabled | GUI → Daemon | `CmdSetEnabledRequest { bool enabled; }` | Enable/disable the daemon from the GUI. |
+| `0x5003` CmdSwitchConfig | GUI → Daemon | `CmdSwitchConfigRequest { char configName[256]; }` | Switch active configuration to the given name. |
+| `0x5004` CmdReloadConfig | GUI → Daemon | `CmdReloadConfigRequest { char configName[256]; }` | Reload the current or named configuration. |
+| `0x5101` RspStatus | Daemon → GUI | `RspStatusPayload { bool engineRunning; bool enabled; char activeConfig[256]; char lastError[256]; }` | Status snapshot response. |
+| `0x5102` RspConfigList | Daemon → GUI | `RspConfigListPayload { uint32 count; char configs[16][256]; }` | List of available configurations for dropdowns. |
+
+> Legacy CLI responses (`0x2102`/`0x2103`/`0x2104`/`0x2105`) remain JSON strings. GUI extensions use the fixed-size structs above for deterministic layouts on the Qt channel.
+
 ## Payload Examples (from test fixtures)
-- Status request/response: `CmdGetStatus` (empty payload) → `RspStatus` payload `{"engine_running":true,"enabled":true}`.
+- CLI status (legacy IDs): `CmdGetStatus` (`0x2004`, empty payload) → `RspStatus` payload `{"engine_running":true,"enabled":true}`.
+- GUI status (Qt IDs): `CmdGetStatus` (`0x5001`) → `RspStatusPayload { engineRunning=true, enabled=true, activeConfig=\"mock\", lastError=\"\" }`.
 - Config request: `CmdGetConfig` payload `"active"` → `RspConfig` payload `{"active_config":"mock.mayu"}`.
 - Keymaps request: `CmdGetKeymaps` (empty) → `RspKeymaps` payload `{"keymaps":["mock","layered"]}`.
+- Config list for GUI: `CmdSwitchConfig` followed by `RspConfigListPayload` containing available entries (up to 16 names padded with zeros).
 - Metrics request: `CmdGetMetrics` payload `"latency-only"` → `RspMetrics` payload `{"latency_ns":1024}`.
 - Reload request: `CmdReload` payload `"reload:mock"` → `RspOk` payload `"OK"` on success or `RspError` with reason.
 - Investigate window: `CmdInvestigateWindow` payload `InvestigateWindowRequest{ hwnd = 0xCAFEBABE }` → `RspInvestigateWindow` with populated fields; live events then arrive as `NtfKeyEvent` with text like `"[12:00:00.000] Ctrl-Alt-K pressed"`.
