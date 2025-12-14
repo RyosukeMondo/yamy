@@ -14,6 +14,7 @@
 #  include <map>
 #  include <array>
 #  include <ostream>
+#  include <gsl/gsl>
 
 
 /// a scan code with flags
@@ -408,9 +409,7 @@ public:
     class KeyIterator
     {
         ///
-        Keys *m_hashedKeys;
-        ///
-        size_t m_hashedKeysSize;
+        gsl::span<Keys> m_hashedKeys;
         ///
         Keys::iterator m_i;
 
@@ -419,7 +418,7 @@ public:
 
     public:
         ///
-        KeyIterator(Keys *i_hashedKeys, size_t i_hashedKeysSize);
+        KeyIterator(gsl::span<Keys> i_hashedKeys);
         ///
         Key *operator *();
         ///
@@ -476,7 +475,7 @@ public:
 
     /// get key iterator
     KeyIterator getKeyIterator() {
-        return KeyIterator(m_hashedKeys.data(), HASHED_KEYS_SIZE);
+        return KeyIterator(m_hashedKeys);
     }
 
     /// get substitutes list (for EventProcessor integration)

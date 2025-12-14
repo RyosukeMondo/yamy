@@ -177,7 +177,7 @@
   - _Requirements: 5_
   - _Prompt: **Role:** C++ Developer with defensive programming expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Add postconditions to critical functions following requirement 5. Identify postconditions for keymap lookup, modifier state tracking. Add Ensures() macros. Test violations in debug. | **Restrictions:** Postconditions must be verifiable, must not have side effects, must be at all return paths | **_Leverage:** Microsoft GSL Ensures(), multiple return paths handling | **_Requirements:** 5 | **Success:** Critical functions have postconditions, Ensures() traps violations in debug, release builds optimize out | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 4.3. Replace pointer+size with gsl::span
+- [x] 4.3. Replace pointer+size with gsl::span
   - Files: `src/core/engine/engine_input.cpp`, `src/core/input/*.cpp`
   - Find functions using pointer+size parameters
   - Replace with gsl::span<const T> or gsl::span<T>

@@ -5,6 +5,7 @@
 #include "keyboard.h"
 
 #include <algorithm>
+#include <gsl/gsl>
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -248,41 +249,44 @@ std::ostream &operator<<(std::ostream &i_ost, const ModifiedKey &i_mk)
 // Keyboard::KeyIterator
 
 
-Keyboard::KeyIterator::KeyIterator(Keys *i_hashedKeys, size_t i_hashedKeysSize)
+Keyboard::KeyIterator::KeyIterator(gsl::span<Keys> i_hashedKeys)
         : m_hashedKeys(i_hashedKeys),
-        m_hashedKeysSize(i_hashedKeysSize),
-        m_i((*m_hashedKeys).begin())
+        m_i(m_hashedKeys.empty() ? Keys{}.begin() : m_hashedKeys[0].begin())
 {
-    if ((*m_hashedKeys).empty()) {
-        do {
-            -- m_hashedKeysSize;
-            ++ m_hashedKeys;
-        } while (0 < m_hashedKeysSize && (*m_hashedKeys).empty());
-        if (0 < m_hashedKeysSize)
-            m_i = (*m_hashedKeys).begin();
+    if (!m_hashedKeys.empty() && m_hashedKeys[0].empty()) {
+        size_t index = 1;
+        while (index < m_hashedKeys.size() && m_hashedKeys[index].empty()) {
+            ++index;
+        }
+        if (index < m_hashedKeys.size()) {
+            m_hashedKeys = m_hashedKeys.subspan(index);
+            m_i = m_hashedKeys[0].begin();
+        } else {
+            m_hashedKeys = gsl::span<Keys>();
+        }
     }
 }
 
 
 void Keyboard::KeyIterator::next()
 {
-    if (m_hashedKeysSize == 0)
+    if (m_hashedKeys.empty())
         return;
-    ++ m_i;
-    if (m_i == (*m_hashedKeys).end()) {
-        do {
-            -- m_hashedKeysSize;
-            ++ m_hashedKeys;
-        } while (0 < m_hashedKeysSize && (*m_hashedKeys).empty());
-        if (0 < m_hashedKeysSize)
-            m_i = (*m_hashedKeys).begin();
+    ++m_i;
+    if (m_i == m_hashedKeys[0].end()) {
+        m_hashedKeys = m_hashedKeys.subspan(1);
+        while (!m_hashedKeys.empty() && m_hashedKeys[0].empty()) {
+            m_hashedKeys = m_hashedKeys.subspan(1);
+        }
+        if (!m_hashedKeys.empty())
+            m_i = m_hashedKeys[0].begin();
     }
 }
 
 
 Key *Keyboard::KeyIterator::operator *()
 {
-    if (m_hashedKeysSize == 0)
+    if (m_hashedKeys.empty())
         return nullptr;
     return &*m_i;
 }
