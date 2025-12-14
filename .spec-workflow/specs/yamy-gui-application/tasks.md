@@ -162,7 +162,7 @@
   - _Requirements: 2, 4, 5_
   - _Prompt: **Role:** Qt UI Developer specializing in desktop application design | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Expand validated prototype with full UI layout including config selector, reload button, indicators, and menu bar following requirements 2, 4, 5. Build on working foundation from Phase 3. | **Restrictions:** Do not break existing working features, keep UI clean and intuitive, use Qt layout managers properly | **_Leverage:** Working prototype from task 3.3, Qt QComboBox for configs, QMenuBar for menus | **_Requirements:** 2, 4, 5 | **Success:** All UI elements display correctly, layout is responsive, existing features still work | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts (components), then mark task as complete [x]
 
-- [ ] 4.2. Implement configuration management features
+- [x] 4.2. Implement configuration management features
   - File: `src/ui/qt/main_window_gui.cpp`
   - Populate config selector with available configs
   - Implement config switch command via IPC

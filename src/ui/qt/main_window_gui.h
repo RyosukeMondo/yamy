@@ -21,6 +21,7 @@ public:
 private slots:
     void handleConnectionChange(bool connected);
     void handleStatusReceived(const yamy::RspStatusPayload& payload);
+    void handleConfigListReceived(const yamy::RspConfigListPayload& payload);
     void handleToggleClicked();
     void handleReloadClicked();
     void handleConfigSelectionChanged(const QString& configName);
@@ -45,4 +46,6 @@ private:
     bool m_currentEnabled;
     bool m_isConnected;
     QString m_activeConfig;
+    QString m_lastError;
+    bool m_updatingConfigList{false};
 };

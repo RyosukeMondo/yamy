@@ -8,7 +8,9 @@
 #include <QKeySequence>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QPushButton>
+#include <QStringList>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -52,6 +54,7 @@ MainWindowGUI::MainWindowGUI(const QString& serverName, QWidget* parent)
     m_configLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     m_toggleButton->setEnabled(false);
     m_reloadButton->setEnabled(false);
+    m_configSelector->setEnabled(false);
 
     auto* connectionRow = new QHBoxLayout();
     connectionRow->setSpacing(8);
@@ -71,7 +74,7 @@ MainWindowGUI::MainWindowGUI(const QString& serverName, QWidget* parent)
     configRow->addWidget(m_configIndicator);
     configRow->addWidget(m_configLabel, /*stretch*/ 1);
     m_configSelector->setEditable(false);
-    m_configSelector->setPlaceholderText(tr("Config selector (coming soon)"));
+    m_configSelector->setPlaceholderText(tr("Select a configuration"));
     configRow->addWidget(m_configSelector, /*stretch*/ 1);
     m_reloadButton->setText(tr("Reload"));
     configRow->addWidget(m_reloadButton, /*stretch*/ 0);
@@ -88,6 +91,7 @@ MainWindowGUI::MainWindowGUI(const QString& serverName, QWidget* parent)
 
     connect(m_ipcClient.get(), &IPCClientGUI::connectionStateChanged, this, &MainWindowGUI::handleConnectionChange);
     connect(m_ipcClient.get(), &IPCClientGUI::statusReceived, this, &MainWindowGUI::handleStatusReceived);
+    connect(m_ipcClient.get(), &IPCClientGUI::configListReceived, this, &MainWindowGUI::handleConfigListReceived);
     connect(m_toggleButton, &QPushButton::clicked, this, &MainWindowGUI::handleToggleClicked);
     connect(m_reloadButton, &QPushButton::clicked, this, &MainWindowGUI::handleReloadClicked);
     connect(m_configSelector, &QComboBox::currentTextChanged, this, &MainWindowGUI::handleConfigSelectionChanged);
@@ -111,9 +115,13 @@ void MainWindowGUI::handleConnectionChange(bool connected) {
     m_toggleButton->setEnabled(connected && m_hasStatus);
     m_reloadButton->setEnabled(false);
     m_configSelector->setEnabled(false);
+    m_lastError.clear();
     if (!connected) {
         m_hasStatus = false;
         m_activeConfig.clear();
+        m_updatingConfigList = true;
+        m_configSelector->clear();
+        m_updatingConfigList = false;
         m_statusLabel->setText(tr("Status: unknown"));
         m_configLabel->setText(tr("Active config: -"));
         m_toggleButton->setText(tr("Enable"));
@@ -127,23 +135,65 @@ void MainWindowGUI::handleConnectionChange(bool connected) {
 void MainWindowGUI::handleStatusReceived(const yamy::RspStatusPayload& payload) {
     const QString enabledText = payload.enabled ? tr("Enabled") : tr("Disabled");
     const QString configText = QString::fromLatin1(payload.activeConfig.data());
+    const QString lastErrorText = QString::fromLatin1(payload.lastError.data()).trimmed();
 
     m_hasStatus = true;
     m_currentEnabled = payload.enabled;
     m_activeConfig = configText;
+    if (!lastErrorText.isEmpty() && lastErrorText != m_lastError) {
+        QMessageBox::warning(this, tr("Daemon error"), lastErrorText);
+    }
+    m_lastError = lastErrorText;
 
     updateStatusLabel(tr("Connected (%1)").arg(enabledText));
-    m_statusLabel->setText(tr("Status: %1").arg(enabledText));
+    const QString statusDetails = lastErrorText.isEmpty()
+        ? enabledText
+        : tr("%1 (last error: %2)").arg(enabledText, lastErrorText);
+    m_statusLabel->setText(tr("Status: %1").arg(statusDetails));
     m_configLabel->setText(configText.isEmpty() ? tr("Active config: (none)") : tr("Active config: %1").arg(configText));
     m_toggleButton->setText(payload.enabled ? tr("Disable") : tr("Enable"));
     m_toggleButton->setEnabled(m_ipcClient && m_ipcClient->isConnected());
-    m_configSelector->setEnabled(m_ipcClient && m_ipcClient->isConnected());
-    m_reloadButton->setEnabled(m_ipcClient && m_ipcClient->isConnected());
+    m_reloadButton->setText(tr("Reload"));
+    const bool canUseConfigs = m_ipcClient && m_ipcClient->isConnected() && m_configSelector->count() > 0;
+    m_configSelector->setEnabled(canUseConfigs);
+    m_reloadButton->setEnabled(canUseConfigs);
+    updateIndicators(m_isConnected, m_currentEnabled, m_activeConfig);
+}
+
+void MainWindowGUI::handleConfigListReceived(const yamy::RspConfigListPayload& payload) {
+    QStringList configs;
+    configs.reserve(static_cast<int>(payload.count));
+    for (uint32_t i = 0; i < payload.count; ++i) {
+        const QString entry = QString::fromLatin1(payload.configs[i].data()).trimmed();
+        if (!entry.isEmpty()) {
+            configs.push_back(entry);
+        }
+    }
+
+    m_updatingConfigList = true;
+    m_configSelector->clear();
+    if (!configs.isEmpty()) {
+        m_configSelector->addItems(configs);
+        m_configSelector->setPlaceholderText(tr("Select a configuration"));
+        if (!m_activeConfig.isEmpty()) {
+            const int index = m_configSelector->findText(m_activeConfig);
+            if (index >= 0) {
+                m_configSelector->setCurrentIndex(index);
+            }
+        }
+    } else {
+        m_configSelector->setPlaceholderText(tr("No configurations available"));
+    }
+    m_updatingConfigList = false;
+
+    const bool hasConfigs = !configs.isEmpty() && m_ipcClient && m_ipcClient->isConnected();
+    m_configSelector->setEnabled(hasConfigs);
+    m_reloadButton->setEnabled(hasConfigs);
     updateIndicators(m_isConnected, m_currentEnabled, m_activeConfig);
 }
 
 void MainWindowGUI::handleToggleClicked() {
-    if (!m_ipcClient || !m_hasStatus) {
+    if (!m_ipcClient || !m_hasStatus || !m_ipcClient->isConnected()) {
         return;
     }
     const bool targetEnabled = !m_currentEnabled;
@@ -153,13 +203,44 @@ void MainWindowGUI::handleToggleClicked() {
 }
 
 void MainWindowGUI::handleReloadClicked() {
-    // Placeholder for upcoming configuration management behavior.
-    qInfo().noquote() << "[MainWindowGUI]" << "Reload requested (awaiting config wiring)";
+    if (!m_ipcClient || !m_hasStatus || !m_ipcClient->isConnected()) {
+        return;
+    }
+
+    const QString targetConfig = m_configSelector->currentText().trimmed().isEmpty()
+        ? m_activeConfig
+        : m_configSelector->currentText().trimmed();
+
+    m_reloadButton->setEnabled(false);
+    m_configSelector->setEnabled(false);
+    m_toggleButton->setEnabled(false);
+    m_reloadButton->setText(tr("Reloading..."));
+    m_statusLabel->setText(targetConfig.isEmpty()
+        ? tr("Status: reloading active config...")
+        : tr("Status: reloading %1...").arg(targetConfig));
+
+    qInfo().noquote() << "[MainWindowGUI]" << "Reload requested for" << (targetConfig.isEmpty() ? QStringLiteral("<active>") : targetConfig);
+    m_ipcClient->sendReloadConfig(targetConfig);
 }
 
 void MainWindowGUI::handleConfigSelectionChanged(const QString& configName) {
-    // Placeholder for upcoming configuration management behavior.
-    qInfo().noquote() << "[MainWindowGUI]" << "Config selection changed to" << configName;
+    if (m_updatingConfigList || !m_ipcClient || !m_hasStatus || !m_ipcClient->isConnected()) {
+        return;
+    }
+
+    const QString trimmedName = configName.trimmed();
+    if (trimmedName.isEmpty() || trimmedName == m_activeConfig) {
+        return;
+    }
+
+    m_configSelector->setEnabled(false);
+    m_reloadButton->setEnabled(false);
+    m_toggleButton->setEnabled(false);
+    m_statusLabel->setText(tr("Status: switching to %1...").arg(trimmedName));
+    setIndicatorState(m_configIndicator, QColor("#f1c40f"), tr("Switching to %1").arg(trimmedName));
+
+    qInfo().noquote() << "[MainWindowGUI]" << "Switch config requested:" << trimmedName;
+    m_ipcClient->sendSwitchConfig(trimmedName);
 }
 
 void MainWindowGUI::updateStatusLabel(const QString& text) {
