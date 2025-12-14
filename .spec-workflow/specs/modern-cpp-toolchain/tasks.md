@@ -249,7 +249,7 @@
   - _Requirements: 6_
   - _Prompt: **Role:** DevOps Engineer with CI/CD expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Configure CI to run property-based tests following requirement 6. Add test step running RapidCheck with 1000 iterations per property. Create nightly build with 10,000 iterations. Set timeout to 10min. | **Restrictions:** Must fail CI if property fails, must report which property failed, must run on all platforms, timeout must prevent infinite runs | **_Leverage:** CI test runner, ctest with timeout, RapidCheck iteration environment variable | **_Requirements:** 6 | **Success:** Property tests run in CI, failures fail the build, nightly tests run 10x more iterations, timeout works | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [-] 5.5. Document property-based testing guide
+- [x] 5.5. Document property-based testing guide
   - File: `docs/PROPERTY_TESTING_GUIDE.md` (new)
   - Explain property-based testing concepts
   - Provide examples of good properties
