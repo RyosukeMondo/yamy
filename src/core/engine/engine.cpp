@@ -526,11 +526,11 @@ void Engine::handleIpcMessage(const yamy::ipc::Message& message)
                 responseMessage.type = yamy::ipc::RspInvestigateWindow;
                 responseMessage.data = &response;
                 responseMessage.size = sizeof(response);
-                
-                // This is a simplification. A real implementation would need a way to send
-                // the response back to the correct IPC client. For now, we'll assume a
-                // single client and a simple send method on the engine's IPC channel.
-                // m_ipcChannel->send(responseMessage);
+
+                // Send response back to dialog
+                if (m_ipcChannel && m_ipcChannel->isConnected()) {
+                    m_ipcChannel->send(responseMessage);
+                }
             }
             break;
         }

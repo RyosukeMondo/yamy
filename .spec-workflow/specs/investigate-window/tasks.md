@@ -209,7 +209,7 @@
     6. Mark complete
     ```
 
-- [ ] 1.4 Uncomment and fix IPC response sending in handleIpcMessage
+- [x] 1.4 Uncomment and fix IPC response sending in handleIpcMessage
   - Files:
     - src/core/engine/engine.cpp (modify)
   - Description:
