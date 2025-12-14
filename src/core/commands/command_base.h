@@ -2,30 +2,82 @@
 #ifndef _COMMAND_BASE_H
 #define _COMMAND_BASE_H
 
+/**
+ * @file command_base.h
+ * @brief Base template for YAMY command implementation using CRTP.
+ *
+ * Provides the Command<Derived, Args...> template that implements the
+ * boilerplate for command creation, cloning, loading, and serialization.
+ * Uses Curiously Recurring Template Pattern (CRTP) for static polymorphism.
+ */
+
 #include "../functions/function_data.h"
 #include <tuple>
 #include <utility>
 #include "utils/stringtool.h"
 
-// Helper to check if a type is distinct from another (for SFINAE if needed, though not heavily used here yet)
-// We rely on standard C++17 features.
-
-// Generic Command Template
-// Derived: The specific command class (CRTP)
-// Args: The types of arguments this command accepts
+/**
+ * @brief Generic command template using CRTP.
+ *
+ * This template eliminates boilerplate for implementing YAMY commands.
+ * Derived classes must provide:
+ * - static constexpr const char* Name (or const wchar_t*)
+ * - FunctionData::exec() override for command execution
+ *
+ * The template automatically implements:
+ * - create() factory function
+ * - clone() for copying
+ * - load() for parsing arguments from config
+ * - output() for serialization
+ *
+ * @tparam Derived The specific command class (CRTP pattern)
+ * @tparam Args The types of arguments this command accepts
+ *
+ * @code
+ * class MyCommand : public Command<MyCommand, int, std::string> {
+ * public:
+ *     static constexpr const char* Name = "MyCommand";
+ *
+ *     FunctionData::Result exec(Engine* engine) override {
+ *         int value = getArg<0>();
+ *         const std::string& text = getArg<1>();
+ *         // Execute command logic...
+ *         return FunctionData::Result::Success;
+ *     }
+ * };
+ * @endcode
+ */
 template <typename Derived, typename... Args>
 class Command : public FunctionData
 {
 public:
+    /**
+     * @brief Tuple type holding command arguments.
+     */
     using TupleType = std::tuple<Args...>;
+
+    /**
+     * @brief Command arguments storage.
+     */
     TupleType m_args;
 
-    // Helper to get argument by index
+    /**
+     * @brief Get argument by index (const).
+     *
+     * @tparam I Zero-based argument index
+     * @return const reference to argument
+     */
     template <size_t I>
     const auto& getArg() const {
         return std::get<I>(m_args);
     }
 
+    /**
+     * @brief Get argument by index (mutable).
+     *
+     * @tparam I Zero-based argument index
+     * @return mutable reference to argument
+     */
     template <size_t I>
     auto& getArg() {
         return std::get<I>(m_args);
@@ -33,19 +85,33 @@ public:
 
     // --- Boilerplate Implementation ---
 
-    // 1. Create
+    /**
+     * @brief Factory function for creating command instances.
+     *
+     * @return New instance of the derived command
+     */
     static FunctionData *create()
     {
         return new Derived();
     }
 
-    // 2. Clone
+    /**
+     * @brief Clone this command instance.
+     *
+     * @return Deep copy of this command
+     */
     virtual FunctionData *clone() const override
     {
         return new Derived(static_cast<const Derived&>(*this));
     }
 
-    // 3. GetName is delegated to Derived::Name
+    /**
+     * @brief Get the command name.
+     *
+     * Returns the name from Derived::Name, converting from wide string if needed.
+     *
+     * @return Command name as UTF-8 string
+     */
     inline virtual std::string getName() const override
     {
         if constexpr (std::is_same_v<typename std::decay<decltype(*Derived::Name)>::type, char>) {
@@ -55,8 +121,17 @@ public:
         }
     }
 
-    // 4. Load
-    // Logic: OpenParen -> Load Arg1 -> Comma -> Load Arg2 ... -> CloseParen
+    /**
+     * @brief Load command arguments from configuration.
+     *
+     * Parses the command syntax: CommandName(arg1, arg2, ...)
+     * Automatically handles parentheses and comma-separated arguments.
+     *
+     * @param i_sl SettingLoader for parsing configuration
+     *
+     * @note For commands with no arguments, parentheses are optional.
+     * @note For commands with arguments, parentheses are required.
+     */
     virtual void load(SettingLoader *i_sl) override
     {
         // First, check/consume OpenParen.
@@ -98,7 +173,14 @@ public:
         }
     }
 
-    // 5. Output
+    /**
+     * @brief Serialize command to output stream.
+     *
+     * Outputs the command in config file syntax: &CommandName(arg1, arg2, ...)
+     *
+     * @param i_ost Output stream
+     * @return Reference to output stream (for chaining)
+     */
     virtual std::ostream &output(std::ostream &i_ost) const override
     {
         // getName() returns std::string, output directly
@@ -121,8 +203,15 @@ public:
     }
 
 protected:
-    // Virtual method for custom output args - derived classes can override
-    // For commands that manually load their members (not using template Args)
+    /**
+     * @brief Virtual method for custom argument output.
+     *
+     * Derived classes can override this for custom serialization logic.
+     * Default implementation delegates to template-based output.
+     *
+     * @param i_ost Output stream
+     * @return Reference to output stream
+     */
     virtual std::ostream &outputArgs(std::ostream &i_ost) const
     {
         // Default: delegate to template-based output if Args exist
