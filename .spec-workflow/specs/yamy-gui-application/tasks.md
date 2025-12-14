@@ -208,7 +208,7 @@
 
 ## Phase 6: Daemon Headless Refactoring
 
-- [ ] 6.1. Refactor main.cpp to headless daemon
+- [x] 6.1. Refactor main.cpp to headless daemon
   - File: `src/app/main.cpp`
   - Replace QApplication with QCoreApplication
   - Remove all system tray code (SystemTrayAppIndicator, QSystemTrayIcon)
