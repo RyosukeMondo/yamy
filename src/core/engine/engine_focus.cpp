@@ -13,6 +13,7 @@
 
 #include <iomanip>
 #include <string>
+#include <gsl/gsl>
 
 
 // check focus window
@@ -130,6 +131,9 @@ restart:
 bool Engine::setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threadId,
                       const std::string &i_className, const std::string &i_titleName,
                       bool i_isConsole) {
+    Expects(i_hwndFocus != nullptr);
+    Expects(i_threadId > 0);
+
     Acquire a(&m_cs);
     if (m_isSynchronizing)
         return false;
@@ -185,6 +189,8 @@ bool Engine::setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threa
 
 // thread attach notify
 bool Engine::threadAttachNotify(uint32_t i_threadId) {
+    Expects(i_threadId > 0);
+
     Acquire a(&m_cs);
     m_attachedThreadIds.push_back(i_threadId);
     return true;
@@ -193,6 +199,8 @@ bool Engine::threadAttachNotify(uint32_t i_threadId) {
 
 // thread detach notify
 bool Engine::threadDetachNotify(uint32_t i_threadId) {
+    Expects(i_threadId > 0);
+
     Acquire a(&m_cs);
     m_detachedThreadIds.push_back(i_threadId);
     m_attachedThreadIds.erase(remove(m_attachedThreadIds.begin(), m_attachedThreadIds.end(), i_threadId),
@@ -207,6 +215,8 @@ Engine::KeymapStatus Engine::queryKeymapForWindow(
     const std::string& className,
     const std::string& titleName) const
 {
+    Expects(hwnd != nullptr);
+
     KeymapStatus status;
     status.isDefault = true;
     status.keymapName = "(default)";

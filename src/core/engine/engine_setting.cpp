@@ -19,6 +19,7 @@
 #include <filesystem>
 #include <thread>
 #include <chrono>
+#include <gsl/gsl>
 
 
 // manageTs4mayu removed (moved to InputDriver)
@@ -27,6 +28,8 @@
 
 // set m_setting
 bool Engine::setSetting(Setting *i_setting) {
+    Expects(i_setting != nullptr);
+
     Acquire a(&m_cs);
     if (m_isSynchronizing)
         return false;
@@ -87,6 +90,8 @@ bool Engine::setSetting(Setting *i_setting) {
 // Switch to a different configuration file
 // Properly handles string conversions via to_tstring() for cross-platform compatibility
 bool Engine::switchConfiguration(const std::string& configPath) {
+    Expects(!configPath.empty());
+
 #ifdef _WIN32
     // Windows stub - not yet implemented due to wide stream incompatibility
     // SettingLoader expects std::ostream* but m_log is std::wostream-based on Windows

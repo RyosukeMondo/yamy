@@ -24,6 +24,7 @@
 #include <thread>
 #include "../platform/ipc_defs.h"
 #include "../notification_dispatcher.h"
+#include <gsl/gsl>
 
 #if defined(QT_CORE_LIB)
 void Engine::playSound(yamy::audio::NotificationType type)
@@ -71,6 +72,13 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_log(i_log),
         m_perfThreadHandle(nullptr),
         m_isPerfThreadRunning(false) {
+    // Preconditions
+    Expects(i_windowSystem != nullptr);
+    Expects(i_configStore != nullptr);
+    Expects(i_inputInjector != nullptr);
+    Expects(i_inputHook != nullptr);
+    Expects(i_inputDriver != nullptr);
+
     m_state = yamy::EngineState::Stopped;
     // Enable receiving WM_COPYDATA from lower integrity processes
     m_windowSystem->changeMessageFilter(yamy::platform::MSG_COPYDATA,
@@ -324,6 +332,8 @@ void Engine::setCurrentKeymap(const Keymap *i_keymap, bool i_doesAddToHistory)
 
 void Engine::pushInputEvent(const yamy::platform::KeyEvent &event)
 {
+    Expects(event.scanCode <= 0xFFFF);
+
     yamy::platform::acquireMutex(m_queueMutex, yamy::platform::WAIT_INFINITE);
     if (m_inputQueue) {
         m_inputQueue->push_back(event);

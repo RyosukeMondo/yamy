@@ -28,6 +28,7 @@
 #  include "../platform/message_constants.h"
 #  include "engine_event_processor.h" // For unified 3-layer event processing
 #  include <functional>
+#  include <gsl/gsl>
 
 enum {
     ///
@@ -270,7 +271,11 @@ public:
     tomsgstream &m_log;                /** log stream (output to log
                                                     dialog's edit) */
 
-    /// Push input event to the queue (Thread Safe)
+    /**
+     * @brief Push input event to the queue (Thread Safe)
+     * @param event The keyboard event to push
+     * @pre event.scanCode <= 0xFFFF (valid scan code range)
+     */
     void pushInputEvent(const yamy::platform::KeyEvent &event);
 
     /// Convert KeyEvent to KEYBOARD_INPUT_DATA (for legacy code)
@@ -378,9 +383,23 @@ public:
                                      TargetWindowType *io_twt,
                                      yamy::platform::Rect *o_rcWindow = nullptr, yamy::platform::Rect *o_rcParent = nullptr);
 
-    ///
+    /**
+     * @brief Construct a new Engine object
+     * @param i_log Reference to the message stream for logging
+     * @param i_windowSystem Pointer to the window system interface
+     * @param i_configStore Pointer to the configuration store
+     * @param i_inputInjector Pointer to the input injector interface
+     * @param i_inputHook Pointer to the input hook interface
+     * @param i_inputDriver Pointer to the input driver interface
+     * @pre i_windowSystem != nullptr
+     * @pre i_configStore != nullptr
+     * @pre i_inputInjector != nullptr
+     * @pre i_inputHook != nullptr
+     * @pre i_inputDriver != nullptr
+     */
     Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem, ConfigStore *i_configStore, yamy::platform::IInputInjector *i_inputInjector, yamy::platform::IInputHook *i_inputHook, yamy::platform::IInputDriver *i_inputDriver);
-    ///
+
+    /// Destroy the Engine object
     ~Engine();
 
     /// start/stop keyboard handler thread
@@ -420,7 +439,11 @@ public:
         return m_isEnabled;
     }
 
-    /// associated window
+    /**
+     * @brief Set associated window for message posting
+     * @param i_hwnd Window handle to associate
+     * @pre i_hwnd != nullptr
+     */
     void setAssociatedWndow(yamy::platform::WindowHandle i_hwnd) {
         m_hwndAssocWindow = i_hwnd;
     }
@@ -430,12 +453,20 @@ public:
         return m_hwndAssocWindow;
     }
 
-    /// setting
+    /**
+     * @brief Set the active setting configuration
+     * @param i_setting Pointer to the setting object
+     * @return true if setting was applied successfully, false otherwise
+     * @pre i_setting != nullptr
+     */
     bool setSetting(Setting *i_setting);
 
-    /// Switch to a different configuration file
-    /// @param configPath Path to the .mayu configuration file
-    /// @return true if switch was successful, false on parse errors
+    /**
+     * @brief Switch to a different configuration file
+     * @param configPath Path to the .mayu configuration file
+     * @return true if switch was successful, false on parse errors
+     * @pre !configPath.empty()
+     */
     bool switchConfiguration(const std::string& configPath);
 
     /// Set callback for configuration switch notifications
@@ -443,7 +474,17 @@ public:
         m_configSwitchCallback = callback;
     }
 
-    /// focus
+    /**
+     * @brief Set the focused window and its properties
+     * @param i_hwndFocus Window handle that has focus
+     * @param i_threadId Thread ID owning the focused window
+     * @param i_className Class name of the focused window
+     * @param i_titleName Title name of the focused window
+     * @param i_isConsole Whether the focused window is a console
+     * @return true if focus was set successfully, false otherwise
+     * @pre i_hwndFocus != nullptr
+     * @pre i_threadId > 0
+     */
     bool setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threadId,
                   const std::string &i_className,
                   const std::string &i_titleName, bool i_isConsole);
@@ -453,23 +494,45 @@ public:
                       bool i_isScrollLockToggled, bool i_isKanaLockToggled,
                       bool i_isImeLockToggled, bool i_isImeCompToggled);
 
-    /// show
+    /**
+     * @brief Check if a window should be shown
+     * @param i_hwnd Window handle to check
+     * @pre i_hwnd != nullptr
+     */
     void checkShow(yamy::platform::WindowHandle i_hwnd);
+
+    /// Set show state flags
     bool setShow(bool i_isMaximized, bool i_isMinimized, bool i_isMDI);
 
     /// sync
     bool syncNotify();
 
-    /// thread attach notify
+    /**
+     * @brief Notify engine of thread attachment
+     * @param i_threadId Thread ID being attached
+     * @return true if notification was processed successfully
+     * @pre i_threadId > 0
+     */
     bool threadAttachNotify(uint32_t i_threadId);
 
-    /// thread detach notify
+    /**
+     * @brief Notify engine of thread detachment
+     * @param i_threadId Thread ID being detached
+     * @return true if notification was processed successfully
+     * @pre i_threadId > 0
+     */
     bool threadDetachNotify(uint32_t i_threadId);
 
     /// shell execute
     void shellExecute();
 
-    /// get help message
+    /**
+     * @brief Get help messages for display
+     * @param o_helpMessage Output pointer for help message text
+     * @param o_helpTitle Output pointer for help title text
+     * @pre o_helpMessage != nullptr
+     * @pre o_helpTitle != nullptr
+     */
     void getHelpMessages(std::string *o_helpMessage, std::string *o_helpTitle);
 
     /// command notify
@@ -555,6 +618,7 @@ public:
      *
      * @note This method does not change engine state, only queries current keymap rules
      * @note Used by investigate dialog to display keymap debugging information
+     * @pre hwnd != nullptr
      */
     KeymapStatus queryKeymapForWindow(yamy::platform::WindowHandle hwnd,
                                       const std::string& className,

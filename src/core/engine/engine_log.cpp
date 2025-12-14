@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include <gsl/gsl>
 
 
 // output to m_log
@@ -91,6 +92,9 @@ void Engine::describeBindings()
 
 // get help message
 void Engine::getHelpMessages(std::string *o_helpMessage, std::string *o_helpTitle) {
+    Expects(o_helpMessage != nullptr);
+    Expects(o_helpTitle != nullptr);
+
     Acquire a(&m_cs);
     *o_helpMessage = m_helpMessage;
     *o_helpTitle = m_helpTitle;

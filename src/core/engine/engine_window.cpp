@@ -12,9 +12,12 @@
 
 #include <iomanip>
 #include <string>
+#include <gsl/gsl>
 
 
 void Engine::checkShow(yamy::platform::WindowHandle i_hwnd) {
+    Expects(i_hwnd != nullptr);
+
     // update show style of window
     // this update should be done in hook DLL, but to
     // avoid update-loss for some applications(such as
