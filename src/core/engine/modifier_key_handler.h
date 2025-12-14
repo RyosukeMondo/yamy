@@ -105,11 +105,7 @@ public:
     /// Reset all number key states (for testing or recovery)
     void reset();
 
-private:
-    /// Mapping: YAMY number key scan code → hardware modifier type
-    std::unordered_map<uint16_t, HardwareModifier> m_number_to_modifier;
-
-    /// Per-key state tracking
+    /// Per-key state tracking structure (public for testing)
     struct KeyState {
         NumberKeyState state;
         std::chrono::steady_clock::time_point press_time;
@@ -120,6 +116,19 @@ private:
             , press_time()
             , target_modifier(HardwareModifier::NONE) {}
     };
+
+    /// Get key states for testing purposes
+    /// @return Const reference to key states map
+    const std::unordered_map<uint16_t, KeyState>& getKeyStates() const;
+
+    /// Check if a number modifier is waiting for threshold
+    /// @param yama_scancode YAMY scan code to check
+    /// @return true if in WAITING state, false otherwise
+    bool isWaitingForThreshold(uint16_t yama_scancode) const;
+
+private:
+    /// Mapping: YAMY number key scan code → hardware modifier type
+    std::unordered_map<uint16_t, HardwareModifier> m_number_to_modifier;
 
     /// State for each registered number key
     std::unordered_map<uint16_t, KeyState> m_key_states;

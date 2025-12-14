@@ -142,7 +142,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
     7. Mark task 2 as complete
     ```
 
-- [ ] 3. Verify ModifierKeyHandler exists and add getter for testing
+- [x] 3. Verify ModifierKeyHandler exists and add getter for testing
   - **Files**:
     - `src/core/engine/modifier_key_handler.h` (add getters for testing)
     - `src/core/engine/modifier_key_handler.cpp` (implement getters)

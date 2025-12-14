@@ -164,6 +164,20 @@ void ModifierKeyHandler::reset()
     PLATFORM_LOG_INFO("ModifierKeyHandler", "[MODIFIER] All number key states reset to IDLE");
 }
 
+const std::unordered_map<uint16_t, ModifierKeyHandler::KeyState>& ModifierKeyHandler::getKeyStates() const
+{
+    return m_key_states;
+}
+
+bool ModifierKeyHandler::isWaitingForThreshold(uint16_t yama_scancode) const
+{
+    auto it = m_key_states.find(yama_scancode);
+    if (it == m_key_states.end()) {
+        return false;
+    }
+    return it->second.state == NumberKeyState::WAITING;
+}
+
 uint16_t ModifierKeyHandler::getModifierVKCode(HardwareModifier modifier)
 {
     switch (modifier) {
