@@ -456,9 +456,8 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/plugin_manager.cpp
     )
 
-    # Linux platform backend sources
-    set(STUB_SOURCES
-        src/app/main.cpp
+    # Linux platform backend sources (shared between daemon and GUI)
+    set(PLATFORM_LINUX_SOURCES
         src/app/engine_adapter.cpp
         src/platform/linux/x11_connection.cpp
         src/platform/linux/window_system_linux.cpp
@@ -476,12 +475,10 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/platform/linux/thread_linux.cpp
         src/platform/linux/hook_data_linux.cpp
         src/platform/linux/ipc_linux.cpp
+        src/core/platform/linux/ipc_channel_qt.cpp
         src/platform/linux/ipc_control_server.cpp
         src/platform/linux/platform_paths_linux.cpp
     )
-
-    # Combine Core and platform sources for Linux build
-    list(APPEND STUB_SOURCES ${CORE_SOURCES})
 
     # Qt5 Core is required for all builds (config_watcher uses QObject)
     find_package(Qt5 REQUIRED COMPONENTS Core)
@@ -498,13 +495,36 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
     # Qt5 GUI for Linux (optional)
     option(BUILD_QT_GUI "Build Qt5 GUI for Linux" ON)
 
-    add_executable(yamy ${STUB_SOURCES})
-    target_include_directories(yamy PRIVATE ${UDEV_INCLUDE_DIRS})
-    target_link_libraries(yamy PRIVATE
+    add_library(yamy_core STATIC
+        ${CORE_SOURCES}
+        ${PLATFORM_LINUX_SOURCES}
+    )
+    set_target_properties(yamy_core PROPERTIES AUTOMOC ON)
+    target_include_directories(yamy_core PUBLIC
+        ${UDEV_INCLUDE_DIRS}
+        src
+        src/ui
+        src/ui/qt
+        src/core/platform
+        src/core/engine
+        src/core/logging
+        src/core/settings
+        src/core/input
+        src/core/window
+        src/core/functions
+        src/core/commands
+        src/platform/linux
+        src/utils
+        src/app
+    )
+    target_link_libraries(yamy_core PUBLIC
         pthread dl ${X11_LIBRARIES} ${XRANDR_LIBRARIES} ${UDEV_LIBRARIES}
         Qt5::Core
         Qt5::Network
     )
+
+    add_executable(yamy src/app/main.cpp)
+    target_link_libraries(yamy PRIVATE yamy_core)
 
     if(BUILD_QT_GUI)
         # Find optional Qt5 GUI packages
@@ -524,6 +544,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
                 Qt5::Gui
                 Qt5::Core
                 Qt5::Network
+                yamy_core
                 yamy_qt_gui
             )
 

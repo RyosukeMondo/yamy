@@ -18,6 +18,9 @@ if(UNIX AND NOT WIN32)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GTK3 gtk+-3.0)
     pkg_check_modules(LIBNOTIFY libnotify)
+    set(APPINDICATOR3_FOUND FALSE)
+    pkg_check_modules(AYATANA_APPINDICATOR3 ayatana-appindicator3-0.1)
+    pkg_check_modules(APPINDICATOR3 appindicator3-0.1)
 
     if(GTK3_FOUND)
         message(STATUS "GTK3 found - version ${GTK3_VERSION}")
@@ -30,6 +33,22 @@ if(UNIX AND NOT WIN32)
     else()
         message(WARNING "libnotify not found - install with: sudo apt install libnotify-dev")
     endif()
+
+    if(AYATANA_APPINDICATOR3_FOUND)
+        set(APPINDICATOR3_FOUND TRUE)
+        set(APPINDICATOR3_LIBRARIES ${AYATANA_APPINDICATOR3_LIBRARIES})
+        set(APPINDICATOR3_INCLUDE_DIRS ${AYATANA_APPINDICATOR3_INCLUDE_DIRS})
+        set(APPINDICATOR3_COMPILE_DEFS HAVE_APPINDICATOR3 HAVE_AYATANA_APPINDICATOR3)
+        message(STATUS "Ayatana AppIndicator3 found - version ${AYATANA_APPINDICATOR3_VERSION}")
+    elseif(APPINDICATOR3_FOUND)
+        set(APPINDICATOR3_FOUND TRUE)
+        set(APPINDICATOR3_LIBRARIES ${APPINDICATOR3_LIBRARIES})
+        set(APPINDICATOR3_INCLUDE_DIRS ${APPINDICATOR3_INCLUDE_DIRS})
+        set(APPINDICATOR3_COMPILE_DEFS HAVE_APPINDICATOR3)
+        message(STATUS "AppIndicator3 found - version ${APPINDICATOR3_VERSION}")
+    else()
+        message(STATUS "AppIndicator3 not found - disabling AppIndicator system tray")
+    endif()
 endif()
 
 # Enable Qt MOC (Meta-Object Compiler)
@@ -40,7 +59,6 @@ set(CMAKE_AUTOUIC ON)
 # Qt source files
 set(QT_GUI_SOURCES
     tray_icon_qt.cpp
-    system_tray_appindicator.cpp
     dialog_settings_qt.cpp
     dialog_log_qt.cpp
     log_stats_panel.cpp
@@ -62,15 +80,11 @@ set(QT_GUI_SOURCES
     crash_report_dialog.cpp
     main_window_gui.cpp
     ipc_client_gui.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/platform/ipc_channel_interface.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/platform/linux/ipc_channel_qt.cpp
 )
 
 # Qt header files
 set(QT_GUI_HEADERS
     tray_icon_qt.h
-    system_tray_appindicator.h
     dialog_settings_qt.h
     dialog_log_qt.h
     log_stats_panel.h
@@ -97,6 +111,11 @@ set(QT_GUI_HEADERS
     ${CMAKE_SOURCE_DIR}/src/core/platform/linux/ipc_channel_qt.h
 )
 
+if(APPINDICATOR3_FOUND)
+    list(APPEND QT_GUI_SOURCES system_tray_appindicator.cpp)
+    list(APPEND QT_GUI_HEADERS system_tray_appindicator.h)
+endif()
+
 # Qt UI files (Designer) - Not used, using code-based layouts
 set(QT_GUI_UI_FILES
     # UI files not used - dialogs created programmatically
@@ -118,6 +137,7 @@ add_library(yamy_qt_gui STATIC
 
 # Link Qt libraries and X11
 target_link_libraries(yamy_qt_gui PUBLIC
+    yamy_core
     Qt5::Core
     Qt5::Widgets
     Qt5::Gui
@@ -146,6 +166,7 @@ if(UNIX AND NOT WIN32)
     if(APPINDICATOR3_FOUND)
         target_link_libraries(yamy_qt_gui PUBLIC ${APPINDICATOR3_LIBRARIES})
         target_include_directories(yamy_qt_gui PUBLIC ${APPINDICATOR3_INCLUDE_DIRS})
+        target_compile_definitions(yamy_qt_gui PUBLIC ${APPINDICATOR3_COMPILE_DEFS})
     endif()
 endif()
 

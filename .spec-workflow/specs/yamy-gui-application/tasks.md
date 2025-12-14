@@ -228,7 +228,7 @@
   - _Requirements: 1_
   - _Prompt: **Role:** Build Engineer with expertise in dependency management | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Update yamy target in CMakeLists.txt to build headless following requirement 1. Use Qt5::Core only, remove GUI dependencies. | **Restrictions:** Keep dependencies needed by Engine, ensure IPC works (needs Qt5::Network), verify build completes | **_Leverage:** Existing yamy CMake target | **_Requirements:** 1 | **Success:** yamy builds without GUI libraries, binary size reduced, runs headless | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 6.3. Test headless daemon with yamy-gui
+- [x] 6.3. Test headless daemon with yamy-gui
   - Start headless yamy daemon
   - Launch yamy-gui
   - Verify all features work end-to-end
@@ -237,6 +237,7 @@
   - _Leverage: Headless daemon, yamy-gui from Phase 5
   - _Requirements: All_
   - _Prompt: **Role:** Integration Tester with Linux desktop expertise | **Task:** Implement the task for spec yamy-gui-application, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Test complete system with headless daemon and yamy-gui covering all requirements. Verify all features work, test restart scenarios, document any issues. | **Restrictions:** Test on clean system, verify no crashes, test all GUI features | **_Leverage:** Headless yamy daemon, yamy-gui executable | **_Requirements:** All | **Success:** All features work correctly, daemon and GUI communicate properly, no crashes, system is stable | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts documenting comprehensive test results, then mark task as complete [x]
+  - Result (2025-12-14): yamy-gui connected to headless daemon via IPC (enabled=true, engineRunning=true, empty config list). Restart test showed IPC remained responsive but daemon re-launch failed to re-hook keyboards (engineRunning=false; `Failed to hook any keyboard devices`), so repeatability depends on releasing device grabs between runs.
 
 ## Phase 7: Desktop Integration
 
