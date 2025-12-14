@@ -78,8 +78,13 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
     
     m_ipcChannel = yamy::platform::createIPCChannel("yamy-engine");
     if (m_ipcChannel) {
-        // In a real implementation, we would connect to a signal from the IPC channel.
-        // For now, we will poll for messages in the main loop.
+#if defined(QT_CORE_LIB)
+        // Connect IPC signal to handler
+        QObject::connect(m_ipcChannel.get(), &yamy::platform::IIPCChannel::messageReceived,
+                         [this](const yamy::ipc::Message& msg) {
+                             this->handleIpcMessage(msg);
+                         });
+#endif
         m_ipcChannel->listen();
     }
 

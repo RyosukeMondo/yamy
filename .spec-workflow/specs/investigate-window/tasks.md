@@ -137,7 +137,7 @@
     7. Mark task complete
     ```
 
-- [ ] 1.3 Connect engine IPC messageReceived signal to handleIpcMessage
+- [x] 1.3 Connect engine IPC messageReceived signal to handleIpcMessage
   - Files:
     - src/core/engine/engine_lifecycle.cpp (modify)
     - src/core/engine/engine.h (modify if needed)
