@@ -487,7 +487,7 @@ This document breaks down the modal modifier remapping feature into atomic, test
 
 ## Phase 3: Configuration Layer Integration (Tasks 8-10)
 
-- [ ] 8. Connect modal modifier definitions to ModifierKeyHandler registration
+- [x] 8. Connect modal modifier definitions to ModifierKeyHandler registration
   - **Files**:
     - `src/core/engine/engine_setting.cpp` (modify buildSubstitutionTable or similar)
   - **Description**: Register modal modifiers from config into ModifierKeyHandler during engine initialization
