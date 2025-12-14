@@ -7,7 +7,14 @@
 #include <QMenu>
 #include <QActionGroup>
 #include <memory>
+
+// Support both Ayatana AppIndicator (Ubuntu) and original libappindicator
+#ifdef HAVE_AYATANA_APPINDICATOR3
+#include <libayatana-appindicator/app-indicator.h>
+#else
 #include <libappindicator/app-indicator.h>
+#endif
+
 #include "../../core/platform/ipc_defs.h"
 
 // Forward declarations
