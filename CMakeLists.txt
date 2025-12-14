@@ -154,6 +154,7 @@ set(ENGINE_SOURCES
     src/core/engine/engine_event_processor.cpp
     src/core/engine/modifier_key_handler.cpp
     src/core/logging/logger.cpp
+    src/core/logger/journey_logger.cpp
     src/core/window/focus.cpp
     src/core/functions/function.cpp
     src/core/functions/function_creator.cpp
@@ -363,6 +364,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/engine/engine_event_processor.cpp
         src/core/engine/modifier_key_handler.cpp
         src/core/logging/logger.cpp
+        src/core/logger/journey_logger.cpp
         src/core/window/focus.cpp
         src/core/functions/function.cpp
         src/core/functions/function_creator.cpp

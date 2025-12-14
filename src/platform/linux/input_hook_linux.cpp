@@ -6,7 +6,10 @@
 #include "core/platform/platform_exception.h"
 #include "../../utils/platform_logger.h"
 #include "../../utils/metrics.h"
+#include "../../core/logger/journey_logger.h"
 #include <linux/input.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
@@ -157,6 +160,39 @@ InputHookLinux::~InputHookLinux()
     uninstall();
 }
 
+// Helper function to extract device hardware info
+static yamy::logger::DeviceInfo extractDeviceInfo(int fd, const std::string& devNode, const std::string& name)
+{
+    yamy::logger::DeviceInfo info;
+    info.path = devNode;
+    info.name = name;
+
+    // Extract event number from path (e.g., /dev/input/event3 -> 3)
+    size_t pos = devNode.rfind("event");
+    if (pos != std::string::npos) {
+        try {
+            info.event_number = std::stoi(devNode.substr(pos + 5));
+        } catch (...) {
+            info.event_number = -1;
+        }
+    }
+
+    // Get device ID (vendor/product)
+    struct input_id id;
+    if (ioctl(fd, EVIOCGID, &id) >= 0) {
+        info.vendor_id = id.vendor;
+        info.product_id = id.product;
+    }
+
+    // Try to get serial number (if available)
+    char serial[256] = {0};
+    if (ioctl(fd, EVIOCGUNIQ(sizeof(serial)), serial) >= 0) {
+        info.serial = std::string(serial);
+    }
+
+    return info;
+}
+
 bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallback)
 {
     std::lock_guard<std::mutex> lock(m_readerThreadsMutex);
@@ -216,6 +252,9 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     int grabFailures = 0;
     std::string lastGrabError;
 
+    // Collect device info for journey logging
+    std::vector<yamy::logger::DeviceInfo> deviceInfoList;
+
     // Open and grab each keyboard
     for (const auto& kbInfo : keyboards) {
         // Skip devices we should never grab
@@ -267,6 +306,10 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
 
         m_readerThreads.push_back(std::move(reader));
         PLATFORM_LOG_INFO("input", "Successfully hooked %s", kbInfo.devNode.c_str());
+
+        // Extract and store device info for journey logging
+        yamy::logger::DeviceInfo devInfo = extractDeviceInfo(fd, kbInfo.devNode, kbInfo.name);
+        deviceInfoList.push_back(devInfo);
     }
 
     if (m_readerThreads.empty()) {
@@ -286,6 +329,14 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
 
     m_isInstalled = true;
     PLATFORM_LOG_INFO("input", "Input hook installed successfully (%zu device(s) active)", m_readerThreads.size());
+
+    // Initialize journey logger (checks YAMY_JOURNEY_LOG environment variable)
+    yamy::logger::JourneyLogger::initialize();
+
+    // Print legend with hardware device info
+    if (yamy::logger::JourneyLogger::isEnabled()) {
+        yamy::logger::JourneyLogger::printLegend(deviceInfoList);
+    }
 
     return true;
 }

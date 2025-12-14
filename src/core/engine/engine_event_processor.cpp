@@ -5,7 +5,9 @@
 #include "modifier_key_handler.h"
 #include "../../platform/linux/keycode_mapping.h"
 #include "../../utils/platform_logger.h"
+#include "../logger/journey_logger.h"
 #include <cstdlib>
+#include <chrono>
 
 namespace yamy {
 
@@ -29,6 +31,16 @@ EventProcessor::~EventProcessor() = default;
 
 EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev, EventType type)
 {
+    // Create journey event for tracking (if enabled)
+    yamy::logger::JourneyEvent journey;
+    if (yamy::logger::JourneyLogger::isEnabled()) {
+        journey.start_time = std::chrono::steady_clock::now();
+        journey.evdev_input = input_evdev;
+        journey.is_key_down = (type == EventType::PRESS);
+        journey.device_event_number = -1; // TODO: pass from caller if needed
+        journey.input_key_name = yamy::platform::getKeyName(input_evdev);
+    }
+
     if (m_debugLogging) {
         const char* type_str = (type == EventType::PRESS) ? "PRESS" : "RELEASE";
         PLATFORM_LOG_DEBUG("EventProcessor", "[EVENT:START] evdev %u (%s)", input_evdev, type_str);
@@ -43,8 +55,18 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
         return ProcessedEvent(0, 0, type, false);
     }
 
+    if (yamy::logger::JourneyLogger::isEnabled()) {
+        journey.yamy_input = yamy_l1;
+    }
+
     // Layer 2: Apply substitution (with number modifier support)
     uint16_t yamy_l2 = layer2_applySubstitution(yamy_l1, type);
+
+    if (yamy::logger::JourneyLogger::isEnabled()) {
+        journey.yamy_output = yamy_l2;
+        journey.was_substituted = (yamy_l1 != yamy_l2);
+        // Number modifier info will be filled by layer2 if applicable
+    }
 
     // Layer 3: YAMY scan code → evdev
     uint16_t output_evdev = layer3_yamyToEvdev(yamy_l2);
@@ -53,6 +75,18 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
             PLATFORM_LOG_DEBUG("EventProcessor", "[EVENT:END] Invalid (Layer 3 failed)");
         }
         return ProcessedEvent(0, 0, type, false);
+    }
+
+    if (yamy::logger::JourneyLogger::isEnabled()) {
+        journey.evdev_output = output_evdev;
+        journey.output_key_name = yamy::platform::getKeyName(output_evdev);
+        journey.end_time = std::chrono::steady_clock::now();
+        journey.latency_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            journey.end_time - journey.start_time).count();
+        journey.valid = true;
+
+        // Log the complete journey
+        yamy::logger::JourneyLogger::logJourney(journey);
     }
 
     if (m_debugLogging) {
