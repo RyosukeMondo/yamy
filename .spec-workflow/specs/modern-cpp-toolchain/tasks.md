@@ -209,7 +209,7 @@
 
 ## Phase 5: Property-Based Testing (RapidCheck)
 
-- [ ] 5.1. Write keymap invariant properties
+- [x] 5.1. Write keymap invariant properties
   - File: `tests/property_keymap.cpp`
   - Define 3 properties: lookup idempotence, define uniqueness, parent chain consistency
   - Integrate with Catch2 test suite
