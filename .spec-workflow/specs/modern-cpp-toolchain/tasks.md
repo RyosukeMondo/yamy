@@ -157,7 +157,7 @@
 
 ## Phase 4: Contract Programming (Microsoft GSL)
 
-- [-] 4.1. Add preconditions to core engine APIs
+- [x] 4.1. Add preconditions to core engine APIs
   - Files: `src/core/engine/engine.h`, `src/core/engine/engine.cpp`
   - Identify critical preconditions (e.g., key_code < MAX_KEYS)
   - Add Expects() macros to all public APIs
