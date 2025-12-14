@@ -696,7 +696,7 @@
 
 ### Phase 3: Live Key Event Logging
 
-- [ ] 3.1 Add live key event notifications in engine keyboard handler
+- [x] 3.1 Add live key event notifications in engine keyboard handler
   - Files:
     - src/core/engine/engine.cpp (modify)
     - src/core/engine/engine.h (modify, add helper method)
