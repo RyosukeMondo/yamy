@@ -1,0 +1,132 @@
+name: Nightly Property Tests
+
+on:
+  schedule:
+    # Run at 2:00 AM UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  intensive-property-tests:
+    name: Intensive Property Tests (10,000 iterations)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++ make \
+          libx11-dev libxrandr-dev libudev-dev \
+          qtbase5-dev \
+          xvfb mold lld python3-pip
+        pip3 install conan
+
+    - name: Setup Conan
+      run: |
+        conan profile detect --force
+        conan install . --output-folder=build --build=missing -s build_type=Debug
+
+    - name: Configure CMake
+      run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=ON -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
+
+    - name: Build property tests
+      run: |
+        cmake --build build --target yamy_property_keymap_test --parallel
+        cmake --build build --target yamy_property_modifier_test --parallel
+        cmake --build build --target yamy_property_layer_test --parallel
+
+    - name: Run intensive property tests (10,000 iterations)
+      run: |
+        echo "## Nightly Property-Based Test Results (10,000 iterations)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Running intensive property-based tests with 10x more iterations than CI..." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Track start time
+        START_TIME=$(date +%s)
+
+        # Run keymap property tests
+        echo "Running keymap invariant property tests..."
+        KEYMAP_START=$(date +%s)
+        if RC_PARAMS="max_success=10000" ./build/bin/yamy_property_keymap_test > keymap_results.txt 2>&1; then
+          KEYMAP_END=$(date +%s)
+          KEYMAP_DURATION=$((KEYMAP_END - KEYMAP_START))
+          echo "✓ Keymap property tests passed (10,000 iterations, ${KEYMAP_DURATION}s)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✗ Keymap property tests FAILED" >> $GITHUB_STEP_SUMMARY
+          cat keymap_results.txt
+          exit 1
+        fi
+
+        # Run modifier state property tests
+        echo "Running modifier state property tests..."
+        MODIFIER_START=$(date +%s)
+        if RC_PARAMS="max_success=10000" ./build/bin/yamy_property_modifier_test > modifier_results.txt 2>&1; then
+          MODIFIER_END=$(date +%s)
+          MODIFIER_DURATION=$((MODIFIER_END - MODIFIER_START))
+          echo "✓ Modifier state property tests passed (10,000 iterations, ${MODIFIER_DURATION}s)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✗ Modifier state property tests FAILED" >> $GITHUB_STEP_SUMMARY
+          cat modifier_results.txt
+          exit 1
+        fi
+
+        # Run layer switching property tests
+        echo "Running layer switching property tests..."
+        LAYER_START=$(date +%s)
+        if RC_PARAMS="max_success=10000" ./build/bin/yamy_property_layer_test > layer_results.txt 2>&1; then
+          LAYER_END=$(date +%s)
+          LAYER_DURATION=$((LAYER_END - LAYER_START))
+          echo "✓ Layer switching property tests passed (10,000 iterations, ${LAYER_DURATION}s)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✗ Layer switching property tests FAILED" >> $GITHUB_STEP_SUMMARY
+          cat layer_results.txt
+          exit 1
+        fi
+
+        # Calculate total time
+        END_TIME=$(date +%s)
+        TOTAL_DURATION=$((END_TIME - START_TIME))
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**All property tests completed successfully!**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Total time: ${TOTAL_DURATION}s" >> $GITHUB_STEP_SUMMARY
+        echo "- Keymap tests: ${KEYMAP_DURATION}s" >> $GITHUB_STEP_SUMMARY
+        echo "- Modifier tests: ${MODIFIER_DURATION}s" >> $GITHUB_STEP_SUMMARY
+        echo "- Layer tests: ${LAYER_DURATION}s" >> $GITHUB_STEP_SUMMARY
+      timeout-minutes: 30
+      env:
+        DISPLAY: :99
+
+    - name: Upload test logs
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: nightly-property-test-logs
+        path: |
+          keymap_results.txt
+          modifier_results.txt
+          layer_results.txt
+        retention-days: 30
+
+    # Notify on failure (optional - requires setup of notification mechanism)
+    - name: Create issue on failure
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'Nightly property tests failed',
+            body: `The nightly property-based tests (10,000 iterations) failed.
+
+            **Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Please investigate the test failures in the property-based test suite.`,
+            labels: ['bug', 'automated-test-failure', 'property-based-testing']
+          })

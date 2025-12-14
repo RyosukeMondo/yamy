@@ -182,6 +182,75 @@ jobs:
           echo "- Errors: ${ERRORS:-0}" >> $GITHUB_STEP_SUMMARY
         fi
 
+  property-tests:
+    name: Property-Based Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++ make \
+          libx11-dev libxrandr-dev libudev-dev \
+          qtbase5-dev \
+          xvfb mold lld python3-pip
+        pip3 install conan
+
+    - name: Setup Conan
+      run: |
+        conan profile detect --force
+        conan install . --output-folder=build --build=missing -s build_type=Debug
+
+    - name: Configure CMake
+      run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=ON -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
+
+    - name: Build property tests
+      run: |
+        cmake --build build --target yamy_property_keymap_test --parallel
+        cmake --build build --target yamy_property_modifier_test --parallel
+        cmake --build build --target yamy_property_layer_test --parallel
+
+    - name: Run property tests (1000 iterations)
+      run: |
+        echo "## Property-Based Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Run keymap property tests
+        echo "Running keymap invariant property tests..."
+        if RC_PARAMS="max_success=1000" ./build/bin/yamy_property_keymap_test; then
+          echo "✓ Keymap property tests passed (1000 iterations)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✗ Keymap property tests FAILED" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+        # Run modifier state property tests
+        echo "Running modifier state property tests..."
+        if RC_PARAMS="max_success=1000" ./build/bin/yamy_property_modifier_test; then
+          echo "✓ Modifier state property tests passed (1000 iterations)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✗ Modifier state property tests FAILED" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+        # Run layer switching property tests
+        echo "Running layer switching property tests..."
+        if RC_PARAMS="max_success=1000" ./build/bin/yamy_property_layer_test; then
+          echo "✓ Layer switching property tests passed (1000 iterations)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✗ Layer switching property tests FAILED" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "All property tests completed successfully with 1000 iterations per property." >> $GITHUB_STEP_SUMMARY
+      timeout-minutes: 10
+      env:
+        DISPLAY: :99
+
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
