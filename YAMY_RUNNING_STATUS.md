@@ -1,17 +1,18 @@
 # YAMY Running Status
 
-## Current Status: ✅ RUNNING (M20-M29 System + Phase 1 Fix Applied)
+## Current Status: ✅ RUNNING (M20-M29 System + Phase 1 Fix + Duplicates Removed)
 
-**Date:** 2025-12-16 00:38
+**Date:** 2025-12-16 01:15
 **Config:** `keymaps/master_m00.mayu` (M20-M29 migration with PHYSICAL key mappings)
 **Phase 1 Status:** ✅ FIXED - Modifier matching now happens BEFORE substitution!
+**Config Fix:** ✅ Removed duplicate M20 mappings (M20-W, M20-Q, M20-M)
 
 ## Processes
 
 | Component | PID | Status | Log File |
 |-----------|-----|--------|----------|
-| **YAMY Daemon** | 1104819 | ✅ Running | `/tmp/yamy_daemon.log` |
-| **YAMY GUI** | 1105022 | ✅ Running | `/tmp/yamy_gui.log` |
+| **YAMY Daemon** | 1137325 | ✅ Running | `/tmp/yamy_daemon.log` |
+| **YAMY GUI** | 1137702 | ✅ Running | `/tmp/yamy_gui.log` |
 
 ## Registered Virtual Modifiers (M20-M29)
 
