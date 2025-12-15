@@ -1,0 +1,15 @@
+# Test without modal modifier binding
+include "/home/rmondo/repos/yamy/keymaps/109_clean.mayu"
+
+# Define some substitutions
+def subst *B = *B
+def subst *W = *W
+def subst *_1 = *_1
+
+# Define modal modifier but don't use it in keymap yet
+mod mod0 = !!B
+
+# Simple keymap without modal modifiers
+keymap Global : GLOBAL
+	key S-W = *_1    # Shift-W → 1 (standard modifier)
+end

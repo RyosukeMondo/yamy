@@ -306,8 +306,8 @@ void Engine::beginGeneratingKeyboardEvents(
         yamy::EventType event_type = isPhysicallyPressed ? yamy::EventType::PRESS : yamy::EventType::RELEASE;
 
         // Process through all 3 layers
-        // TODO: Pass actual ModifierState once modal modifiers are integrated
-        yamy::EventProcessor::ProcessedEvent result = m_eventProcessor->processEvent(i_c.m_evdev_code, event_type, nullptr);
+        // Pass ModifierState to track and update modal modifier state (mod0-mod19)
+        yamy::EventProcessor::ProcessedEvent result = m_eventProcessor->processEvent(i_c.m_evdev_code, event_type, &m_modifierState);
 
         if (result.valid && result.output_yamy != 0) {
             // Get the original YAMY scan code for comparison

@@ -1,0 +1,52 @@
+{
+  "name": "quick_smoke_test",
+  "description": "Minimal smoke test for rapid iteration (5 key tests)",
+  "config": "keymaps/config_clean.mayu",
+  "setup": {
+    "env": {"YAMY_DEBUG_KEYCODE": "1"}
+  },
+  "test_cases": [
+    {
+      "name": "A_to_Tab",
+      "description": "Most basic test: A → Tab",
+      "input": [
+        {"evdev_code": 30, "key_name": "KEY_A", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 30, "key_name": "KEY_A", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 15, "key_name": "KEY_TAB", "type": "press"},
+        {"evdev_code": 15, "key_name": "KEY_TAB", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "W_to_A",
+      "description": "W → A (for M0 testing)",
+      "input": [
+        {"evdev_code": 17, "key_name": "KEY_W", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 17, "key_name": "KEY_W", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 30, "key_name": "KEY_A", "type": "press"},
+        {"evdev_code": 30, "key_name": "KEY_A", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "Z_passthrough",
+      "description": "Z → Z (verify passthrough works)",
+      "input": [
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "press"},
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    }
+  ]
+}

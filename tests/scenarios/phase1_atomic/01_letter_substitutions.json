@@ -1,0 +1,363 @@
+{
+  "name": "letter_substitutions_basic",
+  "description": "Test all active letter key substitutions (P0 - Critical)",
+  "config": "keymaps/config_clean.mayu",
+  "setup": {
+    "daemon_args": [],
+    "env": {
+      "YAMY_DEBUG_KEYCODE": "1"
+    }
+  },
+  "test_cases": [
+    {
+      "name": "A_to_Tab",
+      "description": "A → Tab substitution",
+      "input": [
+        {"evdev_code": 30, "key_name": "KEY_A", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 30, "key_name": "KEY_A", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 15, "key_name": "KEY_TAB", "type": "press"},
+        {"evdev_code": 15, "key_name": "KEY_TAB", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "C_to_Delete",
+      "description": "C → Delete substitution",
+      "input": [
+        {"evdev_code": 46, "key_name": "KEY_C", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 46, "key_name": "KEY_C", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 111, "key_name": "KEY_DELETE", "type": "press"},
+        {"evdev_code": 111, "key_name": "KEY_DELETE", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "D_to_Q",
+      "description": "D → Q substitution",
+      "input": [
+        {"evdev_code": 32, "key_name": "KEY_D", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 32, "key_name": "KEY_D", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 16, "key_name": "KEY_Q", "type": "press"},
+        {"evdev_code": 16, "key_name": "KEY_Q", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "E_to_O",
+      "description": "E → O substitution",
+      "input": [
+        {"evdev_code": 18, "key_name": "KEY_E", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 18, "key_name": "KEY_E", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 24, "key_name": "KEY_O", "type": "press"},
+        {"evdev_code": 24, "key_name": "KEY_O", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "F_to_J",
+      "description": "F → J substitution",
+      "input": [
+        {"evdev_code": 33, "key_name": "KEY_F", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 33, "key_name": "KEY_F", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 36, "key_name": "KEY_J", "type": "press"},
+        {"evdev_code": 36, "key_name": "KEY_J", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "G_to_K",
+      "description": "G → K substitution",
+      "input": [
+        {"evdev_code": 34, "key_name": "KEY_G", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 34, "key_name": "KEY_G", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 37, "key_name": "KEY_K", "type": "press"},
+        {"evdev_code": 37, "key_name": "KEY_K", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "H_to_X",
+      "description": "H → X substitution",
+      "input": [
+        {"evdev_code": 35, "key_name": "KEY_H", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 35, "key_name": "KEY_H", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 45, "key_name": "KEY_X", "type": "press"},
+        {"evdev_code": 45, "key_name": "KEY_X", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "I_to_H",
+      "description": "I → H substitution",
+      "input": [
+        {"evdev_code": 23, "key_name": "KEY_I", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 23, "key_name": "KEY_I", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 35, "key_name": "KEY_H", "type": "press"},
+        {"evdev_code": 35, "key_name": "KEY_H", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "J_to_B",
+      "description": "J → B substitution",
+      "input": [
+        {"evdev_code": 36, "key_name": "KEY_J", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 36, "key_name": "KEY_J", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 48, "key_name": "KEY_B", "type": "press"},
+        {"evdev_code": 48, "key_name": "KEY_B", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "K_to_M",
+      "description": "K → M substitution",
+      "input": [
+        {"evdev_code": 37, "key_name": "KEY_K", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 37, "key_name": "KEY_K", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 50, "key_name": "KEY_M", "type": "press"},
+        {"evdev_code": 50, "key_name": "KEY_M", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "L_to_W",
+      "description": "L → W substitution",
+      "input": [
+        {"evdev_code": 38, "key_name": "KEY_L", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 38, "key_name": "KEY_L", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 17, "key_name": "KEY_W", "type": "press"},
+        {"evdev_code": 17, "key_name": "KEY_W", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "M_to_Backspace",
+      "description": "M → Backspace substitution",
+      "input": [
+        {"evdev_code": 50, "key_name": "KEY_M", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 50, "key_name": "KEY_M", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 14, "key_name": "KEY_BACKSPACE", "type": "press"},
+        {"evdev_code": 14, "key_name": "KEY_BACKSPACE", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "N_to_LShift",
+      "description": "N → Left Shift substitution",
+      "input": [
+        {"evdev_code": 49, "key_name": "KEY_N", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 49, "key_name": "KEY_N", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 42, "key_name": "KEY_LEFTSHIFT", "type": "press"},
+        {"evdev_code": 42, "key_name": "KEY_LEFTSHIFT", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "O_to_T",
+      "description": "O → T substitution",
+      "input": [
+        {"evdev_code": 24, "key_name": "KEY_O", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 24, "key_name": "KEY_O", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 20, "key_name": "KEY_T", "type": "press"},
+        {"evdev_code": 20, "key_name": "KEY_T", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "P_to_N",
+      "description": "P → N substitution",
+      "input": [
+        {"evdev_code": 25, "key_name": "KEY_P", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 25, "key_name": "KEY_P", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 49, "key_name": "KEY_N", "type": "press"},
+        {"evdev_code": 49, "key_name": "KEY_N", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "Q_to_Minus",
+      "description": "Q → Minus substitution",
+      "input": [
+        {"evdev_code": 16, "key_name": "KEY_Q", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 16, "key_name": "KEY_Q", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 12, "key_name": "KEY_MINUS", "type": "press"},
+        {"evdev_code": 12, "key_name": "KEY_MINUS", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "R_to_E",
+      "description": "R → E substitution",
+      "input": [
+        {"evdev_code": 19, "key_name": "KEY_R", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 19, "key_name": "KEY_R", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 18, "key_name": "KEY_E", "type": "press"},
+        {"evdev_code": 18, "key_name": "KEY_E", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "S_to_Semicolon",
+      "description": "S → Semicolon substitution",
+      "input": [
+        {"evdev_code": 31, "key_name": "KEY_S", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 31, "key_name": "KEY_S", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 39, "key_name": "KEY_SEMICOLON", "type": "press"},
+        {"evdev_code": 39, "key_name": "KEY_SEMICOLON", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "T_to_U",
+      "description": "T → U substitution",
+      "input": [
+        {"evdev_code": 20, "key_name": "KEY_T", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 20, "key_name": "KEY_T", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 22, "key_name": "KEY_U", "type": "press"},
+        {"evdev_code": 22, "key_name": "KEY_U", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "U_to_D",
+      "description": "U → D substitution",
+      "input": [
+        {"evdev_code": 22, "key_name": "KEY_U", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 22, "key_name": "KEY_U", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 32, "key_name": "KEY_D", "type": "press"},
+        {"evdev_code": 32, "key_name": "KEY_D", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "V_to_Backspace",
+      "description": "V → Backspace substitution",
+      "input": [
+        {"evdev_code": 47, "key_name": "KEY_V", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 47, "key_name": "KEY_V", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 14, "key_name": "KEY_BACKSPACE", "type": "press"},
+        {"evdev_code": 14, "key_name": "KEY_BACKSPACE", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "W_to_A",
+      "description": "W → A substitution",
+      "input": [
+        {"evdev_code": 17, "key_name": "KEY_W", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 17, "key_name": "KEY_W", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 30, "key_name": "KEY_A", "type": "press"},
+        {"evdev_code": 30, "key_name": "KEY_A", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "X_to_3",
+      "description": "X → 3 substitution",
+      "input": [
+        {"evdev_code": 45, "key_name": "KEY_X", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 45, "key_name": "KEY_X", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 4, "key_name": "KEY_3", "type": "press"},
+        {"evdev_code": 4, "key_name": "KEY_3", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "Y_to_I",
+      "description": "Y → I substitution",
+      "input": [
+        {"evdev_code": 21, "key_name": "KEY_Y", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 21, "key_name": "KEY_Y", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 23, "key_name": "KEY_I", "type": "press"},
+        {"evdev_code": 23, "key_name": "KEY_I", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "Z_passthrough",
+      "description": "Z → Z passthrough (no substitution)",
+      "input": [
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "press"},
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "release"}
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    }
+  ]
+}

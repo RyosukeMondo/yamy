@@ -1,0 +1,16 @@
+{
+  "name": "YAMY Complete Feature Test Suite",
+  "description": "Comprehensive tests for all YAMY features",
+  "test_scenarios": [
+    "tests/scenarios/basic_remap.json",
+    "tests/scenarios/modifier_keys.json",
+    "tests/scenarios/modal_modifiers.json"
+  ],
+  "global_setup": {
+    "build_daemon": false,
+    "clean_state": true
+  },
+  "global_teardown": {
+    "collect_logs": true
+  }
+}

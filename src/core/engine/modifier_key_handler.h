@@ -107,6 +107,11 @@ public:
     /// @return true if registered, false otherwise
     bool isNumberModifier(uint16_t yamy_scancode) const;
 
+    /// Check if a YAMY scan code is registered as a modal modifier
+    /// @param yamy_scancode YAMY scan code to check
+    /// @return true if registered, false otherwise
+    bool isModalModifier(uint16_t yamy_scancode) const;
+
     /// Check if a number modifier is currently held (MODIFIER_ACTIVE state)
     /// @param yamy_scancode YAMY scan code to check
     /// @return true if held, false otherwise

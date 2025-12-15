@@ -127,9 +127,10 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
 
 uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState)
 {
-    // CRITICAL: Check if key is registered as number modifier BEFORE substitution lookup
+    // CRITICAL: Check if key is registered as number OR modal modifier BEFORE substitution lookup
     // This ensures number keys can act as modifiers (HOLD) or be substituted (TAP)
-    if (m_modifierHandler && m_modifierHandler->isNumberModifier(yamy_in)) {
+    // and modal modifiers (!! operator) can activate modal modifier state
+    if (m_modifierHandler && (m_modifierHandler->isNumberModifier(yamy_in) || m_modifierHandler->isModalModifier(yamy_in))) {
         engine::NumberKeyResult result = m_modifierHandler->processNumberKey(yamy_in, type);
 
         switch (result.action) {

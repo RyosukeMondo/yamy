@@ -4,6 +4,7 @@
 #include "modifier_key_handler.h"
 #include "engine_event_processor.h"
 #include "../input/vk_constants.h"
+#include "../input/keyboard.h"
 #include "../../utils/logger.h"
 #include <chrono>
 
@@ -41,9 +42,14 @@ void ModifierKeyHandler::registerModalModifier(uint16_t yamy_scancode, int modif
     m_key_states[yamy_scancode].modal_modifier_type = modifier_type;
     m_key_states[yamy_scancode].is_modal = true;
 
-    // Extract mod number for logging (assumes Type_Mod0 = 16, Type_Mod19 = 35)
-    const int TYPE_MOD0 = 16;  // Modifier::Type_Mod0
-    int mod_number = modifier_type - TYPE_MOD0;
+    // Extract mod number for logging
+    // BUG FIX: Use actual Modifier::Type_Mod0 value (19), not hardcoded 16!
+    int mod_number = modifier_type - Modifier::Type_Mod0;
+
+    // CRITICAL DEBUG: Output to stderr for visibility
+    fprintf(stderr, "[REGISTER_MODAL] 0x%04X → mod%d (is_modal=%d)\n",
+            yamy_scancode, mod_number, m_key_states[yamy_scancode].is_modal ? 1 : 0);
+    fflush(stderr);
 
     LOG_INFO("[ModifierKeyHandler] [MODIFIER] Registered modal modifier 0x{:04X} → mod{}",
              yamy_scancode, mod_number);
@@ -176,6 +182,12 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
 bool ModifierKeyHandler::isNumberModifier(uint16_t yamy_scancode) const
 {
     return m_number_to_modifier.find(yamy_scancode) != m_number_to_modifier.end();
+}
+
+bool ModifierKeyHandler::isModalModifier(uint16_t yamy_scancode) const
+{
+    auto it = m_key_states.find(yamy_scancode);
+    return (it != m_key_states.end()) && it->second.is_modal;
 }
 
 bool ModifierKeyHandler::isModifierHeld(uint16_t yamy_scancode) const

@@ -96,12 +96,29 @@ bool SettingLoader::getComma(bool i_doesThrow, const char *i_name)
 // <INCLUDE>
 void SettingLoader::load_INCLUDE()
 {
-    SettingLoader loader(m_soLog, m_log, m_config);
-    loader.m_currentFilename = m_currentFilename;
-    loader.m_defaultAssignModifier = m_defaultAssignModifier;
-    loader.m_defaultKeySeqModifier = m_defaultKeySeqModifier;
-    if (!loader.load(m_setting, to_UTF_8((*getToken()).getString())))
+    std::string filename = to_UTF_8((*getToken()).getString());
+
+    try {
+        // RAII guard for include stack - automatically handles push/pop
+        yamy::IncludeGuard guard(*m_includeContext, filename);
+
+        // Create child loader with SHARED include context
+        SettingLoader loader(m_soLog, m_log, m_config, *m_includeContext);
+        loader.m_currentFilename = m_currentFilename;
+        loader.m_defaultAssignModifier = m_defaultAssignModifier;
+        loader.m_defaultKeySeqModifier = m_defaultKeySeqModifier;
+
+        if (!loader.load(m_setting, filename)) {
+            m_isThereAnyError = true;
+        }
+    } catch (ErrorMessage &e) {
+        // Circular include or depth exceeded
+        if (m_log && m_soLog) {
+            Acquire a(m_soLog);
+            *m_log << m_currentFilename << " : error: " << e.getMessage() << std::endl;
+        }
         m_isThereAnyError = true;
+    }
 }
 
 
@@ -545,10 +562,120 @@ continue_loop:
 }
 
 
+// Create a virtual key with a given keycode
+// Virtual keys use a special scan code format to store the keycode
+Key *SettingLoader::createVirtualKey(const std::string &i_name, uint16_t i_keycode)
+{
+    // Create a new key with the virtual name
+    Key key;
+    key.addName(i_name);
+
+    // Store the keycode as a special scan code
+    // We use a unique pattern: scan = keycode, flags = 0xFFFF (marker for virtual)
+    ScanCode virtualSc(i_keycode, 0xFFFF);
+    key.addScanCode(virtualSc);
+
+    // Add the key to the keyboard
+    m_setting->m_keyboard.addKey(key);
+
+    // Return pointer to the newly added key by searching for it
+    Key *newKey = m_setting->m_keyboard.searchKey(i_name);
+    if (!newKey)
+        throw ErrorMessage() << "Failed to add virtual key `" << i_name << "'.";
+    return newKey;
+}
+
 // <KEY_NAME>
 Key *SettingLoader::load_KEY_NAME()
 {
     Token *t = getToken();
+    std::string keyName = t->getString();
+
+    // Check for virtual key prefix (V_*)
+    if (keyName.length() > 2 && keyName[0] == 'V' && keyName[1] == '_') {
+        // Extract base key name after "V_"
+        std::string baseKeyName = keyName.substr(2);
+        Key *baseKey = m_setting->m_keyboard.searchKey(baseKeyName);
+        if (!baseKey)
+            throw ErrorMessage() << "`" << keyName << "': invalid base key name after V_.";
+
+        // Get base key's first scan code to determine offset
+        const ScanCode *baseScanCodes = baseKey->getScanCodes();
+        if (baseKey->getScanCodesSize() == 0)
+            throw ErrorMessage() << "`" << keyName << "': base key has no scan codes.";
+
+        // Calculate virtual key code: VIRTUAL_KEY_BASE + base_offset
+        uint16_t baseOffset = baseScanCodes[0].m_scan;
+        uint16_t virtualKeyCode = 0xE000 + baseOffset; // YAMY_VIRTUAL_KEY_BASE + offset
+
+        // Check if this virtual key already exists
+        Key *existingKey = m_setting->m_keyboard.searchKey(keyName);
+        if (existingKey)
+            return existingKey;
+
+        // Create and return new virtual key
+        return createVirtualKey(keyName, virtualKeyCode);
+    }
+
+    // Check for modal modifier pattern (M00-MFF)
+    if (keyName.length() == 3 && keyName[0] == 'M' &&
+        std::isxdigit(keyName[1]) && std::isxdigit(keyName[2])) {
+        // Parse hex digits (case insensitive)
+        char hex1 = std::toupper(keyName[1]);
+        char hex2 = std::toupper(keyName[2]);
+
+        // Validate hex digits
+        if (!((hex1 >= '0' && hex1 <= '9') || (hex1 >= 'A' && hex1 <= 'F')) ||
+            !((hex2 >= '0' && hex2 <= '9') || (hex2 >= 'A' && hex2 <= 'F'))) {
+            throw ErrorMessage() << "`" << keyName << "': invalid hex digits in modifier name.";
+        }
+
+        // Convert hex chars to number
+        int modNum = (hex1 >= 'A' ? (hex1 - 'A' + 10) : (hex1 - '0')) * 16 +
+                     (hex2 >= 'A' ? (hex2 - 'A' + 10) : (hex2 - '0'));
+
+        // Create virtual keycode for modifier: YAMY_MOD_00 + modNum
+        uint16_t modKeyCode = 0xF000 + modNum;
+
+        // Check if this modifier key already exists
+        Key *existingKey = m_setting->m_keyboard.searchKey(keyName);
+        if (existingKey)
+            return existingKey;
+
+        // Create and return new modifier key
+        return createVirtualKey(keyName, modKeyCode);
+    }
+
+    // Check for lock key pattern (L00-LFF)
+    if (keyName.length() == 3 && keyName[0] == 'L' &&
+        std::isxdigit(keyName[1]) && std::isxdigit(keyName[2])) {
+        // Parse hex digits (case insensitive)
+        char hex1 = std::toupper(keyName[1]);
+        char hex2 = std::toupper(keyName[2]);
+
+        // Validate hex digits
+        if (!((hex1 >= '0' && hex1 <= '9') || (hex1 >= 'A' && hex1 <= 'F')) ||
+            !((hex2 >= '0' && hex2 <= '9') || (hex2 >= 'A' && hex2 <= 'F'))) {
+            throw ErrorMessage() << "`" << keyName << "': invalid hex digits in lock name.";
+        }
+
+        // Convert hex chars to number
+        int lockNum = (hex1 >= 'A' ? (hex1 - 'A' + 10) : (hex1 - '0')) * 16 +
+                      (hex2 >= 'A' ? (hex2 - 'A' + 10) : (hex2 - '0'));
+
+        // Create virtual keycode for lock: YAMY_LOCK_00 + lockNum
+        uint16_t lockKeyCode = 0xF100 + lockNum;
+
+        // Check if this lock key already exists
+        Key *existingKey = m_setting->m_keyboard.searchKey(keyName);
+        if (existingKey)
+            return existingKey;
+
+        // Create and return new lock key
+        return createVirtualKey(keyName, lockKeyCode);
+    }
+
+    // Standard key lookup
     Key *key = m_setting->m_keyboard.searchKey(t->getString());
     if (!key)
         throw ErrorMessage() << "`" << *t << "': invalid key name.";
@@ -1679,17 +1806,43 @@ add_symbols:
 }
 
 
-// constructor
+// constructor for root loader (creates own IncludeContext)
 SettingLoader::SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config)
         : m_setting(nullptr),
         m_config(i_config),
         m_isThereAnyError(false),
         m_soLog(i_soLog),
         m_log(i_log),
+        m_includeContext(new yamy::IncludeContext()),  // Create owned context
+        m_ownsIncludeContext(true),                    // We own it
         m_currentKeymap(nullptr)
 {
     m_defaultKeySeqModifier =
         m_defaultAssignModifier.release(Modifier::Type_ImeComp);
+}
+
+// constructor for child loader (shares IncludeContext)
+SettingLoader::SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config, yamy::IncludeContext& i_includeContext)
+        : m_setting(nullptr),
+        m_config(i_config),
+        m_isThereAnyError(false),
+        m_soLog(i_soLog),
+        m_log(i_log),
+        m_includeContext(&i_includeContext),  // Use shared context (not owned)
+        m_ownsIncludeContext(false),          // We don't own it
+        m_currentKeymap(nullptr)
+{
+    m_defaultKeySeqModifier =
+        m_defaultAssignModifier.release(Modifier::Type_ImeComp);
+}
+
+// destructor
+SettingLoader::~SettingLoader()
+{
+    // Only delete context if we own it (root loader)
+    if (m_ownsIncludeContext && m_includeContext) {
+        delete m_includeContext;
+    }
 }
 
 

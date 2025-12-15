@@ -161,6 +161,10 @@ void Engine::start() {
     yamy::debug::DebugConsole::LogInfo("Engine: Installing input hook...");
 #endif
     yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Installing input hook...");
+    std::cerr << "[DEBUG] Engine: About to call m_inputHook->install(), m_inputHook=" << m_inputHook << std::endl;
+    if (!m_inputHook) {
+        std::cerr << "[DEBUG] Engine: ERROR - m_inputHook is NULL!" << std::endl;
+    }
     m_inputHook->install(
         [this](const yamy::platform::KeyEvent& event) {
             // Pass KeyEvent directly to the queue

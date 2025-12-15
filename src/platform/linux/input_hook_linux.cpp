@@ -7,6 +7,7 @@
 #include "../../utils/platform_logger.h"
 #include "../../utils/metrics.h"
 #include "../../core/logger/journey_logger.h"
+#include <iostream>
 #include <linux/input.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -129,10 +130,14 @@ void EventReaderThread::run()
 
         // Call callback with timing
         if (m_callback) {
+            std::cerr << "[EVENT] Read from " << m_devNode << ": scancode=0x" << std::hex << yamyCode << std::dec
+                      << " " << (event.isKeyDown ? "DOWN" : "UP") << std::endl;
             auto callbackStart = std::chrono::high_resolution_clock::now();
             try {
-                m_callback(event);
+                bool blocked = m_callback(event);
+                std::cerr << "[EVENT] Callback returned " << (blocked ? "BLOCK" : "PASS") << std::endl;
             } catch (const std::exception& e) {
+                std::cerr << "[EVENT] Callback exception: " << e.what() << std::endl;
                 PLATFORM_LOG_ERROR("input", "Callback exception: %s", e.what());
             }
             auto callbackEnd = std::chrono::high_resolution_clock::now();
@@ -195,20 +200,26 @@ static yamy::logger::DeviceInfo extractDeviceInfo(int fd, const std::string& dev
 
 bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallback)
 {
+    std::cerr << "[DEBUG] InputHookLinux::install() CALLED" << std::endl;
     std::lock_guard<std::mutex> lock(m_readerThreadsMutex);
     if (m_isInstalled) {
+        std::cerr << "[DEBUG] Hook already installed, returning" << std::endl;
         PLATFORM_LOG_WARN("input", "Input hook already installed");
         return true;
     }
 
+    std::cerr << "[DEBUG] About to enumerate keyboards..." << std::endl;
     PLATFORM_LOG_INFO("input", "Installing input hook...");
 
+    std::cerr << "[DEBUG] Checking /dev/input directory..." << std::endl;
     // First check if /dev/input directory exists
     struct stat st;
     if (stat("/dev/input", &st) != 0 || !S_ISDIR(st.st_mode)) {
+        std::cerr << "[DEBUG] /dev/input directory not found!" << std::endl;
         PLATFORM_LOG_ERROR("input", "/dev/input directory not found");
         throw EvdevUnavailableException("/dev/input directory not found");
     }
+    std::cerr << "[DEBUG] /dev/input exists, calling enumerateKeyboards..." << std::endl;
 
     // Check if any event devices exist
     DIR* dir = opendir("/dev/input");
@@ -236,10 +247,13 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     m_keyCallback = keyCallback;
     m_mouseCallback = mouseCallback;
 
+    std::cerr << "[DEBUG] About to call m_deviceManager.enumerateKeyboards()..." << std::endl;
     // Enumerate keyboard devices
     std::vector<InputDeviceInfo> keyboards = m_deviceManager.enumerateKeyboards();
+    std::cerr << "[DEBUG] enumerateKeyboards() returned " << keyboards.size() << " keyboards" << std::endl;
 
     if (keyboards.empty()) {
+        std::cerr << "[DEBUG] No keyboards found!" << std::endl;
         PLATFORM_LOG_ERROR("input", "No keyboard devices found");
         PLATFORM_LOG_ERROR("input", "Event devices exist but none have keyboard capabilities");
         throw EvdevUnavailableException("Event devices exist but no keyboards found. Check permissions (input group)");
@@ -256,30 +270,38 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     std::vector<yamy::logger::DeviceInfo> deviceInfoList;
 
     // Open and grab each keyboard
+    std::cerr << "[DEBUG] Starting keyboard grab loop..." << std::endl;
     for (const auto& kbInfo : keyboards) {
+        std::cerr << "[DEBUG] Processing keyboard: " << kbInfo.devNode << " (" << kbInfo.name << ")" << std::endl;
         // Skip devices we should never grab
         if (kbInfo.name.find("Yamy Virtual") != std::string::npos ||
             kbInfo.name.find("mouse-button-passthrough") != std::string::npos ||
             kbInfo.name.find("Mouse") != std::string::npos ||
             kbInfo.name.find("TrackBall") != std::string::npos ||
             kbInfo.name.find("Touchpad") != std::string::npos) {
+            std::cerr << "[DEBUG] Skipping device: " << kbInfo.name << std::endl;
             PLATFORM_LOG_INFO("input", "Skipping device (mouse/internal): %s (%s)",
                               kbInfo.devNode.c_str(), kbInfo.name.c_str());
             continue;
         }
 
+        std::cerr << "[DEBUG] Attempting to open: " << kbInfo.devNode << std::endl;
         PLATFORM_LOG_INFO("input", "Opening: %s (%s)", kbInfo.devNode.c_str(), kbInfo.name.c_str());
 
         // Open device
         int fd = DeviceManager::openDevice(kbInfo.devNode, false); // Blocking mode for read
+        std::cerr << "[DEBUG] openDevice() returned fd=" << fd << std::endl;
         if (fd < 0) {
+            std::cerr << "[DEBUG] Failed to open device, errno=" << errno << " (" << strerror(errno) << ")" << std::endl;
             PLATFORM_LOG_WARN("input", "Failed to open %s", kbInfo.devNode.c_str());
             openFailures++;
             continue;
         }
 
+        std::cerr << "[DEBUG] Device opened successfully (fd=" << fd << "), attempting to grab..." << std::endl;
         // Grab device for exclusive access (blocks original events)
         if (!DeviceManager::grabDevice(fd, true)) {
+            std::cerr << "[DEBUG] grabDevice() failed, errno=" << errno << " (" << strerror(errno) << ")" << std::endl;
             int err = errno;
             PLATFORM_LOG_WARN("input", "Failed to grab %s: %s", kbInfo.devNode.c_str(), std::strerror(err));
             lastGrabError = std::strerror(err);
@@ -287,6 +309,7 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
             grabFailures++;
             continue;
         }
+        std::cerr << "[DEBUG] Device grabbed successfully!" << std::endl;
         PLATFORM_LOG_INFO("input", "Exclusively grabbed %s", kbInfo.devNode.c_str());
 
         // Store device
@@ -297,13 +320,16 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
         dev.grabbed = true;
         m_openDevices.push_back(dev);
 
+        std::cerr << "[DEBUG] Creating reader thread for " << kbInfo.devNode << std::endl;
         // Create reader thread
         auto reader = std::make_unique<EventReaderThread>(fd, kbInfo.devNode, m_keyCallback);
         if (!reader->start()) {
+            std::cerr << "[DEBUG] Failed to start reader thread!" << std::endl;
             PLATFORM_LOG_WARN("input", "Failed to start reader thread for %s", kbInfo.devNode.c_str());
             continue;
         }
 
+        std::cerr << "[DEBUG] Reader thread started successfully for " << kbInfo.devNode << std::endl;
         m_readerThreads.push_back(std::move(reader));
         PLATFORM_LOG_INFO("input", "Successfully hooked %s", kbInfo.devNode.c_str());
 
@@ -328,6 +354,7 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     }
 
     m_isInstalled = true;
+    std::cerr << "[DEBUG] InputHook installation complete! " << m_readerThreads.size() << " reader threads active" << std::endl;
     PLATFORM_LOG_INFO("input", "Input hook installed successfully (%zu device(s) active)", m_readerThreads.size());
 
     // Initialize journey logger (checks YAMY_JOURNEY_LOG environment variable)
@@ -338,6 +365,7 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
         yamy::logger::JourneyLogger::printLegend(deviceInfoList);
     }
 
+    std::cerr << "[DEBUG] InputHookLinux::install() returning true" << std::endl;
     return true;
 }
 

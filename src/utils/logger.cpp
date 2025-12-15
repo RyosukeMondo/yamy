@@ -41,7 +41,8 @@ void init() {
         config.backend_thread_name = "yamy-log-backend";
         config.default_timestamp_clock_type = quill::TimestampClockType::Tsc;
         config.rdtsc_resync_interval = std::chrono::milliseconds{250};
-        config.backend_thread_sleep_duration = std::chrono::nanoseconds{0};
+        // Use 100us sleep to avoid busy-wait (0 causes 100% CPU usage)
+        config.backend_thread_sleep_duration = std::chrono::microseconds{100};
         config.default_handlers = {make_json_file_handler()};
 
         quill::configure(config);

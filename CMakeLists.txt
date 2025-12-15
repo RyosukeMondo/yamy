@@ -145,6 +145,11 @@ if(NOT rapidcheck_FOUND)
     message(FATAL_ERROR "RapidCheck not found. ${CONAN_INSTALL_HINT}")
 endif()
 
+find_package(nlohmann_json CONFIG QUIET)
+if(NOT nlohmann_json_FOUND)
+    message(FATAL_ERROR "nlohmann_json not found. ${CONAN_INSTALL_HINT}")
+endif()
+
 set(CATCH2_IMPORTED_TARGET "")
 if(TARGET Catch2::Catch2)
     set(CATCH2_IMPORTED_TARGET Catch2::Catch2)
@@ -2824,9 +2829,63 @@ endif()
 # Include CPack module
 include(CPack)
 
-# Test tool for automated testing
+# Test tools for automated testing
 add_executable(yamy-test
     src/test/yamy_test_main.cpp
 )
 target_link_libraries(yamy-test PRIVATE pthread)
 install(TARGETS yamy-test DESTINATION bin)
+
+# yamy-inject: Synthetic keyboard event injector
+add_executable(yamy-inject
+    src/test/yamy_inject_main.cpp
+    src/test/test_scenario_json.cpp
+    src/test/keycode_stub.cpp
+)
+target_include_directories(yamy-inject PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/linux
+)
+target_link_libraries(yamy-inject PRIVATE
+    pthread
+    nlohmann_json::nlohmann_json
+    quill::quill
+    fmt::fmt
+)
+install(TARGETS yamy-inject DESTINATION bin)
+
+# yamy-capture: Output verification tool
+add_executable(yamy-capture
+    src/test/yamy_capture_main.cpp
+    src/test/test_scenario_json.cpp
+    src/test/keycode_stub.cpp
+)
+target_include_directories(yamy-capture PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/linux
+)
+target_link_libraries(yamy-capture PRIVATE
+    pthread
+    nlohmann_json::nlohmann_json
+    quill::quill
+    fmt::fmt
+)
+install(TARGETS yamy-capture DESTINATION bin)
+
+# yamy-test-runner: E2E test orchestrator
+add_executable(yamy-test-runner
+    src/test/yamy_test_runner_main.cpp
+    src/test/test_scenario_json.cpp
+    src/test/keycode_stub.cpp
+)
+target_include_directories(yamy-test-runner PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/linux
+)
+target_link_libraries(yamy-test-runner PRIVATE
+    pthread
+    nlohmann_json::nlohmann_json
+    quill::quill
+    fmt::fmt
+)
+install(TARGETS yamy-test-runner DESTINATION bin)

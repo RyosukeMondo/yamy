@@ -242,7 +242,7 @@ After completing:
 ### Phase 2: Parser Updates
 
 #### Task 2.1: Add Token Recognition for V_, M, L Prefixes
-**Status**: [ ] Pending
+**Status**: [x] Completed
 **Priority**: P0
 **Files**:
 - `src/core/settings/setting_loader.h`

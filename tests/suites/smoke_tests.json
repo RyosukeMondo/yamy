@@ -1,0 +1,15 @@
+{
+  "name": "YAMY Smoke Test Suite",
+  "description": "Quick smoke tests to verify basic functionality",
+  "test_scenarios": [
+    "tests/scenarios/basic_remap.json",
+    "tests/scenarios/modifier_keys.json"
+  ],
+  "global_setup": {
+    "build_daemon": false,
+    "clean_state": true
+  },
+  "global_teardown": {
+    "collect_logs": true
+  }
+}

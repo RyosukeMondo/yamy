@@ -92,6 +92,10 @@ bool Engine::setSetting(Setting *i_setting) {
 bool Engine::switchConfiguration(const std::string& configPath) {
     Expects(!configPath.empty());
 
+    // DEBUG: Track reload loop
+    std::cerr << "=== ENTRY TO switchConfiguration() ===" << std::endl;
+    std::cerr << "[CONFIG_RELOAD] configPath=" << configPath << std::endl;
+
 #ifdef _WIN32
     // Windows stub - not yet implemented due to wide stream incompatibility
     // SettingLoader expects std::ostream* but m_log is std::wostream-based on Windows
@@ -188,6 +192,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     {
         Acquire a(&m_log, 0);
         m_log << "switchConfiguration: successfully switched to: " << to_tstring(configPath) << std::endl;
+        std::cerr << "[CONFIG_RELOAD] SUCCESS at line 200" << std::endl;
     }
 
     // Notify callback
@@ -203,6 +208,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
 
 // Build substitution table from Keyboard::Substitutes
 void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
+    std::cerr << "[BUILD_SUBST] buildSubstitutionTable() CALLED" << std::endl;
     // Clear existing table
     m_substitutionTable.clear();
 
@@ -314,7 +320,15 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
         for (int modType = Modifier::Type_Mod0; modType <= Modifier::Type_Mod19; ++modType) {
             const auto& modAssignments = keymap.getModAssignments(static_cast<Modifier::Type>(modType));
 
+            fprintf(stderr, "[DEBUG_MOD] Checking mod%d: %zu assignments\n",
+                    modType - Modifier::Type_Mod0, modAssignments.size());
+            fflush(stderr);
+
             for (const auto& assignment : modAssignments) {
+                fprintf(stderr, "[DEBUG_MOD]   assignment: key=%p, mode=%d (AM_oneShot=%d)\n",
+                        (void*)assignment.m_key, (int)assignment.m_assignMode, (int)Keymap::AM_oneShot);
+                fflush(stderr);
+
                 if (assignment.m_key && assignment.m_assignMode == Keymap::AM_oneShot) {
                     // Found a modal modifier assignment (!! operator)
                     // Extract trigger key scan code
@@ -323,6 +337,10 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
 
                     if (scanSize > 0) {
                         uint16_t triggerYamyScan = scans[0].m_scan;
+
+                        fprintf(stderr, "[DEBUG_MOD] Registering: scancode=0x%04X, modType=%d, expected_mod_number=%d\n",
+                                triggerYamyScan, modType, modType - Modifier::Type_Mod0);
+                        fflush(stderr);
 
                         // Register modal modifier with EventProcessor's ModifierKeyHandler
                         if (m_eventProcessor && m_eventProcessor->getModifierHandler()) {

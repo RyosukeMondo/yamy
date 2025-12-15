@@ -9,6 +9,7 @@
 #  include "setting.h"
 #  include "parser.h"
 #  include "../utils/config_store.h"
+#  include "include_context.h"
 #  include <iostream>
 
 ///
@@ -45,6 +46,9 @@ private:
 
     SyncObject *m_soLog;                /// guard log output stream
     std::ostream *m_log;                /// log output stream
+
+    yamy::IncludeContext* m_includeContext; /// include tracking (owned if root loader)
+    bool m_ownsIncludeContext;          /// true if this loader owns the context
 
     std::string m_currentFilename;            /// current filename
 
@@ -91,6 +95,7 @@ private:
                            Modifier::Type *o_mode = nullptr);
     /// &lt;..._MODIFIER&gt;
     Key *load_KEY_NAME();                /// &lt;KEY_NAME&gt;
+    Key *createVirtualKey(const std::string &i_name, uint16_t i_keycode);  /// Create virtual key
     void load_KEYMAP_DEFINITION(const Token *i_which);
     /// &lt;KEYMAP_DEFINITION&gt;
     void load_ARGUMENT(bool *o_arg);        /// &lt;ARGUMENT&gt;
@@ -154,8 +159,14 @@ private:
                      std::string *o_path, int i_debugLevel = 1) const;
 
 public:
-    ///
+    /// Constructor for root loader (creates own IncludeContext)
     SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config = nullptr);
+
+    /// Constructor for child loader (shares IncludeContext)
+    SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config, yamy::IncludeContext& i_includeContext);
+
+    /// Destructor
+    ~SettingLoader();
 
     /// load setting
     bool load(Setting *o_setting, const std::string &i_filename = "");

@@ -12,6 +12,7 @@
 #include <vector>
 #include <cerrno>
 #include <chrono>
+#include <iostream>
 
 namespace yamy::platform {
 
@@ -149,6 +150,9 @@ public:
 
             bool isKeyUp = data->Flags & KEYBOARD_INPUT_DATA::BREAK;
             int value = isKeyUp ? 0 : 1;
+
+            std::cerr << "[OUTPUT] Injecting evdev code 0x" << std::hex << evdevCode << std::dec
+                      << " (" << getKeyName(evdevCode) << ") " << (isKeyUp ? "UP" : "DOWN") << std::endl;
 
             writeEvent(EV_KEY, evdevCode, value);
             writeEvent(EV_SYN, SYN_REPORT, 0);

@@ -130,10 +130,14 @@ bool EngineAdapter::loadConfig(const std::string& path)
     // Remember if engine was running before config load
     bool wasRunning = isRunning();
 
-    // Stop engine if running (required for safe config reload)
-    if (wasRunning) {
-        stop();
-    }
+    // WORKAROUND for glibc thread priority bug (tpp.c:83 __pthread_tpp_change_priority):
+    // DO NOT call stop() during config reload! It triggers a glibc pthread bug on Linux.
+    // Engine::switchConfiguration() is designed to handle hot reload while running.
+    // See: ARCHITECTURE_REFACTOR.md for details
+    //
+    // if (wasRunning) {
+    //     stop();  // ❌ BUG: Triggers glibc crash!
+    // }
 
     // Use Engine's switchConfiguration method which handles parsing and applying
     bool success = false;
@@ -173,10 +177,12 @@ bool EngineAdapter::loadConfig(const std::string& path)
         }
     }
 
-    // Restart engine if it was running before
-    if (wasRunning) {
-        start();
-    }
+    // No need to restart engine - it was never stopped!
+    // Hot reload handles config switching while engine continues running.
+    //
+    // if (wasRunning) {
+    //     start();  // ❌ Don't restart - engine is still running!
+    // }
 
     return success;
 }

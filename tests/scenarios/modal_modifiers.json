@@ -1,0 +1,89 @@
+{
+  "name": "modal_modifier_testing",
+  "description": "Test modal modifiers (M0-M7) activation and usage",
+  "config": "keymaps/test-modal-simple.mayu",
+  "setup": {
+    "daemon_args": [],
+    "env": {
+      "YAMY_DEBUG_KEYCODE": "1"
+    }
+  },
+  "test_cases": [
+    {
+      "name": "m0_basic_activation",
+      "description": "Activate M0 modal modifier with designated key",
+      "input": [
+        {
+          "evdev_code": 57,
+          "key_name": "KEY_SPACE",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 57,
+          "key_name": "KEY_SPACE",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 57,
+          "key_name": "KEY_SPACE",
+          "type": "press"
+        },
+        {
+          "evdev_code": 57,
+          "key_name": "KEY_SPACE",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m0_layer_key_mapping",
+      "description": "Test key remapping while M0 is active",
+      "input": [
+        {
+          "evdev_code": 57,
+          "key_name": "KEY_SPACE",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 36,
+          "key_name": "KEY_J",
+          "type": "press",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 36,
+          "key_name": "KEY_J",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 57,
+          "key_name": "KEY_SPACE",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 105,
+          "key_name": "KEY_LEFT",
+          "type": "press"
+        },
+        {
+          "evdev_code": 105,
+          "key_name": "KEY_LEFT",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    }
+  ]
+}

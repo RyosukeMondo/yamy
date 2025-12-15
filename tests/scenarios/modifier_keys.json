@@ -1,0 +1,131 @@
+{
+  "name": "modifier_key_testing",
+  "description": "Test hardware modifier keys (Shift, Ctrl, Alt)",
+  "config": "keymaps/config_clean.mayu",
+  "setup": {
+    "daemon_args": [],
+    "env": {
+      "YAMY_DEBUG_KEYCODE": "1"
+    }
+  },
+  "test_cases": [
+    {
+      "name": "shift_key",
+      "description": "Press and release Shift modifier",
+      "input": [
+        {
+          "evdev_code": 42,
+          "key_name": "KEY_LEFTSHIFT",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 42,
+          "key_name": "KEY_LEFTSHIFT",
+          "type": "release",
+          "delay_before_ms": 100
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 42,
+          "key_name": "KEY_LEFTSHIFT",
+          "type": "press"
+        },
+        {
+          "evdev_code": 42,
+          "key_name": "KEY_LEFTSHIFT",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "shift_plus_key",
+      "description": "Shift + A (should produce uppercase A behavior)",
+      "input": [
+        {
+          "evdev_code": 42,
+          "key_name": "KEY_LEFTSHIFT",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 42,
+          "key_name": "KEY_LEFTSHIFT",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 42,
+          "key_name": "KEY_LEFTSHIFT",
+          "type": "press"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release"
+        },
+        {
+          "evdev_code": 42,
+          "key_name": "KEY_LEFTSHIFT",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "ctrl_key",
+      "description": "Press and release Ctrl modifier",
+      "input": [
+        {
+          "evdev_code": 29,
+          "key_name": "KEY_LEFTCTRL",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 29,
+          "key_name": "KEY_LEFTCTRL",
+          "type": "release",
+          "delay_before_ms": 100
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 29,
+          "key_name": "KEY_LEFTCTRL",
+          "type": "press"
+        },
+        {
+          "evdev_code": 29,
+          "key_name": "KEY_LEFTCTRL",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    }
+  ]
+}

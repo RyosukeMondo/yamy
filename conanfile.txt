@@ -4,6 +4,7 @@ ms-gsl/4.0.0
 rapidcheck/cci.20230815
 catch2/3.5.0
 fmt/10.2.1
+nlohmann_json/3.11.3
 
 [generators]
 CMakeToolchain

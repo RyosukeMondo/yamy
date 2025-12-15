@@ -1,0 +1,15 @@
+# Simple modal modifier test
+include "/home/rmondo/repos/yamy/keymaps/109_clean.mayu"
+
+# Define a few substitutions for testing
+def subst *B = *B     # B stays B (passthrough for now)
+def subst *W = *W     # W stays W
+def subst *_1 = *_1   # 1 stays 1
+
+# Define modal modifier: Hold B = mod0
+mod mod0 = !!B
+
+# Test keymap with modal modifier binding
+keymap Global : GLOBAL
+	key M0-W = *_1    # Hold B, press W → output 1
+end

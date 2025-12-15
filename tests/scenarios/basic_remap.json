@@ -1,0 +1,121 @@
+{
+  "name": "basic_key_remapping",
+  "description": "Test simple key remapping without modifiers",
+  "config": "keymaps/config_clean.mayu",
+  "setup": {
+    "daemon_args": [],
+    "env": {
+      "YAMY_DEBUG_KEYCODE": "1"
+    }
+  },
+  "test_cases": [
+    {
+      "name": "single_key_press_release",
+      "description": "Press and release a single key",
+      "input": [
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "multiple_keys_sequence",
+      "description": "Press and release multiple keys in sequence",
+      "input": [
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "press",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release"
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "press"
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    }
+  ]
+}

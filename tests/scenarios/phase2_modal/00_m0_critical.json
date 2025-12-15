@@ -1,0 +1,42 @@
+{
+  "name": "m0_critical_test",
+  "description": "MOST IMPORTANT: M0 + Substitution combo (Hold B, press W→A)",
+  "config": "keymaps/config_clean.mayu",
+  "setup": {
+    "env": {"YAMY_DEBUG_KEYCODE": "1"}
+  },
+  "test_cases": [
+    {
+      "name": "M0_Z_to_Y",
+      "description": "Hold B (M0), press Z → Y (original working test)",
+      "input": [
+        {"evdev_code": 48, "key_name": "KEY_B", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "press", "delay_before_ms": 100},
+        {"evdev_code": 44, "key_name": "KEY_Z", "type": "release", "delay_before_ms": 50},
+        {"evdev_code": 48, "key_name": "KEY_B", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 21, "key_name": "KEY_Y", "type": "press"},
+        {"evdev_code": 21, "key_name": "KEY_Y", "type": "release"}
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "M0_W_to_1",
+      "description": "Hold B (M0), press W (→A after subst) → 1",
+      "input": [
+        {"evdev_code": 48, "key_name": "KEY_B", "type": "press", "delay_before_ms": 0},
+        {"evdev_code": 17, "key_name": "KEY_W", "type": "press", "delay_before_ms": 100},
+        {"evdev_code": 17, "key_name": "KEY_W", "type": "release", "delay_before_ms": 50},
+        {"evdev_code": 48, "key_name": "KEY_B", "type": "release", "delay_before_ms": 50}
+      ],
+      "expected_output": [
+        {"evdev_code": 2, "key_name": "KEY_1", "type": "press"},
+        {"evdev_code": 2, "key_name": "KEY_1", "type": "release"}
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    }
+  ]
+}

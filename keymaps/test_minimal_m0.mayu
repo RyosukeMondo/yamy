@@ -1,0 +1,16 @@
+# MINIMAL M0 TEST - Test with B substitution
+# Test if mod0 works when B is also substituted
+
+include "109_clean.mayu"
+
+# Add substitutions
+def subst *B = *Enter
+def subst *W = *A      # W→A
+
+# Define mod0 triggered by B
+mod mod0 = !!B
+
+# Global keymap
+keymap Global : GLOBAL
+    # Test: B + W (which becomes A) → should output 1
+    key M0-A = *_1
