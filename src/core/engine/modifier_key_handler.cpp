@@ -22,7 +22,6 @@ void ModifierKeyHandler::registerNumberModifier(uint16_t yamy_scancode, Hardware
     m_number_to_modifier[yamy_scancode] = modifier;
     m_key_states[yamy_scancode] = KeyState();
     m_key_states[yamy_scancode].target_modifier = modifier;
-    m_key_states[yamy_scancode].is_modal = false;
 
     LOG_INFO("[ModifierKeyHandler] [MODIFIER] Registered number key 0x{:04X} → {}",
              yamy_scancode,
@@ -34,25 +33,6 @@ void ModifierKeyHandler::registerNumberModifier(uint16_t yamy_scancode, Hardware
              modifier == HardwareModifier::RALT ? "RALT" :
              modifier == HardwareModifier::LWIN ? "LWIN" :
              modifier == HardwareModifier::RWIN ? "RWIN" : "NONE");
-}
-
-void ModifierKeyHandler::registerModalModifier(uint16_t yamy_scancode, int modifier_type)
-{
-    m_key_states[yamy_scancode] = KeyState();
-    m_key_states[yamy_scancode].modal_modifier_type = modifier_type;
-    m_key_states[yamy_scancode].is_modal = true;
-
-    // Extract mod number for logging
-    // BUG FIX: Use actual Modifier::Type_Mod0 value (19), not hardcoded 16!
-    int mod_number = modifier_type - Modifier::Type_Mod0;
-
-    // CRITICAL DEBUG: Output to stderr for visibility
-    fprintf(stderr, "[REGISTER_MODAL] 0x%04X → mod%d (is_modal=%d)\n",
-            yamy_scancode, mod_number, m_key_states[yamy_scancode].is_modal ? 1 : 0);
-    fflush(stderr);
-
-    LOG_INFO("[ModifierKeyHandler] [MODIFIER] Registered modal modifier 0x{:04X} → mod{}",
-             yamy_scancode, mod_number);
 }
 
 void ModifierKeyHandler::registerVirtualModifier(uint16_t modifier_code, uint16_t tap_output)
@@ -105,10 +85,8 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
     }
 
     KeyState& state = it->second;
-    bool is_modal = state.is_modal;
     bool is_virtual = state.is_virtual;
     HardwareModifier modifier = state.target_modifier;
-    int modal_type = state.modal_modifier_type;
     uint8_t virtual_mod_num = state.virtual_mod_num;
     uint16_t tap_output = state.tap_output;
 
@@ -121,7 +99,7 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
                 state.press_time = std::chrono::steady_clock::now();
 
                 LOG_INFO("[ModifierKeyHandler] [MODIFIER] Key 0x{:04X} PRESS, waiting for threshold ({})",
-                         yamy_scancode, is_modal ? "modal" : "hardware");
+                         yamy_scancode, is_virtual ? "virtual" : "hardware");
 
                 return NumberKeyResult(ProcessingAction::WAITING_FOR_THRESHOLD, 0, false);
 
@@ -143,11 +121,6 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
                         LOG_INFO("[ModifierKeyHandler] [MODIFIER] Hold detected: M{:02X} (0x{:04X}) ACTIVATE",
                                  virtual_mod_num, yamy_scancode);
                         return NumberKeyResult(ProcessingAction::ACTIVATE_MODIFIER, 0, virtual_mod_num, true);
-                    } else if (is_modal) {
-                        // Modal modifier - return modifier type, no VK code
-                        LOG_INFO("[ModifierKeyHandler] [MODIFIER] Hold detected: 0x{:04X} → modal mod{} ACTIVATE",
-                                 yamy_scancode, modal_type - 16);  // Type_Mod0 = 16
-                        return NumberKeyResult(ProcessingAction::ACTIVATE_MODIFIER, 0, modal_type, true);
                     } else {
                         // Hardware modifier - return VK code
                         uint16_t vk_code = getModifierVKCode(modifier);
@@ -201,10 +174,6 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
                                  virtual_mod_num, elapsed_ms);
                         // Suppress the key (no tap output)
                         return NumberKeyResult(ProcessingAction::WAITING_FOR_THRESHOLD, 0, false);
-                    } else if (is_modal) {
-                        LOG_INFO("[ModifierKeyHandler] [MODIFIER] HOLD detected on RELEASE (fallback): 0x{:04X} → mod{} (held {}ms) → suppress",
-                                 yamy_scancode, modal_type - 16, elapsed_ms);
-                        return NumberKeyResult(ProcessingAction::WAITING_FOR_THRESHOLD, 0, false);
                     } else {
                         LOG_INFO("[ModifierKeyHandler] [MODIFIER] HOLD detected on RELEASE (fallback): 0x{:04X} (held {}ms) → suppress",
                                  yamy_scancode, elapsed_ms);
@@ -247,11 +216,6 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
                     LOG_INFO("[ModifierKeyHandler] [MODIFIER] Deactivating virtual: M{:02X} (0x{:04X}) DEACTIVATE",
                              virtual_mod_num, yamy_scancode);
                     return NumberKeyResult(ProcessingAction::DEACTIVATE_MODIFIER, 0, virtual_mod_num, true);
-                } else if (is_modal) {
-                    // Modal modifier - return modifier type, no VK code
-                    LOG_INFO("[ModifierKeyHandler] [MODIFIER] Deactivating modal: 0x{:04X} → mod{} DEACTIVATE",
-                             yamy_scancode, modal_type - 16);  // Type_Mod0 = 16
-                    return NumberKeyResult(ProcessingAction::DEACTIVATE_MODIFIER, 0, modal_type, true);
                 } else {
                     // Hardware modifier - return VK code
                     uint16_t vk_code = getModifierVKCode(modifier);
@@ -275,12 +239,6 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
 bool ModifierKeyHandler::isNumberModifier(uint16_t yamy_scancode) const
 {
     return m_number_to_modifier.find(yamy_scancode) != m_number_to_modifier.end();
-}
-
-bool ModifierKeyHandler::isModalModifier(uint16_t yamy_scancode) const
-{
-    auto it = m_key_states.find(yamy_scancode);
-    return (it != m_key_states.end()) && it->second.is_modal;
 }
 
 bool ModifierKeyHandler::isVirtualModifier(uint16_t yamy_code) const
@@ -339,11 +297,6 @@ std::vector<std::pair<uint16_t, uint8_t>> ModifierKeyHandler::checkAndActivateWa
                 LOG_INFO("[ModifierKeyHandler] [MODIFIER] Auto-activating M{:02X} (0x{:04X}) - threshold exceeded",
                          state.virtual_mod_num, scancode);
                 to_activate.push_back({scancode, state.virtual_mod_num});
-            } else if (state.is_modal) {
-                LOG_INFO("[ModifierKeyHandler] [MODIFIER] Auto-activating mod{} (0x{:04X}) - threshold exceeded",
-                         state.modal_modifier_type - 16, scancode);
-                // For modal modifiers, we'd need to activate them in ModifierState too
-                // For now, just log - we can extend this later if needed
             } else {
                 LOG_INFO("[ModifierKeyHandler] [MODIFIER] Auto-activating hardware modifier (0x{:04X}) - threshold exceeded",
                          scancode);

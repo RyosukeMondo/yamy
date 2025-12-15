@@ -16,17 +16,6 @@
 
 bool Engine::isPressed(Modifier::Type i_mt)
 {
-    // For modal modifiers (mod0-mod19), check ModifierState instead of physical key press
-    // Modal modifiers are activated by EventProcessor and stored in m_modifierState
-    if (i_mt >= Modifier::Type_Mod0 && i_mt <= Modifier::Type_Mod19) {
-        bool active = m_modifierState.isActive(i_mt);
-        if (active) {
-            Acquire a(&m_log, 0);
-            m_log << "[DEBUG] isPressed: mod" << (i_mt - Modifier::Type_Mod0) << " = ACTIVE" << std::endl;
-        }
-        return active;
-    }
-
     // For hardware modifiers, check physical key press state
     const Keymap::ModAssignments &ma = m_currentKeymap->getModAssignments(i_mt);
     for (Keymap::ModAssignments::const_iterator i = ma.begin();
@@ -82,10 +71,6 @@ Modifier Engine::getCurrentModifiers(Key *i_key, bool i_isPressed)
             if (m_lastPressedKey[1] == i_key)
                 cmods.press(Modifier::Type_Repeat, true);
     }
-
-    for (int i = Modifier::Type_Mod0; i <= Modifier::Type_Mod19; ++ i)
-        cmods.press(static_cast<Modifier::Type>(i),
-                    isPressed(static_cast<Modifier::Type>(i)));
 
     Ensures(cmods.isPressed(Modifier::Type_Up) != cmods.isPressed(Modifier::Type_Down));
     return cmods;

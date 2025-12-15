@@ -454,26 +454,6 @@ continue_loop:
             { "MMIN-", Modifier::Type_MdiMinimized },
             { "T-", Modifier::Type_Touchpad },
             { "TS-", Modifier::Type_TouchpadSticky },
-            { "M0-", Modifier::Type_Mod0 },
-            { "M1-", Modifier::Type_Mod1 },
-            { "M2-", Modifier::Type_Mod2 },
-            { "M3-", Modifier::Type_Mod3 },
-            { "M4-", Modifier::Type_Mod4 },
-            { "M5-", Modifier::Type_Mod5 },
-            { "M6-", Modifier::Type_Mod6 },
-            { "M7-", Modifier::Type_Mod7 },
-            { "M8-", Modifier::Type_Mod8 },
-            { "M9-", Modifier::Type_Mod9 },
-            { "M10-", Modifier::Type_Mod10 },
-            { "M11-", Modifier::Type_Mod11 },
-            { "M12-", Modifier::Type_Mod12 },
-            { "M13-", Modifier::Type_Mod13 },
-            { "M14-", Modifier::Type_Mod14 },
-            { "M15-", Modifier::Type_Mod15 },
-            { "M16-", Modifier::Type_Mod16 },
-            { "M17-", Modifier::Type_Mod17 },
-            { "M18-", Modifier::Type_Mod18 },
-            { "M19-", Modifier::Type_Mod19 },
             { "L0-", Modifier::Type_Lock0 },
             { "L1-", Modifier::Type_Lock1 },
             { "L2-", Modifier::Type_Lock2 },
@@ -1382,26 +1362,6 @@ void SettingLoader::load_MODIFIER_ASSIGNMENT()
                  *t == "ctrl" ) mt = Modifier::Type_Control;
         else if (*t == "windows" ||
                  *t == "win"  ) mt = Modifier::Type_Windows;
-        else if (*t == "mod0" ) mt = Modifier::Type_Mod0;
-        else if (*t == "mod1" ) mt = Modifier::Type_Mod1;
-        else if (*t == "mod2" ) mt = Modifier::Type_Mod2;
-        else if (*t == "mod3" ) mt = Modifier::Type_Mod3;
-        else if (*t == "mod4" ) mt = Modifier::Type_Mod4;
-        else if (*t == "mod5" ) mt = Modifier::Type_Mod5;
-        else if (*t == "mod6" ) mt = Modifier::Type_Mod6;
-        else if (*t == "mod7" ) mt = Modifier::Type_Mod7;
-        else if (*t == "mod8" ) mt = Modifier::Type_Mod8;
-        else if (*t == "mod9" ) mt = Modifier::Type_Mod9;
-        else if (*t == "mod10" ) mt = Modifier::Type_Mod10;
-        else if (*t == "mod11" ) mt = Modifier::Type_Mod11;
-        else if (*t == "mod12" ) mt = Modifier::Type_Mod12;
-        else if (*t == "mod13" ) mt = Modifier::Type_Mod13;
-        else if (*t == "mod14" ) mt = Modifier::Type_Mod14;
-        else if (*t == "mod15" ) mt = Modifier::Type_Mod15;
-        else if (*t == "mod16" ) mt = Modifier::Type_Mod16;
-        else if (*t == "mod17" ) mt = Modifier::Type_Mod17;
-        else if (*t == "mod18" ) mt = Modifier::Type_Mod18;
-        else if (*t == "mod19" ) mt = Modifier::Type_Mod19;
         else throw ErrorMessage() << "`" << *t
             << "': invalid modifier name.";
 
@@ -1791,10 +1751,6 @@ void SettingLoader::loadFromData(const std::string &data)
             "NL-", "CL-", "SL-", "KL-",
             "MAX-", "MIN-", "MMAX-", "MMIN-",
             "T-", "TS-",
-            "M0-", "M1-", "M2-", "M3-", "M4-",
-            "M5-", "M6-", "M7-", "M8-", "M9-",
-            "M10-", "M11-", "M12-", "M13-", "M14-",
-            "M15-", "M16-", "M17-", "M18-", "M19-",
             "L0-", "L1-", "L2-", "L3-", "L4-",
             "L5-", "L6-", "L7-", "L8-", "L9-",
         };

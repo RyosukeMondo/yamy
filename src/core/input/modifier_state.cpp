@@ -141,15 +141,6 @@ Modifier ModifierState::toModifier() const
         mod.press(Modifier::Type_ScrollLock);
     }
 
-    // Map modal modifiers (mod0-mod19) to Modifier type
-    // Only the first 20 bits (in m_modal[0]) map to legacy Modifier::Type_Mod0-19
-    for (int i = 0; i < 20; ++i) {
-        if (m_modal[0] & (1u << i)) {
-            Modifier::Type modalType = static_cast<Modifier::Type>(Modifier::Type_Mod0 + i);
-            mod.press(modalType);
-        }
-    }
-
     return mod;
 }
 
@@ -250,76 +241,6 @@ ModifierFlag ModifierState::detectModifierFromKeycode(uint32_t keycode)
     }
 
     return MOD_NONE;
-}
-
-// Modal modifier methods implementation - Legacy API (mod0-mod19)
-
-void ModifierState::activate(Modifier::Type type)
-{
-    // Handle standard modifiers (backward compatibility)
-    if (type >= Modifier::Type_Shift && type < Modifier::Type_Mod0) {
-        // This is a standard modifier, not a modal modifier
-        // Could update m_flags here if needed, but for now we skip
-        return;
-    }
-
-    // Handle modal modifiers (Type_Mod0 through Type_Mod19)
-    if (type >= Modifier::Type_Mod0 && type <= Modifier::Type_Mod19) {
-        int bit = type - Modifier::Type_Mod0;
-        m_modal[0] |= (1u << bit);
-
-        fprintf(stderr, "[ModState::activate] type=%d, bit=%d, m_modal[0]=0x%08X\n",
-                (int)type, bit, m_modal[0]);
-        fflush(stderr);
-    }
-}
-
-void ModifierState::deactivate(Modifier::Type type)
-{
-    // Handle standard modifiers (backward compatibility)
-    if (type >= Modifier::Type_Shift && type < Modifier::Type_Mod0) {
-        // This is a standard modifier, not a modal modifier
-        return;
-    }
-
-    // Handle modal modifiers (Type_Mod0 through Type_Mod19)
-    if (type >= Modifier::Type_Mod0 && type <= Modifier::Type_Mod19) {
-        int bit = type - Modifier::Type_Mod0;
-        m_modal[0] &= ~(1u << bit);
-    }
-}
-
-bool ModifierState::isActive(Modifier::Type type) const
-{
-    // Handle standard modifiers
-    if (type == Modifier::Type_Shift) {
-        return isShiftPressed();
-    }
-    if (type == Modifier::Type_Control) {
-        return isCtrlPressed();
-    }
-    if (type == Modifier::Type_Alt) {
-        return isAltPressed();
-    }
-    if (type == Modifier::Type_Windows) {
-        return isWinPressed();
-    }
-
-    // Handle modal modifiers (Type_Mod0 through Type_Mod19)
-    if (type >= Modifier::Type_Mod0 && type <= Modifier::Type_Mod19) {
-        int bit = type - Modifier::Type_Mod0;
-        bool active = (m_modal[0] & (1u << bit)) != 0;
-
-        if (active || type == Modifier::Type_Mod0) {  // Always log mod0 checks
-            fprintf(stderr, "[ModState::isActive] type=%d, bit=%d, m_modal[0]=0x%08X, active=%d\n",
-                    (int)type, bit, m_modal[0], active ? 1 : 0);
-            fflush(stderr);
-        }
-
-        return active;
-    }
-
-    return false;
 }
 
 // New modal modifier methods - Virtual Key System (M00-MFF)

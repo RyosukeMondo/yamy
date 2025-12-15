@@ -90,15 +90,8 @@ bool Engine::setSetting(Setting *i_setting) {
 // Switch to a different configuration file
 // Properly handles string conversions via to_tstring() for cross-platform compatibility
 bool Engine::switchConfiguration(const std::string& configPath) {
-    Expects(!configPath.empty());
-
-    // DEBUG: Track reload loop
-    std::cerr << "=== ENTRY TO switchConfiguration() ===" << std::endl;
-    std::cerr << "[CONFIG_RELOAD] configPath=" << configPath << std::endl;
-
     // GUARD: Prevent reloading the same config (fixes reload loop bug)
     if (m_currentConfigPath == configPath) {
-        std::cerr << "[CONFIG_RELOAD] SKIPPED - same config already loaded: " << configPath << std::endl;
         return true;  // Already loaded, consider this success
     }
 
@@ -202,7 +195,6 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     {
         Acquire a(&m_log, 0);
         m_log << "switchConfiguration: successfully switched to: " << to_tstring(configPath) << std::endl;
-        std::cerr << "[CONFIG_RELOAD] SUCCESS at line 200" << std::endl;
     }
 
     // Notify callback
@@ -394,54 +386,12 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
     int modalModCount = 0;
     const auto& keymapList = m_setting->m_keymaps.getKeymapList();
     for (const auto& keymap : keymapList) {
-        // Check for modal modifiers (Type_Mod0 through Type_Mod19)
-        for (int modType = Modifier::Type_Mod0; modType <= Modifier::Type_Mod19; ++modType) {
-            const auto& modAssignments = keymap.getModAssignments(static_cast<Modifier::Type>(modType));
-
-            fprintf(stderr, "[DEBUG_MOD] Checking mod%d: %zu assignments\n",
-                    modType - Modifier::Type_Mod0, modAssignments.size());
-            fflush(stderr);
-
-            for (const auto& assignment : modAssignments) {
-                fprintf(stderr, "[DEBUG_MOD]   assignment: key=%p, mode=%d (AM_oneShot=%d)\n",
-                        (void*)assignment.m_key, (int)assignment.m_assignMode, (int)Keymap::AM_oneShot);
-                fflush(stderr);
-
-                if (assignment.m_key && assignment.m_assignMode == Keymap::AM_oneShot) {
-                    // Found a modal modifier assignment (!! operator)
-                    // Extract trigger key scan code
-                    const ScanCode* scans = assignment.m_key->getScanCodes();
-                    size_t scanSize = assignment.m_key->getScanCodesSize();
-
-                    if (scanSize > 0) {
-                        uint16_t triggerYamyScan = scans[0].m_scan;
-
-                        fprintf(stderr, "[DEBUG_MOD] Registering: scancode=0x%04X, modType=%d, expected_mod_number=%d\n",
-                                triggerYamyScan, modType, modType - Modifier::Type_Mod0);
-                        fflush(stderr);
-
-                        // Register modal modifier with EventProcessor's ModifierKeyHandler
-                        if (m_eventProcessor && m_eventProcessor->getModifierHandler()) {
-                            m_eventProcessor->getModifierHandler()->registerModalModifier(
-                                triggerYamyScan,
-                                modType  // Modifier::Type enum value
-                            );
-                        }
-
-                        {
-                            Acquire a(&m_log, 1);
-                            m_log << "Modal Modifier: mod" << (modType - Modifier::Type_Mod0)
-                                  << " = !!" << assignment.m_key->getName()
-                                  << " (0x" << std::hex << std::setfill('0')
-                                  << std::setw(4) << triggerYamyScan
-                                  << std::dec << ") - REGISTERED" << std::endl;
-                        }
-
-                        modalModCount++;
-                    }
-                }
-            }
-        }
+        // Only check for standard modifiers if needed, but since we removed Mod0-Mod19 enum values,
+        // we can't iterate over them anymore. The new virtual modifier system (M00-MFF) handles this
+        // via registerVirtualModifierTrigger above.
+        
+        // If there are any legacy "modal modifier" concepts remaining that aren't M00-MFF,
+        // they would need to be handled here, but the plan is to fully migrate to M00-MFF.
     }
 
     {

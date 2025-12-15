@@ -47,13 +47,8 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
         auto to_activate = m_modifierHandler->checkAndActivateWaitingModifiers();
         for (const auto& [scancode, mod_num] : to_activate) {
             io_modState->activateModifier(mod_num);
-            std::cerr << "[PROCESS_EVENT] Auto-activated M" << std::hex << (int)mod_num << std::dec
-                      << " (scancode 0x" << std::hex << scancode << std::dec << ") - threshold exceeded" << std::endl;
         }
     }
-
-    std::cerr << "[PROCESS_EVENT] ENTRY: input_evdev=" << input_evdev
-              << ", type=" << (type == EventType::PRESS ? "PRESS" : "RELEASE") << std::endl;
 
     // Create journey event for tracking (if console logging OR investigate window is active)
     yamy::logger::JourneyEvent journey;
@@ -150,10 +145,6 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
 
 uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState, input::LockState* io_lockState)
 {
-    std::cerr << "[LAYER2] ENTRY: yamy_in=0x" << std::hex << yamy_in << std::dec
-              << ", type=" << (type == EventType::PRESS ? "PRESS" : "RELEASE")
-              << ", subst_table_size=" << m_substitutions.size() << std::endl;
-
     // Layer 2a: Substitution Table Lookup
     //
     // CRITICAL REFACTOR: Apply substitution FIRST, then check if result is a virtual modifier
@@ -167,20 +158,12 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
     // 4. Otherwise → return yamy_out for output
 
     // Step 1: Apply substitution
-    std::cerr << "[LAYER2] Looking up 0x" << std::hex << yamy_in << std::dec << " in substitution table..." << std::endl;
     auto it = m_substitutions.find(yamy_in);
     uint16_t yamy_out = (it != m_substitutions.end()) ? it->second : yamy_in;
-
-    if (it != m_substitutions.end()) {
-        std::cerr << "[LAYER2:SUBST] 0x" << std::hex << yamy_in << " → 0x" << yamy_out << std::dec << std::endl;
-    } else {
-        std::cerr << "[LAYER2:PASSTHROUGH] 0x" << std::hex << yamy_in << std::dec << " (no substitution found)" << std::endl;
-    }
 
     // Step 2: Check if result (yamy_out) is a virtual modifier that needs tap/hold detection
     // Use range check for virtual modifiers (0xF000-0xF0FF) since we register the PHYSICAL key, not the virtual code
     if (m_modifierHandler && yamy::platform::isModifier(yamy_out)) {
-        std::cerr << "[LAYER2] 0x" << std::hex << yamy_out << std::dec << " is a VIRTUAL MODIFIER - processing tap/hold with yamy_in=0x" << yamy_in << std::dec << std::endl;
         engine::NumberKeyResult result = m_modifierHandler->processNumberKey(yamy_in, type);
 
         switch (result.action) {
@@ -195,14 +178,6 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
                                   mod_num, yamy_in);
                     }
                     return 0;  // Suppress event (no output)
-                } else if (result.modifier_type >= 0 && io_modState) {
-                    // Modal modifier - update ModifierState only
-                    io_modState->activate(static_cast<Modifier::Type>(result.modifier_type));
-                    if (m_debugLogging) {
-                        LOG_DEBUG("[EventProcessor] [LAYER2:MODAL_MOD] 0x{:04X} HOLD → mod{} ACTIVATE",
-                                  yamy_in, result.modifier_type - 16);  // Type_Mod0 = 16
-                    }
-                    return 0;  // Suppress event (no VK code to inject)
                 } else {
                     // Hardware modifier - return VK code for injection
                     if (m_debugLogging) {
@@ -223,14 +198,6 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
                                   mod_num, yamy_in);
                     }
                     return 0;  // Suppress event (no output)
-                } else if (result.modifier_type >= 0 && io_modState) {
-                    // Modal modifier - update ModifierState only
-                    io_modState->deactivate(static_cast<Modifier::Type>(result.modifier_type));
-                    if (m_debugLogging) {
-                        LOG_DEBUG("[EventProcessor] [LAYER2:MODAL_MOD] 0x{:04X} RELEASE → mod{} DEACTIVATE",
-                                  yamy_in, result.modifier_type - 16);  // Type_Mod0 = 16
-                    }
-                    return 0;  // Suppress event (no VK code to inject)
                 } else {
                     // Hardware modifier - return VK code for injection
                     if (m_debugLogging) {

@@ -105,27 +105,6 @@ public:
     /// Set lock key state (e.g., from system query)
     void setLockState(bool capsLock, bool numLock, bool scrollLock);
 
-    // Modal modifier methods (mod0-mod19) - Legacy API
-    // NOTE: These methods are kept for backward compatibility with existing code.
-    // New code should use the uint8_t-based methods below for M00-MFF support.
-
-    /// Activate a modal modifier (sets the corresponding bit in m_modal)
-    /// @param type The modifier type (must be Type_Mod0..Type_Mod19)
-    void activate(Modifier::Type type);
-
-    /// Deactivate a modal modifier (clears the corresponding bit in m_modal)
-    /// @param type The modifier type (must be Type_Mod0..Type_Mod19)
-    void deactivate(Modifier::Type type);
-
-    /// Check if a modal modifier is active
-    /// @param type The modifier type (must be Type_Mod0..Type_Mod19)
-    /// @return true if the modal modifier is active, false otherwise
-    bool isActive(Modifier::Type type) const;
-
-    /// Get the active modal modifiers as a bitmask (legacy API for mod0-mod19)
-    /// @return 32-bit bitmask where bit N represents modN state
-    uint32_t getActiveBitmask() const { return m_modal[0]; }
-
     // New modal modifier methods (M00-MFF) - Virtual Key System
 
     /// Activate a modal modifier by number (M00-MFF)
