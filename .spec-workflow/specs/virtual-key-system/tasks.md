@@ -104,7 +104,7 @@
   - _Requirements: US5, US7_
   - _Prompt: Role: Developer implementing keymap matching logic | Task: Implement keymap lookup with modifier/lock combination matching and specificity rules - extend KeymapEntry with uint32_t required_mods[8]/required_locks[8]/specificity fields, sort by specificity DESC, implement lookupKeymap() to iterate most specific first and check (active_mods[i] & required_mods[i]) == required_mods[i] for all words, same for locks, return first match | Restrictions: Do NOT use complex data structures (keep vector), do NOT break existing keymap parsing, keep O(n) complexity (acceptable for <1000 entries) | Success: M00-M01-A matches when both M00 and M01 are active, more specific matches take priority, L00-L01-A matches when both locks are active, mixed M00-L00-A works correctly | After completing: Mark as [-], implement, log with detailed artifacts, mark as [x]_
 
-- [ ] 3.5. Update Layer 3 to Suppress Virtual Keys
+- [x] 3.5. Update Layer 3 to Suppress Virtual Keys
   - File: src/core/engine/engine_event_processor.cpp
   - Update YAMY→evdev conversion to suppress virtual keys (don't output them)
   - Add check: if (isVirtualKey(yamy) || isModifier(yamy) || isLock(yamy)) return 0
