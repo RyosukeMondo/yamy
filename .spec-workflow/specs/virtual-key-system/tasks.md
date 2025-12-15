@@ -68,7 +68,7 @@
   - _Requirements: US1, US3_
   - _Prompt: Role: Systems developer working on event processing pipeline | Task: Update substitution layer to handle virtual keys - verify existing substitution table already supports any uint16_t → uint16_t mapping (no code changes needed), ensure lookup happens BEFORE modifier/lock processing, verify virtual keys are not output to evdev, update comments to clarify virtual key support with examples | Restrictions: Do NOT change substitution table data structure, do NOT add special cases for virtual keys, keep existing performance (O(1) hash lookup) | Success: Substitution table can store virtual key mappings, lookup returns virtual key codes correctly, comments explain virtual key support, no performance regression | After completing: Mark as [-], implement, log, mark as [x]_
 
-- [ ] 3.2. Implement Modifier Processing with Tap/Hold Detection
+- [x] 3.2. Implement Modifier Processing with Tap/Hold Detection
   - File: src/core/engine/modifier_key_handler.h
   - File: src/core/engine/modifier_key_handler.cpp
   - Replace broken modal modifier logic with new M00-MFF processing
