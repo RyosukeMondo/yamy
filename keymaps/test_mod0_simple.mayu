@@ -1,0 +1,14 @@
+# Simple test for mod0 modal modifier
+include "109_clean.mayu"
+
+# Define mod0 as B key with !! operator (one-shot modal)
+mod mod0 = !!B
+
+# Test mod0 combinations - while holding B:
+key m0-*A = *_1   # B+A outputs "1"
+key m0-*S = *_2   # B+S outputs "2"
+key m0-*D = *_3   # B+D outputs "3"
+
+# NOTE: B key has NO substitution - it should be suppressed when held
+# Tap B quickly = outputs B normally
+# Hold B = activates mod0

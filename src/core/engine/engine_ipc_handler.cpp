@@ -73,6 +73,24 @@ void Engine::handleIpcMessage(const yamy::ipc::Message& message)
         return;
     }
 
+    if (rawType == static_cast<uint32_t>(yamy::MessageType::CmdGetLockStatus)) {
+        if (!m_ipcChannel || !m_ipcChannel->isConnected()) {
+            return;
+        }
+
+        // Send current lock state to GUI
+        yamy::ipc::LockStatusMessage msg;
+        const uint32_t* lockBits = m_lockState.getLockBits();
+        std::memcpy(msg.lockBits, lockBits, sizeof(msg.lockBits));
+
+        yamy::ipc::Message response;
+        response.type = toIpcType(yamy::MessageType::LockStatusUpdate);
+        response.data = &msg;
+        response.size = sizeof(msg);
+        m_ipcChannel->send(response);
+        return;
+    }
+
     if (rawType == static_cast<uint32_t>(yamy::MessageType::CmdSetEnabled)) {
         std::string error;
 

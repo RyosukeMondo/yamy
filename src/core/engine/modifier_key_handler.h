@@ -14,6 +14,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <vector>
 #include <chrono>
 
 namespace yamy {
@@ -104,6 +105,13 @@ public:
     /// @param mod_tap_actions Map of modifier number (0x00-0xFF) to tap output keycode
     void registerVirtualModifiersFromMap(const std::unordered_map<uint8_t, uint16_t>& mod_tap_actions);
 
+    /// Register a PHYSICAL KEY as a virtual modifier trigger
+    /// This is the correct way to register virtual modifiers:
+    /// @param trigger_key Physical key scancode that triggers the modifier (e.g., 0x30 for B)
+    /// @param mod_num Virtual modifier number (e.g., 0x00 for M00)
+    /// @param tap_output YAMY scancode to output on tap (e.g., Enter code)
+    void registerVirtualModifierTrigger(uint16_t trigger_key, uint8_t mod_num, uint16_t tap_output);
+
     /// Process a number key event (PRESS or RELEASE)
     /// Implements state machine for hold-vs-tap detection
     /// @param yamy_scancode YAMY scan code of the key
@@ -164,6 +172,11 @@ public:
     /// @param yama_scancode YAMY scan code to check
     /// @return true if in WAITING state, false otherwise
     bool isWaitingForThreshold(uint16_t yama_scancode) const;
+
+    /// Check all WAITING modifiers and activate those that exceeded threshold
+    /// Should be called at the start of each event processing
+    /// @return Vector of {scancode, mod_num} pairs for virtual modifiers to activate
+    std::vector<std::pair<uint16_t, uint8_t>> checkAndActivateWaitingModifiers();
 
 private:
     /// Mapping: YAMY number key scan code → hardware modifier type

@@ -310,24 +310,60 @@ std::ostream &operator<<(std::ostream &i_ost, Modifier::Type i_type);
 class ModifiedKey
 {
 public:
-    Modifier m_modifier;    ///
+    Modifier m_modifier;    /// OLD mod0-mod19 system
     Key *m_key;        ///
+
+    // NEW M00-MFF virtual modifier system (256 modifiers)
+    // Storage: 8 x uint32_t = 256 bits (one bit per modifier M00-MFF)
+    uint32_t m_virtualMods[8];  // NEW: M00-MFF modifiers (separate from old mod0-mod19)
 
 public:
     ///
-    ModifiedKey() : m_key(nullptr) { }
+    ModifiedKey() : m_key(nullptr) {
+        // Initialize virtual mods to 0
+        for (int i = 0; i < 8; ++i) m_virtualMods[i] = 0;
+    }
     ///
-    ModifiedKey(Key *i_key) : m_key(i_key) { }
+    ModifiedKey(Key *i_key) : m_key(i_key) {
+        for (int i = 0; i < 8; ++i) m_virtualMods[i] = 0;
+    }
     ///
     ModifiedKey(const Modifier &i_modifier, Key *i_key)
-            : m_modifier(i_modifier), m_key(i_key) { }
+            : m_modifier(i_modifier), m_key(i_key) {
+        for (int i = 0; i < 8; ++i) m_virtualMods[i] = 0;
+    }
     ///
     bool operator==(const ModifiedKey &i_mk) const {
-        return m_modifier == i_mk.m_modifier && m_key == i_mk.m_key;
+        bool virtualModsMatch = true;
+        for (int i = 0; i < 8; ++i) {
+            if (m_virtualMods[i] != i_mk.m_virtualMods[i]) {
+                virtualModsMatch = false;
+                break;
+            }
+        }
+        return m_modifier == i_mk.m_modifier && m_key == i_mk.m_key && virtualModsMatch;
     }
     ///
     bool operator!=(const ModifiedKey &i_mk) const {
         return !operator==(i_mk);
+    }
+
+    /// NEW: Set/clear a virtual modifier (M00-MFF)
+    void setVirtualMod(uint8_t modNum, bool active) {
+        int idx = modNum / 32;
+        int bit = modNum % 32;
+        if (active) {
+            m_virtualMods[idx] |= (1u << bit);
+        } else {
+            m_virtualMods[idx] &= ~(1u << bit);
+        }
+    }
+
+    /// NEW: Check if a virtual modifier is active
+    bool isVirtualModActive(uint8_t modNum) const {
+        int idx = modNum / 32;
+        int bit = modNum % 32;
+        return (m_virtualMods[idx] & (1u << bit)) != 0;
     }
 
     /// stream output

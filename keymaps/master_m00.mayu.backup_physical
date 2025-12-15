@@ -1,0 +1,211 @@
+# YAMY Config - M20-MFF Migration
+# Migrated from old mod0-mod19 system to new M20-MFF system
+# Migration Status: mod0 → M00 (IN PROGRESS)
+
+include "109.mayu"
+include "key_seq.mayu"
+
+#=============================================================================
+# SUBSTITUTIONS (Layer 1: Physical → Logical Key Mapping)
+#=============================================================================
+# NOTE: Old system had intermediate mappings (B → Enter, then !!B for mod0)
+# NEW: Direct mapping (B → M00, with tap action for Enter)
+
+# Keys that will become virtual modifiers (M20-M29 to avoid m0-m9 collision)
+def subst *B = *M20          # B → M20 (was: B → Enter, then mod0 = !!B)
+def subst *V = *M21          # V → M21 (was: V → BS, then mod1 = !!V)
+def subst *M = *M22          # M → M22 (was: M → BS, then mod2 = !!M)
+def subst *X = *M23          # X → M23 (was: X → _3, then mod3 = !!X)
+def subst *_1 = *M24         # _1 → M24 (was: _1 → LShift, then mod4 = !!_1)
+def subst *LCtrl = *M25      # LCtrl → M25 (was: LCtrl → Space, then mod5 = !!LCtrl)
+def subst *C = *M26          # C → M26 (was: C → Del, then mod6 = !!C)
+def subst *Tab = *M27        # Tab → M27 (was: Tab → Space, then mod7 = !!Tab)
+def subst *Q = *M28          # Q → M28 (was: Q → Minus, then mod8 = !!Q)
+def subst *A = *M29          # A → M29 (was: A → Tab, then mod9 = !!A)
+
+# Regular substitutions (non-modifier keys)
+def subst *Del = *_4                               # <- Del
+def subst *Kanji = *Kanji                          # <- Kanji
+def subst *_2 = *Colon                             # <- _2
+def subst *_3 = *Comma                             # <- _3
+def subst *F4 = *LAlt                              # <- F4
+def subst *R = *E                                  # <- R
+def subst *Snapshot = *Eisuu                       # <- Snapshot
+def subst *Scroll = *Scroll                        # <- Scroll
+def subst *NumLock = *NumLock                      # <- NumLock
+def subst *Minus = *L                              # <- Minus
+def subst *Caret = *Slash                          # <- Caret
+def subst *Atmark = *S                             # <- Atmark
+def subst *OpenBracket = *Minus                    # <- OpenBracket
+def subst *Semicolon = *V                          # <- Semicolon
+def subst *Colon = *Z                              # <- Colon
+def subst *CloseBracket = *Yen                     # <- CloseBracket
+def subst *Comma = *F9                             # <- Comma
+def subst *Period = *F10                           # <- Period
+def subst *Slash = *F11                            # <- Slash
+def subst *ReverseSolidus = *F12                   # <- ReverseSolidus
+def subst *NonConvert = *Space                     # <- NonConvert
+def subst *Hiragana = *RControl                    # <- Hiragana
+def subst *Convert = *RAlt                         # <- Convert
+def subst *Esc = *_5                               # <- Esc
+def subst *F1 = *LWin                              # <- F1
+def subst *F2 = *Esc                               # <- F2
+def subst *F3 = *LCtrl                             # <- F3
+def subst *F5 = *BS                                # <- F5
+def subst *F6 = *Del                               # <- F6
+def subst *F7 = *Atmark                            # <- F7
+def subst *F8 = *Tab                               # <- F8
+def subst *F9 = *Tab                               # <- F9
+def subst *F10 = *Tab                              # <- F10
+def subst *F11 = *Tab                              # <- F11
+def subst *F12 = *Tab                              # <- F12
+def subst *_4 = *Period                            # <- _4
+def subst *_5 = *P                                 # <- _5
+def subst *_6 = *Y                                 # <- _6
+def subst *_7 = *F                                 # <- _7
+def subst *_8 = *G                                 # <- _8
+def subst *_9 = *C                                 # <- _9
+def subst *_0 = *R                                 # <- _0
+def subst *Yen = *BS                               # <- Yen
+def subst *BS = *Del                               # <- BS
+def subst *W = *A                                  # <- W
+def subst *E = *O                                  # <- E
+def subst *T = *U                                  # <- T
+def subst *Y = *I                                  # <- Y
+def subst *U = *D                                  # <- U
+def subst *I = *H                                  # <- I
+def subst *O = *T                                  # <- O
+def subst *P = *N                                  # <- P
+def subst *Enter = *Yen                            # <- Enter
+def subst *Eisuu = *Eisuu                          # <- Eisuu
+def subst *S = *Semicolon                          # <- S
+def subst *D = *Q                                  # <- D
+def subst *F = *J                                  # <- F
+def subst *G = *K                                  # <- G
+def subst *H = *X                                  # <- H
+def subst *J = *B                                  # <- J
+def subst *K = *M                                  # <- K
+def subst *L = *W                                  # <- L
+def subst *LShift = *LShift                        # <- LShift
+def subst *Z = *Z                                  # <- Z
+def subst *N = *LShift                             # <- N
+def subst *RShift = *RShift                        # <- RShift
+def subst *Space = *Space                          # <- Space
+def subst *Up = *Up                                # <- Up
+def subst *Down = *Down                            # <- Down
+def subst *Left = *Left                            # <- Left
+def subst *Right = *Right                          # <- Right
+def subst *Insert = *Insert                        # <- Insert
+def subst *Apps = *Apps                            # <- Apps
+def subst *Sleep = *Sleep                          # <- Sleep
+def subst *End = *End                              # <- End
+def subst *Home = *Home                            # <- Home
+def subst *PageUp = *PageUp                        # <- PageUp
+def subst *PageDown = *PageDown                    # <- PageDown
+
+#=============================================================================
+# VIRTUAL MODIFIERS (M20-MFF System)
+#=============================================================================
+# NEW M20-MFF system: TAP/HOLD behavior
+# - TAP (quick press < 200ms): Output assigned key
+# - HOLD (≥ 200ms): Activate virtual modifier layer
+
+# M20-M29 Virtual Modifiers (renamed from M20-M09 to avoid m0-m9 collision)
+mod assign M20 = *Enter      # TAP: B → Enter (was: mod0 = !!B)
+mod assign M21 = *BackSpace  # TAP: V → Backspace (was: mod1 = !!V)
+mod assign M22 = *BackSpace  # TAP: M → Backspace (was: mod2 = !!M)
+mod assign M23 = *Comma      # TAP: X → Comma (was: mod3 = !!X)
+mod assign M24 = *LShift     # TAP: _1 → LShift (was: mod4 = !!_1)
+mod assign M25 = *Space      # TAP: LCtrl → Space (was: mod5 = !!LCtrl)
+mod assign M26 = *Delete     # TAP: C → Delete (was: mod6 = !!C)
+mod assign M27 = *Space      # TAP: Tab → Space (was: mod7 = !!Tab)
+mod assign M28 = *Minus      # TAP: Q → Minus (was: mod8 = !!Q)
+mod assign M29 = *Tab        # TAP: A → Tab (was: mod9 = !!A)
+
+#=============================================================================
+# STANDARD MODIFIERS (Shift, Ctrl, Alt, Win)
+#=============================================================================
+# These remain from original config
+mod Alt += F4                                     # <- LAlt
+mod Alt += Hiragana                               # <- RControl
+mod Win += F1                                     # <- LWin
+mod Ctrl += F3                                    # <- LCtrl
+mod Shift += N                                    # <- LShift
+mod Windows -= LWin
+mod Win += LWin                                   # <- LWin
+mod Alt -= LAlt
+mod Ctrl += LAlt                                  # <- LCtrl
+
+#=============================================================================
+# M00 KEY MAPPINGS (was: mod0)
+#=============================================================================
+# Pattern: *W-*A-*S-*C- means "any combination of Win/Alt/Shift/Ctrl"
+# Migration: m0- → M20-
+
+key *W-*A-*S-*C-M20-*Tab = *W-*A-*S-*C-F11
+key *W-*A-*S-*C-M20-*Kanji = *W-*A-*S-*C-Enter
+key *W-*A-*S-*C-M20-*Colon = *W-*A-*S-*C-Left
+key *W-*A-*S-*C-M20-*Comma = *W-*A-*S-*C-Right
+key *W-*A-*S-*C-M20-*LAlt = *W-*A-*S-*C-Tab
+key *W-*A-*S-*C-M20-*E = *W-*A-*S-*C-_3
+key *W-*A-*S-*C-M20-*L = *W-*A-*S-*C-C-A-S-B
+key *W-*A-*S-*C-M20-*Slash = *W-*A-*S-*C-Atmark
+key *W-*A-*S-*C-M20-*S = *W-*A-*S-*C-_0
+key *W-*A-*S-*C-M20-*V = *W-*A-*S-*C-F9
+key *W-*A-*S-*C-M20-*Z = *W-*A-*S-*C-F10
+key *W-*A-*S-*C-M20-*_5 = *W-*A-*S-*C-F9
+key *W-*A-*S-*C-M20-*Esc = *W-*A-*S-*C-F9
+key *W-*A-*S-*C-M20-*Period = *W-*A-*S-*C-Down
+key *W-*A-*S-*C-M20-*P = *W-*A-*S-*C-Up
+key *W-*A-*S-*C-M20-*Y = *W-*A-*S-*C-C-A-S-Y
+key *W-*A-*S-*C-M20-*F = *W-*A-*S-*C-Atmark
+key *W-*A-*S-*C-M20-*G = *W-*A-*S-*C-Home
+key *W-*A-*S-*C-M20-*C = *W-*A-*S-*C-End
+key *W-*A-*S-*C-M20-*R = *W-*A-*S-*C-C-A-S-A
+key *W-*A-*S-*C-M20-*Space = *W-*A-*S-*C-F12
+key *W-*A-*S-*C-M20-*Minus = *W-*A-*S-*C-F12
+key *W-*A-*S-*C-M20-*A = *W-*A-*S-*C-_1
+key *W-*A-*S-*C-M20-*O = *W-*A-*S-*C-_2
+key *W-*A-*S-*C-M20-*U = *W-*A-*S-*C-_4
+key *W-*A-*S-*C-M20-*I = *W-*A-*S-*C-_5
+key *W-*A-*S-*C-M20-*D = *W-*A-*S-*C-_6
+key *W-*A-*S-*C-M20-*H = *W-*A-*S-*C-_7
+key *W-*A-*S-*C-M20-*T = *W-*A-*S-*C-_8
+key *W-*A-*S-*C-M20-*N = *W-*A-*S-*C-_9
+key *W-*A-*S-*C-M20-*Yen = *W-*A-*S-*C-F11
+key *W-*A-*S-*C-M20-*Eisuu = *W-*A-*S-*C-F11
+key *W-*A-*S-*C-M20-*Semicolon = *W-*A-*S-*C-F1
+key *W-*A-*S-*C-M20-*Q = *W-*A-*S-*C-F2
+key *W-*A-*S-*C-M20-*J = *W-*A-*S-*C-F3
+key *W-*A-*S-*C-M20-*K = *W-*A-*S-*C-F4
+key *W-*A-*S-*C-M20-*X = *W-*A-*S-*C-F5
+key *W-*A-*S-*C-M20-*B = *W-*A-*S-*C-F6
+key *W-*A-*S-*C-M20-*M = *W-*A-*S-*C-F7
+key *W-*A-*S-*C-M20-*W = *W-*A-*S-*C-F8
+key *W-*A-*S-*C-M20-*Del = *W-*A-*S-*C-C-W
+key *W-*A-*S-*C-M20-*BS = *W-*A-*S-*C-C-F2
+key *W-*A-*S-*C-M20-*LCtrl = *W-*A-*S-*C-S-Tab
+
+#=============================================================================
+# REMAINING MODIFIERS (TODO - Not yet migrated)
+#=============================================================================
+# These will be migrated in subsequent steps
+# - mod1 → M01 (40 mappings)
+# - mod2 → M02 (44 mappings)
+# - mod3 → M03 (26 mappings)
+# - mod4 → M04 (18 mappings)
+# - mod5 → M05 (22 mappings)
+# - mod6 → M06 (21 mappings)
+# - mod7 → M07 (18 mappings)
+# - mod8 → M08 (15 mappings)
+# - mod9 → M09 (28 mappings)
+
+#=============================================================================
+# MOUSE OPTIONS
+#=============================================================================
+def option mouse-event = true
+def option drag-threshold = 30
+
+key R-*LButton = &Ignore
+key R-*RButton = &Ignore
+key R-*MButton = &Ignore

@@ -63,6 +63,7 @@ void EventReaderThread::stop()
 
 void EventReaderThread::run()
 {
+    std::cerr << "[READER_THREAD] *** RUN() STARTED for " << m_devNode << " ***" << std::endl;
     PLATFORM_LOG_INFO("input", "Started reading from %s", m_devNode.c_str());
 
     struct input_event ev;
@@ -298,26 +299,18 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
             continue;
         }
 
-        std::cerr << "[DEBUG] Device opened successfully (fd=" << fd << "), attempting to grab..." << std::endl;
-        // Grab device for exclusive access (blocks original events)
-        if (!DeviceManager::grabDevice(fd, true)) {
-            std::cerr << "[DEBUG] grabDevice() failed, errno=" << errno << " (" << strerror(errno) << ")" << std::endl;
-            int err = errno;
-            PLATFORM_LOG_WARN("input", "Failed to grab %s: %s", kbInfo.devNode.c_str(), std::strerror(err));
-            lastGrabError = std::strerror(err);
-            DeviceManager::closeDevice(fd);
-            grabFailures++;
-            continue;
-        }
-        std::cerr << "[DEBUG] Device grabbed successfully!" << std::endl;
-        PLATFORM_LOG_INFO("input", "Exclusively grabbed %s", kbInfo.devNode.c_str());
+        std::cerr << "[DEBUG] Device opened successfully (fd=" << fd << ")" << std::endl;
+        // NOTE: We DON'T grab the device because EVIOCGRAB in Linux blocks ALL events,
+        // even to the grabbing process! Instead, we read events and suppress originals
+        // by not re-injecting them. This is the correct Linux evdev approach.
+        PLATFORM_LOG_INFO("input", "Opened %s for event reading", kbInfo.devNode.c_str());
 
         // Store device
         OpenDevice dev;
         dev.fd = fd;
         dev.devNode = kbInfo.devNode;
         dev.name = kbInfo.name;
-        dev.grabbed = true;
+        dev.grabbed = false;  // Not grabbed - we read events without exclusive access
         m_openDevices.push_back(dev);
 
         std::cerr << "[DEBUG] Creating reader thread for " << kbInfo.devNode << std::endl;

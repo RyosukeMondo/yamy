@@ -58,4 +58,6 @@ private:
 
     QVBoxLayout* m_layout;
     QMap<uint8_t, LockIndicator> m_indicators;  // On-demand created indicators
+    uint32_t m_lastLockBits[8];  // Previous state for delta detection
+    QLabel* m_statusLabel;  // Shows count of active locks
 };

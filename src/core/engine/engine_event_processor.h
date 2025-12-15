@@ -51,12 +51,13 @@ public:
         uint16_t output_yamy;   ///< Output YAMY scan code (after Layer 2 substitution)
         EventType type;         ///< Event type (PRESS/RELEASE)
         bool valid;             ///< false if unmapped at any layer
+        bool is_tap;            ///< true if this is a TAP event that needs PRESS+RELEASE output
 
         ProcessedEvent()
-            : output_evdev(0), output_yamy(0), type(EventType::RELEASE), valid(false) {}
+            : output_evdev(0), output_yamy(0), type(EventType::RELEASE), valid(false), is_tap(false) {}
 
-        ProcessedEvent(uint16_t evdev, uint16_t yamy, EventType t, bool v)
-            : output_evdev(evdev), output_yamy(yamy), type(t), valid(v) {}
+        ProcessedEvent(uint16_t evdev, uint16_t yamy, EventType t, bool v, bool tap = false)
+            : output_evdev(evdev), output_yamy(yamy), type(t), valid(v), is_tap(tap) {}
     };
 
     /// Constructor
@@ -100,6 +101,12 @@ public:
     /// @param mod_tap_actions Map of modifier number (0x00-0xFF) to tap output keycode
     void registerVirtualModifiers(const std::unordered_map<uint8_t, uint16_t>& mod_tap_actions);
 
+    /// Register a PHYSICAL KEY as a virtual modifier trigger (correct way)
+    /// @param trigger_key Physical key scancode (e.g., 0x30 for B)
+    /// @param mod_num Virtual modifier number (e.g., 0x00 for M00)
+    /// @param tap_output YAMY scancode to output on tap
+    void registerVirtualModifierTrigger(uint16_t trigger_key, uint8_t mod_num, uint16_t tap_output);
+
     /// Callback type for journey event notifications
     /// Called after each event is processed with the journey data
     using JourneyEventCallback = std::function<void(const logger::JourneyEvent&)>;
@@ -138,6 +145,7 @@ private:
     bool m_debugLogging;                            ///< Debug logging enabled flag
     std::unique_ptr<engine::ModifierKeyHandler> m_modifierHandler;  ///< Number modifier handler
     JourneyEventCallback m_journeyCallback;         ///< Callback for journey event notifications
+    bool m_currentEventIsTap;                       ///< Set by layer2 when TAP detected on RELEASE
 };
 
 } // namespace yamy

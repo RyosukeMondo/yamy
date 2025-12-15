@@ -179,6 +179,7 @@ private:
     yamy::platform::WindowHandle m_hwndAssocWindow;            /** associated window (we post
                                                     message to it) */
     Setting * volatile m_setting;            /// setting
+    std::string m_currentConfigPath;        /// currently loaded config path (guard against reload loops)
     yamy::platform::IWindowSystem *m_windowSystem;            /// window system abstraction
     ConfigStore *m_configStore;            /// config store abstraction
     ConfigSwitchCallback m_configSwitchCallback; /// config switch notification callback

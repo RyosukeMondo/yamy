@@ -7,6 +7,7 @@
 #include "stringtool.h"
 #include "setting.h"
 #include <algorithm>
+#include <iostream>
 #include <gsl/gsl>
 
 
@@ -303,14 +304,37 @@ Keymap::searchAssignment(const ModifiedKey &i_mk) const
 {
     const KeyAssignments &ka = getKeyAssignments(i_mk);
 
-    // Attempt 1: Exact match with all modifiers (including modal)
-    for (KeyAssignments::const_iterator i = ka.begin(); i != ka.end(); ++ i)
+    std::cerr << "[KEYMAP] searchAssignment for key=" << (i_mk.m_key ? i_mk.m_key->getName() : "NULL")
+              << ", assignments_count=" << ka.size()
+              << ", mod0_active=" << i_mk.m_modifier.isPressed(Modifier::Type_Mod0) << std::endl;
+
+    // Attempt 1: Exact match with all modifiers (including modal) + NEW M00-MFF
+    for (KeyAssignments::const_iterator i = ka.begin(); i != ka.end(); ++ i) {
+        // Check if virtual modifiers match (NEW M00-MFF system)
+        bool virtualModsMatch = true;
+        for (int j = 0; j < 8; ++j) {
+            if ((*i).m_modifiedKey.m_virtualMods[j] != i_mk.m_virtualMods[j]) {
+                virtualModsMatch = false;
+                break;
+            }
+        }
+
+        std::cerr << "[KEYMAP]   Checking assignment: key=" << ((*i).m_modifiedKey.m_key ? (*i).m_modifiedKey.m_key->getName() : "NULL")
+                  << ", mod0_required=" << (*i).m_modifiedKey.m_modifier.isPressed(Modifier::Type_Mod0)
+                  << ", M00_required=" << (*i).m_modifiedKey.isVirtualModActive(0)
+                  << ", M00_active=" << i_mk.isVirtualModActive(0)
+                  << ", virtualModsMatch=" << virtualModsMatch
+                  << ", doesMatch=" << (*i).m_modifiedKey.m_modifier.doesMatch(i_mk.m_modifier) << std::endl;
+
         if ((*i).m_modifiedKey.m_key == i_mk.m_key &&
-                (*i).m_modifiedKey.m_modifier.doesMatch(i_mk.m_modifier)) {
+                (*i).m_modifiedKey.m_modifier.doesMatch(i_mk.m_modifier) &&
+                virtualModsMatch) {  // NEW: Also check virtual modifiers
             const KeyAssignment *result = &(*i);
+            std::cerr << "[KEYMAP]   MATCHED!" << std::endl;
             Ensures(result != nullptr && result->m_keySeq != nullptr);
             return result;
         }
+    }
 
     // Attempt 2: Match without modal modifiers (standard modifiers only)
     // Create a modifier without modal modifiers (Type_Mod0..Type_Mod19)

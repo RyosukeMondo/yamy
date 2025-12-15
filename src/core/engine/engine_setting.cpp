@@ -96,6 +96,12 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     std::cerr << "=== ENTRY TO switchConfiguration() ===" << std::endl;
     std::cerr << "[CONFIG_RELOAD] configPath=" << configPath << std::endl;
 
+    // GUARD: Prevent reloading the same config (fixes reload loop bug)
+    if (m_currentConfigPath == configPath) {
+        std::cerr << "[CONFIG_RELOAD] SKIPPED - same config already loaded: " << configPath << std::endl;
+        return true;  // Already loaded, consider this success
+    }
+
 #ifdef _WIN32
     // Windows stub - not yet implemented due to wide stream incompatibility
     // SettingLoader expects std::ostream* but m_log is std::wostream-based on Windows
@@ -185,6 +191,10 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     // Clean up old setting
     delete oldSetting;
 
+    // Store the current config path to prevent reload loops
+    // IMPORTANT: Do this BEFORE ConfigManager update to prevent callback loops
+    m_currentConfigPath = configPath;
+
     // Update ConfigManager with the new active config
     ConfigManager::instance().setActiveConfig(configPath);
 
@@ -208,12 +218,25 @@ bool Engine::switchConfiguration(const std::string& configPath) {
 
 // Build substitution table from Keyboard::Substitutes
 void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
-    std::cerr << "[BUILD_SUBST] buildSubstitutionTable() CALLED" << std::endl;
+    static int call_count = 0;
+    call_count++;
+
+    std::cerr << "[BUILD_SUBST] buildSubstitutionTable() CALLED (call #" << call_count << ")" << std::endl;
+
+    // GUARD: Prevent rebuilding during event processing
+    // If we're in the middle of generating events, defer the rebuild
+    if (m_generateKeyboardEventsRecursionGuard > 0) {
+        std::cerr << "[BUILD_SUBST] BLOCKED - event generation in progress (recursion guard = "
+                  << m_generateKeyboardEventsRecursionGuard << ")" << std::endl;
+        return;
+    }
     // Clear existing table
     m_substitutionTable.clear();
 
     // Iterate through all substitutions defined in .mayu file
     // Substitutes are stored as std::list<Substitute> in m_substitutes
+    std::cerr << "[BUILD_SUBST] Number of substitutions: " << keyboard.getSubstitutes().size() << std::endl;
+
     for (const auto& substitute : keyboard.getSubstitutes()) {
         // Each Substitute contains:
         // - m_mkeyFrom: Source key (with modifiers)
@@ -225,6 +248,7 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
 
         const Key* fromKey = substitute.m_mkeyFrom.m_key;
         const Key* toKey = substitute.m_mkeyTo.m_key;
+        std::cerr << "[BUILD_SUBST] Processing substitute: fromKey=" << fromKey << ", toKey=" << toKey << std::endl;
 
         if (!fromKey || !toKey) {
             // Skip invalid substitutions
@@ -237,8 +261,11 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
         size_t fromSize = fromKey->getScanCodesSize();
         size_t toSize = toKey->getScanCodesSize();
 
+        std::cerr << "[BUILD_SUBST] fromSize=" << fromSize << ", toSize=" << toSize << std::endl;
+
         if (fromSize == 0 || toSize == 0) {
             // Skip keys without scan codes
+            std::cerr << "[BUILD_SUBST] SKIPPED - no scan codes!" << std::endl;
             continue;
         }
 
@@ -246,6 +273,10 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
         // The m_scan field is the actual YAMY scan code (uint16_t)
         uint16_t fromYamyScan = fromScans[0].m_scan;
         uint16_t toYamyScan = toScans[0].m_scan;
+
+        std::cerr << "[BUILD_SUBST] Substitution: 0x" << std::hex << std::setfill('0')
+                  << std::setw(4) << fromYamyScan << " → 0x" << std::setw(4) << toYamyScan
+                  << std::dec << std::endl;
 
         // Add to substitution table: fromYamyScan → toYamyScan
         m_substitutionTable[fromYamyScan] = toYamyScan;
@@ -269,6 +300,8 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
 
     // Create or recreate EventProcessor with new substitution table
     m_eventProcessor = std::make_unique<yamy::EventProcessor>(m_substitutionTable);
+    m_eventProcessor->setDebugLogging(true);  // Enable debug logging
+    std::cerr << "[BUILD_SUBST] EventProcessor created with " << m_substitutionTable.size() << " substitutions, debug=ON" << std::endl;
 
     // Register number modifiers from .mayu configuration
     for (const auto& numberMod : keyboard.getNumberModifiers()) {
@@ -308,6 +341,51 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
         Acquire a(&m_log, 0);
         m_log << "Registered " << keyboard.getNumberModifiers().size()
               << " number modifiers" << std::endl;
+    }
+
+    // Register virtual modifiers (M00-MFF) from mod assign statements
+    // CRITICAL FIX: We need to register PHYSICAL KEYS that trigger virtual modifiers,
+    // not the virtual modifier codes themselves!
+    //
+    // Flow:
+    // 1. m_modTapActions maps: mod_num (e.g., 0x00 for M00) → tap_output (e.g., Enter YAMY code)
+    // 2. m_substitutionTable maps: physical_key (e.g., 0x30 for B) → virtual_mod (e.g., 0xF000 for M00)
+    // 3. We need to find which physical keys substitute to each virtual modifier
+    // 4. Register those physical keys with ModifierKeyHandler
+    if (m_setting && !m_setting->m_modTapActions.empty()) {
+        int registered_count = 0;
+
+        for (const auto& [mod_num, tap_action_yamy] : m_setting->m_modTapActions) {
+            uint16_t virtual_mod_code = 0xF000 + mod_num;  // e.g., M00 = 0xF000
+
+            // Find physical key(s) that substitute to this virtual modifier
+            for (const auto& [from_yamy, to_yamy] : m_substitutionTable) {
+                if (to_yamy == virtual_mod_code) {
+                    // Found a physical key (from_yamy) that maps to this virtual modifier
+                    // Register the PHYSICAL KEY as the trigger, not the virtual modifier code!
+                    if (m_eventProcessor && m_eventProcessor->getModifierHandler()) {
+                        // Call registerVirtualModifier with:
+                        // - trigger_key: physical key that user presses (e.g., B = 0x30)
+                        // - mod_num: virtual modifier number (e.g., 0x00 for M00)
+                        // - tap_output: what to output on tap (e.g., Enter YAMY code)
+
+                        std::cerr << "[BUILD_SUBST] Found virtual modifier mapping: physical 0x" << std::hex
+                                  << from_yamy << " → M" << std::setw(2) << std::setfill('0') << (int)mod_num
+                                  << " (0x" << virtual_mod_code << "), tap=0x" << tap_action_yamy << std::dec << std::endl;
+
+                        // Register the PHYSICAL KEY as the trigger!
+                        m_eventProcessor->registerVirtualModifierTrigger(from_yamy, mod_num, tap_action_yamy);
+                        registered_count++;
+                    }
+                }
+            }
+        }
+
+        {
+            Acquire a(&m_log, 0);
+            m_log << "Found " << registered_count
+                  << " physical keys that trigger virtual modifiers (M00-MFF)" << std::endl;
+        }
     }
 
     // Register modal modifiers from .mayu configuration

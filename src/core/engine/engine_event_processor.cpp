@@ -11,6 +11,8 @@
 #include "../logger/journey_logger.h"
 #include <cstdlib>
 #include <chrono>
+#include <iostream>
+#include <iomanip>
 
 namespace yamy {
 
@@ -18,6 +20,7 @@ EventProcessor::EventProcessor(const SubstitutionTable& subst_table)
     : m_substitutions(subst_table)
     , m_debugLogging(false)
     , m_modifierHandler(std::make_unique<engine::ModifierKeyHandler>())
+    , m_currentEventIsTap(false)
 {
     // Check for debug logging environment variable
     const char* debug_env = std::getenv("YAMY_DEBUG_KEYCODE");
@@ -34,6 +37,24 @@ EventProcessor::~EventProcessor() = default;
 
 EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev, EventType type, input::ModifierState* io_modState, input::LockState* io_lockState)
 {
+    // Reset TAP flag for this event
+    m_currentEventIsTap = false;
+
+    // Check all WAITING virtual modifiers and activate those that exceeded threshold
+    // This ensures that if a modifier key is held while another key is pressed,
+    // the modifier is activated BEFORE we process the new key event
+    if (m_modifierHandler && io_modState) {
+        auto to_activate = m_modifierHandler->checkAndActivateWaitingModifiers();
+        for (const auto& [scancode, mod_num] : to_activate) {
+            io_modState->activateModifier(mod_num);
+            std::cerr << "[PROCESS_EVENT] Auto-activated M" << std::hex << (int)mod_num << std::dec
+                      << " (scancode 0x" << std::hex << scancode << std::dec << ") - threshold exceeded" << std::endl;
+        }
+    }
+
+    std::cerr << "[PROCESS_EVENT] ENTRY: input_evdev=" << input_evdev
+              << ", type=" << (type == EventType::PRESS ? "PRESS" : "RELEASE") << std::endl;
+
     // Create journey event for tracking (if console logging OR investigate window is active)
     yamy::logger::JourneyEvent journey;
     if (yamy::logger::JourneyLogger::isEnabled() || m_journeyCallback) {
@@ -106,7 +127,8 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
 
     // Event type is ALWAYS preserved: PRESS in = PRESS out, RELEASE in = RELEASE out
     // Return both output evdev and output YAMY scan code (for engine compatibility)
-    return ProcessedEvent(output_evdev, yamy_l2, type, true);
+    // Pass is_tap flag to indicate this TAP event needs PRESS+RELEASE output
+    return ProcessedEvent(output_evdev, yamy_l2, type, true, m_currentEventIsTap);
 }
 
 uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
@@ -128,32 +150,37 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
 
 uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState, input::LockState* io_lockState)
 {
+    std::cerr << "[LAYER2] ENTRY: yamy_in=0x" << std::hex << yamy_in << std::dec
+              << ", type=" << (type == EventType::PRESS ? "PRESS" : "RELEASE")
+              << ", subst_table_size=" << m_substitutions.size() << std::endl;
+
     // Layer 2a: Substitution Table Lookup
     //
-    // The substitution table maps physical keys to either:
-    //   - Other physical keys (e.g., *A = *B)
-    //   - Virtual keys (e.g., *A = *V_B, *B = *M00, *CapsLock = *L00)
+    // CRITICAL REFACTOR: Apply substitution FIRST, then check if result is a virtual modifier
+    // Old approach was wrong: it checked if INPUT is a modifier, but substitution hadn't happened yet
+    // New approach: Do substitution, then check if RESULT needs tap/hold processing
     //
-    // Virtual keys defined:
-    //   V_*: Virtual regular keys (0xE000-0xEFFF) - intermediate mappings, no system output
-    //        Example: def subst *A = *V_B allows multi-stage substitution without physical output
-    //   M00-MFF: Modal modifiers (0xF000-0xF0FF) - 256 user-defined modifiers
-    //        Example: def subst *Space = *M00 maps Space to modifier M00
-    //        Usage: key M00-H = *Left enables Space+H→Left when M00 is active
-    //   L00-LFF: Lock keys (0xF100-0xF1FF) - 256 toggleable locks
-    //        Example: def subst *CapsLock = *L00 maps CapsLock to lock L00
-    //        Usage: key L00-A = *1 enables L00+A→1 when L00 lock is active
-    //
-    // Virtual keys are suppressed at Layer 3 (never output to evdev).
-    // Substitution table supports any uint16_t → uint16_t mapping (no special handling required).
+    // Flow:
+    // 1. Apply substitution: yamy_in → yamy_out
+    // 2. If yamy_out is a virtual modifier (M00-MFF) → tap/hold detection
+    // 3. If yamy_out is a lock key (L00-LFF) → toggle on PRESS, suppress always
+    // 4. Otherwise → return yamy_out for output
 
-    // CRITICAL: Check if key is registered as number, modal, OR virtual modifier BEFORE substitution lookup
-    // This ensures number keys can act as modifiers (HOLD) or be substituted (TAP)
-    // modal modifiers (!! operator) can activate modal modifier state
-    // and virtual modifiers (M00-MFF) support tap/hold detection
-    if (m_modifierHandler && (m_modifierHandler->isNumberModifier(yamy_in) ||
-                               m_modifierHandler->isModalModifier(yamy_in) ||
-                               m_modifierHandler->isVirtualModifier(yamy_in))) {
+    // Step 1: Apply substitution
+    std::cerr << "[LAYER2] Looking up 0x" << std::hex << yamy_in << std::dec << " in substitution table..." << std::endl;
+    auto it = m_substitutions.find(yamy_in);
+    uint16_t yamy_out = (it != m_substitutions.end()) ? it->second : yamy_in;
+
+    if (it != m_substitutions.end()) {
+        std::cerr << "[LAYER2:SUBST] 0x" << std::hex << yamy_in << " → 0x" << yamy_out << std::dec << std::endl;
+    } else {
+        std::cerr << "[LAYER2:PASSTHROUGH] 0x" << std::hex << yamy_in << std::dec << " (no substitution found)" << std::endl;
+    }
+
+    // Step 2: Check if result (yamy_out) is a virtual modifier that needs tap/hold detection
+    // Use range check for virtual modifiers (0xF000-0xF0FF) since we register the PHYSICAL key, not the virtual code
+    if (m_modifierHandler && yamy::platform::isModifier(yamy_out)) {
+        std::cerr << "[LAYER2] 0x" << std::hex << yamy_out << std::dec << " is a VIRTUAL MODIFIER - processing tap/hold with yamy_in=0x" << yamy_in << std::dec << std::endl;
         engine::NumberKeyResult result = m_modifierHandler->processNumberKey(yamy_in, type);
 
         switch (result.action) {
@@ -216,8 +243,20 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
             case engine::ProcessingAction::APPLY_SUBSTITUTION_PRESS:
             case engine::ProcessingAction::APPLY_SUBSTITUTION_RELEASE:
                 // TAP detected
-                if (m_modifierHandler->isVirtualModifier(yamy_in) && result.output_yamy_code != 0) {
-                    // Virtual modifier with tap output defined - use tap output keycode
+                // Since we're already in the virtual modifier branch (yamy_out is 0xF000-0xF0FF),
+                // we know this is a virtual modifier and should return the tap output
+                if (result.output_yamy_code != 0) {
+                    std::cerr << "[LAYER2:TAP] Virtual modifier TAP detected! yamy_in=0x" << std::hex << yamy_in
+                              << ", tap_output=0x" << result.output_yamy_code << std::dec
+                              << ", action=" << (result.action == engine::ProcessingAction::APPLY_SUBSTITUTION_RELEASE ? "RELEASE" : "PRESS")
+                              << std::endl;
+
+                    // If TAP detected on RELEASE, set flag to indicate PRESS+RELEASE needed
+                    if (result.action == engine::ProcessingAction::APPLY_SUBSTITUTION_RELEASE) {
+                        m_currentEventIsTap = true;
+                        std::cerr << "[LAYER2:TAP] Set m_currentEventIsTap=true for TAP on RELEASE" << std::endl;
+                    }
+
                     if (m_debugLogging) {
                         LOG_DEBUG("[EventProcessor] [LAYER2:VIRTUAL_MOD] 0x{:04X} TAP detected → output 0x{:04X}",
                                   yamy_in, result.output_yamy_code);
@@ -225,6 +264,7 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
                     return result.output_yamy_code;
                 } else {
                     // Number/modal modifier TAP - fall through to normal substitution logic
+                    std::cerr << "[LAYER2:TAP] TAP detected but no tap output, yamy_in=0x" << std::hex << yamy_in << std::dec << std::endl;
                     if (m_debugLogging) {
                         LOG_DEBUG("[EventProcessor] [LAYER2:NUMBER_MOD] 0x{:04X} TAP detected, applying substitution",
                                   yamy_in);
@@ -248,51 +288,43 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
         }
     }
 
-    // Check if this is a lock key (L00-LFF)
+    // Step 3: Check if result (yamy_out) is a lock key (L00-LFF)
     // Lock keys toggle their state on PRESS and are always suppressed (never output to system)
-    if (yamy::platform::isLock(yamy_in) && io_lockState) {
+    if (yamy::platform::isLock(yamy_out) && io_lockState) {
         if (type == EventType::PRESS) {
             // Toggle lock on PRESS
-            uint8_t lock_num = static_cast<uint8_t>(yamy_in - 0xF100);  // Extract L00-LFF number
+            uint8_t lock_num = static_cast<uint8_t>(yamy_out - 0xF100);  // Extract L00-LFF number
             io_lockState->toggleLock(lock_num);
 
+            std::cerr << "[LAYER2:LOCK] L" << std::hex << (int)lock_num << " (0x" << yamy_out << std::dec
+                      << ") PRESS → toggle" << std::endl;
             if (m_debugLogging) {
                 bool is_active = io_lockState->isLockActive(lock_num);
                 LOG_DEBUG("[EventProcessor] [LAYER2:LOCK] L{:02X} (0x{:04X}) PRESS → toggle to {}",
-                          lock_num, yamy_in, is_active ? "ACTIVE" : "INACTIVE");
+                          lock_num, yamy_out, is_active ? "ACTIVE" : "INACTIVE");
             }
         } else {
             // RELEASE - just suppress, no toggle
+            uint8_t lock_num = static_cast<uint8_t>(yamy_out - 0xF100);
+            std::cerr << "[LAYER2:LOCK] L" << std::hex << (int)lock_num << " (0x" << yamy_out << std::dec
+                      << ") RELEASE → suppress" << std::endl;
             if (m_debugLogging) {
-                uint8_t lock_num = static_cast<uint8_t>(yamy_in - 0xF100);
                 LOG_DEBUG("[EventProcessor] [LAYER2:LOCK] L{:02X} (0x{:04X}) RELEASE → suppress",
-                          lock_num, yamy_in);
+                          lock_num, yamy_out);
             }
         }
         return 0;  // Suppress event (lock keys never output to system)
     }
 
-    // Normal substitution lookup (for non-number keys or TAP-detected number keys)
-    auto it = m_substitutions.find(yamy_in);
-
-    if (it != m_substitutions.end()) {
-        // Substitution found
-        uint16_t yamy_out = it->second;
-        if (m_debugLogging) {
-            LOG_DEBUG("[EventProcessor] [LAYER2:SUBST] 0x{:04X} → 0x{:04X}", yamy_in, yamy_out);
-        }
-        return yamy_out;
-    } else {
-        // No substitution, passthrough unchanged
-        if (m_debugLogging) {
-            LOG_DEBUG("[EventProcessor] [LAYER2:PASSTHROUGH] 0x{:04X} (no substitution)", yamy_in);
-        }
-        return yamy_in;
-    }
+    // Step 4: Return the substituted (or original) yamy code for output
+    std::cerr << "[LAYER2] Final output: 0x" << std::hex << yamy_out << std::dec << std::endl;
+    return yamy_out;
 }
 
 uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
 {
+    std::cerr << "[LAYER3] ENTRY: yamy=0x" << std::hex << yamy << std::dec << std::endl;
+
     // Layer 3: YAMY → evdev conversion with virtual key suppression
     //
     // Virtual keys (V_*, M00-MFF, L00-LFF) have no evdev codes and must NOT
@@ -308,9 +340,17 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
     //   - V_A (0xE01E), V_Enter (0xE01C) → suppressed (return 0)
     //   - M00 (0xF000), M0F (0xF00F), MFF (0xF0FF) → suppressed (return 0)
     //   - L00 (0xF100), L7F (0xF17F), LFF (0xF1FF) → suppressed (return 0)
-    if (yamy::platform::isVirtualKey(yamy) ||
-        yamy::platform::isModifier(yamy) ||
-        yamy::platform::isLock(yamy)) {
+    bool is_virtual = yamy::platform::isVirtualKey(yamy);
+    bool is_modifier = yamy::platform::isModifier(yamy);
+    bool is_lock = yamy::platform::isLock(yamy);
+
+    std::cerr << "[LAYER3] Checks: isVirtual=" << is_virtual
+              << ", isModifier=" << is_modifier
+              << ", isLock=" << is_lock << std::endl;
+
+    if (is_virtual || is_modifier || is_lock) {
+        std::cerr << "[LAYER3:SUPPRESS] yamy 0x" << std::hex << yamy << std::dec
+                  << " (virtual key, not output) - RETURNING 0" << std::endl;
         if (m_debugLogging) {
             LOG_DEBUG("[EventProcessor] [LAYER3:SUPPRESS] yamy 0x{:04X} (virtual key, not output)", yamy);
         }
@@ -319,6 +359,8 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
 
     // Call existing keycode mapping function for physical keys
     uint16_t evdev = yamy::platform::yamyToEvdevKeyCode(yamy);
+
+    std::cerr << "[LAYER3:OUT] yamy 0x" << std::hex << yamy << " → evdev " << std::dec << evdev << std::endl;
 
     if (m_debugLogging) {
         if (evdev != 0) {
@@ -342,6 +384,13 @@ void EventProcessor::registerVirtualModifiers(const std::unordered_map<uint8_t, 
 {
     if (m_modifierHandler) {
         m_modifierHandler->registerVirtualModifiersFromMap(mod_tap_actions);
+    }
+}
+
+void EventProcessor::registerVirtualModifierTrigger(uint16_t trigger_key, uint8_t mod_num, uint16_t tap_output)
+{
+    if (m_modifierHandler) {
+        m_modifierHandler->registerVirtualModifierTrigger(trigger_key, mod_num, tap_output);
     }
 }
 

@@ -158,6 +158,7 @@ void MainWindowGUI::handleConnectionChange(bool connected) {
     updateIndicators(m_isConnected, m_currentEnabled, m_activeConfig);
     if (connected && m_ipcClient) {
         m_ipcClient->sendGetStatus();
+        m_ipcClient->sendGetLockStatus();  // Request initial lock state
     }
 }
 

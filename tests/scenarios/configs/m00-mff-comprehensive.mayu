@@ -58,9 +58,11 @@ key M02-*F = *_0      # N+F → 0
 # Combinations with standard modifiers
 #=============================================================================
 # M00 + Shift combinations
-key M00-S-*A = *F5    # B+Shift+A → F5
-key M00-S-*S = *F6    # B+Shift+S → F6
+# TODO: Parser doesn't support M00-MFF + standard modifiers yet
+# key M00-S-*A = *F5    # B+Shift+A → F5
+# key M00-S-*S = *F6    # B+Shift+S → F6
 
 # M01 + Ctrl combinations
-key M01-C-*A = *F7    # V+Ctrl+A → F7
-key M01-C-*S = *F8    # V+Ctrl+S → F8
+# TODO: Parser doesn't support M00-MFF + standard modifiers yet
+# key M01-C-*A = *F7    # V+Ctrl+A → F7
+# key M01-C-*S = *F8    # V+Ctrl+S → F8

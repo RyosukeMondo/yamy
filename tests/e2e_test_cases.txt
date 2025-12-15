@@ -81,7 +81,68 @@ combined_config_hm_colon | config+hm | 40 | SHIFT:7 | : → & (combined behavior
 combined_all_a | config+hm+dvorakY | 30 | 15 | A → Tab (all configs)
 
 #=============================================================================
-# CATEGORY 8: EDGE CASES (Priority: LOW)
+# CATEGORY 8: M00-MFF VIRTUAL MODIFIERS (NEW SYSTEM) (Priority: CRITICAL) ✅
+#=============================================================================
+# Testing NEW M00-MFF virtual modifier system (256 modifiers with hex notation)
+# Uses test_m00_e2e.mayu configuration
+
+# Basic TAP functionality (quick press/release)
+m00_tap_b_to_enter | test_m00_e2e.mayu | 48 | 28 | B tap → Enter (M00 tap action)
+m01_tap_v_to_backspace | test_m00_e2e.mayu | 47 | 14 | V tap → Backspace (M01 tap action)
+m02_tap_n_to_space | test_m00_e2e.mayu | 49 | 57 | N tap → Space (M02 tap action)
+
+# Basic HOLD functionality (hold modifier + press key)
+m00_hold_b_a_to_1 | test_m00_e2e.mayu | HOLD:48+PRESS:30 | 2 | Hold B + A → 1 (M00+A)
+m00_hold_b_s_to_2 | test_m00_e2e.mayu | HOLD:48+PRESS:31 | 3 | Hold B + S → 2 (M00+S)
+m00_hold_b_d_to_3 | test_m00_e2e.mayu | HOLD:48+PRESS:32 | 4 | Hold B + D → 3 (M00+D)
+m00_hold_b_f_to_4 | test_m00_e2e.mayu | HOLD:48+PRESS:33 | 5 | Hold B + F → 4 (M00+F)
+m00_hold_b_q_to_f1 | test_m00_e2e.mayu | HOLD:48+PRESS:16 | 59 | Hold B + Q → F1 (M00+Q)
+m00_hold_b_w_to_f2 | test_m00_e2e.mayu | HOLD:48+PRESS:17 | 60 | Hold B + W → F2 (M00+W)
+m00_hold_b_e_to_f3 | test_m00_e2e.mayu | HOLD:48+PRESS:18 | 61 | Hold B + E → F3 (M00+E)
+m00_hold_b_r_to_f4 | test_m00_e2e.mayu | HOLD:48+PRESS:19 | 62 | Hold B + R → F4 (M00+R)
+
+# M01 HOLD tests (V key)
+m01_hold_v_a_to_left | test_m00_e2e.mayu | HOLD:47+PRESS:30 | 105 | Hold V + A → Left (M01+A)
+m01_hold_v_s_to_down | test_m00_e2e.mayu | HOLD:47+PRESS:31 | 108 | Hold V + S → Down (M01+S)
+m01_hold_v_d_to_up | test_m00_e2e.mayu | HOLD:47+PRESS:32 | 103 | Hold V + D → Up (M01+D)
+m01_hold_v_f_to_right | test_m00_e2e.mayu | HOLD:47+PRESS:33 | 106 | Hold V + F → Right (M01+F)
+m01_hold_v_q_to_home | test_m00_e2e.mayu | HOLD:47+PRESS:16 | 102 | Hold V + Q → Home (M01+Q)
+m01_hold_v_w_to_end | test_m00_e2e.mayu | HOLD:47+PRESS:17 | 107 | Hold V + W → End (M01+W)
+m01_hold_v_e_to_pageup | test_m00_e2e.mayu | HOLD:47+PRESS:18 | 104 | Hold V + E → PageUp (M01+E)
+m01_hold_v_r_to_pagedown | test_m00_e2e.mayu | HOLD:47+PRESS:19 | 109 | Hold V + R → PageDown (M01+R)
+
+# M02 HOLD tests (N key)
+m02_hold_n_a_to_7 | test_m00_e2e.mayu | HOLD:49+PRESS:30 | 8 | Hold N + A → 7 (M02+A)
+m02_hold_n_s_to_8 | test_m00_e2e.mayu | HOLD:49+PRESS:31 | 9 | Hold N + S → 8 (M02+S)
+m02_hold_n_d_to_9 | test_m00_e2e.mayu | HOLD:49+PRESS:32 | 10 | Hold N + D → 9 (M02+D)
+m02_hold_n_f_to_0 | test_m00_e2e.mayu | HOLD:49+PRESS:33 | 11 | Hold N + F → 0 (M02+F)
+
+# Multiple key presses with same modifier
+m00_multi_keys | test_m00_e2e.mayu | HOLD:48+PRESS:30,31,32 | 2,3,4 | Hold B + A,S,D → 1,2,3 (M00 multi)
+m01_multi_keys | test_m00_e2e.mayu | HOLD:47+PRESS:30,31,32,33 | 105,108,103,106 | Hold V + A,S,D,F → arrows (M01 multi)
+
+# TAP/HOLD mixed sequences
+m00_tap_then_hold | test_m00_e2e.mayu | 48,HOLD:48+PRESS:30 | 28,2 | B tap, then B+A → Enter,1
+m01_tap_then_hold | test_m00_e2e.mayu | 47,HOLD:47+PRESS:30 | 14,105 | V tap, then V+A → BS,Left
+m00_m01_sequence | test_m00_e2e.mayu | HOLD:48+PRESS:30,HOLD:47+PRESS:30 | 2,105 | B+A then V+A → 1,Left
+
+# Combinations with standard modifiers (Shift, Ctrl)
+m00_shift_a_to_f5 | test_m00_e2e.mayu | HOLD:48+SHIFT:30 | 63 | B+Shift+A → F5 (M00+Shift+A)
+m00_shift_s_to_f6 | test_m00_e2e.mayu | HOLD:48+SHIFT:31 | 64 | B+Shift+S → F6 (M00+Shift+S)
+m01_ctrl_a_to_f7 | test_m00_e2e.mayu | HOLD:47+CTRL:30 | 65 | V+Ctrl+A → F7 (M01+Ctrl+A)
+m01_ctrl_s_to_f8 | test_m00_e2e.mayu | HOLD:47+CTRL:31 | 66 | V+Ctrl+S → F8 (M01+Ctrl+S)
+
+# Edge cases for M00-MFF
+m00_rapid_tap | test_m00_e2e.mayu | 48,48,48 | 28,28,28 | B,B,B → Enter,Enter,Enter (rapid taps)
+m00_hold_release_tap | test_m00_e2e.mayu | HOLD:48+PRESS:30,48 | 2,28 | B+A, release, B tap
+m00_m01_concurrent | test_m00_e2e.mayu | HOLD:48+HOLD:47+PRESS:30 | ... | B+V+A (concurrent modifiers - complex)
+
+# Threshold boundary testing (TAP vs HOLD timing)
+m00_fast_tap_100ms | test_m00_e2e.mayu | TAP:48:100 | 28 | B tap 100ms → Enter (below threshold)
+m00_slow_hold_300ms | test_m00_e2e.mayu | HOLD:48:300+PRESS:30 | 2 | B hold 300ms + A → 1 (above threshold)
+
+#=============================================================================
+# CATEGORY 9: EDGE CASES (Priority: LOW)
 #=============================================================================
 
 edge_rapid_sequence | config | 30,30,30 | 15,15,15 | AAA → Tab+Tab+Tab (rapid)

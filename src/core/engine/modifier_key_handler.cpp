@@ -79,6 +79,23 @@ void ModifierKeyHandler::registerVirtualModifiersFromMap(const std::unordered_ma
     LOG_INFO("[ModifierKeyHandler] [MODIFIER] Registered {} virtual modifiers from map", mod_tap_actions.size());
 }
 
+void ModifierKeyHandler::registerVirtualModifierTrigger(uint16_t trigger_key, uint8_t mod_num, uint16_t tap_output)
+{
+    // Register the PHYSICAL KEY (trigger_key) as the key to track in m_key_states
+    // When this key is pressed, it will activate the virtual modifier M<mod_num>
+
+    KeyState& state = m_key_states[trigger_key];  // Use trigger_key, not modifier code!
+    state.is_virtual = true;
+    state.virtual_mod_num = mod_num;
+    state.tap_output = tap_output;
+    state.state = NumberKeyState::IDLE;
+
+    fprintf(stderr, "[MODIFIER] Registered virtual modifier trigger: physical key 0x%04X → M%02X, tap_output=0x%04X\n",
+            trigger_key, mod_num, tap_output);
+    LOG_INFO("[ModifierKeyHandler] [MODIFIER] Registered virtual modifier M{:02X}: trigger=0x{:04X}, tap_output=0x{:04X}",
+             mod_num, trigger_key, tap_output);
+}
+
 NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, EventType event_type)
 {
     // Check if this is a registered number modifier
@@ -167,10 +184,35 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
                 return NumberKeyResult(ProcessingAction::NOT_A_NUMBER_MODIFIER, 0, false);
 
             case NumberKeyState::WAITING: {
-                // Release before threshold - TAP detected
+                // Check if threshold was exceeded during the hold
                 auto elapsed = std::chrono::steady_clock::now() - state.press_time;
                 auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
+                // If threshold exceeded, treat as HOLD (even though we're at RELEASE now)
+                // This is a fallback case - normally checkAndActivateWaitingModifiers() would have
+                // activated the modifier already. This case only happens if no other events occurred.
+                if (hasExceededThreshold(state.press_time)) {
+                    // HOLD was active but we missed the activation (no other event triggered the check)
+                    // Just suppress the key - don't try to deactivate since we never activated
+                    state.state = NumberKeyState::IDLE;
+
+                    if (is_virtual) {
+                        LOG_INFO("[ModifierKeyHandler] [MODIFIER] HOLD detected on RELEASE (fallback): M{:02X} (held {}ms) → suppress",
+                                 virtual_mod_num, elapsed_ms);
+                        // Suppress the key (no tap output)
+                        return NumberKeyResult(ProcessingAction::WAITING_FOR_THRESHOLD, 0, false);
+                    } else if (is_modal) {
+                        LOG_INFO("[ModifierKeyHandler] [MODIFIER] HOLD detected on RELEASE (fallback): 0x{:04X} → mod{} (held {}ms) → suppress",
+                                 yamy_scancode, modal_type - 16, elapsed_ms);
+                        return NumberKeyResult(ProcessingAction::WAITING_FOR_THRESHOLD, 0, false);
+                    } else {
+                        LOG_INFO("[ModifierKeyHandler] [MODIFIER] HOLD detected on RELEASE (fallback): 0x{:04X} (held {}ms) → suppress",
+                                 yamy_scancode, elapsed_ms);
+                        return NumberKeyResult(ProcessingAction::WAITING_FOR_THRESHOLD, 0, false);
+                    }
+                }
+
+                // Release before threshold - TAP detected
                 state.state = NumberKeyState::IDLE;
 
                 // For virtual modifiers, check if tap output is defined
@@ -276,6 +318,42 @@ bool ModifierKeyHandler::isWaitingForThreshold(uint16_t yama_scancode) const
         return false;
     }
     return it->second.state == NumberKeyState::WAITING;
+}
+
+std::vector<std::pair<uint16_t, uint8_t>> ModifierKeyHandler::checkAndActivateWaitingModifiers()
+{
+    std::vector<std::pair<uint16_t, uint8_t>> to_activate;
+
+    for (auto& [scancode, state] : m_key_states) {
+        // Only check WAITING modifiers
+        if (state.state != NumberKeyState::WAITING) {
+            continue;
+        }
+
+        // Check if threshold exceeded
+        if (hasExceededThreshold(state.press_time)) {
+            // Activate this modifier
+            state.state = NumberKeyState::MODIFIER_ACTIVE;
+
+            if (state.is_virtual) {
+                LOG_INFO("[ModifierKeyHandler] [MODIFIER] Auto-activating M{:02X} (0x{:04X}) - threshold exceeded",
+                         state.virtual_mod_num, scancode);
+                to_activate.push_back({scancode, state.virtual_mod_num});
+            } else if (state.is_modal) {
+                LOG_INFO("[ModifierKeyHandler] [MODIFIER] Auto-activating mod{} (0x{:04X}) - threshold exceeded",
+                         state.modal_modifier_type - 16, scancode);
+                // For modal modifiers, we'd need to activate them in ModifierState too
+                // For now, just log - we can extend this later if needed
+            } else {
+                LOG_INFO("[ModifierKeyHandler] [MODIFIER] Auto-activating hardware modifier (0x{:04X}) - threshold exceeded",
+                         scancode);
+                // For hardware modifiers, we'd need to inject the modifier key
+                // For now, just log - we can extend this later if needed
+            }
+        }
+    }
+
+    return to_activate;
 }
 
 uint16_t ModifierKeyHandler::getModifierVKCode(HardwareModifier modifier)

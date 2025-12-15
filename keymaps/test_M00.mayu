@@ -1,0 +1,13 @@
+# Test configuration for M00-MFF virtual modifiers (NEW SYSTEM)
+include "109_clean.mayu"
+
+# NEW SYSTEM: Map B key to M00 virtual modifier
+def subst *B = *M00
+
+# M00 tap action: when B is tapped quickly, output Enter
+mod assign M00 = *Enter
+
+# M00 modifier mappings: while holding B (M00 active):
+key M00-*A = *_1   # B+A outputs "1"
+key M00-*S = *_2   # B+S outputs "2"
+key M00-*D = *_3   # B+D outputs "3"

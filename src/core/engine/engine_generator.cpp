@@ -301,7 +301,10 @@ void Engine::beginGeneratingKeyboardEvents(
 
     // FULL 3-LAYER EVENT PROCESSING via EventProcessor
     // Call EventProcessor::processEvent() for complete Layer1→Layer2→Layer3 flow
+    std::cerr << "[GEN] m_eventProcessor=" << (m_eventProcessor ? "YES" : "NULL")
+              << ", evdev_code=" << i_c.m_evdev_code << std::endl;
     if (m_eventProcessor && i_c.m_evdev_code != 0) {
+        std::cerr << "[GEN] USING EventProcessor path!" << std::endl;
         // Determine event type from modifier state
         yamy::EventType event_type = isPhysicallyPressed ? yamy::EventType::PRESS : yamy::EventType::RELEASE;
 
@@ -310,6 +313,53 @@ void Engine::beginGeneratingKeyboardEvents(
         // Pass LockState to track and update lock key state (L00-LFF)
         yamy::EventProcessor::ProcessedEvent result = m_eventProcessor->processEvent(i_c.m_evdev_code, event_type, &m_modifierState, &m_lockState);
 
+        // CRITICAL: Check if event was suppressed at Layer 3 (virtual key, lock key, etc.)
+        // If output_evdev is 0, the event should NOT be generated/output
+        if (result.output_evdev == 0) {
+            std::cerr << "[GEN] Event SUPPRESSED by EventProcessor (output_evdev=0) - early return" << std::endl;
+            return;  // Early return - don't generate any keyboard output
+        }
+
+        std::cerr << "[GEN] ProcessedEvent: valid=" << result.valid
+                  << ", output_evdev=" << result.output_evdev
+                  << ", output_yamy=0x" << std::hex << result.output_yamy << std::dec
+                  << ", is_tap=" << result.is_tap << std::endl;
+
+        // SPECIAL HANDLING: TAP events need PRESS+RELEASE output
+        // When a virtual modifier TAP is detected on RELEASE, we need to synthesize
+        // a complete PRESS→RELEASE sequence for the tap action key
+        if (result.is_tap && result.valid && result.output_yamy != 0) {
+            std::cerr << "[GEN] TAP EVENT detected! Generating PRESS+RELEASE for tap output" << std::endl;
+
+            // Find the Key object for the tap output
+            Key* tap_key = nullptr;
+            for (Keyboard::KeyIterator it = m_setting->m_keyboard.getKeyIterator(); *it; ++it) {
+                const ScanCode *sc = (*it)->getScanCodes();
+                if ((*it)->getScanCodesSize() > 0 && sc[0].m_scan == result.output_yamy) {
+                    tap_key = *it;
+                    break;
+                }
+            }
+
+            if (tap_key) {
+                std::cerr << "[GEN] Found tap key: " << tap_key->getName() << ", generating PRESS+RELEASE" << std::endl;
+
+                // Generate PRESS event
+                generateKeyEvent(tap_key, true, false);
+
+                // Generate RELEASE event
+                generateKeyEvent(tap_key, false, false);
+
+                std::cerr << "[GEN] TAP event complete" << std::endl;
+            } else {
+                std::cerr << "[GEN] WARNING: Could not find Key object for tap output 0x"
+                          << std::hex << result.output_yamy << std::dec << std::endl;
+            }
+
+            // TAP event handled, return early
+            return;
+        }
+
         if (result.valid && result.output_yamy != 0) {
             // Get the original YAMY scan code for comparison
             const ScanCode *input_sc = cnew.m_mkey.m_key ? cnew.m_mkey.m_key->getScanCodes() : nullptr;
@@ -317,6 +367,9 @@ void Engine::beginGeneratingKeyboardEvents(
 
             // Check if substitution occurred (output differs from input)
             if (result.output_yamy != input_yamy) {
+                std::cerr << "[GEN] Substitution detected: input_yamy=0x" << std::hex << input_yamy
+                          << " → output_yamy=0x" << result.output_yamy << std::dec << std::endl;
+
                 // Find the key object for the substituted YAMY scan code
                 Key* substituted_key = nullptr;
                 for (Keyboard::KeyIterator it = m_setting->m_keyboard.getKeyIterator(); *it; ++it) {
@@ -326,6 +379,9 @@ void Engine::beginGeneratingKeyboardEvents(
                         break;
                     }
                 }
+
+                std::cerr << "[GEN] Searched for key with scancode 0x" << std::hex << result.output_yamy << std::dec
+                          << ", found=" << (substituted_key ? "YES" : "NO") << std::endl;
 
                 if (substituted_key) {
                     ModifiedKey mkey(substituted_key);
@@ -470,11 +526,32 @@ void Engine::beginGeneratingKeyboardEvents(
     // for m_emacsEditKillLine function
     m_emacsEditKillLine.m_doForceReset = !i_isModifier;
 
+    // Apply current modifier state from ModifierState to ModifiedKey
+    // OLD system: Convert to Modifier and add (mod0-mod19)
+    Modifier activeModifiers = m_modifierState.toModifier();
+    cnew.m_mkey.m_modifier.add(activeModifiers);
+
+    // NEW M00-MFF system: Copy virtual modifiers directly to new field
+    const uint32_t* modBits = m_modifierState.getModifierBits();
+    for (int i = 0; i < 8; ++i) {
+        cnew.m_mkey.m_virtualMods[i] = modBits[i];
+    }
+
+    std::cerr << "[GEN] Applied active modifiers: OLD=" << activeModifiers
+              << ", NEW_M00=" << ((modBits[0] & 1) ? "1" : "0") << std::endl;
+
     // generate key event !
+    std::cerr << "[GEN] About to generate key events for cnew.m_mkey.m_key="
+              << (cnew.m_mkey.m_key ? cnew.m_mkey.m_key->getName().c_str() : "NULL")
+              << ", isPhysicallyPressed=" << isPhysicallyPressed << std::endl;
+
     m_generateKeyboardEventsRecursionGuard = 0;
     if (isPhysicallyPressed)
         generateEvents(cnew, cnew.m_keymap, &Event::before_key_down);
+
+    std::cerr << "[GEN] Calling generateKeyboardEvents..." << std::endl;
     generateKeyboardEvents(cnew);
+    std::cerr << "[GEN] generateKeyboardEvents returned" << std::endl;
     if (!isPhysicallyPressed)
         generateEvents(cnew, cnew.m_keymap, &Event::after_key_up);
 

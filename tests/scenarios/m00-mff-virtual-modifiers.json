@@ -1,0 +1,1214 @@
+{
+  "name": "m00_mff_virtual_modifiers",
+  "description": "Comprehensive E2E tests for NEW M00-MFF Virtual Modifier System (256 modifiers with hex notation)",
+  "config": "configs/m00-mff-comprehensive.mayu",
+  "setup": {
+    "daemon_args": [],
+    "env": {
+      "YAMY_DEBUG_KEYCODE": "1"
+    }
+  },
+  "test_cases": [
+    {
+      "name": "m00_tap_b_to_enter",
+      "description": "Quick tap of B (<200ms) should output Enter (M00 tap action)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 100,
+          "comment": "Release after 100ms - below 200ms threshold"
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m01_tap_v_to_backspace",
+      "description": "Quick tap of V (<200ms) should output Backspace (M01 tap action)",
+      "input": [
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "release",
+          "delay_before_ms": 100
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 14,
+          "key_name": "KEY_BACKSPACE",
+          "type": "press"
+        },
+        {
+          "evdev_code": 14,
+          "key_name": "KEY_BACKSPACE",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m02_tap_n_to_space",
+      "description": "Quick tap of N (<200ms) should output Space (M02 tap action)",
+      "input": [
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "release",
+          "delay_before_ms": 100
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 57,
+          "key_name": "KEY_SPACE",
+          "type": "press"
+        },
+        {
+          "evdev_code": 57,
+          "key_name": "KEY_SPACE",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_hold_b_a_to_1",
+      "description": "Hold B (>=200ms), press A - should output 1 (M00-A mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 250,
+          "comment": "Press A after holding B for 250ms"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 2,
+          "key_name": "KEY_1",
+          "type": "press"
+        },
+        {
+          "evdev_code": 2,
+          "key_name": "KEY_1",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_hold_b_s_to_2",
+      "description": "Hold B (>=200ms), press S - should output 2 (M00-S mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 31,
+          "key_name": "KEY_S",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 31,
+          "key_name": "KEY_S",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 3,
+          "key_name": "KEY_2",
+          "type": "press"
+        },
+        {
+          "evdev_code": 3,
+          "key_name": "KEY_2",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_hold_b_d_to_3",
+      "description": "Hold B (>=200ms), press D - should output 3 (M00-D mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 4,
+          "key_name": "KEY_3",
+          "type": "press"
+        },
+        {
+          "evdev_code": 4,
+          "key_name": "KEY_3",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_hold_b_f_to_4",
+      "description": "Hold B (>=200ms), press F - should output 4 (M00-F mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 33,
+          "key_name": "KEY_F",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 33,
+          "key_name": "KEY_F",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 5,
+          "key_name": "KEY_4",
+          "type": "press"
+        },
+        {
+          "evdev_code": 5,
+          "key_name": "KEY_4",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_hold_b_q_to_f1",
+      "description": "Hold B (>=200ms), press Q - should output F1 (M00-Q mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 16,
+          "key_name": "KEY_Q",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 16,
+          "key_name": "KEY_Q",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 59,
+          "key_name": "KEY_F1",
+          "type": "press"
+        },
+        {
+          "evdev_code": 59,
+          "key_name": "KEY_F1",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_hold_b_w_to_f2",
+      "description": "Hold B (>=200ms), press W - should output F2 (M00-W mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 17,
+          "key_name": "KEY_W",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 17,
+          "key_name": "KEY_W",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 60,
+          "key_name": "KEY_F2",
+          "type": "press"
+        },
+        {
+          "evdev_code": 60,
+          "key_name": "KEY_F2",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_hold_b_e_to_f3",
+      "description": "Hold B (>=200ms), press E - should output F3 (M00-E mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 18,
+          "key_name": "KEY_E",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 18,
+          "key_name": "KEY_E",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 61,
+          "key_name": "KEY_F3",
+          "type": "press"
+        },
+        {
+          "evdev_code": 61,
+          "key_name": "KEY_F3",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_hold_b_r_to_f4",
+      "description": "Hold B (>=200ms), press R - should output F4 (M00-R mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 19,
+          "key_name": "KEY_R",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 19,
+          "key_name": "KEY_R",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 62,
+          "key_name": "KEY_F4",
+          "type": "press"
+        },
+        {
+          "evdev_code": 62,
+          "key_name": "KEY_F4",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m01_hold_v_a_to_left",
+      "description": "Hold V (>=200ms), press A - should output Left arrow (M01-A mapping)",
+      "input": [
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 105,
+          "key_name": "KEY_LEFT",
+          "type": "press"
+        },
+        {
+          "evdev_code": 105,
+          "key_name": "KEY_LEFT",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m01_hold_v_s_to_down",
+      "description": "Hold V (>=200ms), press S - should output Down arrow (M01-S mapping)",
+      "input": [
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 31,
+          "key_name": "KEY_S",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 31,
+          "key_name": "KEY_S",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 108,
+          "key_name": "KEY_DOWN",
+          "type": "press"
+        },
+        {
+          "evdev_code": 108,
+          "key_name": "KEY_DOWN",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m01_hold_v_d_to_up",
+      "description": "Hold V (>=200ms), press D - should output Up arrow (M01-D mapping)",
+      "input": [
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 103,
+          "key_name": "KEY_UP",
+          "type": "press"
+        },
+        {
+          "evdev_code": 103,
+          "key_name": "KEY_UP",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m01_hold_v_f_to_right",
+      "description": "Hold V (>=200ms), press F - should output Right arrow (M01-F mapping)",
+      "input": [
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 33,
+          "key_name": "KEY_F",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 33,
+          "key_name": "KEY_F",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 106,
+          "key_name": "KEY_RIGHT",
+          "type": "press"
+        },
+        {
+          "evdev_code": 106,
+          "key_name": "KEY_RIGHT",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m01_hold_v_q_to_home",
+      "description": "Hold V (>=200ms), press Q - should output Home (M01-Q mapping)",
+      "input": [
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 16,
+          "key_name": "KEY_Q",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 16,
+          "key_name": "KEY_Q",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 102,
+          "key_name": "KEY_HOME",
+          "type": "press"
+        },
+        {
+          "evdev_code": 102,
+          "key_name": "KEY_HOME",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m01_hold_v_w_to_end",
+      "description": "Hold V (>=200ms), press W - should output End (M01-W mapping)",
+      "input": [
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 17,
+          "key_name": "KEY_W",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 17,
+          "key_name": "KEY_W",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 107,
+          "key_name": "KEY_END",
+          "type": "press"
+        },
+        {
+          "evdev_code": 107,
+          "key_name": "KEY_END",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m01_hold_v_e_to_pageup",
+      "description": "Hold V (>=200ms), press E - should output PageUp (M01-E mapping)",
+      "input": [
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 18,
+          "key_name": "KEY_E",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 18,
+          "key_name": "KEY_E",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 104,
+          "key_name": "KEY_PAGEUP",
+          "type": "press"
+        },
+        {
+          "evdev_code": 104,
+          "key_name": "KEY_PAGEUP",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m01_hold_v_r_to_pagedown",
+      "description": "Hold V (>=200ms), press R - should output PageDown (M01-R mapping)",
+      "input": [
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 19,
+          "key_name": "KEY_R",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 19,
+          "key_name": "KEY_R",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 47,
+          "key_name": "KEY_V",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 109,
+          "key_name": "KEY_PAGEDOWN",
+          "type": "press"
+        },
+        {
+          "evdev_code": 109,
+          "key_name": "KEY_PAGEDOWN",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m02_hold_n_a_to_7",
+      "description": "Hold N (>=200ms), press A - should output 7 (M02-A mapping)",
+      "input": [
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 8,
+          "key_name": "KEY_7",
+          "type": "press"
+        },
+        {
+          "evdev_code": 8,
+          "key_name": "KEY_7",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m02_hold_n_s_to_8",
+      "description": "Hold N (>=200ms), press S - should output 8 (M02-S mapping)",
+      "input": [
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 31,
+          "key_name": "KEY_S",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 31,
+          "key_name": "KEY_S",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 9,
+          "key_name": "KEY_8",
+          "type": "press"
+        },
+        {
+          "evdev_code": 9,
+          "key_name": "KEY_8",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m02_hold_n_d_to_9",
+      "description": "Hold N (>=200ms), press D - should output 9 (M02-D mapping)",
+      "input": [
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 10,
+          "key_name": "KEY_9",
+          "type": "press"
+        },
+        {
+          "evdev_code": 10,
+          "key_name": "KEY_9",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m02_hold_n_f_to_0",
+      "description": "Hold N (>=200ms), press F - should output 0 (M02-F mapping)",
+      "input": [
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 33,
+          "key_name": "KEY_F",
+          "type": "press",
+          "delay_before_ms": 250
+        },
+        {
+          "evdev_code": 33,
+          "key_name": "KEY_F",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 49,
+          "key_name": "KEY_N",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 11,
+          "key_name": "KEY_0",
+          "type": "press"
+        },
+        {
+          "evdev_code": 11,
+          "key_name": "KEY_0",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_rapid_taps",
+      "description": "Multiple rapid B taps should each output Enter",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 100
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_tap_then_hold",
+      "description": "B tap, then B hold + A - should output Enter, then 1",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 100,
+          "comment": "First tap - outputs Enter"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 200,
+          "comment": "Wait 200ms, then press B again"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 250,
+          "comment": "Hold B for 250ms, then press A"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        },
+        {
+          "evdev_code": 2,
+          "key_name": "KEY_1",
+          "type": "press"
+        },
+        {
+          "evdev_code": 2,
+          "key_name": "KEY_1",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 3000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_threshold_boundary_fast",
+      "description": "B tap for exactly 190ms (below threshold) should output Enter",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 190,
+          "comment": "Just below 200ms threshold"
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "m00_threshold_boundary_slow",
+      "description": "B hold for 300ms + A should activate M00 and output 1",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 300,
+          "comment": "Well above 200ms threshold"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 2,
+          "key_name": "KEY_1",
+          "type": "press"
+        },
+        {
+          "evdev_code": 2,
+          "key_name": "KEY_1",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    }
+  ]
+}

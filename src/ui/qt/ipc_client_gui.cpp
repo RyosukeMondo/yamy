@@ -81,6 +81,12 @@ void IPCClientGUI::sendGetStatus()
     sendMessage(yamy::MessageType::CmdGetStatus, nullptr, 0);
 }
 
+void IPCClientGUI::sendGetLockStatus()
+{
+    qInfo().noquote() << "[IPCClientGUI]" << "send CmdGetLockStatus";
+    sendMessage(yamy::MessageType::CmdGetLockStatus, nullptr, 0);
+}
+
 void IPCClientGUI::sendSetEnabled(bool enabled)
 {
     yamy::CmdSetEnabledRequest request{};

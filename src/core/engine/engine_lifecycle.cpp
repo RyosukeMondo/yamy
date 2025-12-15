@@ -41,6 +41,7 @@ Engine::Engine(tomsgstream &i_log, yamy::platform::IWindowSystem *i_windowSystem
         m_soundManager(std::make_unique<yamy::audio::SoundManager>()),
 #endif
         m_setting(nullptr),
+        m_currentConfigPath(),
         m_windowSystem(i_windowSystem),
         m_configStore(i_configStore),
         m_configSwitchCallback(nullptr),

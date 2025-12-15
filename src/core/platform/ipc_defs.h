@@ -39,6 +39,7 @@ enum class MessageType : uint32_t {
     CmdSetEnabled = 0x5002,
     CmdSwitchConfig = 0x5003,
     CmdReloadConfig = 0x5004,
+    CmdGetLockStatus = 0x5005,      // Request current lock state (L00-LFF)
 
     // GUI Responses
     RspStatus = 0x5101,

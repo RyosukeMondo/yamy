@@ -33,6 +33,9 @@ public:
     /// Request current status and config list
     void sendGetStatus();
 
+    /// Request current lock state (L00-LFF)
+    void sendGetLockStatus();
+
     /// Toggle enabled/disabled state
     void sendSetEnabled(bool enabled);
 

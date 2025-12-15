@@ -1,0 +1,10 @@
+# Test configuration for OLD mod0 system (works with current parser)
+include "109_clean.mayu"
+
+# OLD SYSTEM: Define mod0 using !! operator
+mod mod0 = !!B
+
+# Test mod0 combinations with WORKING syntax M0- (not M00-)
+key M0-*A = *_1   # Hold B, press A → 1
+key M0-*S = *_2   # Hold B, press S → 2
+key M0-*D = *_3   # Hold B, press D → 3

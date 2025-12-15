@@ -1,0 +1,14 @@
+# Test configuration for lock key indicators
+
+keymap Global
+
+# Define lock keys L00-L02 using F1-F3
+def subst *F1 = 0xF100  # L00
+def subst *F2 = 0xF101  # L01
+def subst *F3 = 0xF102  # L02
+
+# Test: When L00 is active, A becomes B
+key 0xF100-A = *B
+
+# Test: When L00+L01 both active (treasure hunting!), C becomes D
+key 0xF100-0xF101-C = *D

@@ -82,6 +82,9 @@ include \"config.mayu\"
 include \"hm.mayu\"
 include \"dvorakY.mayu\""
             ;;
+        "test_m00_e2e.mayu")
+            config_content="include \"test_m00_e2e.mayu\""
+            ;;
         *)
             echo "Unknown config: $config_name"
             return 1

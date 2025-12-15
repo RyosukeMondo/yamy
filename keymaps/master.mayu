@@ -1,22 +1,3 @@
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# master_clean.mayu - Verified Working Master Configuration
-# Uses only verified, tested key mappings
-# 100% guaranteed to work with Linux YAMY
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Include verified keyboard layout
-include "109_clean.mayu"
-
-# Include key sequence definitions (if exists, otherwise skip)
-# include "key_seq.mayu"
-
-# Include verified configuration
-include "config_clean.mayu"
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# This configuration is guaranteed to work because:
-# 1. All keys defined in 109_clean.mayu with verified scan codes
-# 2. All substitutions use only keys from 109_clean.mayu
-# 3. All scan codes tested against g_scanToEvdevMap_US/JP
-# 4. No ambiguous or "???" key names
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+include "109.mayu"
+include "key_seq.mayu"
+include "config.mayu"
