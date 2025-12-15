@@ -152,7 +152,7 @@
   - _Requirements: All user stories_
   - _Prompt: Role: QA engineer writing E2E tests | Task: Create test scenarios for virtual key system - create virtual-keys-basic.json (test V_ keys with config def subst *A = *V_B, key M00-B = *C, key M00-V_B = *D), modifiers-tap-hold.json (test M00 tap/hold with config def subst *B = *M00, mod assign M00 = *Enter), locks-combinatorial.json (test L00/L01 toggle with single lock key L00-A = *B and combo key L00-L01-A = *C) - each includes config file, input sequence, expected output, success criteria | Restrictions: Use existing test framework format, do NOT create new test infrastructure, keep tests atomic and focused | Success: All test scenarios pass, tests cover major features, test output is clear and actionable, tests can run automatically | After completing: Mark as [-], create test files, log, mark as [x]_
 
-- [ ] 5.2. Update Documentation and Migration Guide
+- [x] 5.2. Update Documentation and Migration Guide
   - File: docs/VIRTUAL_KEYS.md (new)
   - File: docs/MIGRATION.md (new)
   - Create user documentation and migration guide for virtual key system
