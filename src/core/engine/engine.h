@@ -357,6 +357,12 @@ private:
     ///
     void beginGeneratingKeyboardEvents(const Current &i_c, bool i_isModifier);
 
+    /// Check if any virtual modifiers (M00-MFF) are active
+    bool hasActiveVirtualModifiers() const;
+
+    /// Build ModifiedKey with physical key + active modifiers (before substitution)
+    ModifiedKey buildPhysicalModifiedKey(const Current& i_c) const;
+
     /// Set the current engine state and log the transition
     void setState(yamy::EngineState i_newState);
 

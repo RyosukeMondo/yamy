@@ -284,6 +284,37 @@ void Engine::generateKeyboardEvents(const Current &i_c)
 }
 
 
+// Check if any virtual modifiers (M00-MFF) are active
+bool Engine::hasActiveVirtualModifiers() const
+{
+    const uint32_t* modBits = m_modifierState.getModifierBits();
+    for (int i = 0; i < 8; ++i) {
+        if (modBits[i] != 0) return true;
+    }
+    return false;
+}
+
+// Build ModifiedKey with physical key + active modifiers (before substitution)
+ModifiedKey Engine::buildPhysicalModifiedKey(const Current& i_c) const
+{
+    ModifiedKey mkey;
+    mkey.m_key = i_c.m_mkey.m_key;  // Physical key (before substitution)
+
+    // Copy active virtual modifiers from ModifierState
+    const uint32_t* modBits = m_modifierState.getModifierBits();
+    for (int i = 0; i < 8; ++i) {
+        mkey.m_virtualMods[i] = modBits[i];
+    }
+
+    // Copy standard modifiers (Shift, Ctrl, Alt, Win, etc.)
+    // Use getCurrentModifiers to get the current state
+    bool isPressed = i_c.m_mkey.m_modifier.isPressed(Modifier::Type_Down);
+    Modifier currentMods = const_cast<Engine*>(this)->getCurrentModifiers(mkey.m_key, isPressed);
+    mkey.m_modifier = currentMods;
+
+    return mkey;
+}
+
 // generate keyboard events for current key
 void Engine::beginGeneratingKeyboardEvents(
     const Current &i_c, bool i_isModifier)
@@ -298,6 +329,33 @@ void Engine::beginGeneratingKeyboardEvents(
 
     bool isPhysicallyPressed
     = cnew.m_mkey.m_modifier.isPressed(Modifier::Type_Down);
+
+    // NEW: Early keymap check if virtual modifiers are active
+    // This ensures M20-*W matches PHYSICAL W, not substituted A
+    if (hasActiveVirtualModifiers()) {
+        std::cerr << "[GEN:EARLY] Virtual modifiers active, checking keymap with PHYSICAL key BEFORE substitution" << std::endl;
+
+        // Build ModifiedKey with PHYSICAL key + active modifiers
+        ModifiedKey physical_mkey = buildPhysicalModifiedKey(i_c);
+
+        // Try to find keymap match with physical key
+        const Keymap::KeyAssignment *keyAssign =
+            m_currentKeymap->searchAssignment(physical_mkey);
+
+        if (keyAssign) {
+            // MATCH FOUND! Execute action and skip substitution
+            std::cerr << "[GEN:EARLY] MATCH FOUND with physical key! Executing action and skipping substitution" << std::endl;
+
+            // Generate the key sequence events
+            generateKeySeqEvents(i_c, keyAssign->m_keySeq,
+                                isPhysicallyPressed ? Part_down : Part_up);
+
+            std::cerr << "[GEN:EARLY] Action executed, returning early" << std::endl;
+            return;  // Done, skip rest of processing (including substitution)
+        } else {
+            std::cerr << "[GEN:EARLY] No match with physical key, proceeding with normal flow (substitution)" << std::endl;
+        }
+    }
 
     // FULL 3-LAYER EVENT PROCESSING via EventProcessor
     // Call EventProcessor::processEvent() for complete Layer1→Layer2→Layer3 flow
