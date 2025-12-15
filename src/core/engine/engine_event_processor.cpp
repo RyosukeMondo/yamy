@@ -134,11 +134,17 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
     //   - Virtual keys (e.g., *A = *V_B, *B = *M00, *CapsLock = *L00)
     //
     // Virtual keys defined:
-    //   V_*: Virtual regular keys (0xE000-0xEFFF) - intermediate mappings
+    //   V_*: Virtual regular keys (0xE000-0xEFFF) - intermediate mappings, no system output
+    //        Example: def subst *A = *V_B allows multi-stage substitution without physical output
     //   M00-MFF: Modal modifiers (0xF000-0xF0FF) - 256 user-defined modifiers
+    //        Example: def subst *Space = *M00 maps Space to modifier M00
+    //        Usage: key M00-H = *Left enables Space+H→Left when M00 is active
     //   L00-LFF: Lock keys (0xF100-0xF1FF) - 256 toggleable locks
+    //        Example: def subst *CapsLock = *L00 maps CapsLock to lock L00
+    //        Usage: key L00-A = *1 enables L00+A→1 when L00 lock is active
     //
     // Virtual keys are suppressed at Layer 3 (never output to evdev).
+    // Substitution table supports any uint16_t → uint16_t mapping (no special handling required).
 
     // CRITICAL: Check if key is registered as number, modal, OR virtual modifier BEFORE substitution lookup
     // This ensures number keys can act as modifiers (HOLD) or be substituted (TAP)
@@ -264,20 +270,26 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
 {
     // Layer 3: YAMY → evdev conversion with virtual key suppression
     //
-    // Virtual keys (V_*, M00-MFF, L00-LFF) have no evdev codes and must not
-    // be output to the system. They are used internally for:
-    //   - V_*: Intermediate key mappings in substitution layer
-    //   - M00-MFF: Modal modifier state (processed separately)
-    //   - L00-LFF: Lock key state (processed separately)
+    // Virtual keys (V_*, M00-MFF, L00-LFF) have no evdev codes and must NOT
+    // be output to the system. They are used ONLY internally for:
+    //   - V_*: Intermediate key mappings in substitution layer (no physical output)
+    //   - M00-MFF: Modal modifier state (processed at Layer 2, activate ModifierState)
+    //   - L00-LFF: Lock key state (processed at Layer 2, toggle LockState)
     //
-    // Suppress virtual keys by returning 0 (which will fail at Layer 3).
+    // Virtual keys are suppressed by returning 0, which prevents evdev output.
+    // This check happens BEFORE yamyToEvdevKeyCode() to avoid lookup failures.
+    //
+    // Examples of what gets suppressed:
+    //   - V_A (0xE01E), V_Enter (0xE01C) → suppressed (return 0)
+    //   - M00 (0xF000), M0F (0xF00F), MFF (0xF0FF) → suppressed (return 0)
+    //   - L00 (0xF100), L7F (0xF17F), LFF (0xF1FF) → suppressed (return 0)
     if (yamy::platform::isVirtualKey(yamy) ||
         yamy::platform::isModifier(yamy) ||
         yamy::platform::isLock(yamy)) {
         if (m_debugLogging) {
             LOG_DEBUG("[EventProcessor] [LAYER3:SUPPRESS] yamy 0x{:04X} (virtual key, not output)", yamy);
         }
-        return 0;  // Suppress virtual keys
+        return 0;  // Suppress virtual keys (no evdev output)
     }
 
     // Call existing keycode mapping function for physical keys
