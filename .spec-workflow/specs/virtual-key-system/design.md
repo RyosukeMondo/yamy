@@ -655,20 +655,48 @@ assert(lock_num <= 0xFF);
 
 ## Backward Compatibility
 
-**Breaking change**: Old modal modifier syntax removed.
+**Breaking change**: Old modal modifier syntax and `!!` operator removed completely.
 
-Migration required for:
-- `mod mod0 = !!Key` → `def subst *Key = *M00`
-- `key Mod0-A` → `key M00-A`
-- `key Shift-Mod0-A` → `key S-M00-A`
+**What's removed:**
+- `!!` operator (one-shot/toggle indicator)
+- `mod mod0 = !!Key` syntax
+- `mod mod1 = !!Key` through `mod mod19 = !!Key`
 
-Provide migration script:
+**Why removed:**
+- M00-MFF modifiers are implicitly registered (no declaration needed)
+- `!!` operator is redundant (all modifiers work as toggle/one-shot by default)
+- Simpler, cleaner syntax
+
+**Migration required:**
+
+| Old Syntax | New Syntax |
+|------------|------------|
+| `mod mod0 = !!B` | `def subst *B = *M00` |
+| `key Mod0-A` | `key M00-A` |
+| `key Shift-Mod0-A` | `key S-M00-A` |
+| `def option !!B = ...` | Error: `!!` not supported |
+
+**Migration script:**
 ```bash
 # migrate_config.sh
+# Remove old mod declarations and convert to substitutions
 sed -i 's/mod mod0 = !!\(.*\)/def subst *\1 = *M00/' config.mayu
+sed -i 's/mod mod1 = !!\(.*\)/def subst *\1 = *M01/' config.mayu
+# ... for mod2-mod19
+
+# Update keymap references
 sed -i 's/Mod0-/M00-/g' config.mayu
+sed -i 's/Mod1-/M01-/g' config.mayu
 # ... etc
+
+# Error on any remaining !! usage
+grep -n '!!' config.mayu && echo "ERROR: !! operator no longer supported"
 ```
+
+**Parser behavior:**
+- Parser SHALL NOT recognize `!!` operator
+- Parser SHALL return error if `mod modN = ...` syntax is used
+- Error message: "Old modal modifier syntax not supported. Use: def subst *Key = *M00"
 
 ## Open Questions
 

@@ -92,7 +92,7 @@
   - _Requirements: US6_
   - _Prompt: Role: Developer implementing lock key toggle logic | Task: Add lock key processing to EventProcessor - add lock detection if (isLock(yamy_code)) in processEvent(), implement processLock() to toggle lock on PRESS and suppress output (return 0) on both PRESS and RELEASE, lock state changes call lockState->toggleLock(lock_num) which triggers notifyGUI() automatically | Restrictions: Do NOT output lock keys to evdev layer, do NOT toggle on both PRESS and RELEASE (only PRESS), keep logic simple (no timing required) | Success: Press L00 toggles lock on/off, lock state persists across events, lock keys never output to system, GUI notification sent on toggle | After completing: Mark as [-], implement, log, mark as [x]_
 
-- [ ] 3.4. Implement Keymap Matching with Specificity
+- [x] 3.4. Implement Keymap Matching with Specificity
   - File: src/core/engine/engine_event_processor.cpp
   - File: src/core/engine/engine.h
   - Implement keymap lookup with modifier/lock matching and specificity-based priority

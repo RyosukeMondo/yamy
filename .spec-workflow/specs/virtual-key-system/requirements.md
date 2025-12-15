@@ -188,23 +188,30 @@ This solves critical issues:
 - THE system SHALL support full range 0x00-0xFF (256 each)
 - WHERE hex notation matches programming conventions
 
-### US10: Backward Compatibility Not Required
+### US10: No Backward Compatibility - Remove !! Operator
 
 **As a** developer
-**I want** to implement clean design
+**I want** to implement clean design without legacy syntax
 **So that** old broken modal modifier code can be removed
 
 **Acceptance Criteria**:
 - WHEN implementing virtual key system
 - THEN old `mod mod0 = !!B` syntax is NOT supported
+- AND `!!` operator is NOT parsed (removed completely)
 - AND documentation explains migration to new syntax
 - AND existing configs must be updated
 
 **EARS Format**:
 - WHILE implementing new system
-- WHEN old syntax is encountered
-- THE system MAY show deprecation warning or error
+- WHEN old syntax `mod modN = !!Key` or `!!` operator is encountered
+- THE system SHALL show error message
 - WHERE users must update configs to new syntax
+
+**Rationale**:
+- `!!` operator indicated "one-shot/toggle" behavior
+- New M00-MFF modifiers are implicitly registered (no need for `mod mod0 = ...`)
+- Simpler syntax: `def subst *B = *M00` replaces `mod mod0 = !!B`
+- No ambiguity about modifier behavior (all work the same way)
 
 ## Non-Functional Requirements
 

@@ -269,6 +269,22 @@ private:
     yamy::SubstitutionTable m_substitutionTable; /// YAMY scan code → YAMY scan code mappings
     yamy::input::ModifierState m_modifierState; /// Modal and hardware modifier state tracking
 
+    /// Keymap entry for virtual modifier/lock-based key matching
+    struct KeymapEntry {
+        uint32_t required_mods[8];   ///< Bitmask of required M00-MFF modifiers
+        uint32_t required_locks[8];  ///< Bitmask of required L00-LFF locks
+        uint16_t input_key;          ///< Input YAMY scan code
+        uint16_t output_key;         ///< Output YAMY scan code
+        uint8_t specificity;         ///< Precomputed: popcount(mods) + popcount(locks)
+
+        KeymapEntry() : input_key(0), output_key(0), specificity(0) {
+            std::memset(required_mods, 0, sizeof(required_mods));
+            std::memset(required_locks, 0, sizeof(required_locks));
+        }
+    };
+
+    std::vector<KeymapEntry> m_virtualKeymap;  ///< Sorted by specificity DESC for virtual key system
+
 public:
     tomsgstream &m_log;                /** log stream (output to log
                                                     dialog's edit) */
@@ -363,6 +379,25 @@ private:
     /// Build substitution table from Keyboard::Substitutes
     /// @param keyboard Reference to Keyboard object with substitution mappings
     void buildSubstitutionTable(const Keyboard &keyboard);
+
+    /// Lookup keymap entry with modifier/lock matching and specificity priority
+    /// @param key Input YAMY scan code to match
+    /// @param mods Active modifier state (M00-MFF)
+    /// @param locks Active lock state (L00-LFF)
+    /// @return Output YAMY scan code, or 0 if no match found
+    uint16_t lookupKeymap(uint16_t key, const yamy::input::ModifierState& mods, const yamy::input::LockState& locks) const;
+
+    /// Sort keymap entries by specificity (highest first) after loading
+    void sortKeymapBySpecificity();
+
+    /// Add a keymap entry with automatic specificity calculation
+    /// @param input_key Input YAMY scan code
+    /// @param output_key Output YAMY scan code
+    /// @param required_mods Required modifier bitmask array (8 x uint32_t)
+    /// @param required_locks Required lock bitmask array (8 x uint32_t)
+    void addKeymapEntry(uint16_t input_key, uint16_t output_key,
+                        const uint32_t required_mods[8],
+                        const uint32_t required_locks[8]);
 
     /** open mayu device
         @return true if mayu device successfully is opened
