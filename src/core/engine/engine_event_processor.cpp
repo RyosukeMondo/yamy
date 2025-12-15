@@ -127,6 +127,19 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
 
 uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState)
 {
+    // Layer 2a: Substitution Table Lookup
+    //
+    // The substitution table maps physical keys to either:
+    //   - Other physical keys (e.g., *A = *B)
+    //   - Virtual keys (e.g., *A = *V_B, *B = *M00, *CapsLock = *L00)
+    //
+    // Virtual keys defined:
+    //   V_*: Virtual regular keys (0xE000-0xEFFF) - intermediate mappings
+    //   M00-MFF: Modal modifiers (0xF000-0xF0FF) - 256 user-defined modifiers
+    //   L00-LFF: Lock keys (0xF100-0xF1FF) - 256 toggleable locks
+    //
+    // Virtual keys are suppressed at Layer 3 (never output to evdev).
+
     // CRITICAL: Check if key is registered as number OR modal modifier BEFORE substitution lookup
     // This ensures number keys can act as modifiers (HOLD) or be substituted (TAP)
     // and modal modifiers (!! operator) can activate modal modifier state
@@ -218,7 +231,25 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
 
 uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
 {
-    // Call existing keycode mapping function
+    // Layer 3: YAMY → evdev conversion with virtual key suppression
+    //
+    // Virtual keys (V_*, M00-MFF, L00-LFF) have no evdev codes and must not
+    // be output to the system. They are used internally for:
+    //   - V_*: Intermediate key mappings in substitution layer
+    //   - M00-MFF: Modal modifier state (processed separately)
+    //   - L00-LFF: Lock key state (processed separately)
+    //
+    // Suppress virtual keys by returning 0 (which will fail at Layer 3).
+    if (yamy::platform::isVirtualKey(yamy) ||
+        yamy::platform::isModifier(yamy) ||
+        yamy::platform::isLock(yamy)) {
+        if (m_debugLogging) {
+            LOG_DEBUG("[EventProcessor] [LAYER3:SUPPRESS] yamy 0x{:04X} (virtual key, not output)", yamy);
+        }
+        return 0;  // Suppress virtual keys
+    }
+
+    // Call existing keycode mapping function for physical keys
     uint16_t evdev = yamy::platform::yamyToEvdevKeyCode(yamy);
 
     if (m_debugLogging) {
