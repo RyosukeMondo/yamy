@@ -90,10 +90,19 @@ public:
     /// @param modifier Hardware modifier to activate (e.g., LSHIFT)
     void registerNumberModifier(uint16_t yamy_scancode, HardwareModifier modifier);
 
-    /// Register a key as a modal modifier (mod0-mod19)
+    /// Register a key as a modal modifier (mod0-mod19) - LEGACY
     /// @param yamy_scancode YAMY scan code for trigger key (e.g., 0x001E for A)
     /// @param modifier_type Modifier::Type enum value (Type_Mod0 through Type_Mod19)
     void registerModalModifier(uint16_t yamy_scancode, int modifier_type);
+
+    /// Register a virtual modifier key (M00-MFF)
+    /// @param modifier_code YAMY modifier code (0xF000-0xF0FF for M00-MFF)
+    /// @param tap_output Optional keycode to output on quick tap (0 = no tap output)
+    void registerVirtualModifier(uint16_t modifier_code, uint16_t tap_output = 0);
+
+    /// Register all virtual modifiers from mod tap actions map
+    /// @param mod_tap_actions Map of modifier number (0x00-0xFF) to tap output keycode
+    void registerVirtualModifiersFromMap(const std::unordered_map<uint8_t, uint16_t>& mod_tap_actions);
 
     /// Process a number key event (PRESS or RELEASE)
     /// Implements state machine for hold-vs-tap detection
@@ -112,6 +121,11 @@ public:
     /// @return true if registered, false otherwise
     bool isModalModifier(uint16_t yamy_scancode) const;
 
+    /// Check if a YAMY code is a registered virtual modifier (M00-MFF)
+    /// @param yamy_code YAMY key code to check
+    /// @return true if registered, false otherwise
+    bool isVirtualModifier(uint16_t yamy_code) const;
+
     /// Check if a number modifier is currently held (MODIFIER_ACTIVE state)
     /// @param yamy_scancode YAMY scan code to check
     /// @return true if held, false otherwise
@@ -127,13 +141,19 @@ public:
         HardwareModifier target_modifier;     // For number modifiers (hardware)
         int modal_modifier_type;              // For modal modifiers (Modifier::Type_Mod0..19), -1 if not modal
         bool is_modal;                        // true if modal modifier, false if hardware modifier
+        bool is_virtual;                      // true if virtual modifier (M00-MFF)
+        uint8_t virtual_mod_num;              // Virtual modifier number (0x00-0xFF for M00-MFF)
+        uint16_t tap_output;                  // Keycode to output on tap (0 = no output)
 
         KeyState()
             : state(NumberKeyState::IDLE)
             , press_time()
             , target_modifier(HardwareModifier::NONE)
             , modal_modifier_type(-1)
-            , is_modal(false) {}
+            , is_modal(false)
+            , is_virtual(false)
+            , virtual_mod_num(0)
+            , tap_output(0) {}
     };
 
     /// Get key states for testing purposes
@@ -151,6 +171,9 @@ private:
 
     /// State for each registered number key
     std::unordered_map<uint16_t, KeyState> m_key_states;
+
+    /// Mapping: Virtual modifier code (M00-MFF) → tap output keycode
+    std::unordered_map<uint16_t, uint16_t> m_virtual_modifiers;
 
     /// Hold threshold in milliseconds
     uint32_t m_hold_threshold_ms;

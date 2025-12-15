@@ -140,16 +140,28 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
     //
     // Virtual keys are suppressed at Layer 3 (never output to evdev).
 
-    // CRITICAL: Check if key is registered as number OR modal modifier BEFORE substitution lookup
+    // CRITICAL: Check if key is registered as number, modal, OR virtual modifier BEFORE substitution lookup
     // This ensures number keys can act as modifiers (HOLD) or be substituted (TAP)
-    // and modal modifiers (!! operator) can activate modal modifier state
-    if (m_modifierHandler && (m_modifierHandler->isNumberModifier(yamy_in) || m_modifierHandler->isModalModifier(yamy_in))) {
+    // modal modifiers (!! operator) can activate modal modifier state
+    // and virtual modifiers (M00-MFF) support tap/hold detection
+    if (m_modifierHandler && (m_modifierHandler->isNumberModifier(yamy_in) ||
+                               m_modifierHandler->isModalModifier(yamy_in) ||
+                               m_modifierHandler->isVirtualModifier(yamy_in))) {
         engine::NumberKeyResult result = m_modifierHandler->processNumberKey(yamy_in, type);
 
         switch (result.action) {
             case engine::ProcessingAction::ACTIVATE_MODIFIER:
                 // HOLD detected - activate modifier
-                if (result.modifier_type >= 0 && io_modState) {
+                if (m_modifierHandler->isVirtualModifier(yamy_in) && io_modState) {
+                    // Virtual modifier (M00-MFF) - update ModifierState using new method
+                    uint8_t mod_num = static_cast<uint8_t>(result.modifier_type);
+                    io_modState->activateModifier(mod_num);
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[EventProcessor] [LAYER2:VIRTUAL_MOD] M{:02X} (0x{:04X}) HOLD → ACTIVATE",
+                                  mod_num, yamy_in);
+                    }
+                    return 0;  // Suppress event (no output)
+                } else if (result.modifier_type >= 0 && io_modState) {
                     // Modal modifier - update ModifierState only
                     io_modState->activate(static_cast<Modifier::Type>(result.modifier_type));
                     if (m_debugLogging) {
@@ -168,7 +180,16 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
 
             case engine::ProcessingAction::DEACTIVATE_MODIFIER:
                 // Modifier release
-                if (result.modifier_type >= 0 && io_modState) {
+                if (m_modifierHandler->isVirtualModifier(yamy_in) && io_modState) {
+                    // Virtual modifier (M00-MFF) - update ModifierState using new method
+                    uint8_t mod_num = static_cast<uint8_t>(result.modifier_type);
+                    io_modState->deactivateModifier(mod_num);
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[EventProcessor] [LAYER2:VIRTUAL_MOD] M{:02X} (0x{:04X}) RELEASE → DEACTIVATE",
+                                  mod_num, yamy_in);
+                    }
+                    return 0;  // Suppress event (no output)
+                } else if (result.modifier_type >= 0 && io_modState) {
                     // Modal modifier - update ModifierState only
                     io_modState->deactivate(static_cast<Modifier::Type>(result.modifier_type));
                     if (m_debugLogging) {
@@ -187,12 +208,22 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
 
             case engine::ProcessingAction::APPLY_SUBSTITUTION_PRESS:
             case engine::ProcessingAction::APPLY_SUBSTITUTION_RELEASE:
-                // TAP detected - fall through to normal substitution logic
-                if (m_debugLogging) {
-                    LOG_DEBUG("[EventProcessor] [LAYER2:NUMBER_MOD] 0x{:04X} TAP detected, applying substitution",
-                              yamy_in);
+                // TAP detected
+                if (m_modifierHandler->isVirtualModifier(yamy_in) && result.output_yamy_code != 0) {
+                    // Virtual modifier with tap output defined - use tap output keycode
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[EventProcessor] [LAYER2:VIRTUAL_MOD] 0x{:04X} TAP detected → output 0x{:04X}",
+                                  yamy_in, result.output_yamy_code);
+                    }
+                    return result.output_yamy_code;
+                } else {
+                    // Number/modal modifier TAP - fall through to normal substitution logic
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[EventProcessor] [LAYER2:NUMBER_MOD] 0x{:04X} TAP detected, applying substitution",
+                                  yamy_in);
+                    }
+                    break;
                 }
-                break;
 
             case engine::ProcessingAction::WAITING_FOR_THRESHOLD:
                 // Still waiting for hold threshold - suppress this event
@@ -268,6 +299,13 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
 void EventProcessor::setModifierHandler(std::unique_ptr<engine::ModifierKeyHandler> handler)
 {
     m_modifierHandler = std::move(handler);
+}
+
+void EventProcessor::registerVirtualModifiers(const std::unordered_map<uint8_t, uint16_t>& mod_tap_actions)
+{
+    if (m_modifierHandler) {
+        m_modifierHandler->registerVirtualModifiersFromMap(mod_tap_actions);
+    }
 }
 
 void EventProcessor::registerNumberModifier(uint16_t yamy_scancode, uint16_t modifier_yamy_code)

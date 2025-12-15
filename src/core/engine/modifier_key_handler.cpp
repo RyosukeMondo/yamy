@@ -55,6 +55,30 @@ void ModifierKeyHandler::registerModalModifier(uint16_t yamy_scancode, int modif
              yamy_scancode, mod_number);
 }
 
+void ModifierKeyHandler::registerVirtualModifier(uint16_t modifier_code, uint16_t tap_output)
+{
+    // Store in virtual modifiers map
+    m_virtual_modifiers[modifier_code] = tap_output;
+
+    // Create key state for this virtual modifier
+    KeyState& state = m_key_states[modifier_code];
+    state.is_virtual = true;
+    state.virtual_mod_num = static_cast<uint8_t>(modifier_code - 0xF000);  // Extract M00-MFF number
+    state.tap_output = tap_output;
+
+    LOG_INFO("[ModifierKeyHandler] [MODIFIER] Registered virtual modifier M{:02X} (0x{:04X}), tap_output=0x{:04X}",
+             state.virtual_mod_num, modifier_code, tap_output);
+}
+
+void ModifierKeyHandler::registerVirtualModifiersFromMap(const std::unordered_map<uint8_t, uint16_t>& mod_tap_actions)
+{
+    for (const auto& [mod_num, tap_output] : mod_tap_actions) {
+        uint16_t modifier_code = 0xF000 + mod_num;  // Convert M00-MFF number to keycode
+        registerVirtualModifier(modifier_code, tap_output);
+    }
+    LOG_INFO("[ModifierKeyHandler] [MODIFIER] Registered {} virtual modifiers from map", mod_tap_actions.size());
+}
+
 NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, EventType event_type)
 {
     // Check if this is a registered number modifier
@@ -65,8 +89,11 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
 
     KeyState& state = it->second;
     bool is_modal = state.is_modal;
+    bool is_virtual = state.is_virtual;
     HardwareModifier modifier = state.target_modifier;
     int modal_type = state.modal_modifier_type;
+    uint8_t virtual_mod_num = state.virtual_mod_num;
+    uint16_t tap_output = state.tap_output;
 
     if (event_type == EventType::PRESS) {
         // PRESS event handling
@@ -94,7 +121,12 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
                     // Hold detected - activate modifier
                     state.state = NumberKeyState::MODIFIER_ACTIVE;
 
-                    if (is_modal) {
+                    if (is_virtual) {
+                        // Virtual modifier (M00-MFF) - activate in ModifierState, no VK code
+                        LOG_INFO("[ModifierKeyHandler] [MODIFIER] Hold detected: M{:02X} (0x{:04X}) ACTIVATE",
+                                 virtual_mod_num, yamy_scancode);
+                        return NumberKeyResult(ProcessingAction::ACTIVATE_MODIFIER, 0, virtual_mod_num, true);
+                    } else if (is_modal) {
                         // Modal modifier - return modifier type, no VK code
                         LOG_INFO("[ModifierKeyHandler] [MODIFIER] Hold detected: 0x{:04X} → modal mod{} ACTIVATE",
                                  yamy_scancode, modal_type - 16);  // Type_Mod0 = 16
@@ -141,20 +173,39 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
 
                 state.state = NumberKeyState::IDLE;
 
-                LOG_INFO("[ModifierKeyHandler] [MODIFIER] Tap detected: 0x{:04X} (released after {}ms)",
-                         yamy_scancode, elapsed_ms);
-
-                // Return action to apply substitution for both PRESS and RELEASE
-                // Note: The PRESS event was already consumed (WAITING_FOR_THRESHOLD)
-                // So we need to output both PRESS and RELEASE for the substituted key
-                return NumberKeyResult(ProcessingAction::APPLY_SUBSTITUTION_RELEASE, 0, true);
+                // For virtual modifiers, check if tap output is defined
+                if (is_virtual) {
+                    if (tap_output != 0) {
+                        LOG_INFO("[ModifierKeyHandler] [MODIFIER] Tap detected: M{:02X} (released after {}ms) → output 0x{:04X}",
+                                 virtual_mod_num, elapsed_ms, tap_output);
+                        // Return tap output keycode
+                        return NumberKeyResult(ProcessingAction::APPLY_SUBSTITUTION_RELEASE, tap_output, true);
+                    } else {
+                        LOG_INFO("[ModifierKeyHandler] [MODIFIER] Tap detected: M{:02X} (released after {}ms), no tap output defined",
+                                 virtual_mod_num, elapsed_ms);
+                        // No tap output, suppress
+                        return NumberKeyResult(ProcessingAction::WAITING_FOR_THRESHOLD, 0, false);
+                    }
+                } else {
+                    LOG_INFO("[ModifierKeyHandler] [MODIFIER] Tap detected: 0x{:04X} (released after {}ms)",
+                             yamy_scancode, elapsed_ms);
+                    // Return action to apply substitution for both PRESS and RELEASE
+                    // Note: The PRESS event was already consumed (WAITING_FOR_THRESHOLD)
+                    // So we need to output both PRESS and RELEASE for the substituted key
+                    return NumberKeyResult(ProcessingAction::APPLY_SUBSTITUTION_RELEASE, 0, true);
+                }
             }
 
             case NumberKeyState::MODIFIER_ACTIVE: {
                 // Deactivate modifier
                 state.state = NumberKeyState::IDLE;
 
-                if (is_modal) {
+                if (is_virtual) {
+                    // Virtual modifier (M00-MFF) - deactivate in ModifierState
+                    LOG_INFO("[ModifierKeyHandler] [MODIFIER] Deactivating virtual: M{:02X} (0x{:04X}) DEACTIVATE",
+                             virtual_mod_num, yamy_scancode);
+                    return NumberKeyResult(ProcessingAction::DEACTIVATE_MODIFIER, 0, virtual_mod_num, true);
+                } else if (is_modal) {
                     // Modal modifier - return modifier type, no VK code
                     LOG_INFO("[ModifierKeyHandler] [MODIFIER] Deactivating modal: 0x{:04X} → mod{} DEACTIVATE",
                              yamy_scancode, modal_type - 16);  // Type_Mod0 = 16
@@ -188,6 +239,12 @@ bool ModifierKeyHandler::isModalModifier(uint16_t yamy_scancode) const
 {
     auto it = m_key_states.find(yamy_scancode);
     return (it != m_key_states.end()) && it->second.is_modal;
+}
+
+bool ModifierKeyHandler::isVirtualModifier(uint16_t yamy_code) const
+{
+    auto it = m_key_states.find(yamy_code);
+    return (it != m_key_states.end()) && it->second.is_virtual;
 }
 
 bool ModifierKeyHandler::isModifierHeld(uint16_t yamy_scancode) const

@@ -94,6 +94,10 @@ public:
     /// @return Pointer to handler, or nullptr if not set
     engine::ModifierKeyHandler* getModifierHandler() { return m_modifierHandler.get(); }
 
+    /// Register virtual modifiers (M00-MFF) with tap actions
+    /// @param mod_tap_actions Map of modifier number (0x00-0xFF) to tap output keycode
+    void registerVirtualModifiers(const std::unordered_map<uint8_t, uint16_t>& mod_tap_actions);
+
     /// Callback type for journey event notifications
     /// Called after each event is processed with the journey data
     using JourneyEventCallback = std::function<void(const logger::JourneyEvent&)>;
