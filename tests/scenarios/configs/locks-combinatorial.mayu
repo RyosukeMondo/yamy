@@ -1,0 +1,18 @@
+# Locks Combinatorial Test Configuration
+# Tests lock toggle behavior and lock combinations
+
+# Substitute C key to L00 lock
+def subst *C = *L00
+
+# Substitute D key to L01 lock
+def subst *D = *L01
+
+# Single lock mappings
+key L00-A = *B
+key L01-A = *H
+
+# Combo lock mapping (both L00 and L01 must be active)
+key L00-L01-A = *Left
+
+# Test that physical keys still work normally
+# (no mapping for plain A)

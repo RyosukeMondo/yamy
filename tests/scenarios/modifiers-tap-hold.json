@@ -1,0 +1,189 @@
+{
+  "name": "modifiers_tap_hold",
+  "description": "Test modifier tap/hold behavior - tap outputs Enter, hold activates modifier",
+  "config": "configs/modifiers-tap-hold.mayu",
+  "setup": {
+    "daemon_args": [],
+    "env": {
+      "YAMY_DEBUG_KEYCODE": "1"
+    }
+  },
+  "test_cases": [
+    {
+      "name": "quick_tap_outputs_enter",
+      "description": "Quick tap of B (<200ms) should output Enter via tap action",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 100,
+          "comment": "Release after 100ms - below 200ms threshold"
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "hold_activates_modifier_no_tap_output",
+      "description": "Hold B (>=200ms) should activate M00 modifier without outputting Enter",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 250,
+          "comment": "Release after 250ms - above 200ms threshold"
+        }
+      ],
+      "expected_output": [],
+      "timeout_ms": 1500,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "hold_then_press_h_outputs_left",
+      "description": "Hold B (activates M00), press H - should output Left arrow (M00-H mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 35,
+          "key_name": "KEY_H",
+          "type": "press",
+          "delay_before_ms": 250,
+          "comment": "Press H after holding B for 250ms"
+        },
+        {
+          "evdev_code": 35,
+          "key_name": "KEY_H",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 105,
+          "key_name": "KEY_LEFT",
+          "type": "press"
+        },
+        {
+          "evdev_code": 105,
+          "key_name": "KEY_LEFT",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "multiple_taps_sequence",
+      "description": "Multiple quick taps should each output Enter",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 100
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 100
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "press"
+        },
+        {
+          "evdev_code": 28,
+          "key_name": "KEY_ENTER",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    }
+  ]
+}

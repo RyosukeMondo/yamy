@@ -1,0 +1,159 @@
+{
+  "name": "virtual_keys_basic",
+  "description": "Test virtual key system basic functionality - physical vs virtual distinction",
+  "config": "configs/virtual-keys-basic.mayu",
+  "setup": {
+    "daemon_args": [],
+    "env": {
+      "YAMY_DEBUG_KEYCODE": "1"
+    }
+  },
+  "test_cases": [
+    {
+      "name": "physical_key_no_modifier",
+      "description": "Press physical B key without modifier - should output B (no mapping)",
+      "input": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "physical_a_substitutes_to_virtual_vb",
+      "description": "Press physical A - should substitute to virtual V_B (not output)",
+      "input": [
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 0
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "virtual_key_activates_modifier_then_physical_b",
+      "description": "Press A (becomes V_B, activates M00), then press B - should output C (M00-B mapping)",
+      "input": [
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 0,
+          "comment": "A substitutes to V_B which activates M00"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "delay_before_ms": 50,
+          "comment": "Physical B with M00 active should output C"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50,
+          "comment": "Release A deactivates M00"
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "press"
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "virtual_key_matches_in_keymap",
+      "description": "Press A twice (first A becomes V_B and activates M00, second A also becomes V_B) - should output D (M00-V_B mapping)",
+      "input": [
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 0,
+          "comment": "First A substitutes to V_B, activates M00"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 250,
+          "comment": "Second A also substitutes to V_B, matches M00-V_B -> D"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "press"
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1500,
+      "max_latency_us": 1000
+    }
+  ]
+}

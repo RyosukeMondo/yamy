@@ -1,0 +1,375 @@
+{
+  "name": "locks_combinatorial",
+  "description": "Test lock toggle behavior and lock combinations",
+  "config": "configs/locks-combinatorial.mayu",
+  "setup": {
+    "daemon_args": [],
+    "env": {
+      "YAMY_DEBUG_KEYCODE": "1"
+    }
+  },
+  "test_cases": [
+    {
+      "name": "lock_keys_not_output",
+      "description": "Lock keys (C->L00, D->L01) should be suppressed and not output",
+      "input": [
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "press",
+          "delay_before_ms": 0,
+          "comment": "C substitutes to L00, toggles lock on"
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "press",
+          "delay_before_ms": 50,
+          "comment": "D substitutes to L01, toggles lock on"
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [],
+      "timeout_ms": 1000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "single_lock_l00_active",
+      "description": "Toggle L00 on, press A - should output B (L00-A mapping)",
+      "input": [
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "press",
+          "delay_before_ms": 0,
+          "comment": "Toggle L00 on"
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 100,
+          "comment": "Press A with L00 active"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1500,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "single_lock_l01_active",
+      "description": "Toggle L01 on, press A - should output H (L01-A mapping)",
+      "input": [
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "press",
+          "delay_before_ms": 0,
+          "comment": "Toggle L01 on"
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 100,
+          "comment": "Press A with L01 active"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 35,
+          "key_name": "KEY_H",
+          "type": "press"
+        },
+        {
+          "evdev_code": 35,
+          "key_name": "KEY_H",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 1500,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "combo_lock_both_active",
+      "description": "Toggle both L00 and L01 on, press A - should output Left (L00-L01-A mapping, more specific than single locks)",
+      "input": [
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "press",
+          "delay_before_ms": 0,
+          "comment": "Toggle L00 on"
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "press",
+          "delay_before_ms": 50,
+          "comment": "Toggle L01 on"
+        },
+        {
+          "evdev_code": 32,
+          "key_name": "KEY_D",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 100,
+          "comment": "Press A with both L00 and L01 active"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 105,
+          "key_name": "KEY_LEFT",
+          "type": "press"
+        },
+        {
+          "evdev_code": 105,
+          "key_name": "KEY_LEFT",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 2000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "lock_toggle_off",
+      "description": "Toggle L00 on, press A (outputs B), toggle L00 off, press A again (outputs A)",
+      "input": [
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "press",
+          "delay_before_ms": 0,
+          "comment": "Toggle L00 on"
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 100,
+          "comment": "Press A with L00 active - outputs B"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "press",
+          "delay_before_ms": 100,
+          "comment": "Toggle L00 off"
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 100,
+          "comment": "Press A with L00 inactive - outputs A"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press",
+          "comment": "First A press outputs B"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "comment": "Second A press outputs A"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 3000,
+      "max_latency_us": 1000
+    },
+    {
+      "name": "lock_persistence_across_events",
+      "description": "Toggle L00 on, press multiple keys with L00 active - lock state persists",
+      "input": [
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "press",
+          "delay_before_ms": 0,
+          "comment": "Toggle L00 on"
+        },
+        {
+          "evdev_code": 46,
+          "key_name": "KEY_C",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 100,
+          "comment": "First A - outputs B"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 100,
+          "comment": "Second A - outputs B (lock persists)"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "press",
+          "delay_before_ms": 100,
+          "comment": "Third A - outputs B (lock persists)"
+        },
+        {
+          "evdev_code": 30,
+          "key_name": "KEY_A",
+          "type": "release",
+          "delay_before_ms": 50
+        }
+      ],
+      "expected_output": [
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "press"
+        },
+        {
+          "evdev_code": 48,
+          "key_name": "KEY_B",
+          "type": "release"
+        }
+      ],
+      "timeout_ms": 3000,
+      "max_latency_us": 1000
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# Virtual Keys Basic Test Configuration
+# Tests physical vs virtual key distinction
+
+# Test 1: Substitute physical A to virtual V_B
+def subst *A = *V_B
+
+# Test 2: Map M00-B to output C
+key M00-B = *C
+
+# Test 3: Map M00-V_B to output D (tests virtual key in keymap)
+key M00-V_B = *D

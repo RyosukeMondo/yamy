@@ -139,7 +139,7 @@
   - _Requirements: US8_
   - _Prompt: Role: Qt GUI developer creating status indicators | Task: Create LockIndicatorWidget to show which locks are active - create class with updateLockStatus(lockBits[8]) method, create indicators on demand (not all 256 upfront), implement setLockActive(lock_num, active) to update colors (green=active, gray=inactive), layout as vertical list "Lxx [●]" where ● is colored QLabel with stylesheet | Restrictions: Do NOT create all 256 indicators at startup, do NOT block UI thread with updates, keep visual design simple and clear | Success: Widget displays lock indicators, colors update when locks toggle, UI is responsive and clean, memory usage is reasonable | After completing: Mark as [-], implement, log with component artifacts, mark as [x]_
 
-- [ ] 5.1. Create E2E Test Scenarios
+- [x] 5.1. Create E2E Test Scenarios
   - File: tests/scenarios/virtual-keys-basic.json (new)
   - File: tests/scenarios/modifiers-tap-hold.json (new)
   - File: tests/scenarios/locks-combinatorial.json (new)

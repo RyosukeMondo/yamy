@@ -1,0 +1,11 @@
+# Modifiers Tap/Hold Test Configuration
+# Tests modifier tap action vs hold behavior
+
+# Substitute B key to M00 modifier
+def subst *B = *M00
+
+# Configure M00 tap action to output Enter
+mod assign M00 = *Enter
+
+# Test mapping: M00-H outputs Left arrow (for hold test)
+key M00-H = *Left
