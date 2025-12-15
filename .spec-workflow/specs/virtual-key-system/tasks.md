@@ -126,7 +126,7 @@
   - _Requirements: US8_
   - _Prompt: Role: Developer adding IPC message types | Task: Add LockStatusUpdate message for GUI communication - add MessageType::LockStatusUpdate = 0x0200 to enum, define struct LockStatusMessage { uint32_t lockBits[8]; }, implement notifyGUI() in LockState to create LockStatusMessage, copy m_locks to lockBits, send via Engine::notifyGUI() | Restrictions: Do NOT break existing IPC messages, keep message size small (<64 bytes), use existing IPC send mechanism | Success: LockStatusMessage defined, notifyGUI() sends message via IPC, message size is minimal, no IPC compatibility issues | After completing: Mark as [-], implement, log, mark as [x]_
 
-- [ ] 4.2. Implement Lock Indicator Widget (Qt)
+- [x] 4.2. Implement Lock Indicator Widget (Qt)
   - File: src/ui/qt/lock_indicator_widget.h (new)
   - File: src/ui/qt/lock_indicator_widget.cpp (new)
   - Create Qt widget to display lock status with visual indicators
