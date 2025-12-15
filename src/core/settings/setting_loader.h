@@ -145,6 +145,7 @@ private:
     void load_KEY_ASSIGN();            /// &lt;KEY_ASSIGN&gt;
     void load_EVENT_ASSIGN();            /// &lt;EVENT_ASSIGN&gt;
     void load_MODIFIER_ASSIGNMENT();        /// &lt;MODIFIER_ASSIGN&gt;
+    void load_MOD_ASSIGN();            /// &lt;MOD_ASSIGN&gt; (for M00-MFF tap actions)
     void load_LOCK_ASSIGNMENT();            /// &lt;LOCK_ASSIGN&gt;
     void load_KEYSEQ_DEFINITION();        /// &lt;KEYSEQ_DEFINITION&gt;
 

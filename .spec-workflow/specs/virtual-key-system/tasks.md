@@ -321,7 +321,7 @@ After completing:
 ---
 
 #### Task 2.2: Add "mod assign" Grammar Rule
-**Status**: [ ] Pending
+**Status**: [x] Completed
 **Priority**: P0
 **Files**:
 - `src/core/settings/setting_loader.cpp`

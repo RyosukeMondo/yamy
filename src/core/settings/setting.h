@@ -12,6 +12,7 @@
 #  include "multithread.h"
 #  include "../utils/config_store.h"
 #  include <set>
+#  include <unordered_map>
 
 
 /// this class contains all of loaded settings
@@ -32,6 +33,7 @@ public:
     bool m_mouseEvent;                ///
     int32_t m_dragThreshold;            ///
     unsigned int m_oneShotRepeatableDelay;    ///
+    std::unordered_map<uint8_t, uint16_t> m_modTapActions;  /// Tap actions for M00-MFF modifiers
 
 public:
     Setting()

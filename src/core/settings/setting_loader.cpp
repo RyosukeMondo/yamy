@@ -1204,6 +1204,66 @@ void SettingLoader::load_EVENT_ASSIGN()
 }
 
 
+// <MOD_ASSIGN> - Parse "mod assign M00 = *Enter" syntax for tap actions
+void SettingLoader::load_MOD_ASSIGN()
+{
+    // Expect "assign" token (already consumed "mod" in load_LINE)
+    Token *t = getToken();
+    if (*t != "assign")
+        throw ErrorMessage() << "expected 'assign' after 'mod', got `" << *t << "'.";
+
+    // Get modifier key (M00-MFF)
+    t = getToken();
+    std::string modName = t->getString();
+
+    // Validate modifier key format (M00-MFF)
+    if (modName.length() != 3 || modName[0] != 'M' ||
+        !std::isxdigit(modName[1]) || !std::isxdigit(modName[2])) {
+        throw ErrorMessage() << "`" << modName << "': invalid modifier format. Expected M00-MFF.";
+    }
+
+    // Parse hex digits to get modifier number
+    char hex1 = std::toupper(modName[1]);
+    char hex2 = std::toupper(modName[2]);
+    int modNum = (hex1 >= 'A' ? (hex1 - 'A' + 10) : (hex1 - '0')) * 16 +
+                 (hex2 >= 'A' ? (hex2 - 'A' + 10) : (hex2 - '0'));
+
+    // Expect '='
+    t = getToken();
+    if (*t != "=")
+        throw ErrorMessage() << "expected '=' after modifier name, got `" << *t << "'.";
+
+    // Expect '*' prefix for key
+    t = getToken();
+    if (*t != "*")
+        throw ErrorMessage() << "expected '*' before tap output key, got `" << *t << "'.";
+
+    // Get tap output key
+    Key *tapKey = load_KEY_NAME();
+    if (!tapKey)
+        throw ErrorMessage() << "invalid tap output key.";
+
+    // Get the key's scan code to use as the keycode
+    const ScanCode *scanCodes = tapKey->getScanCodes();
+    if (tapKey->getScanCodesSize() == 0)
+        throw ErrorMessage() << "tap output key has no scan codes.";
+
+    uint16_t tapKeyCode = scanCodes[0].m_scan;
+
+    // Check for duplicate assignment (warn and overwrite)
+    if (m_setting->m_modTapActions.find(static_cast<uint8_t>(modNum)) != m_setting->m_modTapActions.end()) {
+        if (m_log && m_soLog) {
+            Acquire a(m_soLog);
+            *m_log << m_currentFilename << " : warning: duplicate tap assignment for "
+                   << modName << ", overwriting previous value." << std::endl;
+        }
+    }
+
+    // Store the tap action
+    m_setting->m_modTapActions[static_cast<uint8_t>(modNum)] = tapKeyCode;
+}
+
+
 // <MODIFIER_ASSIGNMENT>
 void SettingLoader::load_MODIFIER_ASSIGNMENT()
 {
@@ -1410,8 +1470,14 @@ void SettingLoader::load_LINE()
     else if (*i_token == "key") load_KEY_ASSIGN();
     // <EVENT_ASSIGN>
     else if (*i_token == "event") load_EVENT_ASSIGN();
-    // <MODIFIER_ASSIGNMENT>
-    else if (*i_token == "mod") load_MODIFIER_ASSIGNMENT();
+    // <MOD_ASSIGN> or <MODIFIER_ASSIGNMENT>
+    else if (*i_token == "mod") {
+        // Check if next token is "assign"
+        if (!isEOL() && *lookToken() == "assign")
+            load_MOD_ASSIGN();
+        else
+            load_MODIFIER_ASSIGNMENT();
+    }
     // <KEYSEQ_DEFINITION>
     else if (*i_token == "keyseq") load_KEYSEQ_DEFINITION();
     else
