@@ -28,6 +28,7 @@ enum class MessageType : uint32_t {
     KeymapSwitched = 0x3001,
     FocusChanged = 0x3002,
     ModifierChanged = 0x3003,
+    LockStatusUpdate = 0x3004,  // Lock state changed (L00-LFF)
 
     // Performance Metrics
     LatencyReport = 0x4001,

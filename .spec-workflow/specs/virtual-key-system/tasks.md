@@ -114,7 +114,7 @@
   - _Requirements: US1_
   - _Prompt: Role: Developer updating output layer logic | Task: Suppress virtual keys in YAMY→evdev conversion layer - update layer3_yamyToEvdev() to check if (isVirtualKey(yamy) || isModifier(yamy) || isLock(yamy)) return 0 before calling yamyToEvdevKeyCode(), verify calling code handles 0 correctly and skips output | Restrictions: Do NOT change existing yamyToEvdevKeyCode() function, do NOT suppress physical keys, keep existing error handling | Success: V_A/V_B/etc return 0 (not output), M00-MFF return 0 (not output), L00-LFF return 0 (not output), physical keys still output correctly | After completing: Mark as [-], implement, log, mark as [x]_
 
-- [ ] 4.1. Add Lock Status IPC Message
+- [x] 4.1. Add Lock Status IPC Message
   - File: src/core/ipc/ipc_messages.h
   - File: src/core/engine/engine.h
   - Define IPC message structure for lock status updates

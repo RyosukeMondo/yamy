@@ -248,6 +248,14 @@ void Engine::initializeIPC() {
         m_ipcChannel->listen();
         yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "IPC channel initialized and listening");
     }
+
+    // Set up LockState notification callback to send IPC messages
+    m_lockState.setNotificationCallback([this](const uint32_t lockBits[8]) {
+        // Create LockStatusMessage and send via IPC
+        yamy::ipc::LockStatusMessage msg;
+        std::memcpy(msg.lockBits, lockBits, sizeof(msg.lockBits));
+        this->notifyGUI(yamy::MessageType::LockStatusUpdate, &msg, sizeof(msg));
+    });
 }
 
 
@@ -393,6 +401,18 @@ void Engine::notifyGUI(yamy::MessageType i_type, const std::string &i_data)
     cd.data = i_data.c_str();
 
     m_windowSystem->sendCopyData(nullptr, m_hwndAssocWindow, cd, yamy::platform::SendMessageFlags::NORMAL, 100, nullptr);
+}
+
+void Engine::notifyGUI(yamy::MessageType i_type, const void* i_data, size_t i_size)
+{
+    // Send binary data via IPC channel
+    if (m_ipcChannel && m_ipcChannel->isConnected()) {
+        yamy::ipc::Message msg;
+        msg.type = static_cast<yamy::ipc::MessageType>(static_cast<uint32_t>(i_type));
+        msg.data = i_data;
+        msg.size = i_size;
+        m_ipcChannel->send(msg);
+    }
 }
 
 void* Engine::perfMetricsHandler(void *i_this)

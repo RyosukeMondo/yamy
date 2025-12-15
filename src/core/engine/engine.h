@@ -25,6 +25,7 @@
 #  include "../functions/function.h"
 #  include "../input/input_event.h" // For KEYBOARD_INPUT_DATA (legacy)
 #  include "../input/modifier_state.h" // For ModifierState tracking
+#  include "../input/lock_state.h" // For LockState tracking
 #  include "../platform/types.h" // For KeyEvent
 #  include "../platform/message_constants.h"
 #  include "engine_event_processor.h" // For unified 3-layer event processing
@@ -268,6 +269,7 @@ private:
     std::unique_ptr<yamy::EventProcessor> m_eventProcessor; /// Unified 3-layer event processor
     yamy::SubstitutionTable m_substitutionTable; /// YAMY scan code → YAMY scan code mappings
     yamy::input::ModifierState m_modifierState; /// Modal and hardware modifier state tracking
+    yamy::input::LockState m_lockState; /// Virtual lock key state tracking (L00-LFF)
 
     /// Keymap entry for virtual modifier/lock-based key matching
     struct KeymapEntry {
@@ -357,8 +359,11 @@ private:
     /// Set the current engine state and log the transition
     void setState(yamy::EngineState i_newState);
 
-    /// Send a notification message to the GUI via the IPC channel
+    /// Send a notification message to the GUI via the IPC channel (string data)
     void notifyGUI(yamy::MessageType i_type, const std::string &i_data = "");
+
+    /// Send a notification message to the GUI via the IPC channel (binary data)
+    void notifyGUI(yamy::MessageType i_type, const void* i_data, size_t i_size);
 
     /// pop all pressed key on win32
     void keyboardResetOnWin32();

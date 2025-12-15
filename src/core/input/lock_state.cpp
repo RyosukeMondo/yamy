@@ -48,9 +48,6 @@ bool LockState::isLockActive(uint8_t lock_num) const
 
 void LockState::notifyGUI()
 {
-    // TODO: This will be fully implemented in Task 4.1 (Add Lock Status IPC Message)
-    // For now, log the lock state for debugging purposes
-
     // Count active locks for logging
     int activeCount = 0;
     for (int i = 0; i < 256; ++i) {
@@ -62,10 +59,11 @@ void LockState::notifyGUI()
     fprintf(stderr, "[LockState::notifyGUI] Lock state changed: %d locks active\n", activeCount);
     fflush(stderr);
 
-    // When Task 4.1 is implemented, this will:
-    // 1. Create a LockStatusMessage with the lock bits
-    // 2. Send it via IPC to the GUI
-    // 3. GUI will update visual indicators
+    // Call the notification callback if set
+    // The callback will create a LockStatusMessage and send it via IPC
+    if (m_notifyCallback) {
+        m_notifyCallback(m_locks);
+    }
 }
 
 void LockState::reset()

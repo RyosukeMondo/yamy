@@ -40,6 +40,9 @@ enum MessageType : uint32_t {
     RspConfig = 0x2103,           // Config response (data contains JSON config)
     RspKeymaps = 0x2104,          // Keymaps response (data contains JSON keymaps)
     RspMetrics = 0x2105,          // Metrics response (data contains JSON metrics)
+
+    // Lock status notifications
+    LockStatusUpdate = 0x0200,    // Lock state changed (L00-LFF status update)
 };
 
 // Data for CmdInvestigateWindow request
@@ -59,6 +62,12 @@ struct InvestigateWindowResponse {
 // Data for NtfKeyEvent notification
 struct KeyEventNotification {
     char keyEvent[256];
+};
+
+// Data for LockStatusUpdate notification
+// Sent from engine to GUI when any L00-LFF lock state changes
+struct LockStatusMessage {
+    uint32_t lockBits[8];  // 256 bits for L00-LFF lock states (bit set = lock active)
 };
 
 struct Message {

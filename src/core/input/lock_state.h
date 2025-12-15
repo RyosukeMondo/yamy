@@ -9,8 +9,13 @@
 #define _LOCK_STATE_H
 
 #include <cstdint>
+#include <functional>
 
 namespace yamy::input {
+
+/// Callback type for GUI notification when lock state changes
+/// The callback receives a pointer to the 8-element lock bits array
+using LockStateChangeCallback = std::function<void(const uint32_t lockBits[8])>;
 
 /// Lock state manager for L00-LFF virtual lock keys
 /// Provides toggle functionality and GUI notifications for lock state changes
@@ -35,6 +40,12 @@ public:
     /// Called automatically by toggleLock(), but can be called manually if needed
     void notifyGUI();
 
+    /// Set callback for lock state change notifications
+    /// @param callback Function to call when lock state changes (nullptr to disable)
+    void setNotificationCallback(LockStateChangeCallback callback) {
+        m_notifyCallback = callback;
+    }
+
     /// Reset all lock states to inactive
     void reset();
 
@@ -45,6 +56,7 @@ private:
     void setBit(uint8_t lock_num, bool value);
 
     uint32_t m_locks[8];  // 256 bits for L00-LFF lock states
+    LockStateChangeCallback m_notifyCallback;  // Callback for GUI notifications
 };
 
 } // namespace yamy::input
