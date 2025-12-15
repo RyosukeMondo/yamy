@@ -373,7 +373,7 @@
   - _Requirements: All_
   - _Prompt: **Role:** Technical Writer with C++ development expertise | **Task:** Implement the task for spec modern-cpp-toolchain, first run mcp__spec-workflow__spec-workflow-guide to get the workflow guide then implement the task: Create comprehensive migration guide covering all requirements. Document tool installation (Mold, Conan, etc.), workflow changes (CMakePresets.json), new practices (Quill, GSL, RapidCheck). Include troubleshooting. | **Restrictions:** Be thorough but concise, provide copy-paste commands, cover all platforms, include common issues, link to detailed guides | **_Leverage:** All phase documentation, installation commands, troubleshooting from testing | **_Requirements:** All | **Success:** Guide is complete, developers can migrate successfully, all tools covered, troubleshooting helps with common issues | **Instructions:** Before starting, mark this task as in-progress [-] in tasks.md. After completion, use log-implementation tool with detailed artifacts, then mark task as complete [x]
 
-- [ ] 8.2. Create comprehensive benchmarks
+- [x] 8.2. Create comprehensive benchmarks
   - File: `docs/PERFORMANCE_BENCHMARKS.md`
   - Benchmark build times (clean, incremental, null)
   - Benchmark logging latency (Quill vs spdlog)
