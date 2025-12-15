@@ -1,0 +1,13 @@
+# Test configuration for mod assign syntax
+
+# Define a simple keymap
+keymap Global
+
+# Test mod assign with M00
+mod assign M00 = *Enter
+
+# Test mod assign with MFF (last valid modifier)
+mod assign MFF = *Escape
+
+# Test mod assign with M0F (hex digits)
+mod assign M0F = *Space

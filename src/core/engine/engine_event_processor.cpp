@@ -4,6 +4,7 @@
 #include "engine_event_processor.h"
 #include "modifier_key_handler.h"
 #include "../input/modifier_state.h"
+#include "../input/lock_state.h"
 #include "../input/keyboard.h"
 #include "../../platform/linux/keycode_mapping.h"
 #include "../../utils/logger.h"
@@ -31,7 +32,7 @@ EventProcessor::EventProcessor(const SubstitutionTable& subst_table)
 
 EventProcessor::~EventProcessor() = default;
 
-EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev, EventType type, input::ModifierState* io_modState)
+EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev, EventType type, input::ModifierState* io_modState, input::LockState* io_lockState)
 {
     // Create journey event for tracking (if console logging OR investigate window is active)
     yamy::logger::JourneyEvent journey;
@@ -61,8 +62,8 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
         journey.yamy_input = yamy_l1;
     }
 
-    // Layer 2: Apply substitution (with number modifier support)
-    uint16_t yamy_l2 = layer2_applySubstitution(yamy_l1, type, io_modState);
+    // Layer 2: Apply substitution (with number modifier and lock support)
+    uint16_t yamy_l2 = layer2_applySubstitution(yamy_l1, type, io_modState, io_lockState);
 
     if (yamy::logger::JourneyLogger::isEnabled() || m_journeyCallback) {
         journey.yamy_output = yamy_l2;
@@ -125,7 +126,7 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
     return yamy;
 }
 
-uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState)
+uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState, input::LockState* io_lockState)
 {
     // Layer 2a: Substitution Table Lookup
     //
@@ -245,6 +246,30 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
                 // Not a number modifier, proceed with normal substitution
                 break;
         }
+    }
+
+    // Check if this is a lock key (L00-LFF)
+    // Lock keys toggle their state on PRESS and are always suppressed (never output to system)
+    if (yamy::platform::isLock(yamy_in) && io_lockState) {
+        if (type == EventType::PRESS) {
+            // Toggle lock on PRESS
+            uint8_t lock_num = static_cast<uint8_t>(yamy_in - 0xF100);  // Extract L00-LFF number
+            io_lockState->toggleLock(lock_num);
+
+            if (m_debugLogging) {
+                bool is_active = io_lockState->isLockActive(lock_num);
+                LOG_DEBUG("[EventProcessor] [LAYER2:LOCK] L{:02X} (0x{:04X}) PRESS → toggle to {}",
+                          lock_num, yamy_in, is_active ? "ACTIVE" : "INACTIVE");
+            }
+        } else {
+            // RELEASE - just suppress, no toggle
+            if (m_debugLogging) {
+                uint8_t lock_num = static_cast<uint8_t>(yamy_in - 0xF100);
+                LOG_DEBUG("[EventProcessor] [LAYER2:LOCK] L{:02X} (0x{:04X}) RELEASE → suppress",
+                          lock_num, yamy_in);
+            }
+        }
+        return 0;  // Suppress event (lock keys never output to system)
     }
 
     // Normal substitution lookup (for non-number keys or TAP-detected number keys)

@@ -81,7 +81,7 @@
   - _Requirements: US4, US5_
   - _Prompt: Role: Developer implementing tap/hold key detection logic | Task: Implement modifier processing with tap/hold detection for M00-MFF - add struct ModState with press_time/is_pressed/tap_output, create map<uint8_t, ModState> m_modStates with TAP_THRESHOLD_MS=200, on PRESS record timestamp and return WAITING, on RELEASE check duration and either output tap action (<threshold) or deactivate modifier (≥threshold), load tap actions from SettingLoader | Restrictions: Do NOT block event processing thread, do NOT use sleep() or blocking waits, keep state machine simple (IDLE → PRESSED → TAP/HOLD), do NOT remove existing hardware modifier code | Success: Quick tap (<200ms) outputs tap action, hold (≥200ms) activates modifier without output, multiple modifiers can be active simultaneously, no blocking or thread safety issues | After completing: Mark as [-], implement, log with detailed artifacts, mark as [x]_
 
-- [ ] 3.3. Implement Lock Processing
+- [x] 3.3. Implement Lock Processing
   - File: src/core/engine/engine_event_processor.cpp
   - Add lock key processing that toggles lock state on press
   - Add detection: if (isLock(yamy_code)) return processLock()

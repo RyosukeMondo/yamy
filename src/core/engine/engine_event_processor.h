@@ -18,9 +18,10 @@ namespace logger {
 struct JourneyEvent;
 }
 
-// Forward declaration for ModifierState
+// Forward declaration for ModifierState and LockState
 namespace input {
 class ModifierState;
+class LockState;
 }
 
 // Forward declaration for ModifierKeyHandler
@@ -68,10 +69,11 @@ public:
     /// Main entry point: Process an input event through all 3 layers
     /// @param input_evdev Input evdev code from hardware
     /// @param type Event type (PRESS or RELEASE)
-    /// @param io_modState Pointer to modifier state (input/output) - updated during processing
+    /// @param io_modState Pointer to modifier state (input/output) - updated during processing (optional)
+    /// @param io_lockState Pointer to lock state (input/output) - updated during processing (optional)
     /// @return Processed event with output evdev code and validity
     /// @note Event type is ALWAYS preserved: PRESS in = PRESS out
-    ProcessedEvent processEvent(uint16_t input_evdev, EventType type, input::ModifierState* io_modState);
+    ProcessedEvent processEvent(uint16_t input_evdev, EventType type, input::ModifierState* io_modState = nullptr, input::LockState* io_lockState = nullptr);
 
     /// Enable or disable debug logging
     /// @param enabled true to enable debug logging
@@ -119,11 +121,12 @@ private:
     /// @param yamy_in Input YAMY scan code
     /// @param type Event type (PRESS or RELEASE) - needed for number modifier processing
     /// @param io_modState Pointer to modifier state (input/output) - updated for modal modifiers
+    /// @param io_lockState Pointer to lock state (input/output) - updated for lock keys (optional)
     /// @return Substituted YAMY scan code, or input unchanged if no substitution
     /// @note Logs: [LAYER2:SUBST] or [LAYER2:PASSTHROUGH]
     /// @note Pure function: NO special cases for any key type
     /// @note Number modifiers checked BEFORE substitution lookup
-    uint16_t layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState);
+    uint16_t layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState, input::LockState* io_lockState);
 
     /// Layer 3: Map YAMY scan code to output evdev code
     /// @param yamy Input YAMY scan code
