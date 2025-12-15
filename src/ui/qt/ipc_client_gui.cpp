@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QMetaType>
 
+#include "core/ipc_messages.h"
 #include "core/platform/ipc_channel_factory.h"
 
 namespace {
@@ -123,6 +124,14 @@ void IPCClientGUI::handleMessage(const yamy::ipc::Message& message)
         qInfo().noquote() << "[IPCClientGUI]" << "received RspConfigList count"
                           << payload->count;
         emit configListReceived(*payload);
+        return;
+    }
+
+    if (rawType == static_cast<uint32_t>(yamy::ipc::MessageType::LockStatusUpdate) &&
+        message.size >= sizeof(yamy::ipc::LockStatusMessage)) {
+        const auto* payload = static_cast<const yamy::ipc::LockStatusMessage*>(message.data);
+        qInfo().noquote() << "[IPCClientGUI]" << "received LockStatusUpdate";
+        emit lockStatusReceived(*payload);
         return;
     }
 }

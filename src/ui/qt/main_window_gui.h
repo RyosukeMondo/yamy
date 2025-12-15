@@ -20,6 +20,7 @@ class DialogAboutQt;
 class DialogShortcutsQt;
 class DialogExamplesQt;
 class ConfigManagerDialog;
+class LockIndicatorWidget;
 namespace yamy {
 namespace ui {
 class NotificationHistoryDialog;
@@ -82,4 +83,5 @@ private:
     QPointer<DialogExamplesQt> m_examplesDialog;
     QPointer<ConfigManagerDialog> m_configManagerDialog;
     QPointer<yamy::ui::NotificationHistoryDialog> m_notificationHistoryDialog;
+    LockIndicatorWidget* m_lockIndicatorWidget;
 };

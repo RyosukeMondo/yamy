@@ -22,8 +22,10 @@
 #include "dialog_settings_qt.h"
 #include "dialog_shortcuts_qt.h"
 #include "ipc_client_gui.h"
+#include "lock_indicator_widget.h"
 #include "notification_history.h"
 #include "preferences_dialog.h"
+#include "core/ipc_messages.h"
 
 MainWindowGUI::MainWindowGUI(const QString& serverName, Engine* engine, QWidget* parent)
     : QMainWindow(parent),
@@ -40,7 +42,8 @@ MainWindowGUI::MainWindowGUI(const QString& serverName, Engine* engine, QWidget*
       m_toggleButton(new QPushButton(this)),
       m_hasStatus(false),
       m_currentEnabled(false),
-      m_isConnected(false) {
+      m_isConnected(false),
+      m_lockIndicatorWidget(new LockIndicatorWidget(this)) {
     setWindowTitle(tr("YAMY GUI"));
     createMenuBarStructure();
 
@@ -90,6 +93,17 @@ MainWindowGUI::MainWindowGUI(const QString& serverName, Engine* engine, QWidget*
     configRow->addWidget(m_reloadButton, /*stretch*/ 0);
     layout->addLayout(configRow);
 
+    // Add lock indicator widget
+    auto* lockGroup = new QWidget(this);
+    auto* lockLayout = new QVBoxLayout(lockGroup);
+    lockLayout->setContentsMargins(0, 8, 0, 0);
+    lockLayout->setSpacing(4);
+    auto* lockTitle = new QLabel(tr("Lock Status:"), lockGroup);
+    lockTitle->setStyleSheet("font-weight: bold;");
+    lockLayout->addWidget(lockTitle);
+    lockLayout->addWidget(m_lockIndicatorWidget);
+    layout->addWidget(lockGroup);
+
     centralWidget->setLayout(layout);
     setCentralWidget(centralWidget);
 
@@ -102,6 +116,11 @@ MainWindowGUI::MainWindowGUI(const QString& serverName, Engine* engine, QWidget*
     connect(m_ipcClient.get(), &IPCClientGUI::connectionStateChanged, this, &MainWindowGUI::handleConnectionChange);
     connect(m_ipcClient.get(), &IPCClientGUI::statusReceived, this, &MainWindowGUI::handleStatusReceived);
     connect(m_ipcClient.get(), &IPCClientGUI::configListReceived, this, &MainWindowGUI::handleConfigListReceived);
+    connect(m_ipcClient.get(), &IPCClientGUI::lockStatusReceived, this, [this](const yamy::ipc::LockStatusMessage& lockStatus) {
+        if (m_lockIndicatorWidget) {
+            m_lockIndicatorWidget->updateLockStatus(lockStatus.lockBits);
+        }
+    });
     connect(m_toggleButton, &QPushButton::clicked, this, &MainWindowGUI::handleToggleClicked);
     connect(m_reloadButton, &QPushButton::clicked, this, &MainWindowGUI::handleReloadClicked);
     connect(m_configSelector, &QComboBox::currentTextChanged, this, &MainWindowGUI::handleConfigSelectionChanged);

@@ -80,6 +80,7 @@ set(QT_GUI_SOURCES
     crash_report_dialog.cpp
     main_window_gui.cpp
     ipc_client_gui.cpp
+    lock_indicator_widget.cpp
 )
 
 # Qt header files
@@ -106,6 +107,7 @@ set(QT_GUI_HEADERS
     crash_report_dialog.h
     main_window_gui.h
     ipc_client_gui.h
+    lock_indicator_widget.h
     ${CMAKE_SOURCE_DIR}/src/core/settings/config_watcher.h
     ${CMAKE_SOURCE_DIR}/src/core/platform/ipc_channel_interface.h
     ${CMAKE_SOURCE_DIR}/src/core/platform/linux/ipc_channel_qt.h

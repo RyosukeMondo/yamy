@@ -46,6 +46,7 @@ signals:
     void statusReceived(const yamy::RspStatusPayload& payload);
     void configListReceived(const yamy::RspConfigListPayload& payload);
     void connectionStateChanged(bool connected);
+    void lockStatusReceived(const yamy::ipc::LockStatusMessage& lockStatus);
 
 private slots:
     void handleMessage(const yamy::ipc::Message& message);
