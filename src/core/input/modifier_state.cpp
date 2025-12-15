@@ -55,14 +55,16 @@ namespace {
 namespace yamy::input {
 
 ModifierState::ModifierState()
-    : m_flags(MOD_NONE), m_modal(0)
+    : m_flags(MOD_NONE), m_modal{0}
 {
 }
 
 void ModifierState::reset()
 {
     m_flags = MOD_NONE;
-    m_modal = 0;
+    for (int i = 0; i < 8; ++i) {
+        m_modal[i] = 0;
+    }
 }
 
 bool ModifierState::updateFromKeyEvent(const yamy::platform::KeyEvent& event)
@@ -140,9 +142,9 @@ Modifier ModifierState::toModifier() const
     }
 
     // Map modal modifiers (mod0-mod19) to Modifier type
-    // Each bit in m_modal corresponds to a modal modifier
+    // Only the first 20 bits (in m_modal[0]) map to legacy Modifier::Type_Mod0-19
     for (int i = 0; i < 20; ++i) {
-        if (m_modal & (1u << i)) {
+        if (m_modal[0] & (1u << i)) {
             Modifier::Type modalType = static_cast<Modifier::Type>(Modifier::Type_Mod0 + i);
             mod.press(modalType);
         }
@@ -250,7 +252,7 @@ ModifierFlag ModifierState::detectModifierFromKeycode(uint32_t keycode)
     return MOD_NONE;
 }
 
-// Modal modifier methods implementation
+// Modal modifier methods implementation - Legacy API (mod0-mod19)
 
 void ModifierState::activate(Modifier::Type type)
 {
@@ -264,7 +266,11 @@ void ModifierState::activate(Modifier::Type type)
     // Handle modal modifiers (Type_Mod0 through Type_Mod19)
     if (type >= Modifier::Type_Mod0 && type <= Modifier::Type_Mod19) {
         int bit = type - Modifier::Type_Mod0;
-        m_modal |= (1u << bit);
+        m_modal[0] |= (1u << bit);
+
+        fprintf(stderr, "[ModState::activate] type=%d, bit=%d, m_modal[0]=0x%08X\n",
+                (int)type, bit, m_modal[0]);
+        fflush(stderr);
     }
 }
 
@@ -279,7 +285,7 @@ void ModifierState::deactivate(Modifier::Type type)
     // Handle modal modifiers (Type_Mod0 through Type_Mod19)
     if (type >= Modifier::Type_Mod0 && type <= Modifier::Type_Mod19) {
         int bit = type - Modifier::Type_Mod0;
-        m_modal &= ~(1u << bit);
+        m_modal[0] &= ~(1u << bit);
     }
 }
 
@@ -302,16 +308,59 @@ bool ModifierState::isActive(Modifier::Type type) const
     // Handle modal modifiers (Type_Mod0 through Type_Mod19)
     if (type >= Modifier::Type_Mod0 && type <= Modifier::Type_Mod19) {
         int bit = type - Modifier::Type_Mod0;
-        return (m_modal & (1u << bit)) != 0;
+        bool active = (m_modal[0] & (1u << bit)) != 0;
+
+        if (active || type == Modifier::Type_Mod0) {  // Always log mod0 checks
+            fprintf(stderr, "[ModState::isActive] type=%d, bit=%d, m_modal[0]=0x%08X, active=%d\n",
+                    (int)type, bit, m_modal[0], active ? 1 : 0);
+            fflush(stderr);
+        }
+
+        return active;
     }
 
     return false;
 }
 
+// New modal modifier methods - Virtual Key System (M00-MFF)
+
+void ModifierState::activateModifier(uint8_t mod_num)
+{
+    // Calculate word index and bit index
+    // mod_num 0-31 -> word 0, bit 0-31
+    // mod_num 32-63 -> word 1, bit 0-31
+    // etc.
+    uint8_t word_idx = mod_num / 32;  // 0-7
+    uint8_t bit_idx = mod_num % 32;   // 0-31
+    uint32_t mask = 1u << bit_idx;
+
+    m_modal[word_idx] |= mask;
+}
+
+void ModifierState::deactivateModifier(uint8_t mod_num)
+{
+    uint8_t word_idx = mod_num / 32;
+    uint8_t bit_idx = mod_num % 32;
+    uint32_t mask = 1u << bit_idx;
+
+    m_modal[word_idx] &= ~mask;
+}
+
+bool ModifierState::isModifierActive(uint8_t mod_num) const
+{
+    uint8_t word_idx = mod_num / 32;
+    uint8_t bit_idx = mod_num % 32;
+    uint32_t mask = 1u << bit_idx;
+
+    return (m_modal[word_idx] & mask) != 0;
+}
+
 void ModifierState::clear()
 {
     m_flags = MOD_NONE;
-    m_modal = 0;
+    for (int i = 0; i < 8; ++i) {
+        m_modal[i] = 0;
+    }
 }
 
 } // namespace yamy::input

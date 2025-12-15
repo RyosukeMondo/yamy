@@ -105,7 +105,9 @@ public:
     /// Set lock key state (e.g., from system query)
     void setLockState(bool capsLock, bool numLock, bool scrollLock);
 
-    // Modal modifier methods (mod0-mod19)
+    // Modal modifier methods (mod0-mod19) - Legacy API
+    // NOTE: These methods are kept for backward compatibility with existing code.
+    // New code should use the uint8_t-based methods below for M00-MFF support.
 
     /// Activate a modal modifier (sets the corresponding bit in m_modal)
     /// @param type The modifier type (must be Type_Mod0..Type_Mod19)
@@ -120,9 +122,28 @@ public:
     /// @return true if the modal modifier is active, false otherwise
     bool isActive(Modifier::Type type) const;
 
-    /// Get the active modal modifiers as a bitmask
+    /// Get the active modal modifiers as a bitmask (legacy API for mod0-mod19)
     /// @return 32-bit bitmask where bit N represents modN state
-    uint32_t getActiveBitmask() const { return m_modal; }
+    uint32_t getActiveBitmask() const { return m_modal[0]; }
+
+    // New modal modifier methods (M00-MFF) - Virtual Key System
+
+    /// Activate a modal modifier by number (M00-MFF)
+    /// @param mod_num Modifier number (0x00-0xFF)
+    void activateModifier(uint8_t mod_num);
+
+    /// Deactivate a modal modifier by number (M00-MFF)
+    /// @param mod_num Modifier number (0x00-0xFF)
+    void deactivateModifier(uint8_t mod_num);
+
+    /// Check if a modal modifier is active by number (M00-MFF)
+    /// @param mod_num Modifier number (0x00-0xFF)
+    /// @return true if the modal modifier is active, false otherwise
+    bool isModifierActive(uint8_t mod_num) const;
+
+    /// Get pointer to the complete modal modifier bitmask array
+    /// @return Pointer to 8 x uint32_t array (256 bits total) for M00-MFF
+    const uint32_t* getModifierBits() const { return m_modal; }
 
     /// Clear all modifiers (standard and modal)
     void clear();
@@ -148,8 +169,8 @@ private:
     /// @return The modifier flag, or MOD_NONE if not a modifier
     static ModifierFlag detectModifierFromKeycode(uint32_t keycode);
 
-    uint32_t m_flags;  // Standard modifier flags (shift, ctrl, alt, win, locks)
-    uint32_t m_modal;  // Modal modifier bitmask (mod0-mod19, bits 0-19)
+    uint32_t m_flags;     // Standard modifier flags (shift, ctrl, alt, win, locks)
+    uint32_t m_modal[8];  // Modal modifier bitmask array (M00-MFF, 256 bits total)
 };
 
 } // namespace yamy::input
