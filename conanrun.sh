@@ -1,1 +1,0 @@
-. "/home/rmondo/repos/yamy/conanrunenv-debug-x86_64.sh"

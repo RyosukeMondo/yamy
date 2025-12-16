@@ -651,6 +651,37 @@ int main(int argc, char* argv[]) {
         auto expectedKeys = tool.parseKeycodes(argv[3]);
         return tool.e2eTestAuto(inputKeys, expectedKeys) ? 0 : 1;
 
+    } else if (command == "interactive") {
+        VirtualKeyboard keyboard;
+        if (!keyboard.initialize()) {
+            std::cerr << "Failed to initialize virtual keyboard\n";
+            return 1;
+        }
+        std::cout << "READY\n"; // Signal readiness
+
+        std::string line;
+        while (std::getline(std::cin, line)) {
+            if (line == "EXIT") break;
+            
+            char cmd[32];
+            int arg = 0;
+            if (sscanf(line.c_str(), "%s %d", cmd, &arg) >= 1) {
+                if (strcmp(cmd, "PRESS") == 0) {
+                    keyboard.sendKey((uint16_t)arg, true);
+                    std::cout << "OK\n";
+                } else if (strcmp(cmd, "RELEASE") == 0) {
+                    keyboard.sendKey((uint16_t)arg, false);
+                    std::cout << "OK\n";
+                } else if (strcmp(cmd, "WAIT") == 0) {
+                    usleep(arg * 1000);
+                    std::cout << "OK\n";
+                } else {
+                    std::cout << "ERROR Unknown command\n";
+                }
+            }
+        }
+        return 0;
+
     } else {
         tool.printUsage();
         return 1;

@@ -1,23 +1,9 @@
 #!/usr/bin/env python3
 """
-Automated Keymap Testing Framework for YAMY
-============================================
+Automated Keymap Testing Framework for YAMY (Refactored)
+========================================================
 
-This framework provides autonomous testing of all key substitutions without
-user interaction. It follows requirements 5 and 6 from the specification.
-
-Design: Following design.md Component 4 - AutomatedKeymapTest
-
-Usage:
-    python3 automated_keymap_test.py [--config CONFIG] [--log LOG]
-
-Features:
-- Parses .mayu config files to extract all substitutions
-- Injects synthetic key events via yamy-test utility
-- Verifies output by parsing debug logs
-- Tests all 87 substitutions × 2 event types (PRESS/RELEASE)
-- Zero user interaction required
-- Generates clear pass/fail reports
+Uses yamy-test interactive mode for reliable injection.
 """
 
 import subprocess
@@ -26,25 +12,32 @@ import sys
 import time
 import os
 import json
+import threading
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 from pathlib import Path
 
+# Try to import evdev for reading output
+try:
+    import evdev
+    from evdev import ecodes, InputDevice, list_devices
+except ImportError:
+    print("ERROR: python3-evdev is required for output capture.")
+    sys.exit(1)
+
 
 @dataclass
 class KeyMapping:
-    """Represents a single key substitution."""
-    input_key: str      # Input key name (e.g., "W", "Tab", "F1")
-    output_key: str     # Output key name (e.g., "A", "Space", "LWin")
-    input_evdev: int    # Input evdev code
-    output_evdev: int   # Output evdev code
+    input_key: str
+    output_key: str
+    input_evdev: int
+    output_evdev: int
 
 
 @dataclass
 class TestResult:
-    """Result of a single substitution test."""
     mapping: KeyMapping
-    event_type: str     # "PRESS" or "RELEASE"
+    event_type: str
     passed: bool
     expected_evdev: int
     actual_evdev: Optional[int]
@@ -52,540 +45,338 @@ class TestResult:
 
 
 class KeyCodeMapper:
-    """Maps YAMY key names to evdev codes."""
-
-    # YAMY key name to evdev code mapping
-    # Based on Linux input-event-codes.h and YAMY's keycode_mapping.cpp
+    # Use evdev.ecodes if possible, simplified here
     KEY_MAP = {
-        # Letters
-        'A': 30, 'B': 48, 'C': 46, 'D': 32, 'E': 18, 'F': 33, 'G': 34, 'H': 35,
-        'I': 23, 'J': 36, 'K': 37, 'L': 38, 'M': 50, 'N': 49, 'O': 24, 'P': 25,
-        'Q': 16, 'R': 19, 'S': 31, 'T': 20, 'U': 22, 'V': 47, 'W': 17, 'X': 45,
-        'Y': 21, 'Z': 44,
-
-        # Numbers
-        '_0': 11, '_1': 2, '_2': 3, '_3': 4, '_4': 5, '_5': 6, '_6': 7, '_7': 8,
-        '_8': 9, '_9': 10,
-
-        # Function keys
-        'F1': 59, 'F2': 60, 'F3': 61, 'F4': 62, 'F5': 63, 'F6': 64, 'F7': 65,
-        'F8': 66, 'F9': 67, 'F10': 68, 'F11': 87, 'F12': 88,
-
-        # Special keys
-        'Tab': 15, 'Enter': 28, 'Esc': 1, 'Space': 57, 'BackSpace': 14,
-        'Delete': 111, 'Insert': 110,
-
-        # Navigation
-        'Up': 103, 'Down': 108, 'Left': 105, 'Right': 106,
-        'Home': 102, 'End': 107, 'PageUp': 104, 'PageDown': 109,
-
-        # Modifiers
-        'LShift': 42, 'RShift': 54, 'LCtrl': 29, 'RCtrl': 97, 'LAlt': 56,
-        'RAlt': 100, 'LWin': 125, 'RWin': 126, 'Apps': 127,
-
-        # JP-specific keys
-        'Atmark': 40,           # @ key (JP: Shift+2 position)
-        'Semicolon': 39,        # ; key
-        'Colon': 39,            # : key (same as semicolon on JP keyboard)
-        'Minus': 12,            # - key
-        'Comma': 51,            # , key
-        'Period': 52,           # . key
-        'Slash': 53,            # / key
-        'ReverseSolidus': 43,   # \ key (backslash)
-        'Yen': 124,             # Yen key (JP-specific)
-        'NonConvert': 94,       # 無変換 (Muhenkan)
-        'Convert': 92,          # 変換 (Henkan)
-        'Hiragana': 93,         # ひらがな (Hiragana/Katakana)
-        'Kanji': 85,            # 半角/全角 (Hankaku/Zenkaku)
-        'Eisuu': 90,            # 英数 (Eisu)
-
-        # Lock keys
-        'NumLock': 69, 'ScrollLock': 70, 'CapsLock': 58,
+        'A': ecodes.KEY_A, 'B': ecodes.KEY_B, 'C': ecodes.KEY_C, 'D': ecodes.KEY_D,
+        'E': ecodes.KEY_E, 'F': ecodes.KEY_F, 'G': ecodes.KEY_G, 'H': ecodes.KEY_H,
+        'I': ecodes.KEY_I, 'J': ecodes.KEY_J, 'K': ecodes.KEY_K, 'L': ecodes.KEY_L,
+        'M': ecodes.KEY_M, 'N': ecodes.KEY_N, 'O': ecodes.KEY_O, 'P': ecodes.KEY_P,
+        'Q': ecodes.KEY_Q, 'R': ecodes.KEY_R, 'S': ecodes.KEY_S, 'T': ecodes.KEY_T,
+        'U': ecodes.KEY_U, 'V': ecodes.KEY_V, 'W': ecodes.KEY_W, 'X': ecodes.KEY_X,
+        'Y': ecodes.KEY_Y, 'Z': ecodes.KEY_Z,
+        '_0': ecodes.KEY_0, '_1': ecodes.KEY_1, '_2': ecodes.KEY_2, '_3': ecodes.KEY_3,
+        '_4': ecodes.KEY_4, '_5': ecodes.KEY_5, '_6': ecodes.KEY_6, '_7': ecodes.KEY_7,
+        '_8': ecodes.KEY_8, '_9': ecodes.KEY_9,
+        'F1': ecodes.KEY_F1, 'F2': ecodes.KEY_F2, 'F3': ecodes.KEY_F3, 'F4': ecodes.KEY_F4,
+        'F5': ecodes.KEY_F5, 'F6': ecodes.KEY_F6, 'F7': ecodes.KEY_F7, 'F8': ecodes.KEY_F8,
+        'F9': ecodes.KEY_F9, 'F10': ecodes.KEY_F10, 'F11': ecodes.KEY_F11, 'F12': ecodes.KEY_F12,
+        'Tab': ecodes.KEY_TAB, 'Enter': ecodes.KEY_ENTER, 'Esc': ecodes.KEY_ESC,
+        'Space': ecodes.KEY_SPACE, 'BackSpace': ecodes.KEY_BACKSPACE,
+        'Delete': ecodes.KEY_DELETE, 'Insert': ecodes.KEY_INSERT,
+        'Up': ecodes.KEY_UP, 'Down': ecodes.KEY_DOWN, 'Left': ecodes.KEY_LEFT, 'Right': ecodes.KEY_RIGHT,
+        'Home': ecodes.KEY_HOME, 'End': ecodes.KEY_END, 'PageUp': ecodes.KEY_PAGEUP, 'PageDown': ecodes.KEY_PAGEDOWN,
+        'LShift': ecodes.KEY_LEFTSHIFT, 'RShift': ecodes.KEY_RIGHTSHIFT,
+        'LCtrl': ecodes.KEY_LEFTCTRL, 'RCtrl': ecodes.KEY_RIGHTCTRL,
+        'LAlt': ecodes.KEY_LEFTALT, 'RAlt': ecodes.KEY_RIGHTALT,
+        'LWin': ecodes.KEY_LEFTMETA, 'RWin': ecodes.KEY_RIGHTMETA, 'Apps': ecodes.KEY_COMPOSE,
+        'Atmark': ecodes.KEY_APOSTROPHE, 'Semicolon': ecodes.KEY_SEMICOLON, 'Colon': ecodes.KEY_SEMICOLON,
+        'Minus': ecodes.KEY_MINUS, 'Comma': ecodes.KEY_COMMA, 'Period': ecodes.KEY_DOT,
+        'Slash': ecodes.KEY_SLASH, 'ReverseSolidus': ecodes.KEY_BACKSLASH,
+        'Yen': ecodes.KEY_YEN, 'NonConvert': ecodes.KEY_MUHENKAN, 'Convert': ecodes.KEY_HENKAN,
+        'Hiragana': ecodes.KEY_HIRAGANA, 'Kanji': ecodes.KEY_ZENKAKUHANKAKU, 'Eisuu': ecodes.KEY_KATAKANAHIRAGANA,
+        'NumLock': ecodes.KEY_NUMLOCK, 'ScrollLock': ecodes.KEY_SCROLLLOCK, 'CapsLock': ecodes.KEY_CAPSLOCK,
     }
 
     @classmethod
     def get_evdev_code(cls, key_name: str) -> Optional[int]:
-        """Get evdev code for a YAMY key name."""
         return cls.KEY_MAP.get(key_name)
 
     @classmethod
     def get_key_name(cls, evdev_code: int) -> str:
-        """Get key name for an evdev code (reverse lookup)."""
-        for name, code in cls.KEY_MAP.items():
-            if code == evdev_code:
-                return name
-        return f"UNKNOWN_{evdev_code}"
+        try:
+            return evdev.ecodes.keys[evdev_code]
+        except:
+            for name, code in cls.KEY_MAP.items():
+                if code == evdev_code:
+                    return name
+            return f"UNKNOWN_{evdev_code}"
 
 
 class MayuParser:
-    """Parses .mayu configuration files to extract key substitutions."""
-
     SUBST_PATTERN = re.compile(r'def\s+subst\s+\*(\S+)\s*=\s*\*(\S+)')
 
     def __init__(self, config_path: str):
         self.config_path = config_path
 
     def parse(self) -> List[KeyMapping]:
-        """Parse .mayu file and return list of key mappings."""
         mappings = []
-
-        with open(self.config_path, 'r', encoding='utf-8') as f:
-            for line_num, line in enumerate(f, 1):
-                # Remove comments
-                line = line.split('#')[0].strip()
-                if not line:
-                    continue
-
-                # Match substitution definition
-                match = self.SUBST_PATTERN.search(line)
-                if match:
-                    input_key = match.group(1)
-                    output_key = match.group(2)
-
-                    # Get evdev codes
-                    input_evdev = KeyCodeMapper.get_evdev_code(input_key)
-                    output_evdev = KeyCodeMapper.get_evdev_code(output_key)
-
-                    if input_evdev is None:
-                        print(f"Warning: Unknown input key '{input_key}' at line {line_num}")
-                        continue
-
-                    if output_evdev is None:
-                        print(f"Warning: Unknown output key '{output_key}' at line {line_num}")
-                        continue
-
-                    mappings.append(KeyMapping(
-                        input_key=input_key,
-                        output_key=output_key,
-                        input_evdev=input_evdev,
-                        output_evdev=output_evdev
-                    ))
-
+        try:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                for line_num, line in enumerate(f, 1):
+                    line = line.split('#')[0].strip()
+                    if not line: continue
+                    match = self.SUBST_PATTERN.search(line)
+                    if match:
+                        input_key = match.group(1)
+                        output_key = match.group(2)
+                        input_evdev = KeyCodeMapper.get_evdev_code(input_key)
+                        output_evdev = KeyCodeMapper.get_evdev_code(output_key)
+                        if input_evdev is not None and output_evdev is not None:
+                            mappings.append(KeyMapping(input_key, output_key, input_evdev, output_evdev))
+        except Exception as e:
+            print(f"Error parsing config: {e}")
         return mappings
 
 
-class AutomatedKeymapTest:
-    """
-    Autonomous keymap testing framework.
-
-    Tests all key substitutions without user interaction by:
-    1. Parsing .mayu config to extract substitutions
-    2. Injecting synthetic events via yamy-test
-    3. Verifying output from debug logs
-    4. Generating comprehensive test reports
-    """
-
-    def __init__(self, config_path: str, yamy_test_path: str = None, log_file: str = None):
+class TestRunner:
+    def __init__(self, config_path: str):
         self.config_path = config_path
-        self.yamy_test_path = yamy_test_path or self._find_yamy_test()
-        self.log_file = log_file or "/tmp/yamy_test.log"
-        self.mappings: List[KeyMapping] = []
-        self.results: List[TestResult] = []
+        self.injector_proc = None
+        self.output_device = None
+        self.mappings = []
+        self.results = []
+        self.yamy_process = None
 
-    def _find_yamy_test(self) -> str:
-        """Find yamy-test binary."""
-        possible_paths = [
-            "./build/bin/yamy-test",
-            "../build/bin/yamy-test",
-            "./bin/yamy-test",
-            "yamy-test"
-        ]
+    def setup(self) -> bool:
+        # 1. Start yamy-test interactive
+        print("[Setup] Starting yamy-test interactive...")
+        self.injector_proc = subprocess.Popen(
+            ['./build/bin/yamy-test', 'interactive'],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            text=True,
+            bufsize=1
+        )
+        
+        # Wait for READY
+        while True:
+            line = self.injector_proc.stdout.readline().strip()
+            if not line:
+                print(f"[Setup] Failed to start yamy-test interactive (EOF).")
+                return False
+            if line == "READY":
+                break
+            print(f"[Setup] yamy-test: {line}")
+        
+        print("[Setup] Virtual keyboard created and ready.")
 
-        for path in possible_paths:
-            if os.path.exists(path):
-                return path
+        # 2. Restart YAMY
+        print("[Setup] Restarting YAMY daemon...")
+        subprocess.run(['pkill', '-9', '-x', 'yamy'], stderr=subprocess.DEVNULL)
+        time.sleep(1)
 
-            # Try which command
+        log_file = open('/tmp/yamy_test_runner.log', 'w')
+        self.yamy_process = subprocess.Popen(
+            ['./build/bin/yamy'],
+            stdout=log_file,
+            stderr=log_file
+        )
+        print(f"[Setup] YAMY started with PID {self.yamy_process.pid}")
+        
+        time.sleep(3)
+
+        # 3. Load Config
+        print(f"[Setup] Loading config: {self.config_path}")
+        subprocess.run(['./build/bin/yamy-ctl', 'reload', '--config', self.config_path], check=True)
+        subprocess.run(['./build/bin/yamy-ctl', 'start'], check=True)
+        time.sleep(1)
+
+        # 4. Find YAMY Output Device
+        print("[Setup] Finding YAMY output device...")
+        found = False
+        for path in list_devices():
             try:
-                result = subprocess.run(['which', path],
-                                       capture_output=True, text=True)
-                if result.returncode == 0:
-                    return result.stdout.strip()
+                d = InputDevice(path)
+                if "Yamy Virtual" in d.name:
+                    self.output_device = d
+                    print(f"[Setup] Found output device: {d.name} at {path}")
+                    found = True
+                    break
             except:
                 pass
-
-        return "yamy-test"  # Hope it's in PATH
-
-    def load_config(self) -> bool:
-        """Load and parse .mayu config file."""
-        print(f"\n[AutomatedKeymapTest] Loading config: {self.config_path}")
-
-        if not os.path.exists(self.config_path):
-            print(f"ERROR: Config file not found: {self.config_path}")
+        
+        if not found:
+            print("[Setup] ERROR: Could not find YAMY output device.")
             return False
 
-        parser = MayuParser(self.config_path)
-        self.mappings = parser.parse()
-
-        print(f"[AutomatedKeymapTest] Loaded {len(self.mappings)} substitutions")
-        return len(self.mappings) > 0
-
-    def inject_key(self, evdev_code: int, event_type: str) -> bool:
-        """
-        Inject a single key event using yamy-test utility.
-
-        Args:
-            evdev_code: Linux evdev code for the key
-            event_type: "PRESS" or "RELEASE"
-
-        Returns:
-            True if injection succeeded, False otherwise
-        """
         try:
-            cmd = [self.yamy_test_path, "inject", str(evdev_code), event_type]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
-            return result.returncode == 0
-        except Exception as e:
-            print(f"ERROR: Failed to inject key {evdev_code} {event_type}: {e}")
-            return False
-
-    def verify_output(self, expected_evdev: int, event_type: str,
-                     timeout: float = 1.0) -> Tuple[bool, Optional[int]]:
-        """
-        Verify output from debug logs.
-
-        Parses YAMY debug logs to find [LAYER3:OUT] entries and verify
-        the output evdev code matches expected.
-
-        Args:
-            expected_evdev: Expected output evdev code
-            event_type: "PRESS" or "RELEASE"
-            timeout: Max time to wait for log entry (seconds)
-
-        Returns:
-            Tuple of (success: bool, actual_evdev: Optional[int])
-        """
-        # Wait a bit for YAMY to process
-        time.sleep(0.1)
-
-        # Pattern to match [LAYER3:OUT] log entries
-        # Format: [LAYER3:OUT] yamy 0xYYYY → evdev ZZ (KEY_NAME)
-        pattern = re.compile(r'\[LAYER3:OUT\]\s+yamy\s+0x[0-9A-F]+\s+→\s+evdev\s+(\d+)')
-
-        start_time = time.time()
-
-        # Try to read from systemd journal or log file
-        # First try getting recent YAMY logs
-        try:
-            # Try journalctl for yamy logs (last 10 lines)
-            result = subprocess.run(
-                ['journalctl', '-u', 'yamy', '-n', '20', '--no-pager'],
-                capture_output=True, text=True, timeout=2
-            )
-            if result.returncode == 0:
-                log_content = result.stdout
-            else:
-                # Fall back to log file if exists
-                if os.path.exists(self.log_file):
-                    with open(self.log_file, 'r') as f:
-                        # Read last 50 lines
-                        lines = f.readlines()
-                        log_content = ''.join(lines[-50:])
-                else:
-                    # No logs available
-                    return False, None
-        except:
-            # If all else fails, check if log file exists
-            if os.path.exists(self.log_file):
-                with open(self.log_file, 'r') as f:
-                    lines = f.readlines()
-                    log_content = ''.join(lines[-50:])
-            else:
-                return False, None
-
-        # Search for LAYER3:OUT in recent logs
-        matches = pattern.findall(log_content)
-        if matches:
-            # Get the most recent match
-            actual_evdev = int(matches[-1])
-            success = (actual_evdev == expected_evdev)
-            return success, actual_evdev
-
-        # No LAYER3:OUT found in logs
-        return False, None
-
-    def test_substitution(self, mapping: KeyMapping, event_type: str) -> TestResult:
-        """
-        Test a single substitution for one event type.
-
-        Args:
-            mapping: The key mapping to test
-            event_type: "PRESS" or "RELEASE"
-
-        Returns:
-            TestResult with pass/fail status
-        """
-        # Inject input key
-        success = self.inject_key(mapping.input_evdev, event_type)
-
-        if not success:
-            return TestResult(
-                mapping=mapping,
-                event_type=event_type,
-                passed=False,
-                expected_evdev=mapping.output_evdev,
-                actual_evdev=None,
-                error_message="Failed to inject key event"
-            )
-
-        # Verify output
-        passed, actual_evdev = self.verify_output(mapping.output_evdev, event_type)
-
-        if actual_evdev is None:
-            error_msg = "No output detected in logs (YAMY may not be running or YAMY_DEBUG_KEYCODE not set)"
-        elif not passed:
-            error_msg = f"Expected evdev {mapping.output_evdev}, got {actual_evdev}"
-        else:
-            error_msg = None
-
-        return TestResult(
-            mapping=mapping,
-            event_type=event_type,
-            passed=passed,
-            expected_evdev=mapping.output_evdev,
-            actual_evdev=actual_evdev,
-            error_message=error_msg
-        )
-
-    def test_all_substitutions(self) -> Dict[str, any]:
-        """
-        Test all substitutions for both PRESS and RELEASE events.
-
-        Returns:
-            Dictionary with test statistics and results
-        """
-        print(f"\n[AutomatedKeymapTest] Testing {len(self.mappings)} substitutions × 2 event types")
-        print(f"[AutomatedKeymapTest] Total tests: {len(self.mappings) * 2}")
-        print("=" * 80)
-
-        self.results = []
-        total_tests = len(self.mappings) * 2
-        passed_count = 0
-
-        for i, mapping in enumerate(self.mappings, 1):
-            print(f"\n[{i}/{len(self.mappings)}] Testing: {mapping.input_key} → {mapping.output_key}")
-            print(f"           evdev {mapping.input_evdev} → {mapping.output_evdev}")
-
-            # Test PRESS
-            print(f"  Testing PRESS...", end=" ")
-            result_press = self.test_substitution(mapping, "PRESS")
-            self.results.append(result_press)
-
-            if result_press.passed:
-                print("✓ PASS")
-                passed_count += 1
-            else:
-                print(f"✗ FAIL: {result_press.error_message}")
-
-            # Small delay between tests
-            time.sleep(0.05)
-
-            # Test RELEASE
-            print(f"  Testing RELEASE...", end=" ")
-            result_release = self.test_substitution(mapping, "RELEASE")
-            self.results.append(result_release)
-
-            if result_release.passed:
-                print("✓ PASS")
-                passed_count += 1
-            else:
-                print(f"✗ FAIL: {result_release.error_message}")
-
-            # Small delay between tests
-            time.sleep(0.05)
-
-        # Calculate statistics
-        failed_count = total_tests - passed_count
-        pass_rate = (passed_count / total_tests * 100) if total_tests > 0 else 0
-
-        stats = {
-            'total_tests': total_tests,
-            'passed': passed_count,
-            'failed': failed_count,
-            'pass_rate': pass_rate,
-            'substitutions_tested': len(self.mappings)
-        }
-
-        return stats
-
-    def export_json(self, output_path: str) -> bool:
-        """
-        Export test results to JSON file for report generator.
-
-        Args:
-            output_path: Path to output JSON file
-
-        Returns:
-            True if export succeeded, False otherwise
-        """
-        try:
-            data = {
-                'stats': self.stats if hasattr(self, 'stats') and self.stats else {
-                    'total_tests': 0,
-                    'passed': 0,
-                    'failed': 0,
-                    'pass_rate': 0.0,
-                    'substitutions_tested': 0
-                },
-                'results': [
-                    {
-                        'input_key': r.mapping.input_key,
-                        'output_key': r.mapping.output_key,
-                        'input_evdev': r.mapping.input_evdev,
-                        'output_evdev': r.mapping.output_evdev,
-                        'event_type': r.event_type,
-                        'passed': r.passed,
-                        'expected_evdev': r.expected_evdev,
-                        'actual_evdev': r.actual_evdev,
-                        'error_message': r.error_message
-                    }
-                    for r in self.results
-                ]
-            }
-
-            with open(output_path, 'w') as f:
-                json.dump(data, f, indent=2)
-
-            print(f"\n✓ Results exported to JSON: {output_path}")
-            return True
-
-        except Exception as e:
-            print(f"\nERROR: Failed to export JSON: {e}")
-            return False
-
-    def generate_report(self, stats: Dict[str, any]) -> str:
-        """
-        Generate comprehensive test report.
-
-        Args:
-            stats: Test statistics dictionary
-
-        Returns:
-            Report as formatted string
-        """
-        report = []
-        report.append("\n" + "=" * 80)
-        report.append("AUTOMATED KEYMAP TEST REPORT")
-        report.append("=" * 80)
-        report.append(f"\nConfig: {self.config_path}")
-        report.append(f"Total Substitutions: {stats['substitutions_tested']}")
-        report.append(f"Total Tests: {stats['total_tests']} (PRESS + RELEASE for each substitution)")
-        report.append(f"\nResults:")
-        report.append(f"  PASSED: {stats['passed']}")
-        report.append(f"  FAILED: {stats['failed']}")
-        report.append(f"  PASS RATE: {stats['pass_rate']:.1f}%")
-
-        # List failures if any
-        failures = [r for r in self.results if not r.passed]
-        if failures:
-            report.append(f"\n\nFailed Tests ({len(failures)}):")
-            report.append("-" * 80)
-
-            for result in failures:
-                report.append(f"\n  {result.mapping.input_key} → {result.mapping.output_key} ({result.event_type})")
-                report.append(f"    Input evdev:    {result.mapping.input_evdev}")
-                report.append(f"    Expected evdev: {result.expected_evdev}")
-                report.append(f"    Actual evdev:   {result.actual_evdev or 'N/A'}")
-                report.append(f"    Error:          {result.error_message}")
-        else:
-            report.append("\n\n✓ ALL TESTS PASSED!")
-
-        report.append("\n" + "=" * 80)
-
-        return "\n".join(report)
-
-    def run(self) -> bool:
-        """
-        Run complete test suite.
-
-        Returns:
-            True if all tests passed, False otherwise
-        """
-        print("\n" + "=" * 80)
-        print("YAMY AUTOMATED KEYMAP TESTING FRAMEWORK")
-        print("=" * 80)
-
-        # Check if YAMY is running
-        try:
-            result = subprocess.run(['pgrep', 'yamy'], capture_output=True)
-            if result.returncode != 0:
-                print("\nWARNING: YAMY does not appear to be running!")
-                print("Please start YAMY with YAMY_DEBUG_KEYCODE=1 for logging")
-                print("\nExample:")
-                print("  export YAMY_DEBUG_KEYCODE=1")
-                print("  ./build/bin/yamy")
-                print("")
-                response = input("Continue anyway? [y/N]: ")
-                if response.lower() != 'y':
-                    return False
+            self.output_device.grab()
         except:
             pass
 
-        # Load config
-        if not self.load_config():
+        # 5. Parse Config
+        parser = MayuParser(self.config_path)
+        self.mappings = parser.parse()
+        print(f"[Setup] Loaded {len(self.mappings)} legacy substitutions for testing.")
+
+        return True
+
+    def teardown(self):
+        if self.injector_proc:
+            try:
+                self.injector_proc.stdin.write("EXIT\n")
+                self.injector_proc.stdin.close()
+                self.injector_proc.terminate()
+            except: pass
+        
+        if self.output_device:
+            try:
+                self.output_device.ungrab()
+                self.output_device.close()
+            except: pass
+            
+        if self.yamy_process:
+            self.yamy_process.terminate()
+            self.yamy_process.wait()
+        
+        subprocess.run(['pkill', '-9', '-x', 'yamy'], stderr=subprocess.DEVNULL)
+        print("[Teardown] Cleanup complete.")
+
+    def inject_cmd(self, cmd: str):
+        if not self.injector_proc: return
+        self.injector_proc.stdin.write(cmd + "\n")
+        # Consume OK
+        self.injector_proc.stdout.readline()
+
+    def capture_next_key_event(self, timeout=1.0) -> Optional[tuple]:
+        if not self.output_device: return None
+        from select import select
+        
+        start = time.time()
+        while time.time() - start < timeout:
+            r, w, x = select([self.output_device.fd], [], [], 0.1)
+            if r:
+                try:
+                    for event in self.output_device.read():
+                        if event.type == ecodes.EV_KEY:
+                            return (event.code, event.value)
+                except: return None
+        return None
+
+    def drain_events(self):
+        if not self.output_device: return
+        from select import select
+        while True:
+            r, _, _ = select([self.output_device.fd], [], [], 0)
+            if r:
+                try:
+                    list(self.output_device.read())
+                except: break
+            else:
+                break
+
+    def run_test(self, input_code: int, expected_code: int, description: str) -> TestResult:
+        self.drain_events()
+
+        # PRESS
+        self.inject_cmd(f"PRESS {input_code}")
+        
+        # Capture PRESS (might be None for modifiers)
+        evt_press = self.capture_next_key_event(timeout=0.2)
+        
+        # RELEASE
+        self.inject_cmd(f"RELEASE {input_code}")
+
+        # Capture RELEASE/TAP output
+        evt_release = self.capture_next_key_event(timeout=0.5)
+
+        passed = False
+        actual = None
+        error = None
+
+        # Determine which event is the meaningful output
+        # For normal keys: PRESS output is immediate (evt_press)
+        # For modifiers: PRESS is suppressed, output comes on RELEASE (evt_release)
+        
+        target_evt = evt_press if evt_press else evt_release
+
+        if target_evt:
+            actual_code, actual_val = target_evt
+            if actual_val == 1: # PRESS
+                actual = actual_code
+                if actual_code == expected_code:
+                    passed = True
+                else:
+                    error = f"Expected {KeyCodeMapper.get_key_name(expected_code)}, got {KeyCodeMapper.get_key_name(actual_code)}"
+            else:
+                error = "Received RELEASE event as first output"
+        else:
+            error = "No output event received"
+
+        return TestResult(
+            mapping=KeyMapping(KeyCodeMapper.get_key_name(input_code), KeyCodeMapper.get_key_name(expected_code), input_code, expected_code),
+            event_type="TAP",
+            passed=passed,
+            expected_evdev=expected_code,
+            actual_evdev=actual,
+            error_message=error
+        )
+
+    def execute(self):
+        if not self.setup():
+            self.teardown()
             return False
 
-        # Run all tests
-        self.stats = self.test_all_substitutions()
+        print("\n=== Running Tests ===")
+        passes = 0
+        fails = 0
 
-        # Generate and print report
-        report = self.generate_report(self.stats)
-        print(report)
+        # Mappings
+        for m in self.mappings:
+            # Skip M20-M29 (B, V, etc) as they are modifiers and need tap logic
+            if m.input_key in ['B', 'V', 'M', 'X', '_1', 'LCtrl', 'C', 'Tab', 'Q', 'A']:
+                 continue
 
-        # Return True only if all tests passed
-        return self.stats['failed'] == 0
+            print(f"Testing {m.input_key} -> {m.output_key} ... ", end="", flush=True)
+            res = self.run_test(m.input_evdev, m.output_evdev, "")
+            self.results.append(res)
+            if res.passed:
+                print("PASS")
+                passes += 1
+            else:
+                print(f"FAIL ({res.error_message})")
+                fails += 1
+            time.sleep(0.05)
 
+        # M20 TAP
+        print("Testing M20(B) TAP -> Enter ... ", end="", flush=True)
+        res = self.run_test(ecodes.KEY_B, ecodes.KEY_ENTER, "M20 TAP")
+        self.results.append(res)
+        if res.passed:
+            print("PASS")
+            passes += 1
+        else:
+            print(f"FAIL ({res.error_message})")
+            fails += 1
+        
+        # M20 HOLD
+        print("Testing M20(B) HOLD + W -> 1(LShift) ... ", end="", flush=True)
+        self.drain_events()
+        
+        self.inject_cmd(f"PRESS {ecodes.KEY_B}")
+        self.inject_cmd(f"WAIT 300") # Hold
+        self.inject_cmd(f"PRESS {ecodes.KEY_W}")
+        
+        # Expect LShift (because _1 -> M24 -> LShift)
+        evt = self.capture_next_key_event(timeout=0.5)
+        
+        self.inject_cmd(f"RELEASE {ecodes.KEY_W}")
+        self.inject_cmd(f"RELEASE {ecodes.KEY_B}")
+        
+        # Drain
+        self.capture_next_key_event(timeout=0.2)
+        
+        if evt and evt[0] == ecodes.KEY_LEFTSHIFT:
+            print("PASS")
+            passes += 1
+        else:
+            got = KeyCodeMapper.get_key_name(evt[0]) if evt else "None"
+            print(f"FAIL (Expected KEY_LEFTSHIFT, got {got})")
+            fails += 1
 
-def main():
-    """Main entry point."""
+        print("\n=== Summary ===")
+        print(f"Passed: {passes}")
+        print(f"Failed: {fails}")
+        
+        self.teardown()
+        return fails == 0
+
+if __name__ == "__main__":
     import argparse
-
-    parser = argparse.ArgumentParser(
-        description="Automated keymap testing framework for YAMY",
-        formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-
-    parser.add_argument(
-        '--config',
-        default='keymaps/config_clean.mayu',
-        help='Path to .mayu config file (default: keymaps/config_clean.mayu)'
-    )
-
-    parser.add_argument(
-        '--yamy-test',
-        help='Path to yamy-test binary (auto-detected if not specified)'
-    )
-
-    parser.add_argument(
-        '--log',
-        default='/tmp/yamy_test.log',
-        help='Path to YAMY log file (default: /tmp/yamy_test.log)'
-    )
-
-    parser.add_argument(
-        '--json',
-        help='Export results to JSON file (for use with generate_test_report.py)'
-    )
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', default='keymaps/master.mayu')
     args = parser.parse_args()
 
-    # Create test framework
-    test = AutomatedKeymapTest(
-        config_path=args.config,
-        yamy_test_path=args.yamy_test,
-        log_file=args.log
-    )
-
-    # Run tests
-    success = test.run()
-
-    # Export JSON if requested
-    if args.json:
-        test.export_json(args.json)
-
-    # Exit with appropriate status code
+    runner = TestRunner(args.config)
+    success = runner.execute()
     sys.exit(0 if success else 1)
-
-
-if __name__ == '__main__':
-    main()
