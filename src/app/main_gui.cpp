@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
 
     MainWindowGUI window(serverName);
     window.show();
+    window.raise();
+    window.activateWindow();
 
     return app.exec();
 }
