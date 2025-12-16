@@ -11,6 +11,7 @@ The original "Mado tsukai no Yuutsu" (Mayu) used a filter driver to replace key 
 ## Features
 
 ### Core Functionality
+
 - **Key Remapping**: Remap any key to any other key using intuitive `.mayu` configuration syntax
 - **Modal Layers**: Create Vim-style modal layers with custom key behaviors per layer
 - **Substitution System**: Define key substitutions with support for modifiers and combinations
@@ -19,6 +20,7 @@ The original "Mado tsukai no Yuutsu" (Mayu) used a filter driver to replace key 
 ### Advanced Features
 
 #### Number Keys as Custom Modifiers
+
 Use number keys (0-9) as hardware modifier keys when held, perfect for small keyboards (60%, 65%, 75% layouts):
 
 - **Hold-Tap Detection**: Hold number key ≥200ms → activates modifier (Shift, Ctrl, Alt, Win)
@@ -27,6 +29,7 @@ Use number keys (0-9) as hardware modifier keys when held, perfect for small key
 - **Dual-Purpose**: Number keys serve double duty without sacrificing functionality
 
 **Example Configuration:**
+
 ```mayu
 # Hold number keys as modifiers
 def numbermod *_1 = *LShift
@@ -40,10 +43,11 @@ def numbermod *_3 = *LAlt
 ```
 
 **Usage:**
+
 - Hold `1` + press `A` → Shift+A (capital A)
 - Tap `1` quickly → F1 (if substitution configured)
 
-See [Number Modifier User Guide](docs/NUMBER_MODIFIER_USER_GUIDE.md) for complete documentation.
+See [Number Modifier User Guide](docs/user/NUMBER_MODIFIER_USER_GUIDE.md) for complete documentation.
 
 ## Status
 
@@ -67,7 +71,7 @@ cmake --build build_release -j$(nproc)
 ./build_release/bin/yamy-gui
 ```
 
-See `docs/USER_GUIDE.md` for the full GUI walkthrough, troubleshooting, and screenshots.
+See `docs/user/guide.md` for the full GUI walkthrough, troubleshooting, and screenshots.
 
 ### Linux (Ubuntu/Debian)
 
@@ -88,7 +92,7 @@ sudo usermod -aG input $USER
 # Log out and back in for group membership to take effect
 ```
 
-See [RELEASE-NOTES-1.0.md](RELEASE-NOTES-1.0.md) for installation instructions for other distributions.
+See [RELEASE-NOTES-1.0.md](docs/archive/RELEASE-NOTES-1.0.md) for installation instructions for other distributions.
 
 #### From Source
 
@@ -163,6 +167,7 @@ Build script for creating distributable packages:
 ```
 
 This will:
+
 1. Configure CMake with Release build type
 2. Enable Qt5 GUI and Linux platform support
 3. Build all binaries (`yamy`, `yamy-ctl`)
@@ -195,10 +200,12 @@ scripts/windows/cmake_package.ps1
 ```
 
 **Options:**
+
 - **Default**: Incremental build. Uses existing `build/` directory if present for faster compilation.
 - **Clean Build**: Use `-Clean` switch to force a full rebuild (e.g., `scripts/windows/cmake_package.ps1 -Clean`).
 
 The script will:
+
 1.  Run quality checks (anti-patterns, missing sources, encoding).
 2.  Build both 64-bit and 32-bit binaries (if compilers are available).
 3.  Package everything into `dist/yamy-dist.zip`.
@@ -209,11 +216,13 @@ The script will:
 Yamy supports building with MinGW-w64, producing standalone artifacts without Visual Studio dependencies.
 
 To build, run the packaging script:
+
 ```powershell
 scripts/mingw_package.ps1
 ```
 
 **Requirements:**
+
 - **64-bit Build**: `mingw-w64-x86_64-toolchain`
 - **32-bit Build**: `mingw-w64-i686-toolchain` (Optional, but required for `yamy32.exe`)
 - **CMake**: Must be installed and in PATH (or `C:\Program Files\CMake\bin`).
@@ -231,7 +240,8 @@ bash scripts/linux/track_legacy_strings.sh
 ```
 
 This script provides metrics on:
-- Legacy string usage (tstring, _T(), _TCHAR, tstringi)
+
+- Legacy string usage (tstring, \_T(), \_TCHAR, tstringi)
 - Win32 type leakage in core code
 - windows.h include verification
 - Progress summary with status indicators
@@ -239,6 +249,7 @@ This script provides metrics on:
 ### Continuous Integration
 
 The project uses GitHub Actions for automated builds and verification:
+
 - **Linux Build**: Verifies architectural decoupling with Linux stub implementations
 - **Windows Build**: Tests both MinGW and MSVC builds
 - **Static Analysis**: Ensures no Windows dependencies leak into `src/core`
@@ -246,21 +257,24 @@ The project uses GitHub Actions for automated builds and verification:
 ## License and Copyright
 
 ### Yamy
+
 **Copyright (C) 2009, KOBAYASHI Yoshiaki <gimy@users.sourceforge.jp>**  
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
 3. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission.
 
-(See full license text in [docs/readme.txt](docs/readme.txt))
+(See full license text in [docs/archive/original_readme_ja.txt](docs/archive/original_readme_ja.txt))
 
 ### Mado tsukai no Yuutsu (Mayu)
+
 **Copyright (C) 1999-2005, TAGA Nayuta <nayuta@users.sourceforge.net>**
 All rights reserved.
 
-(See full license text in [docs/readme.txt](docs/readme.txt))
+(See full license text in [docs/archive/original_readme_ja.txt](docs/archive/original_readme_ja.txt))
 
 ## Acknowledgments
 
