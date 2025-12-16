@@ -1,0 +1,13 @@
+include "109.mayu"
+include "key_seq.mayu"
+
+# Enable M00 on B key (Tap = Enter, Hold = M00)
+def subst *B = *M00
+mod assign M00 = *Enter
+
+# Define layer mapping: M00 + Kanji -> Enter
+key M00-*Kanji = *Enter
+
+# Test case for runner: Kanji -> Kanji
+# If M00 is "sticky" or matching incorrectly, this will fail (outputting Enter)
+def subst *Kanji = *Kanji

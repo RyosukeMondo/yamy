@@ -157,9 +157,77 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
     // 3. If yamy_out is a lock key (L00-LFF) → toggle on PRESS, suppress always
     // 4. Otherwise → return yamy_out for output
 
-    // Step 1: Apply substitution
-    auto it = m_substitutions.find(yamy_in);
-    uint16_t yamy_out = (it != m_substitutions.end()) ? it->second : yamy_in;
+    // Step 1: Apply substitution using full modifier awareness
+    uint16_t yamy_out = yamy_in;
+    bool mapped = false;
+
+    if (m_substitutesList) {
+        // Create Modifier object from current state for legacy checks
+        yamy::input::Modifier currentMod = io_modState ? io_modState->toModifier() : yamy::input::Modifier();
+        
+        // Iterate through all substitutions to find the first matching rule
+        for (const auto& subst : *m_substitutesList) {
+            // 1. Check Key Match
+            const Key* fromKey = subst.m_mkeyFrom.m_key;
+            if (!fromKey || fromKey->getScanCodesSize() == 0) continue;
+            
+            // Check if input scan code matches the rule's scan code
+            if (fromKey->getScanCodes()[0].m_scan != yamy_in) continue;
+
+            // 2. Check Legacy Modifiers (Shift, Ctrl, Alt, Win)
+            // Use doesMatch which handles dontcare logic
+            if (!subst.m_mkeyFrom.m_modifier.doesMatch(currentMod)) continue;
+
+            // 3. Check Virtual Modifiers (M00-MFF)
+            // Strict match: Required Virtual Mods must match Current Virtual Mods exactly
+            // (Assuming ModifiedKey::m_virtualMods represents required state and 0s are required OFF)
+            bool vmod_match = true;
+            if (io_modState) {
+                const uint32_t* current_vmods = io_modState->getModifierBits(); // [8]
+                const uint32_t* rule_vmods = subst.m_mkeyFrom.m_virtualMods;    // [8]
+                
+                for (int i = 0; i < 8; ++i) {
+                    if (current_vmods[i] != rule_vmods[i]) {
+                        vmod_match = false;
+                        break;
+                    }
+                }
+            } else {
+                // If no modState, only match if rule requires NO virtual mods
+                const uint32_t* rule_vmods = subst.m_mkeyFrom.m_virtualMods;
+                for (int i = 0; i < 8; ++i) {
+                    if (rule_vmods[i] != 0) {
+                        vmod_match = false;
+                        break;
+                    }
+                }
+            }
+            if (!vmod_match) continue;
+
+            // MATCH FOUND!
+            const Key* toKey = subst.m_mkeyTo.m_key;
+            if (toKey && toKey->getScanCodesSize() > 0) {
+                yamy_out = toKey->getScanCodes()[0].m_scan;
+                mapped = true;
+                
+                if (m_debugLogging) {
+                    LOG_DEBUG("[EventProcessor] [LAYER2:MATCH] 0x{:04X} -> 0x{:04X} (Rule: {})", 
+                              yamy_in, yamy_out, fromKey->getName());
+                }
+            }
+            break; // Stop after first match (priority based on file order)
+        }
+    }
+
+            break; // Stop after first match (priority based on file order)
+        }
+    } else {
+        // Fallback to simple map lookup ONLY if list is not available
+        auto it = m_substitutions.find(yamy_in);
+        if (it != m_substitutions.end()) {
+             yamy_out = it->second;
+        }
+    }
 
     // Step 2: Check if result (yamy_out) is a virtual modifier that needs tap/hold detection
     // Use range check for virtual modifiers (0xF000-0xF0FF) since we register the PHYSICAL key, not the virtual code

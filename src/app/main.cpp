@@ -25,6 +25,7 @@
 #include "core/platform/window_system_interface.h"
 #include "core/platform/input_driver_interface.h"
 #include "utils/msgstream.h"
+#include "utils/qsettings_config_store.h"
 
 #ifdef _WIN32
 #include "platform/windows/ipc_control_server.h"
@@ -193,12 +194,16 @@ int main(int argc, char* argv[]) {
     yamy::platform::IInputHook* inputHook = yamy::platform::createInputHook();
     yamy::platform::IInputDriver* inputDriver = yamy::platform::createInputDriver();
 
+    // Use QSettingsConfigStore for persistence
+    // This allows the engine to save its configuration list
+    ConfigStore* configStore = new QSettingsConfigStore("YAMY", "YAMY");
+
     static tomsgstream logStream(0, nullptr);
 
     Engine* realEngine = new Engine(
         logStream,
         windowSystem,
-        nullptr,
+        configStore,
         inputInjector,
         inputHook,
         inputDriver

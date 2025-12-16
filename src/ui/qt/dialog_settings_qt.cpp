@@ -1,4 +1,6 @@
 ﻿#include "dialog_settings_qt.h"
+#include "ipc_client_gui.h"
+#include "core/platform/ipc_defs.h"
 #include "notification_sound.h"
 #include "notification_prefs.h"
 #include <QFileDialog>
@@ -10,7 +12,7 @@
 #include <QProcess>
 #include <cstdlib>
 
-DialogSettingsQt::DialogSettingsQt(QWidget* parent)
+DialogSettingsQt::DialogSettingsQt(IPCClientGUI* ipcClient, QWidget* parent)
     : QDialog(parent)
     , m_keymapList(nullptr)
     , m_btnAdd(nullptr)
@@ -41,47 +43,52 @@ DialogSettingsQt::DialogSettingsQt(QWidget* parent)
     , m_chkNotifOnFocusChange(nullptr)
     , m_chkNotifOnPerformance(nullptr)
     , m_btnResetNotifDefaults(nullptr)
+    , m_ipcClient(ipcClient)
+    , m_updatingList(false)
 {
-    setWindowTitle("YAMY Settings");
-    setMinimumSize(600, 500);
+    setWindowTitle(tr("Settings"));
+    setMinimumWidth(600);
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     setupUI();
     loadSettings();
+
+    // Connect to IPC client signals
+    if (m_ipcClient) {
+        connect(m_ipcClient, &IPCClientGUI::configListReceived,
+                this, &DialogSettingsQt::updateConfigList);
+        // Request initial list
+        m_ipcClient->sendGetStatus();
+    }
 }
 
 DialogSettingsQt::~DialogSettingsQt()
 {
 }
 
-QStringList DialogSettingsQt::getKeymapFiles() const
-{
-    return m_keymapFiles;
-}
 
-void DialogSettingsQt::setKeymapFiles(const QStringList& files)
-{
-    m_keymapFiles = files;
-    m_keymapList->clear();
-    m_keymapList->addItems(files);
-}
 
 void DialogSettingsQt::onAddKeymap()
 {
-    QString file = QFileDialog::getOpenFileName(
+    QString dir = m_editKeymapPath->text();
+    if (dir.isEmpty()) {
+        dir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+    }
+
+    QStringList files = QFileDialog::getOpenFileNames(
         this,
-        "Add Keymap File",
-        QStandardPaths::writableLocation(QStandardPaths::HomeLocation),
-        "Keymap Files (*.mayu);;All Files (*)"
+        tr("Add Keymap Files"),
+        dir,
+        tr("Mayu Config Files (*.mayu);;All Files (*)")
     );
 
-    if (!file.isEmpty()) {
-        if (!m_keymapFiles.contains(file)) {
-            m_keymapFiles.append(file);
-            m_keymapList->addItem(file);
-            m_labelStatus->setText("Added: " + file);
-        } else {
-            QMessageBox::warning(this, "YAMY", "This keymap file is already in the list.");
-        }
+    if (files.isEmpty()) {
+        return;
+    }
+
+    for (const QString& file : files) {
+        if (!m_ipcClient) continue;
+        m_ipcClient->sendAddConfig(file);
     }
 }
 
@@ -236,25 +243,35 @@ bool DialogSettingsQt::launchEditor(const QString& editorCmd, const QString& fil
 
 void DialogSettingsQt::onRemoveKeymap()
 {
-    QListWidgetItem* item = m_keymapList->currentItem();
-    if (!item) {
+    QList<QListWidgetItem*> items = m_keymapList->selectedItems();
+    if (items.isEmpty()) {
         return;
     }
 
-    QString file = item->text();
-
-    int ret = QMessageBox::question(
-        this,
-        "Remove Keymap",
-        "Remove keymap file from list?\n\n" + file,
-        QMessageBox::Yes | QMessageBox::No
-    );
-
-    if (ret == QMessageBox::Yes) {
-        m_keymapFiles.removeAll(file);
-        delete m_keymapList->takeItem(m_keymapList->currentRow());
-        m_labelStatus->setText("Removed: " + file);
+    for (auto* item : items) {
+        QString path = item->text();
+        if (m_ipcClient) {
+            m_ipcClient->sendRemoveConfig(path);
+        }
     }
+}
+
+void DialogSettingsQt::updateConfigList(const yamy::RspConfigListPayload& payload)
+{
+    m_updatingList = true;
+    m_keymapFiles.clear();
+    m_keymapList->clear();
+
+    for (uint32_t i = 0; i < payload.count; ++i) {
+        QString configName = QString::fromUtf8(payload.configs[i].data());
+        if (!configName.isEmpty()) {
+            m_keymapFiles.append(configName);
+            m_keymapList->addItem(configName);
+        }
+    }
+
+    m_updatingList = false;
+    onKeymapSelectionChanged();
 }
 
 void DialogSettingsQt::onBrowseKeymap()
@@ -628,10 +645,10 @@ void DialogSettingsQt::loadSettings()
 {
     QSettings settings("YAMY", "YAMY");
 
-    // Load keymap files
-    m_keymapFiles = settings.value("keymaps/files").toStringList();
+    // Keymap files are now loaded from the daemon via IPC
+    // m_keymapFiles = settings.value("keymaps/files").toStringList();
     m_keymapList->clear();
-    m_keymapList->addItems(m_keymapFiles);
+    // m_keymapList->addItems(m_keymapFiles);
 
     // Load keymap directory
     QString keymapDir = settings.value("keymaps/directory",
@@ -700,7 +717,9 @@ void DialogSettingsQt::saveSettings()
     QSettings settings("YAMY", "YAMY");
 
     // Save keymap files
-    settings.setValue("keymaps/files", m_keymapFiles);
+    // Note: Config list is now persisted by the daemon.
+    // We don't save the list here anymore to avoid conflicts.
+    // settings.setValue("keymaps/files", m_keymapFiles);
 
     // Save keymap directory
     settings.setValue("keymaps/directory", m_editKeymapPath->text());

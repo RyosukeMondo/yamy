@@ -40,10 +40,14 @@ enum class MessageType : uint32_t {
     CmdSwitchConfig = 0x5003,
     CmdReloadConfig = 0x5004,
     CmdGetLockStatus = 0x5005,      // Request current lock state (L00-LFF)
+    CmdAddConfig = 0x5006,
+    CmdRemoveConfig = 0x5007,
 
     // GUI Responses
     RspStatus = 0x5101,
     RspConfigList = 0x5102,
+    RspSuccess = 0x5103,
+    RspError = 0x5104,
 };
 
 /// Maximum lengths for string payloads
@@ -78,6 +82,24 @@ struct CmdReloadConfigRequest {
     }
 };
 
+/// Command: Add a new configuration to the list
+struct CmdAddConfigRequest {
+    std::array<char, kMaxConfigNameLength> configPath{};
+
+    CmdAddConfigRequest() {
+        std::memset(configPath.data(), 0, configPath.size());
+    }
+};
+
+/// Command: Remove a configuration from the list
+struct CmdRemoveConfigRequest {
+    std::array<char, kMaxConfigNameLength> configPath{};
+
+    CmdRemoveConfigRequest() {
+        std::memset(configPath.data(), 0, configPath.size());
+    }
+};
+
 /// Response: Current daemon status snapshot
 struct RspStatusPayload {
     bool engineRunning{false};
@@ -100,6 +122,24 @@ struct RspConfigListPayload {
         for (auto& entry : configs) {
             std::memset(entry.data(), 0, entry.size());
         }
+    }
+};
+
+/// Response: Generic success acknowledgement
+struct RspSuccessPayload {
+    std::array<char, kMaxStatusMessageLength> message{};
+
+    RspSuccessPayload() {
+        std::memset(message.data(), 0, message.size());
+    }
+};
+
+/// Response: Generic error
+struct RspErrorPayload {
+    std::array<char, kMaxStatusMessageLength> message{};
+
+    RspErrorPayload() {
+        std::memset(message.data(), 0, message.size());
     }
 };
 

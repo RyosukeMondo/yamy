@@ -45,6 +45,12 @@ public:
     /// Reload the active or named configuration
     void sendReloadConfig(const QString& configName);
 
+    /// Add a new configuration file to the list
+    void sendAddConfig(const QString& configPath);
+
+    /// Remove a configuration file from the list
+    void sendRemoveConfig(const QString& configPath);
+
 signals:
     void statusReceived(const yamy::RspStatusPayload& payload);
     void configListReceived(const yamy::RspConfigListPayload& payload);

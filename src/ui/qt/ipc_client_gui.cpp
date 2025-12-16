@@ -111,6 +111,22 @@ void IPCClientGUI::sendReloadConfig(const QString& configName)
     sendMessage(yamy::MessageType::CmdReloadConfig, &request, sizeof(request));
 }
 
+void IPCClientGUI::sendAddConfig(const QString& configPath)
+{
+    yamy::CmdAddConfigRequest request{};
+    copyStringField(configPath, request.configPath);
+    qInfo().noquote() << "[IPCClientGUI]" << "send CmdAddConfig" << configPath;
+    sendMessage(yamy::MessageType::CmdAddConfig, &request, sizeof(request));
+}
+
+void IPCClientGUI::sendRemoveConfig(const QString& configPath)
+{
+    yamy::CmdRemoveConfigRequest request{};
+    copyStringField(configPath, request.configPath);
+    qInfo().noquote() << "[IPCClientGUI]" << "send CmdRemoveConfig" << configPath;
+    sendMessage(yamy::MessageType::CmdRemoveConfig, &request, sizeof(request));
+}
+
 void IPCClientGUI::handleMessage(const yamy::ipc::Message& message)
 {
     const auto rawType = static_cast<uint32_t>(message.type);

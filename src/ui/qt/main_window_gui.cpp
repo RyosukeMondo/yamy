@@ -386,7 +386,7 @@ void MainWindowGUI::showInvestigateDialog() {
 
 void MainWindowGUI::showSettingsDialog() {
     if (!m_settingsDialog) {
-        m_settingsDialog = new DialogSettingsQt(this);
+        m_settingsDialog = new DialogSettingsQt(m_ipcClient.get(), this);
         m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose);
         connect(m_settingsDialog, &QObject::destroyed, this, [this]() { m_settingsDialog = nullptr; });
     }

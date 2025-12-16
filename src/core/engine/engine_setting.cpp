@@ -293,6 +293,7 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
     // Create or recreate EventProcessor with new substitution table
     m_eventProcessor = std::make_unique<yamy::EventProcessor>(m_substitutionTable);
     m_eventProcessor->setDebugLogging(true);  // Enable debug logging
+    m_eventProcessor->setSubstitutesList(&keyboard.getSubstitutes()); // Inject full substitute list
     std::cerr << "[BUILD_SUBST] EventProcessor created with " << m_substitutionTable.size() << " substitutions, debug=ON" << std::endl;
 
     // Register number modifiers from .mayu configuration

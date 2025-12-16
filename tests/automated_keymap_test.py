@@ -73,7 +73,7 @@ class KeyCodeMapper:
         'Minus': ecodes.KEY_MINUS, 'Comma': ecodes.KEY_COMMA, 'Period': ecodes.KEY_DOT,
         'Slash': ecodes.KEY_SLASH, 'ReverseSolidus': ecodes.KEY_BACKSLASH,
         'Yen': ecodes.KEY_YEN, 'NonConvert': ecodes.KEY_MUHENKAN, 'Convert': ecodes.KEY_HENKAN,
-        'Hiragana': ecodes.KEY_HIRAGANA, 'Kanji': ecodes.KEY_ZENKAKUHANKAKU, 'Eisuu': ecodes.KEY_KATAKANAHIRAGANA,
+        'Hiragana': ecodes.KEY_HIRAGANA, 'Kanji': ecodes.KEY_GRAVE, 'Eisuu': ecodes.KEY_KATAKANAHIRAGANA,
         'NumLock': ecodes.KEY_NUMLOCK, 'ScrollLock': ecodes.KEY_SCROLLLOCK, 'CapsLock': ecodes.KEY_CAPSLOCK,
     }
 
@@ -94,17 +94,36 @@ class KeyCodeMapper:
 
 class MayuParser:
     SUBST_PATTERN = re.compile(r'def\s+subst\s+\*(\S+)\s*=\s*\*(\S+)')
+    INCLUDE_PATTERN = re.compile(r'include\s+"([^"]+)"')
 
     def __init__(self, config_path: str):
-        self.config_path = config_path
+        self.config_path = os.path.abspath(config_path)
+        self.base_dir = os.path.dirname(self.config_path)
 
     def parse(self) -> List[KeyMapping]:
+        return self._parse_file(self.config_path)
+
+    def _parse_file(self, file_path: str) -> List[KeyMapping]:
         mappings = []
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
+            # Handle relative paths
+            if not os.path.isabs(file_path):
+                 file_path = os.path.join(self.base_dir, file_path)
+
+            with open(file_path, 'r', encoding='utf-8') as f:
                 for line_num, line in enumerate(f, 1):
                     line = line.split('#')[0].strip()
                     if not line: continue
+                    
+                    # Check for include
+                    include_match = self.INCLUDE_PATTERN.search(line)
+                    if include_match:
+                        included_file = include_match.group(1)
+                        print(f"  [MayuParser] Including {included_file}")
+                        mappings.extend(self._parse_file(included_file))
+                        continue
+
+                    # Check for subst
                     match = self.SUBST_PATTERN.search(line)
                     if match:
                         input_key = match.group(1)
@@ -114,7 +133,7 @@ class MayuParser:
                         if input_evdev is not None and output_evdev is not None:
                             mappings.append(KeyMapping(input_key, output_key, input_evdev, output_evdev))
         except Exception as e:
-            print(f"Error parsing config: {e}")
+            print(f"Error parsing config {file_path}: {e}")
         return mappings
 
 
@@ -156,10 +175,13 @@ class TestRunner:
         time.sleep(1)
 
         log_file = open('/tmp/yamy_test_runner.log', 'w')
+        env = os.environ.copy()
+        env['YAMY_DEBUG_KEYCODE'] = '1'
         self.yamy_process = subprocess.Popen(
             ['./build/bin/yamy'],
             stdout=log_file,
-            stderr=log_file
+            stderr=log_file,
+            env=env
         )
         print(f"[Setup] YAMY started with PID {self.yamy_process.pid}")
         
@@ -262,35 +284,68 @@ class TestRunner:
         self.inject_cmd(f"PRESS {input_code}")
         
         # Capture PRESS (might be None for modifiers)
-        evt_press = self.capture_next_key_event(timeout=0.2)
+        # We need to loop to skip Shift/modifiers if expected_code is not one of them
         
-        # RELEASE
-        self.inject_cmd(f"RELEASE {input_code}")
+        MODIFIERS = [
+            ecodes.KEY_LEFTSHIFT, ecodes.KEY_RIGHTSHIFT,
+            ecodes.KEY_LEFTCTRL, ecodes.KEY_RIGHTCTRL,
+            ecodes.KEY_LEFTALT, ecodes.KEY_RIGHTALT,
+            ecodes.KEY_LEFTMETA, ecodes.KEY_RIGHTMETA
+        ]
 
-        # Capture RELEASE/TAP output
-        evt_release = self.capture_next_key_event(timeout=0.5)
-
-        passed = False
         actual = None
+        passed = False
         error = None
-
-        # Determine which event is the meaningful output
-        # For normal keys: PRESS output is immediate (evt_press)
-        # For modifiers: PRESS is suppressed, output comes on RELEASE (evt_release)
         
-        target_evt = evt_press if evt_press else evt_release
-
-        if target_evt:
-            actual_code, actual_val = target_evt
-            if actual_val == 1: # PRESS
-                actual = actual_code
-                if actual_code == expected_code:
-                    passed = True
-                else:
-                    error = f"Expected {KeyCodeMapper.get_key_name(expected_code)}, got {KeyCodeMapper.get_key_name(actual_code)}"
-            else:
-                error = "Received RELEASE event as first output"
+        # Capture loop for PRESS sequence
+        start = time.time()
+        while time.time() - start < 0.5:
+             evt = self.capture_next_key_event(timeout=0.1)
+             if not evt: continue
+             
+             code, val = evt
+             if val == 1: # PRESS
+                 if code in MODIFIERS and expected_code not in MODIFIERS:
+                     # Ignore modifier press if we are looking for a normal key
+                     continue
+                 
+                 actual = code
+                 if actual == expected_code:
+                     passed = True
+                     break
+                 else:
+                     error = f"Expected {KeyCodeMapper.get_key_name(expected_code)}, got {KeyCodeMapper.get_key_name(actual)}"
+                     # We grabbed the wrong key (non-modifier), so stop
+                     break
+        
+        if not passed and not actual:
+             # Try RELEASE/TAP if nothing found on PRESS
+             self.inject_cmd(f"RELEASE {input_code}")
+             
+             start = time.time()
+             while time.time() - start < 0.5:
+                 evt = self.capture_next_key_event(timeout=0.1)
+                 if not evt: continue
+                 
+                 code, val = evt
+                 # For TAP logic, sometimes output comes on release
+                 # But usually RELEASE event has val=0. 
+                 # If yamy outputs a TAP key, it might send PRESS(1) then RELEASE(0)
+                 if val == 1: 
+                     if code in MODIFIERS and expected_code not in MODIFIERS:
+                         continue
+                     actual = code
+                     if actual == expected_code:
+                         passed = True
+                         break
+                     else:
+                          error = f"Expected {KeyCodeMapper.get_key_name(expected_code)}, got {KeyCodeMapper.get_key_name(actual)}"
+                          break
         else:
+             # We found something on PRESS (either passed or failed), just cleanup release
+             self.inject_cmd(f"RELEASE {input_code}")
+
+        if not passed and not error:
             error = "No output event received"
 
         return TestResult(

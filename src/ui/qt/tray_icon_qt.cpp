@@ -27,9 +27,10 @@
 #include <QStandardPaths>
 #include <QPointer>
 
-TrayIconQt::TrayIconQt(Engine* engine, QObject* parent)
+TrayIconQt::TrayIconQt(Engine* engine, IPCClientGUI* ipcClient, QObject* parent)
     : QSystemTrayIcon(parent)
     , m_engine(engine)
+    , m_ipcClient(ipcClient)
     , m_cachedTooltip("YAMY")
     , m_quickSwitchHotkey(nullptr)
     , m_menu(nullptr)
@@ -246,7 +247,7 @@ void TrayIconQt::onReload()
 
 void TrayIconQt::onSettings()
 {
-    DialogSettingsQt* dialog = new DialogSettingsQt();
+    DialogSettingsQt* dialog = new DialogSettingsQt(m_ipcClient);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
 }

@@ -14,6 +14,8 @@
 class DialogShortcutsQt;
 class DialogExamplesQt;
 
+class IPCClientGUI;
+
 // Forward declaration
 class Engine;
 class ConfigManager;
@@ -32,9 +34,10 @@ public:
     /**
      * @brief Construct tray icon
      * @param engine Pointer to keyboard remapping engine (can be nullptr initially)
+     * @param ipcClient Pointer to IPC client (can be nullptr)
      * @param parent QObject parent
      */
-    explicit TrayIconQt(Engine* engine = nullptr, QObject* parent = nullptr);
+    explicit TrayIconQt(Engine* engine = nullptr, IPCClientGUI* ipcClient = nullptr, QObject* parent = nullptr);
 
     /**
      * @brief Destructor
@@ -247,6 +250,9 @@ private:
 
     // Engine instance (not owned)
     Engine* m_engine;
+    
+    // IPC Client instance (not owned)
+    IPCClientGUI* m_ipcClient;
 
     // Cached tooltip to prevent Qt/DBus crashes
     mutable QString m_cachedTooltip;

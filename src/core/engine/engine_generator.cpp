@@ -440,6 +440,14 @@ void Engine::beginGeneratingKeyboardEvents(
             }
             // If no substitution (input == output), passthrough - no change to cnew.m_mkey
         }
+
+        // CRITICAL FIX: We processed via EventProcessor. Now inject the key directly
+        // and DO NOT fall through to generateKeyboardEvents which would run the old keymap logic!
+        Key* output_key = cnew.m_mkey.m_key;
+        if (output_key) {
+            generateKeyEvent(output_key, isPhysicallyPressed, false);
+        }
+        return; // Skip old keymap logic entirely
     } else if (cnew.m_mkey.m_key && cnew.m_mkey.m_key->getScanCodesSize() > 0 && !m_substitutionTable.empty()) {
         // Fallback: Direct substitution table access (if EventProcessor not available or no evdev code)
         const ScanCode *input_sc = cnew.m_mkey.m_key->getScanCodes();

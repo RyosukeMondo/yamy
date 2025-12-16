@@ -15,6 +15,9 @@
 #include <QCheckBox>
 #include <QSlider>
 
+class IPCClientGUI;
+namespace yamy { struct RspConfigListPayload; }
+
 /**
  * @brief Settings dialog for YAMY configuration
  *
@@ -29,26 +32,21 @@ class DialogSettingsQt : public QDialog {
 public:
     /**
      * @brief Construct settings dialog
+     * @param ipcClient Pointer to IPC client for daemon communication
      * @param parent Parent widget
      */
-    explicit DialogSettingsQt(QWidget* parent = nullptr);
+    explicit DialogSettingsQt(IPCClientGUI* ipcClient, QWidget* parent = nullptr);
 
     /**
      * @brief Destructor
      */
     ~DialogSettingsQt() override;
-
+    
     /**
-     * @brief Get list of keymap files
-     * @return List of keymap file paths
+     * @brief Update the list of keymap files from the daemon response
+     * @param payload Config list payload
      */
-    QStringList getKeymapFiles() const;
-
-    /**
-     * @brief Set list of keymap files
-     * @param files List of keymap file paths
-     */
-    void setKeymapFiles(const QStringList& files);
+    void updateConfigList(const yamy::RspConfigListPayload& payload);
 
 private slots:
     /**
@@ -163,4 +161,8 @@ private:
 
     // Data
     QStringList m_keymapFiles;
+    IPCClientGUI* m_ipcClient;
+    
+    // Config list state
+    bool m_updatingList;
 };

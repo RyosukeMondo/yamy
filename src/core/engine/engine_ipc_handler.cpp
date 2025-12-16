@@ -185,6 +185,54 @@ void Engine::handleIpcMessage(const yamy::ipc::Message& message)
         return;
     }
 
+    if (rawType == static_cast<uint32_t>(yamy::MessageType::CmdAddConfig)) {
+        std::string error;
+        std::string pathToAdd;
+
+        if (message.size >= sizeof(yamy::CmdAddConfigRequest) && message.data) {
+            const auto* request = static_cast<const yamy::CmdAddConfigRequest*>(message.data);
+            pathToAdd = std::string(request->configPath.data());
+        } else {
+             error = "Invalid CmdAddConfig payload";
+        }
+
+        if (error.empty() && !pathToAdd.empty()) {
+            if (!ConfigManager::instance().addConfig(pathToAdd)) {
+                error = "Failed to add config: " + pathToAdd;
+            }
+        } else if (pathToAdd.empty()) {
+            error = "Empty config path provided";
+        }
+
+        sendGuiStatus(error);
+        sendGuiConfigList();
+        return;
+    }
+
+    if (rawType == static_cast<uint32_t>(yamy::MessageType::CmdRemoveConfig)) {
+        std::string error;
+        std::string pathToRemove;
+
+        if (message.size >= sizeof(yamy::CmdRemoveConfigRequest) && message.data) {
+             const auto* request = static_cast<const yamy::CmdRemoveConfigRequest*>(message.data);
+             pathToRemove = std::string(request->configPath.data());
+        } else {
+             error = "Invalid CmdRemoveConfig payload";
+        }
+
+        if (error.empty() && !pathToRemove.empty()) {
+            if (!ConfigManager::instance().removeConfig(pathToRemove)) {
+                 error = "Failed to remove config: " + pathToRemove;
+            }
+        } else if (pathToRemove.empty()) {
+             error = "Empty config path provided";
+        }
+
+        sendGuiStatus(error);
+        sendGuiConfigList();
+        return;
+    }
+
     switch (message.type) {
         case yamy::ipc::CmdEnableInvestigateMode:
             m_isInvestigateMode = true;
