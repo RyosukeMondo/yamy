@@ -20,7 +20,7 @@
   - **Action:** Ensure namespaces match `yamy::ast`.
   - _Requirements: 1.1_
 
-- [-] 4. Update SettingLoader to use AST (Phase A)
+- [x] 4. Update SettingLoader to use AST (Phase A)
   - File: `src/core/settings/setting_loader.h`
   - Add `ConfigAST` member.
   - Update `load_KEY_ASSIGN` etc. to populate AST *in addition to* legacy structures (Validation step).

@@ -367,12 +367,15 @@ void SettingLoader::load_DEFINE_NUMBER_MODIFIER()
 // <DEFINE_OPTION>
 void SettingLoader::load_DEFINE_OPTION()
 {
+    yamy::ast::OptionDefinition opt_def;
     Token *t = getToken();
+    opt_def.name = t->getString();
+
     if (*t == "KL-") {
         if (*getToken() != "=") {
             throw ErrorMessage() << "there must be `=' after `def option KL-'.";
         }
-
+        opt_def.value = lookToken()->getString();
         load_ARGUMENT(&m_setting->m_correctKanaLockHandling);
 
     } else if (*t == "delay-of") {
@@ -380,12 +383,13 @@ void SettingLoader::load_DEFINE_OPTION()
             throw ErrorMessage()
             << "there must be `!!!' after `def option delay-of'.";
         }
+        opt_def.name += " !!!";
 
         if (*getToken() != "=") {
             throw ErrorMessage()
             << "there must be `=' after `def option delay-of !!!'.";
         }
-
+        opt_def.value = lookToken()->getString();
         load_ARGUMENT(&m_setting->m_oneShotRepeatableDelay);
 
     } else if (*t == "sts4mayu") {
@@ -393,7 +397,7 @@ void SettingLoader::load_DEFINE_OPTION()
             throw ErrorMessage()
             << "there must be `=' after `def option sts4mayu'.";
         }
-
+        opt_def.value = lookToken()->getString();
         load_ARGUMENT(&m_setting->m_sts4mayu);
 
     } else if (*t == "cts4mayu") {
@@ -401,7 +405,7 @@ void SettingLoader::load_DEFINE_OPTION()
             throw ErrorMessage()
             << "there must be `=' after `def option cts4mayu'.";
         }
-
+        opt_def.value = lookToken()->getString();
         load_ARGUMENT(&m_setting->m_cts4mayu);
 
     } else if (*t == "mouse-event") {
@@ -409,7 +413,7 @@ void SettingLoader::load_DEFINE_OPTION()
             throw ErrorMessage()
             << "there must be `=' after `def option mouse-event'.";
         }
-
+        opt_def.value = lookToken()->getString();
         load_ARGUMENT(&m_setting->m_mouseEvent);
 
     } else if (*t == "drag-threshold") {
@@ -417,11 +421,15 @@ void SettingLoader::load_DEFINE_OPTION()
             throw ErrorMessage()
             << "there must be `=' after `def option drag-threshold'.";
         }
-
+        opt_def.value = lookToken()->getString();
         load_ARGUMENT(&m_setting->m_dragThreshold);
 
     } else {
         throw ErrorMessage() << "syntax error `def option " << *t << "'.";
+    }
+
+    if (m_ast) {
+        m_ast->optionDefinitions.push_back(opt_def);
     }
 }
 
