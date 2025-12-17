@@ -214,14 +214,146 @@ bool JsonConfigLoader::parseMappings(const nlohmann::json& obj, Setting* setting
 {
     Expects(setting != nullptr);
 
-    // TODO: Implement in task 1.8
-    // - Parse "mappings" array
-    // - Parse "from" field using parseModifiedKey()
-    // - Parse "to" field (single key or array for sequences)
-    // - Create KeySeq with ActionKey objects
-    // - Add mappings to global Keymap
+    // mappings section is optional
+    if (!obj.contains("mappings")) {
+        return true;
+    }
 
-    return false;
+    const auto& mappings = obj["mappings"];
+
+    // Validate mappings is an array
+    if (!mappings.is_array()) {
+        logError("'mappings' must be an array");
+        return false;
+    }
+
+    // Get or create the global keymap
+    Keymap* globalKeymap = setting->m_keymaps.searchByName("Global");
+    if (!globalKeymap) {
+        // Create the global keymap if it doesn't exist
+        Keymap newKeymap(
+            Keymap::Type_keymap,
+            "Global",
+            "",  // no window class regex
+            "",  // no window title regex
+            nullptr,  // no default keyseq
+            nullptr   // no parent keymap
+        );
+        globalKeymap = setting->m_keymaps.add(newKeymap);
+        if (!globalKeymap) {
+            logError("Failed to create global keymap");
+            return false;
+        }
+    }
+
+    // Parse each mapping definition
+    int mappingIndex = 0;
+    for (const auto& mapping : mappings) {
+        mappingIndex++;
+
+        // Validate mapping is an object
+        if (!mapping.is_object()) {
+            logError("Mapping #" + std::to_string(mappingIndex) + " must be an object");
+            return false;
+        }
+
+        // Parse "from" field (required)
+        if (!mapping.contains("from")) {
+            logError("Mapping #" + std::to_string(mappingIndex) + " missing required 'from' field");
+            return false;
+        }
+
+        if (!mapping["from"].is_string()) {
+            logError("Mapping #" + std::to_string(mappingIndex) + " 'from' field must be a string");
+            return false;
+        }
+
+        std::string fromSpec = mapping["from"].get<std::string>();
+        ModifiedKey fromKey = parseModifiedKey(fromSpec);
+        if (!fromKey.m_key) {
+            logError("Failed to parse 'from' key in mapping #" + std::to_string(mappingIndex) + ": '" + fromSpec + "'");
+            return false;
+        }
+
+        // Parse "to" field (required, can be string or array)
+        if (!mapping.contains("to")) {
+            logError("Mapping #" + std::to_string(mappingIndex) + " missing required 'to' field");
+            return false;
+        }
+
+        const auto& toField = mapping["to"];
+
+        // Create a KeySeq to hold the action(s)
+        // Use a unique name for each mapping keyseq
+        std::string keySeqName = "mapping_" + std::to_string(mappingIndex) + "_" + fromSpec;
+        KeySeq keySeq(keySeqName);
+        keySeq.setMode(Modifier::Type_ASSIGN);
+
+        // Check if "to" is a string (single key) or array (sequence)
+        if (toField.is_string()) {
+            // Single key mapping
+            std::string toSpec = toField.get<std::string>();
+            ModifiedKey toKey = parseModifiedKey(toSpec);
+            if (!toKey.m_key) {
+                logError("Failed to parse 'to' key in mapping #" + std::to_string(mappingIndex) + ": '" + toSpec + "'");
+                return false;
+            }
+
+            // Add ActionKey to the KeySeq
+            ActionKey actionKey(toKey);
+            keySeq.add(actionKey);
+        }
+        else if (toField.is_array()) {
+            // Key sequence mapping
+            if (toField.empty()) {
+                logError("Mapping #" + std::to_string(mappingIndex) + " 'to' array is empty");
+                return false;
+            }
+
+            for (size_t i = 0; i < toField.size(); ++i) {
+                if (!toField[i].is_string()) {
+                    logError("Mapping #" + std::to_string(mappingIndex) + " 'to' array element " +
+                             std::to_string(i) + " must be a string");
+                    return false;
+                }
+
+                std::string toSpec = toField[i].get<std::string>();
+                ModifiedKey toKey = parseModifiedKey(toSpec);
+                if (!toKey.m_key) {
+                    logError("Failed to parse 'to' key in mapping #" + std::to_string(mappingIndex) +
+                             " sequence element " + std::to_string(i) + ": '" + toSpec + "'");
+                    return false;
+                }
+
+                // Add ActionKey to the KeySeq
+                ActionKey actionKey(toKey);
+                keySeq.add(actionKey);
+            }
+
+            // Mark as KEYSEQ mode for sequences
+            keySeq.setMode(Modifier::Type_KEYSEQ);
+        }
+        else {
+            logError("Mapping #" + std::to_string(mappingIndex) + " 'to' field must be a string or array");
+            return false;
+        }
+
+        // Add the KeySeq to Setting's KeySeqs collection
+        KeySeq* addedKeySeq = setting->m_keySeqs.add(keySeq);
+        if (!addedKeySeq) {
+            logError("Failed to add keyseq for mapping #" + std::to_string(mappingIndex));
+            return false;
+        }
+
+        // Add the mapping to the global keymap
+        globalKeymap->addAssignment(fromKey, addedKeySeq);
+    }
+
+    if (mappings.empty()) {
+        logWarning("'mappings' array is empty");
+    }
+
+    return true;
 }
 
 Key* JsonConfigLoader::resolveKeyName(const std::string& name)

@@ -72,7 +72,7 @@
   - _Requirements: FR-2, FR-5_
   - _Prompt: Role: C++ Developer with expertise in string parsing and modifier systems | Task: Implement parseModifiedKey() to parse modifier expressions following requirements FR-2 and FR-5, supporting standard and virtual modifiers | Restrictions: Split by '-' delimiter, validate each component, set modifier bits correctly, handle virtual mod bitset properly | Success: Simple keys parse (A), standard modifiers parse (Shift-A), virtual modifiers parse (M00-A), combinations work (Shift-M00-A)_
 
-- [ ] 1.8. Implement mapping parsing (parseMappings)
+- [x] 1.8. Implement mapping parsing (parseMappings)
   - File: src/core/settings/json_config_loader.cpp (continue from 1.7)
   - Implement parseMappings() to parse "mappings" array
   - Parse "from" field using parseModifiedKey()
