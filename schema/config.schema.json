@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/yourusername/yamy/config.schema.json",
+  "title": "YAMY Configuration",
+  "description": "JSON configuration schema for YAMY keyboard remapper",
+  "type": "object",
+  "required": ["version", "keyboard", "mappings"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "2.0",
+      "description": "Configuration format version. Must be '2.0' for this schema."
+    },
+    "keyboard": {
+      "type": "object",
+      "description": "Keyboard layout and key definitions",
+      "required": ["keys"],
+      "additionalProperties": false,
+      "properties": {
+        "keys": {
+          "type": "object",
+          "description": "Mapping of key names to scan codes. Each key name must map to a hexadecimal scan code (e.g., '0x1e' for the A key).",
+          "patternProperties": {
+            "^[A-Za-z0-9_]+$": {
+              "type": "string",
+              "pattern": "^0x[0-9A-Fa-f]{1,4}$",
+              "description": "Hexadecimal scan code for this key (e.g., '0x1e', '0xcb')"
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      }
+    },
+    "virtualModifiers": {
+      "type": "object",
+      "description": "Virtual modifier definitions (M00-MFF). Virtual modifiers enable modal editing by treating a key as a modifier when held, with optional tap action.",
+      "patternProperties": {
+        "^M[0-9A-Fa-f]{2}$": {
+          "type": "object",
+          "description": "Virtual modifier configuration. Name must be M00-MFF (e.g., M00, M01, MFF).",
+          "required": ["trigger"],
+          "additionalProperties": false,
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "description": "Key name that activates this virtual modifier (e.g., 'CapsLock', 'Semicolon'). Must match a key defined in keyboard.keys.",
+              "minLength": 1
+            },
+            "tapAction": {
+              "type": "string",
+              "description": "Optional key to send when trigger is tapped (pressed and released quickly) instead of held. Useful for dual-purpose keys (e.g., CapsLock as modifier when held, Escape when tapped).",
+              "minLength": 1
+            },
+            "holdThresholdMs": {
+              "type": "integer",
+              "description": "Time in milliseconds to distinguish between tap and hold. Default is 200ms.",
+              "minimum": 0,
+              "maximum": 5000,
+              "default": 200
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "mappings": {
+      "type": "array",
+      "description": "Key mapping rules that remap input keys to output actions",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Input key specification with optional modifiers. Format: [Modifier-]...[Modifier-]KeyName. Standard modifiers: Shift, Ctrl, Alt, Win. Virtual modifiers: M00-MFF. Examples: 'A', 'Shift-A', 'M00-H', 'Shift-M00-A'.",
+            "pattern": "^((Shift|Ctrl|Alt|Win|M[0-9A-Fa-f]{2})-)*[A-Za-z0-9_]+$",
+            "minLength": 1
+          },
+          "to": {
+            "description": "Output action. Can be a single key string (e.g., 'Tab') or an array of keys for sequences (e.g., ['Esc', 'B']). Keys can include modifiers (e.g., 'Ctrl-C', 'Shift-Delete').",
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Single output key with optional modifiers (e.g., 'Tab', 'Ctrl-C', 'Shift-Delete')",
+                "pattern": "^((Shift|Ctrl|Alt|Win|M[0-9A-Fa-f]{2})-)*[A-Za-z0-9_]+$",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "description": "Sequence of keys to send in order (e.g., ['Escape', 'B'] for vim-style sequence)",
+                "items": {
+                  "type": "string",
+                  "pattern": "^((Shift|Ctrl|Alt|Win|M[0-9A-Fa-f]{2})-)*[A-Za-z0-9_]+$",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 100
+              }
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional human-readable description of what this mapping does"
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "version": "2.0",
+      "keyboard": {
+        "keys": {
+          "A": "0x1e",
+          "B": "0x30",
+          "Tab": "0x0f",
+          "CapsLock": "0x3a",
+          "Escape": "0x01",
+          "Left": "0xcb",
+          "Right": "0xcd"
+        }
+      },
+      "virtualModifiers": {
+        "M00": {
+          "trigger": "CapsLock",
+          "tapAction": "Escape",
+          "holdThresholdMs": 200
+        }
+      },
+      "mappings": [
+        {
+          "from": "A",
+          "to": "Tab",
+          "description": "Remap A to Tab"
+        },
+        {
+          "from": "M00-H",
+          "to": "Left",
+          "description": "Vim-style navigation: CapsLock+H moves left"
+        },
+        {
+          "from": "M00-B",
+          "to": ["Escape", "B"],
+          "description": "Send Escape then B when CapsLock+B is pressed"
+        }
+      ]
+    }
+  ]
+}
