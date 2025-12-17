@@ -1959,6 +1959,44 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
 
         # -----------------------------------------------------------------------------
+        # Target: benchmark_json_loader (JSON Config Loader Performance Benchmark)
+        # Standalone performance benchmark to measure JSON config loading latency
+        # Part of task 5.6 in json-refactoring spec
+        # -----------------------------------------------------------------------------
+        set(BENCHMARK_JSON_LOADER_SOURCES
+            tests/benchmark_json_loader.cpp
+            src/core/settings/json_config_loader.cpp
+            src/core/input/keyboard.cpp
+            src/core/input/keymap.cpp
+            src/core/input/modifier_state.cpp
+            src/utils/stringtool.cpp
+        )
+
+        add_executable(benchmark_json_loader
+            ${BENCHMARK_JSON_LOADER_SOURCES}
+        )
+
+        target_include_directories(benchmark_json_loader PRIVATE
+            src
+            src/core
+            src/core/settings
+            src/core/input
+            src/core/functions
+            src/core/window
+            src/platform/linux
+            src/utils
+        )
+
+        target_compile_definitions(benchmark_json_loader PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(benchmark_json_loader PRIVATE
+            pthread
+            yamy_dependencies
+        )
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_property_keymap_test (Keymap Property-Based Tests)
         # Property-based tests using RapidCheck for keymap invariants
         # Part of task 5.1 in modern-cpp-toolchain spec
