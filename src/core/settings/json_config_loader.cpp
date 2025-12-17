@@ -107,13 +107,106 @@ bool JsonConfigLoader::parseVirtualModifiers(const nlohmann::json& obj, Setting*
 {
     Expects(setting != nullptr);
 
-    // TODO: Implement in task 1.6
-    // - Parse "virtualModifiers" section
-    // - Extract M00-MFF numbers from modifier names
-    // - Register trigger keys in Setting::m_virtualModTriggers
-    // - Register tap actions in Setting::m_modTapActions
+    // virtualModifiers section is optional
+    if (!obj.contains("virtualModifiers")) {
+        return true;
+    }
 
-    return false;
+    const auto& vmods = obj["virtualModifiers"];
+
+    // Validate virtualModifiers is an object
+    if (!vmods.is_object()) {
+        logError("'virtualModifiers' must be an object");
+        return false;
+    }
+
+    // Parse each virtual modifier definition
+    for (auto& [modName, modDef] : vmods.items()) {
+        // Validate modifier name format (M00-MFF)
+        if (modName.length() != 3 || modName[0] != 'M') {
+            logError("Invalid virtual modifier name '" + modName + "': must be M00-MFF");
+            return false;
+        }
+
+        // Extract hex number from modifier name (e.g., "M00" → 0x00, "M3A" → 0x3A)
+        uint8_t modNum;
+        try {
+            modNum = static_cast<uint8_t>(std::stoi(modName.substr(1), nullptr, 16));
+        } catch (const std::exception& e) {
+            logError("Invalid modifier number in '" + modName + "': " + e.what());
+            return false;
+        }
+
+        // Validate modDef is an object
+        if (!modDef.is_object()) {
+            logError("Virtual modifier '" + modName + "' definition must be an object");
+            return false;
+        }
+
+        // Parse trigger key (required)
+        if (!modDef.contains("trigger")) {
+            logError("Virtual modifier '" + modName + "' missing required 'trigger' field");
+            return false;
+        }
+
+        if (!modDef["trigger"].is_string()) {
+            logError("Virtual modifier '" + modName + "' trigger must be a string");
+            return false;
+        }
+
+        std::string triggerName = modDef["trigger"].get<std::string>();
+        Key* triggerKey = resolveKeyName(triggerName);
+        if (!triggerKey) {
+            logError("Unknown trigger key for " + modName + ": '" + triggerName + "'");
+            return false;
+        }
+
+        // Get the trigger key's scan code
+        const ScanCode* scanCodes = triggerKey->getScanCodes();
+        if (triggerKey->getScanCodesSize() == 0) {
+            logError("Trigger key '" + triggerName + "' for " + modName + " has no scan codes");
+            return false;
+        }
+
+        // Register virtual modifier trigger
+        // Map: scancode → modifier number
+        setting->m_virtualModTriggers[scanCodes[0].m_scan] = modNum;
+
+        // Parse optional tap action
+        if (modDef.contains("tap")) {
+            if (!modDef["tap"].is_string()) {
+                logError("Virtual modifier '" + modName + "' tap action must be a string");
+                return false;
+            }
+
+            std::string tapName = modDef["tap"].get<std::string>();
+            Key* tapKey = resolveKeyName(tapName);
+            if (!tapKey) {
+                logError("Unknown tap key for " + modName + ": '" + tapName + "'");
+                return false;
+            }
+
+            // Get tap key's scan code
+            const ScanCode* tapScanCodes = tapKey->getScanCodes();
+            if (tapKey->getScanCodesSize() == 0) {
+                logError("Tap key '" + tapName + "' for " + modName + " has no scan codes");
+                return false;
+            }
+
+            // Register tap action
+            // Map: modifier number → tap scancode
+            setting->m_modTapActions[modNum] = tapScanCodes[0].m_scan;
+        }
+
+        // Note: holdThresholdMs is not stored in Setting (would need to be added)
+        // For now we ignore it as it's not in the current Setting structure
+    }
+
+    if (vmods.empty()) {
+        logWarning("'virtualModifiers' section is empty");
+    }
+
+    return true;
 }
 
 bool JsonConfigLoader::parseMappings(const nlohmann::json& obj, Setting* setting)
