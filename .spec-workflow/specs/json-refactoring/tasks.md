@@ -314,7 +314,7 @@
   - _Requirements: NFR-2_
   - _Prompt: Role: Application Developer with expertise in initialization and configuration | Task: Update main entry point to use JsonConfigLoader only following requirement NFR-2 | Restrictions: Remove all SettingLoader references, use .json config path, maintain other initialization logic, ensure proper error handling | Success: main.cpp uses JsonConfigLoader only, loads .json configs, no .mayu code paths, application starts correctly_
 
-- [ ] 4.7. Clean build verification
+- [-] 4.7. Clean build verification
   - Clean build directory completely
   - Run cmake configuration
   - Build project from scratch

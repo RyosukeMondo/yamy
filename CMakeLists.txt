@@ -493,11 +493,8 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/functions/function.cpp
         src/core/functions/function_creator.cpp
         src/core/commands/cmd_keymap_parent.cpp
-        src/core/commands/cmd_keymap_window.cpp
-        src/core/commands/cmd_other_window_class.cpp
         src/core/commands/cmd_prefix.cpp
         src/core/commands/cmd_keymap.cpp
-        src/core/commands/cmd_sync.cpp
         src/core/commands/cmd_toggle.cpp
         src/core/commands/cmd_edit_next_modifier.cpp
         src/core/commands/cmd_variable.cpp
@@ -1471,11 +1468,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         # Command sources needed for function_creator linkage
         set(KEYREMAP_TEST_CMD_SOURCES
             src/core/commands/cmd_keymap_parent.cpp
-            src/core/commands/cmd_keymap_window.cpp
-            src/core/commands/cmd_other_window_class.cpp
             src/core/commands/cmd_prefix.cpp
             src/core/commands/cmd_keymap.cpp
-            src/core/commands/cmd_sync.cpp
             src/core/commands/cmd_toggle.cpp
             src/core/commands/cmd_edit_next_modifier.cpp
             src/core/commands/cmd_variable.cpp
@@ -1657,8 +1651,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/input/keyboard.cpp
             src/core/input/keymap.cpp
             src/core/input/modifier_state.cpp
-            src/core/engine/engine_generator.cpp
-            src/core/functions/function.cpp
             src/utils/stringtool.cpp
         )
 
@@ -2185,11 +2177,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         # Command sources needed for function_creator linkage
         set(REGRESSION_CMD_SOURCES
             src/core/commands/cmd_keymap_parent.cpp
-            src/core/commands/cmd_keymap_window.cpp
-            src/core/commands/cmd_other_window_class.cpp
             src/core/commands/cmd_prefix.cpp
             src/core/commands/cmd_keymap.cpp
-            src/core/commands/cmd_sync.cpp
             src/core/commands/cmd_toggle.cpp
             src/core/commands/cmd_edit_next_modifier.cpp
             src/core/commands/cmd_variable.cpp
