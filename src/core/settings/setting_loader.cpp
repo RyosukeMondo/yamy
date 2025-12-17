@@ -102,8 +102,8 @@ void SettingLoader::load_INCLUDE()
         // RAII guard for include stack - automatically handles push/pop
         yamy::IncludeGuard guard(*m_includeContext, filename);
 
-        // Create child loader with SHARED include context
-        SettingLoader loader(m_soLog, m_log, m_config, *m_includeContext);
+        // Create child loader with SHARED include context and AST
+        SettingLoader loader(m_soLog, m_log, m_config, *m_includeContext, m_ast);
         loader.m_currentFilename = m_currentFilename;
         loader.m_defaultAssignModifier = m_defaultAssignModifier;
         loader.m_defaultKeySeqModifier = m_defaultKeySeqModifier;
@@ -795,6 +795,14 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
     m_currentKeymap = m_setting->m_keymaps.add(
                           Keymap(type, to_UTF_8(name->getString()), windowClassName, windowTitleName,
                                  nullptr, nullptr));
+    
+    // AST population
+    yamy::ast::KeymapDefinition keymapDef;
+    keymapDef.name = to_UTF_8(name->getString());
+    keymapDef.windowClassRegex = windowClassName;
+    keymapDef.windowTitleRegex = windowTitleName;
+    m_ast->keymaps.push_back(keymapDef);
+    m_currentAstKeymap = &m_ast->keymaps.back();
 
     if (doesLoadDefaultKeySeq) {
         Token *t = lookToken();
@@ -806,6 +814,9 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
             if (!parentKeymap)
                 throw ErrorMessage() << "`" << *t
                 << "': unknown keymap name.";
+            if (m_currentAstKeymap) {
+                m_currentAstKeymap->parentName = to_UTF_8(t->getString());
+            }
         }
         if (!isEOL()) {
             t = getToken();
@@ -1922,6 +1933,7 @@ add_symbols:
 // constructor for root loader (creates own IncludeContext)
 SettingLoader::SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config)
         : m_setting(nullptr),
+        m_ast(std::make_shared<yamy::ast::ConfigAST>()),
         m_config(i_config),
         m_isThereAnyError(false),
         m_soLog(i_soLog),
@@ -1935,8 +1947,9 @@ SettingLoader::SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const Con
 }
 
 // constructor for child loader (shares IncludeContext)
-SettingLoader::SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config, yamy::IncludeContext& i_includeContext)
+SettingLoader::SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config, yamy::IncludeContext& i_includeContext, std::shared_ptr<yamy::ast::ConfigAST> ast)
         : m_setting(nullptr),
+        m_ast(ast),
         m_config(i_config),
         m_isThereAnyError(false),
         m_soLog(i_soLog),

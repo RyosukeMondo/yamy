@@ -8,9 +8,11 @@
 
 #  include "setting.h"
 #  include "parser.h"
+#  include "config_ast.h"
 #  include "../utils/config_store.h"
 #  include "include_context.h"
 #  include <iostream>
+#  include <memory>
 
 ///
 ///
@@ -53,6 +55,7 @@ private:
 
 private:
     Setting *m_setting;                /// loaded setting
+    std::shared_ptr<yamy::ast::ConfigAST> m_ast; ///< AST populated during parsing
     const ConfigStore *m_config;        /// config store
     bool m_isThereAnyError;            /// is there any error ?
 
@@ -71,6 +74,7 @@ private:
     static size_t m_prefixesRefCcount;        /// reference count of prefix
 
     Keymap *m_currentKeymap;            /// current keymap
+    yamy::ast::KeymapDefinition* m_currentAstKeymap = nullptr; /// current keymap in AST
 
     CanReadStack m_canReadStack;            /// for &lt;COND_SYMBOL&gt;
 
@@ -181,8 +185,8 @@ public:
     /// Constructor for root loader (creates own IncludeContext)
     SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config = nullptr);
 
-    /// Constructor for child loader (shares IncludeContext)
-    SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config, yamy::IncludeContext& i_includeContext);
+    /// Constructor for child loader (shares IncludeContext and AST)
+    SettingLoader(SyncObject *i_soLog, std::ostream *i_log, const ConfigStore *i_config, yamy::IncludeContext& i_includeContext, std::shared_ptr<yamy::ast::ConfigAST> ast);
 
     /// Destructor
     ~SettingLoader();
