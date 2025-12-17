@@ -8,14 +8,16 @@
   - _Status: Completed (See recent git history)_
 
 - [ ] 2. Remove Thread-Local Storage Hack
-  - File: `src/core/settings/setting_loader.cpp`
-  - Remove `s_pendingVirtualMod` and `s_hasVirtualMod`.
-  - Pass modifier state explicitly through `load_KEY_SEQUENCE` and `ActionKey` constructors.
+  - File: `src/core/settings/setting_loader.h` / `.cpp`
+  - **Implementation Detail:** Define `struct ParserContext` (see `design.md` Tech Specs) inside `SettingLoader`.
+  - **Action:** Update `parseMxxModifier`, `load_KEY_SEQUENCE`, and `load_KEY_NAME` to accept `ParserContext& ctx` as an argument.
+  - **Action:** Move `s_pendingVirtualMod` and `s_hasVirtualMod` from the anonymous namespace into this `ParserContext` struct instance (passed down from `load_MODIFIER` -> `parseMxxModifier`).
   - _Requirements: 4.1, 4.2_
 
 - [ ] 3. Introduce ConfigAST
   - File: `src/core/settings/config_ast.h`
-  - Define structs for `KeyDefinition`, `ModifierDefinition`, `KeyAssignment`.
+  - **Implementation Detail:** Copy the struct definitions from `design.md` (Technical Specifications section) into this new header file.
+  - **Action:** Ensure namespaces match `yamy::ast`.
   - _Requirements: 1.1_
 
 - [ ] 4. Update SettingLoader to use AST (Phase A)
