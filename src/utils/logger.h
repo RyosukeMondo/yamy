@@ -11,6 +11,12 @@
 #undef None
 #endif
 
+// Configure Quill
+#ifndef QUILL_QUIET
+#define QUILL_QUIET
+#endif
+
+#define QUILL_USE_EXCEPTIONS
 #include <quill/LogLevel.h>
 #include <quill/Quill.h>
 

@@ -594,7 +594,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/input/keyboard.cpp
         src/core/input/keymap.cpp
         src/core/input/modifier_state.cpp
-        src/core/input/lock_state.cpp
+
         src/core/input/vkeytable.cpp
         src/core/window/layoutmanager.cpp
         src/core/window/target.cpp
@@ -1362,6 +1362,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_notification_dispatcher_test PRIVATE
             pthread
+            yamy_dependencies
         )
 
         add_test(NAME yamy_notification_dispatcher_test COMMAND yamy_notification_dispatcher_test)
@@ -1522,7 +1523,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/input/keyboard.cpp
             src/core/input/keymap.cpp
             src/core/input/modifier_state.cpp
-            src/core/input/lock_state.cpp
+    
             src/core/input/vkeytable.cpp
             src/core/settings/parser.cpp
             src/core/settings/setting.cpp
@@ -1725,6 +1726,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             ${X11_LIBRARIES}
             ${XRANDR_LIBRARIES}
             ${UDEV_LIBRARIES}
+            yamy_dependencies
         )
 
         add_test(NAME yamy_leak_test COMMAND yamy_leak_test)
@@ -2239,7 +2241,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/input/keyboard.cpp
             src/core/input/keymap.cpp
             src/core/input/modifier_state.cpp
-            src/core/input/lock_state.cpp
+    
             src/core/input/vkeytable.cpp
             src/core/settings/parser.cpp
             src/core/settings/setting.cpp
