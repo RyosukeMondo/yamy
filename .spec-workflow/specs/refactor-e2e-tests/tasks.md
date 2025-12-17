@@ -5,7 +5,7 @@
   - **Action:** Create empty `__init__.py` files.
   - _Requirements: 1.1_
 
-- [ ] 2. Implement ConfigParser
+- [x] 2. Implement ConfigParser
   - File: `tests/framework/parser.py`
   - **Implementation Detail:** Migrate logic from `MayuParser` in `automated_keymap_test.py`.
   - **Action:** Improve regex to be more robust (handle comments better).
