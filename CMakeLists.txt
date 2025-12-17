@@ -1735,6 +1735,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_number_modifiers_test PRIVATE
             pthread
+            yamy_dependencies
         )
 
         add_test(NAME yamy_number_modifiers_test COMMAND yamy_number_modifiers_test)
@@ -1772,6 +1773,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_modifier_state_test PRIVATE
             pthread
+            yamy_dependencies
         )
 
         add_test(NAME yamy_modifier_state_test COMMAND yamy_modifier_state_test)
@@ -1814,6 +1816,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_event_processor_modal_test PRIVATE
             pthread
+            yamy_dependencies
         )
 
         add_test(NAME yamy_event_processor_modal_test COMMAND yamy_event_processor_modal_test)
@@ -1856,6 +1859,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_modal_e2e_test PRIVATE
             pthread
+            yamy_dependencies
         )
 
         add_test(NAME yamy_modal_e2e_test COMMAND yamy_modal_e2e_test)
@@ -1891,6 +1895,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(benchmark_event_processor PRIVATE
             pthread
+            yamy_dependencies
         )
 
         # -----------------------------------------------------------------------------
@@ -1926,6 +1931,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(benchmark_modal_modifier PRIVATE
             pthread
+            yamy_dependencies
         )
 
         # -----------------------------------------------------------------------------
