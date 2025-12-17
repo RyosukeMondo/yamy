@@ -26,68 +26,121 @@
 
 namespace {
 
-// Maps a legacy Modifier::Type to its corresponding bit index in the new ModifierState bitset.
-// Returns -1 if the type is not a stateful modifier that should be part of the bitmask.
-int legacyTypeToBitIndex(Modifier::Type type) {
-    switch (type) {
-        // Standard hardware modifiers
-        case Modifier::Type_Shift:   return static_cast<int>(yamy::input::ModifierState::StdModifier::Shift);
-        case Modifier::Type_Control: return static_cast<int>(yamy::input::ModifierState::StdModifier::Control);
-        case Modifier::Type_Alt:     return static_cast<int>(yamy::input::ModifierState::StdModifier::Alt);
-        case Modifier::Type_Windows: return static_cast<int>(yamy::input::ModifierState::StdModifier::Windows);
+std::vector<yamy::engine::CompiledRule> compileSubstitute(const Keyboard::Substitute& sub) {
+    using namespace yamy::input;
 
-        // Lock states
-        case Modifier::Type_CapsLock:   return static_cast<int>(yamy::input::ModifierState::LockKeys::CapsLock);
-        case Modifier::Type_NumLock:    return static_cast<int>(yamy::input::ModifierState::LockKeys::NumLock);
-        case Modifier::Type_ScrollLock: return static_cast<int>(yamy::input::ModifierState::LockKeys::ScrollLock);
-        case Modifier::Type_KanaLock:   return static_cast<int>(yamy::input::ModifierState::LockKeys::KanaLock);
-
-        default:
-            return -1;
-    }
-}
-
-yamy::engine::CompiledRule compileSubstitute(const Keyboard::Substitute& sub) {
-    yamy::engine::CompiledRule rule;
-
-    // --- Compile Input Conditions ---
-    const Modifier& fromMod = sub.m_mkeyFrom.m_modifier;
-
-    for (int i = Modifier::Type_begin; i < Modifier::Type_ASSIGN; ++i) {
-        auto type = static_cast<Modifier::Type>(i);
-        
-        if (fromMod.isDontcare(type)) {
-            continue;
-        }
-
-        int bitIndex = legacyTypeToBitIndex(type);
-        if (bitIndex != -1) {
-            if (fromMod.isOn(type)) {
-                rule.requiredOn.set(bitIndex);
-            } else {
-                rule.requiredOff.set(bitIndex);
-            }
-        }
-    }
-    
-    for (int i = 0; i < 256; ++i) {
-        if (sub.m_mkeyFrom.isVirtualModActive(i)) {
-            int bitIndex = static_cast<int>(yamy::input::ModifierState::VirtualModifiersStart) + i;
-            rule.requiredOn.set(bitIndex);
-        }
-    }
+    std::vector<yamy::engine::CompiledRule> rules;
+    yamy::engine::CompiledRule base_rule;
 
     // --- Compile Output ---
     const Key* toKey = sub.m_mkeyTo.m_key;
     if (toKey && toKey->getScanCodesSize() > 0) {
-        rule.outputScanCode = toKey->getScanCodes()[0].m_scan;
+        base_rule.outputScanCode = toKey->getScanCodes()[0].m_scan;
     } else {
-        // If there's no 'to' key, it might be a function call or other action.
-        // For now, we represent this as a scancode of 0, meaning "do nothing".
-        rule.outputScanCode = 0;
+        base_rule.outputScanCode = 0;
     }
 
-    return rule;
+    // --- Compile Input Conditions ---
+    const Modifier& fromMod = sub.m_mkeyFrom.m_modifier;
+    std::vector<std::pair<size_t, size_t>> generic_modifiers;
+
+    // --- Handle Generic Modifiers (Shift, Ctrl, Alt, Win) ---
+    if (fromMod.isOn(Modifier::Type_Shift)) {
+        generic_modifiers.push_back({ModifierState::LSHIFT, ModifierState::RSHIFT});
+    } else if (!fromMod.isDontcare(Modifier::Type_Shift)) {
+        base_rule.requiredOff.set(ModifierState::LSHIFT);
+        base_rule.requiredOff.set(ModifierState::RSHIFT);
+    }
+
+    if (fromMod.isOn(Modifier::Type_Control)) {
+        generic_modifiers.push_back({ModifierState::LCTRL, ModifierState::RCTRL});
+    } else if (!fromMod.isDontcare(Modifier::Type_Control)) {
+        base_rule.requiredOff.set(ModifierState::LCTRL);
+        base_rule.requiredOff.set(ModifierState::RCTRL);
+    }
+
+    if (fromMod.isOn(Modifier::Type_Alt)) {
+        generic_modifiers.push_back({ModifierState::LALT, ModifierState::RALT});
+    } else if (!fromMod.isDontcare(Modifier::Type_Alt)) {
+        base_rule.requiredOff.set(ModifierState::LALT);
+        base_rule.requiredOff.set(ModifierState::RALT);
+    }
+
+    if (fromMod.isOn(Modifier::Type_Windows)) {
+        generic_modifiers.push_back({ModifierState::LWIN, ModifierState::RWIN});
+    } else if (!fromMod.isDontcare(Modifier::Type_Windows)) {
+        base_rule.requiredOff.set(ModifierState::LWIN);
+        base_rule.requiredOff.set(ModifierState::RWIN);
+    }
+
+    // --- Handle Specific State Modifiers ---
+    // Note: ModifierState combines physical locks (CapsLock) and virtual states (Up) in StdModifier
+    if (fromMod.isOn(Modifier::Type_CapsLock)) {
+        base_rule.requiredOn.set(ModifierState::CAPSLOCK);
+    } else if (!fromMod.isDontcare(Modifier::Type_CapsLock)) {
+        base_rule.requiredOff.set(ModifierState::CAPSLOCK);
+    }
+    if (fromMod.isOn(Modifier::Type_NumLock)) {
+        base_rule.requiredOn.set(ModifierState::NUMLOCK);
+    } else if (!fromMod.isDontcare(Modifier::Type_NumLock)) {
+        base_rule.requiredOff.set(ModifierState::NUMLOCK);
+    }
+    if (fromMod.isOn(Modifier::Type_ScrollLock)) {
+        base_rule.requiredOn.set(ModifierState::SCROLLLOCK);
+    } else if (!fromMod.isDontcare(Modifier::Type_ScrollLock)) {
+        base_rule.requiredOff.set(ModifierState::SCROLLLOCK);
+    }
+     if (fromMod.isOn(Modifier::Type_Up)) {
+        base_rule.requiredOn.set(ModifierState::UP);
+    } else if (!fromMod.isDontcare(Modifier::Type_Up)) {
+        base_rule.requiredOff.set(ModifierState::UP);
+    }
+    // TODO: Add other specific modifiers like KanaLock if they get added to ModifierState
+
+    // --- Handle Virtual Modifiers (M00-MFF) ---
+    for (int i = 0; i < 256; ++i) {
+        if (sub.m_mkeyFrom.isVirtualModActive(i)) {
+            base_rule.requiredOn.set(ModifierState::VIRTUAL_OFFSET + i);
+        }
+        // NOTE: isVirtualModActive does not have a "required off" state in legacy model.
+        // It's assumed to be off if not specified as on.
+        else {
+             base_rule.requiredOff.set(ModifierState::VIRTUAL_OFFSET + i);
+        }
+    }
+    
+    // --- Handle Lock Modifiers (L00-LFF) ---
+    for (int i = 0; i < 10; ++i) {
+        Modifier::Type lockType = static_cast<Modifier::Type>(Modifier::Type_Lock0 + i);
+        if (fromMod.isOn(lockType)) {
+            base_rule.requiredOn.set(ModifierState::LOCK_OFFSET + i);
+        } else if (!fromMod.isDontcare(lockType)) {
+            base_rule.requiredOff.set(ModifierState::LOCK_OFFSET + i);
+        }
+    }
+
+
+    // --- Expand Generic Modifiers ---
+    // If there are N generic 'on' modifiers, we need 2^N rules.
+    if (generic_modifiers.empty()) {
+        rules.push_back(base_rule);
+    } else {
+        size_t num_expansions = 1 << generic_modifiers.size();
+        for (size_t i = 0; i < num_expansions; ++i) {
+            yamy::engine::CompiledRule new_rule = base_rule;
+            for (size_t j = 0; j < generic_modifiers.size(); ++j) {
+                // Use j-th bit of i to decide between left/right version
+                if ((i >> j) & 1) {
+                    new_rule.requiredOn.set(generic_modifiers[j].second); // e.g., RSHIFT
+                } else {
+                    new_rule.requiredOn.set(generic_modifiers[j].first);  // e.g., LSHIFT
+                }
+            }
+            rules.push_back(new_rule);
+        }
+    }
+
+    return rules;
 }
 
 } // namespace
@@ -306,26 +359,30 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
     // Get the new lookup table and compile rules into it
     if (auto* lookupTable = m_eventProcessor->getLookupTable()) {
         lookupTable->clear();
+        int total_rules = 0;
         for (const auto& substitute : keyboard.getSubstitutes()) {
             const Key* fromKey = substitute.m_mkeyFrom.m_key;
             if (!fromKey || fromKey->getScanCodesSize() == 0) {
                 continue;
             }
             uint16_t inputScanCode = fromKey->getScanCodes()[0].m_scan;
-            yamy::engine::CompiledRule rule = compileSubstitute(substitute);
-            lookupTable->addRule(inputScanCode, rule);
+            std::vector<yamy::engine::CompiledRule> rules = compileSubstitute(substitute);
+            for (const auto& rule : rules) {
+                lookupTable->addRule(inputScanCode, rule);
+            }
+            total_rules += rules.size();
         }
     }
 
     // Log summary
     {
         Acquire a(&m_log, 0);
-        m_log << "Built new rule lookup table with " << keyboard.getSubstitutes().size()
-              << " rules." << std::endl;
+        m_log << "Built new rule lookup table with " << total_rules
+              << " compiled rules from " << keyboard.getSubstitutes().size()
+              << " substitutes." << std::endl;
     }
 
     m_eventProcessor->setDebugLogging(true);
-    m_eventProcessor->setSubstitutesList(&keyboard.getSubstitutes());
 
     // Register number modifiers
     for (const auto& numberMod : keyboard.getNumberModifiers()) {

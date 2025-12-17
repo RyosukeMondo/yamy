@@ -157,62 +157,25 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
     // 3. If yamy_out is a lock key (L00-LFF) → toggle on PRESS, suppress always
     // 4. Otherwise → return yamy_out for output
 
-    // Step 1: Apply substitution using full modifier awareness
+    // Step 1: Apply substitution using the new RuleLookupTable
     uint16_t yamy_out = yamy_in;
     bool mapped = false;
 
-    auto it = m_scanCodeToSubstitutes.find(yamy_in);
-    if (it != m_scanCodeToSubstitutes.end()) {
-        const auto& substitutesForScanCode = it->second;
+    if (io_modState && m_lookupTable) {
+        const auto& state = io_modState->getFullState();
+        if (const auto* match = m_lookupTable->findMatch(yamy_in, state)) {
+            yamy_out = match->outputScanCode;
+            mapped = true;
 
-        yamy::input::Modifier currentMod = io_modState ? io_modState->toModifier() : yamy::input::Modifier();
-        
-        for (const auto* subst_ptr : substitutesForScanCode) {
-            const auto& subst = *subst_ptr;
-            if (!subst.m_mkeyFrom.m_modifier.doesMatch(currentMod)) continue;
-
-            bool vmod_match = true;
-            if (io_modState) {
-                const auto& full_state = io_modState->getFullState();
-                const uint32_t* rule_vmods = subst.m_mkeyFrom.m_virtualMods;
-                for (int i = 0; i < 8; ++i) {
-                    uint32_t current_vmods_word = 0;
-                    for (int j=0; j<32; ++j) {
-                        if (full_state[io_modState->VIRTUAL_OFFSET + i*32 + j]) {
-                            current_vmods_word |= (1u << j);
-                        }
-                    }
-                    if (current_vmods_word != rule_vmods[i]) {
-                        vmod_match = false;
-                        break;
-                    }
-                }
-            } else {
-                const uint32_t* rule_vmods = subst.m_mkeyFrom.m_virtualMods;
-                for (int i = 0; i < 8; ++i) {
-                    if (rule_vmods[i] != 0) {
-                        vmod_match = false;
-                        break;
-                    }
-                }
+            if (m_debugLogging) {
+                LOG_DEBUG("[EventProcessor] [LAYER2:MATCH] 0x{:04X} -> 0x{:04X} (New Lookup)",
+                          yamy_in, yamy_out);
             }
-            if (!vmod_match) continue;
-
-            const Key* toKey = subst.m_mkeyTo.m_key;
-            if (toKey && toKey->getScanCodesSize() > 0) {
-                yamy_out = toKey->getScanCodes()[0].m_scan;
-                mapped = true;
-                
-                if (m_debugLogging) {
-                    LOG_DEBUG("[EventProcessor] [LAYER2:MATCH] 0x{:04X} -> 0x{:04X} (Rule: {})", 
-                              yamy_in, yamy_out, subst.m_mkeyFrom.m_key->getName());
-                }
-            }
-            break; 
         }
     }
-    
+
     if (!mapped) {
+        // If no rule matched, check for simple substitutions (e.g., for virtual modifier triggers)
         auto simple_it = m_substitutions.find(yamy_in);
         if (simple_it != m_substitutions.end()) {
              yamy_out = simple_it->second;
@@ -355,20 +318,5 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
 }
 
 // ... other functions ...
-
-void EventProcessor::buildSubstituteMap()
-{
-    m_scanCodeToSubstitutes.clear();
-    if (!m_substitutesList) {
-        return;
-    }
-
-    for (const auto& subst : *m_substitutesList) {
-        if (subst.m_mkeyFrom.m_key && subst.m_mkeyFrom.m_key->getScanCodesSize() > 0) {
-            uint16_t scanCode = subst.m_mkeyFrom.m_key->getScanCodes()[0].m_scan;
-            m_scanCodeToSubstitutes[scanCode].push_back(&subst);
-        }
-    }
-}
 
 } // namespace yamy
