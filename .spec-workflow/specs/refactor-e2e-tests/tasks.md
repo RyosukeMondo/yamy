@@ -11,7 +11,7 @@
   - **Action:** Improve regex to be more robust (handle comments better).
   - _Requirements: 2.1_
 
-- [ ] 3. Implement EventInjector
+- [x] 3. Implement EventInjector
   - File: `tests/framework/injector.py`
   - **Implementation Detail:** Extract `subprocess` logic for `yamy-test`.
   - **Action:** Ensure process lifecycle (start/stop) is robust.
