@@ -29,7 +29,7 @@
   - **Action:** Implement `save_json` method.
   - _Requirements: 3.2_
 
-- [ ] 6. Create Main Runner
+- [x] 6. Create Main Runner
   - File: `tests/e2e/test_runner.py`
   - **Implementation Detail:** Stitch components together.
   - **Action:** CLI argument parsing (`argparse`).
