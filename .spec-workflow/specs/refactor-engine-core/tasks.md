@@ -26,7 +26,7 @@
   - Update `load_KEY_ASSIGN` etc. to populate AST *in addition to* legacy structures (Validation step).
   - _Requirements: 1.1_
 
-- [-] 5. Implement Compiler Phase
+- [x] 5. Implement Compiler Phase
   - File: `src/core/engine/config_compiler.cpp`
   - Create class `ConfigCompiler` that takes `ConfigAST` and produces `Keyboard` and `Keymaps`.
   - _Requirements: 1.3_
