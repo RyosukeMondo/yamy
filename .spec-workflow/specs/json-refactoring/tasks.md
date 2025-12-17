@@ -221,7 +221,7 @@
   - _Requirements: FR-3_
   - _Prompt: Role: C++ Developer with expertise in refactoring and dead code elimination | Task: Delete doesSameWindow() method from keymap.cpp following requirement FR-3 | Restrictions: Find all calls and remove them, ensure no dangling references, maintain other Keymap functionality | Success: doesSameWindow() deleted, no calls remain, keymap.cpp compiles, functionality preserved_
 
-- [ ] 3.3. Simplify Keymaps::getGlobalKeymap method
+- [x] 3.3. Simplify Keymaps::getGlobalKeymap method
   - File: src/core/input/keymap.cpp
   - Simplify getGlobalKeymap() to return keymap named "Global"
   - Remove window matching logic from search
@@ -230,7 +230,7 @@
   - _Requirements: FR-3_
   - _Prompt: Role: C++ Developer with expertise in collection operations and simplification | Task: Simplify Keymaps::getGlobalKeymap() to direct lookup following requirement FR-3 | Restrictions: Search by name "Global" only, no window regex, return first match or nullptr, maintain simple iteration | Success: Method simplified to ~5 lines, returns keymap with name "Global", no window logic, works correctly_
 
-- [ ] 3.4. Remove searchWindow method from Keymaps class
+- [x] 3.4. Remove searchWindow method from Keymaps class
   - File: src/core/input/keymap.cpp
   - Delete searchWindow() implementation
   - Remove method declaration from keymap.h
@@ -240,7 +240,7 @@
   - _Requirements: FR-3_
   - _Prompt: Role: C++ Refactoring Specialist with expertise in API cleanup | Task: Delete searchWindow() method from Keymaps class following requirement FR-3 | Restrictions: Remove from both .h and .cpp files, find and remove all calls, ensure no references remain | Success: searchWindow() deleted from header and implementation, no calls remain, Keymaps class compiles_
 
-- [ ] 3.5. Verify key mappings work with simplified Keymap
+- [x] 3.5. Verify key mappings work with simplified Keymap
   - Test simple mappings (A→Tab)
   - Test modifier mappings (Shift-A→Tab)
   - Test M00-MFF mappings (M00-A→Left)
