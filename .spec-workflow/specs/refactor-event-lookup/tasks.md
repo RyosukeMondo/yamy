@@ -1,6 +1,6 @@
 # Tasks Document: EventProcessor Lookup Refactoring
 
-- [ ] 1. Define CompiledRule and LookupTable
+- [x] 1. Define CompiledRule and LookupTable
   - File: `src/core/engine/compiled_rule.h`, `src/core/engine/lookup_table.h`
   - **Implementation Detail:** Copy the struct and class definitions from `design.md` exactly.
   - **Action:** Ensure `ModifierState` header is included correctly for `TOTAL_BITS`.
