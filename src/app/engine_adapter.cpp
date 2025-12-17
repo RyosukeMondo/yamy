@@ -243,22 +243,8 @@ std::string EngineAdapter::getStatusJson() const
     // Key count from metrics
     obj["key_count"] = static_cast<qint64>(keyCount());
 
-    // Current keymap - get from engine's current window
-    std::string currentKeymap = "default";
-    const Setting* setting = m_engine->getSetting();
-    if (setting) {
-        std::string className = m_engine->getCurrentWindowClassName();
-        std::string titleName = m_engine->getCurrentWindowTitleName();
-
-        // Search for matching keymap
-        Keymaps::KeymapPtrList keymaps;
-        const_cast<Keymaps&>(setting->m_keymaps).searchWindow(&keymaps, className, titleName);
-
-        if (!keymaps.empty() && keymaps.front()) {
-            currentKeymap = keymaps.front()->getName();
-        }
-    }
-    obj["current_keymap"] = QString::fromStdString(currentKeymap);
+    // Current keymap - always "Global" since we removed per-window keymaps
+    obj["current_keymap"] = "Global";
 
     return QJsonDocument(obj).toJson(QJsonDocument::Compact).toStdString();
 }
@@ -293,13 +279,11 @@ std::string EngineAdapter::getKeymapsJson() const
     if (m_engine) {
         const Setting* setting = m_engine->getSetting();
         if (setting) {
-            // Iterate through all keymaps
+            // Iterate through all keymaps (no window matching info since we removed per-window keymaps)
             const auto& keymapList = setting->m_keymaps.getKeymapList();
             for (const auto& keymap : keymapList) {
                 QJsonObject kmObj;
                 kmObj["name"] = QString::fromStdString(keymap.getName());
-                kmObj["window_class"] = QString::fromStdString(keymap.getWindowClassStr());
-                kmObj["window_title"] = QString::fromStdString(keymap.getWindowTitleStr());
                 keymapsArray.append(kmObj);
             }
         }

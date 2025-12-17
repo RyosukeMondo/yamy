@@ -236,3 +236,18 @@ std::vector<yamy::engine::CompiledRule> Engine::compileSubstitute(const Keyboard
 
     return rules;
 }
+
+// Query keymap status for window (simplified - always returns Global keymap)
+Engine::KeymapStatus Engine::queryKeymapForWindow(
+    yamy::platform::WindowHandle /*hwnd*/,
+    const std::string& /*className*/,
+    const std::string& /*titleName*/) const
+{
+    KeymapStatus status;
+    status.isDefault = true;
+    status.keymapName = "Global";
+    status.matchedClassRegex = "";
+    status.matchedTitleRegex = "";
+    status.activeModifiers = "";
+    return status;
+}

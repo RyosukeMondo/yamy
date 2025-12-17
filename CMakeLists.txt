@@ -1266,6 +1266,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         set(NOTIFICATION_DISPATCHER_TEST_SOURCES
             tests/core/notification_test.cpp
             src/core/notification_dispatcher.cpp
+            src/utils/logger.cpp
         )
 
         add_executable(yamy_notification_dispatcher_test
@@ -1550,6 +1551,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/device_manager_linux.cpp
             src/platform/linux/keycode_mapping.cpp
             src/utils/metrics.cpp
+            src/utils/logger.cpp
             src/core/logger/journey_logger.cpp
         )
 
