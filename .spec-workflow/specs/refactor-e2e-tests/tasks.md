@@ -17,7 +17,7 @@
   - **Action:** Ensure process lifecycle (start/stop) is robust.
   - _Requirements: 1.1, 4.1_
 
-- [ ] 4. Implement LogMonitor
+- [x] 4. Implement LogMonitor
   - File: `tests/framework/monitor.py`
   - **Implementation Detail:** Use `evdev` to capture output from "Yamy Virtual" device.
   - **Action:** Implement timeout logic for event capture.
