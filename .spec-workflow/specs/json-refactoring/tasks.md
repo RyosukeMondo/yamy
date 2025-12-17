@@ -190,7 +190,7 @@
   - _Requirements: FR-3_
   - _Prompt: Role: Build Engineer with expertise in CMake and code cleanup | Task: Delete engine_focus.cpp and remove from CMakeLists.txt following requirement FR-3 | Restrictions: Only delete engine_focus.cpp, update CMakeLists.txt correctly, ensure build succeeds after deletion | Success: File deleted, CMakeLists.txt updated, build succeeds without engine_focus.cpp, ~800 LOC removed_
 
-- [ ] 2.6. Verify EventProcessor tests still pass
+- [x] 2.6. Verify EventProcessor tests still pass
   - Run test_event_processor_ut
   - Run test_engine_integration
   - Verify M00-MFF system unchanged
