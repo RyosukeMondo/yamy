@@ -17,7 +17,7 @@
   - **Action:** Update `buildSubstitutionTable` to populate `m_eventProcessor->getLookupTable()`.
   - _Requirements: 3.1_
 
-- [ ] 3. Update EventProcessor to use LookupTable
+- [x] 3. Update EventProcessor to use LookupTable
   - File: `src/core/engine/engine_event_processor.cpp`
   - **Implementation Detail:** Modify `layer2_applySubstitution`.
   - **Action:**
