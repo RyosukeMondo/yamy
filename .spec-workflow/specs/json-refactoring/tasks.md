@@ -2,7 +2,7 @@
 
 ## Phase 1: Add JSON Loader
 
-- [ ] 1.1. Add nlohmann/json dependency to build system
+- [x] 1.1. Add nlohmann/json dependency to build system
   - File: CMakeLists.txt
   - Add FetchContent declaration for nlohmann/json 3.11.3
   - Configure header-only library integration
@@ -11,7 +11,7 @@
   - _Requirements: FR-1_
   - _Prompt: Role: Build Engineer with expertise in CMake and dependency management | Task: Add nlohmann/json 3.11.3 to the project using CMake FetchContent, following requirement FR-1 for JSON configuration support | Restrictions: Must use FetchContent (not Conan for now), header-only library, do not modify existing dependencies | Success: Build succeeds with nlohmann/json available, can include <nlohmann/json.hpp> in code_
 
-- [ ] 1.2. Create JsonConfigLoader class interface
+- [x] 1.2. Create JsonConfigLoader class interface
   - File: src/core/settings/json_config_loader.h
   - Define class with load() method and private parsing methods
   - Add error logging support with std::ostream
@@ -20,7 +20,7 @@
   - _Requirements: FR-1, FR-6_
   - _Prompt: Role: C++ Developer specializing in configuration systems and API design | Task: Create JsonConfigLoader class interface following requirements FR-1 and FR-6, with proper error handling and logging support | Restrictions: Must use modern C++20, follow existing naming conventions (m_ prefix for members), use gsl::span where appropriate | Success: Header compiles cleanly, class is instantiable, interface is clear and well-documented with Doxygen comments_
 
-- [ ] 1.3. Implement JsonConfigLoader class skeleton
+- [x] 1.3. Implement JsonConfigLoader class skeleton
   - File: src/core/settings/json_config_loader.cpp
   - Implement constructor and stub methods for all parsing functions
   - Add basic error logging helpers
