@@ -1,5 +1,7 @@
 {
+  "$schema": "../schema/config.schema.json",
   "version": "2.0",
+  "description": "Comprehensive Vim-style keybindings for yamy. CapsLock acts as Vim 'normal mode' when held, Escape when tapped.",
   "keyboard": {
     "keys": {
       "A": "0x1e",
@@ -71,95 +73,386 @@
       "F9": "0x43",
       "F10": "0x44",
       "F11": "0x57",
-      "F12": "0x58"
+      "F12": "0x58",
+      "Semicolon": "0x27",
+      "Comma": "0x33",
+      "Period": "0x34",
+      "Slash": "0x35"
     }
   },
   "virtualModifiers": {
     "M00": {
       "trigger": "CapsLock",
-      "tapAction": "Escape"
+      "tapAction": "Escape",
+      "holdThresholdMs": 200,
+      "description": "Vim normal mode - hold CapsLock for vim navigation, tap for Escape"
     }
   },
   "mappings": [
     {
+      "description": "=== VIM BASIC MOVEMENT (h/j/k/l) ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "h - move cursor left",
       "from": "M00-H",
       "to": "Left"
     },
     {
+      "description": "j - move cursor down",
       "from": "M00-J",
       "to": "Down"
     },
     {
+      "description": "k - move cursor up",
       "from": "M00-K",
       "to": "Up"
     },
     {
+      "description": "l - move cursor right",
       "from": "M00-L",
       "to": "Right"
     },
     {
+      "description": "=== VIM WORD MOVEMENT ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "w - forward to start of next word",
       "from": "M00-W",
       "to": "Ctrl-Right"
     },
     {
+      "description": "b - backward to start of word",
       "from": "M00-B",
       "to": "Ctrl-Left"
     },
     {
+      "description": "e - forward to end of word",
       "from": "M00-E",
-      "to": "Ctrl-Right"
+      "to": ["Ctrl-Right", "Left"]
     },
     {
+      "description": "ge - backward to end of previous word",
+      "from": "M00-G",
+      "to": ["Ctrl-Left", "Left"]
+    },
+    {
+      "description": "=== VIM LINE MOVEMENT ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "0 - beginning of line",
       "from": "M00-0",
       "to": "Home"
     },
     {
+      "description": "$ - end of line (Shift-4)",
       "from": "M00-4",
       "to": "End"
     },
     {
+      "description": "^ - first non-blank character (Shift-6)",
+      "from": "M00-6",
+      "to": "Home"
+    },
+    {
+      "description": "=== VIM DOCUMENT MOVEMENT ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "gg - go to first line",
       "from": "M00-G",
-      "to": ["Ctrl-Home"]
+      "to": "Ctrl-Home"
     },
     {
+      "description": "G - go to last line (Shift-G)",
       "from": "M00-Shift-G",
-      "to": ["Ctrl-End"]
+      "to": "Ctrl-End"
     },
     {
-      "from": "M00-D",
+      "description": "=== VIM PAGE MOVEMENT ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "Ctrl-f - page forward (full page down)",
+      "from": "M00-Ctrl-F",
+      "to": "PageDown"
+    },
+    {
+      "description": "Ctrl-b - page backward (full page up)",
+      "from": "M00-Ctrl-B",
+      "to": "PageUp"
+    },
+    {
+      "description": "Ctrl-d - half page down",
+      "from": "M00-Ctrl-D",
+      "to": "PageDown"
+    },
+    {
+      "description": "Ctrl-u - half page up",
+      "from": "M00-Ctrl-U",
+      "to": "PageUp"
+    },
+    {
+      "description": "=== VIM CHARACTER DELETION ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "x - delete character under cursor",
+      "from": "M00-X",
       "to": "Delete"
     },
     {
-      "from": "M00-X",
-      "to": ["Shift-Delete"]
+      "description": "X - delete character before cursor (Shift-X)",
+      "from": "M00-Shift-X",
+      "to": "Backspace"
     },
     {
-      "from": "M00-P",
-      "to": ["Shift-Insert"]
+      "description": "s - substitute character (delete char and enter insert mode)",
+      "from": "M00-S",
+      "to": ["Delete", "Insert"]
     },
     {
+      "description": "=== VIM LINE DELETION ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "dd - delete entire line",
+      "from": "M00-D",
+      "to": ["Home", "Shift-End", "Ctrl-X"]
+    },
+    {
+      "description": "D - delete to end of line (Shift-D)",
+      "from": "M00-Shift-D",
+      "to": ["Shift-End", "Ctrl-X"]
+    },
+    {
+      "description": "dw - delete word forward",
+      "from": "M00-D",
+      "to": ["Shift-Ctrl-Right", "Ctrl-X"]
+    },
+    {
+      "description": "=== VIM COPY (YANK) ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "yy - yank (copy) entire line",
+      "from": "M00-Y",
+      "to": ["Home", "Shift-End", "Ctrl-C", "Right"]
+    },
+    {
+      "description": "yw - yank word",
+      "from": "M00-Y",
+      "to": ["Shift-Ctrl-Right", "Ctrl-C", "Left"]
+    },
+    {
+      "description": "y$ - yank to end of line",
       "from": "M00-Y",
       "to": ["Shift-End", "Ctrl-C"]
     },
     {
+      "description": "=== VIM PASTE (PUT) ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "p - paste after cursor",
+      "from": "M00-P",
+      "to": "Ctrl-V"
+    },
+    {
+      "description": "P - paste before cursor (Shift-P)",
+      "from": "M00-Shift-P",
+      "to": ["Left", "Ctrl-V"]
+    },
+    {
+      "description": "=== VIM CHANGE ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "cc - change entire line (delete and insert)",
+      "from": "M00-C",
+      "to": ["Home", "Shift-End", "Ctrl-X", "Insert"]
+    },
+    {
+      "description": "C - change to end of line (Shift-C)",
+      "from": "M00-Shift-C",
+      "to": ["Shift-End", "Ctrl-X", "Insert"]
+    },
+    {
+      "description": "cw - change word",
+      "from": "M00-C",
+      "to": ["Shift-Ctrl-Right", "Ctrl-X", "Insert"]
+    },
+    {
+      "description": "=== VIM INSERT MODE TRANSITIONS ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "i - insert before cursor",
+      "from": "M00-I",
+      "to": "Insert"
+    },
+    {
+      "description": "I - insert at beginning of line (Shift-I)",
+      "from": "M00-Shift-I",
+      "to": ["Home", "Insert"]
+    },
+    {
+      "description": "a - append after cursor",
+      "from": "M00-A",
+      "to": ["Right", "Insert"]
+    },
+    {
+      "description": "A - append at end of line (Shift-A)",
+      "from": "M00-Shift-A",
+      "to": ["End", "Insert"]
+    },
+    {
+      "description": "o - open line below",
+      "from": "M00-O",
+      "to": ["End", "Enter", "Insert"]
+    },
+    {
+      "description": "O - open line above (Shift-O)",
+      "from": "M00-Shift-O",
+      "to": ["Home", "Enter", "Up", "Insert"]
+    },
+    {
+      "description": "=== VIM UNDO/REDO ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "u - undo",
       "from": "M00-U",
       "to": "Ctrl-Z"
     },
     {
+      "description": "Ctrl-r - redo",
       "from": "M00-Ctrl-R",
       "to": "Ctrl-Y"
     },
     {
-      "from": "M00-I",
-      "to": ["Home", "Insert"]
+      "description": "=== VIM SEARCH ===",
+      "from": "M00-Space",
+      "to": "Space"
     },
     {
-      "from": "M00-A",
-      "to": ["End", "Insert"]
+      "description": "/ - search forward",
+      "from": "M00-Slash",
+      "to": "Ctrl-F"
     },
     {
-      "from": "M00-O",
-      "to": ["End", "Enter", "Insert"]
+      "description": "n - next search result",
+      "from": "M00-N",
+      "to": "F3"
+    },
+    {
+      "description": "N - previous search result (Shift-N)",
+      "from": "M00-Shift-N",
+      "to": "Shift-F3"
+    },
+    {
+      "description": "=== VIM JOINING LINES ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "J - join lines (Shift-J)",
+      "from": "M00-Shift-J",
+      "to": ["End", "Delete", "Space"]
+    },
+    {
+      "description": "=== VIM SELECTION (VISUAL MODE) ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "v - start character-wise visual selection",
+      "from": "M00-V",
+      "to": "Shift-Right"
+    },
+    {
+      "description": "V - start line-wise visual selection (Shift-V)",
+      "from": "M00-Shift-V",
+      "to": ["Home", "Shift-End"]
+    },
+    {
+      "description": "=== VIM MARKS (SIMPLIFIED) ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "m - set mark (simplified: just saves position via Ctrl-K then paste)",
+      "from": "M00-M",
+      "to": "Ctrl-K"
+    },
+    {
+      "description": "=== VIM SAVE/QUIT (SIMPLIFIED) ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": ":w equivalent - save file (M00-Semicolon-W)",
+      "from": "M00-Semicolon",
+      "to": "Ctrl-S"
+    },
+    {
+      "description": "ZZ - save and quit",
+      "from": "M00-Shift-Z",
+      "to": ["Ctrl-S", "Alt-F4"]
+    },
+    {
+      "description": "=== VIM TEXT OBJECTS (SIMPLIFIED) ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "diw - delete inner word (select word then delete)",
+      "from": "M00-D",
+      "to": ["Ctrl-Left", "Shift-Ctrl-Right", "Ctrl-X"]
+    },
+    {
+      "description": "ciw - change inner word (select word then delete and insert)",
+      "from": "M00-C",
+      "to": ["Ctrl-Left", "Shift-Ctrl-Right", "Ctrl-X", "Insert"]
+    },
+    {
+      "description": "=== VIM REPEAT ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": ". - repeat last command (simplified: just redo)",
+      "from": "M00-Period",
+      "to": "Ctrl-Y"
+    },
+    {
+      "description": "=== VIM INDENTATION ===",
+      "from": "M00-Space",
+      "to": "Space"
+    },
+    {
+      "description": "> - indent line right",
+      "from": "M00-Shift-Period",
+      "to": "Tab"
+    },
+    {
+      "description": "< - indent line left",
+      "from": "M00-Shift-Comma",
+      "to": "Shift-Tab"
     }
   ]
 }
