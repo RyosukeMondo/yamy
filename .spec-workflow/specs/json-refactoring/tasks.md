@@ -407,7 +407,7 @@
     - Binary size: ~3% reduction (modest but achieved) ✅
     - All NFR-1 requirements met with significant margin
 
-- [ ] 5.7. Update README.md with JSON information
+- [x] 5.7. Update README.md with JSON information
   - File: README.md
   - Update configuration section to describe JSON format
   - Remove or mark .mayu references as deprecated
@@ -417,6 +417,15 @@
   - _Leverage: existing README.md, docs/json-schema.md_
   - _Requirements: NFR-2_
   - _Prompt: Role: Technical Writer with expertise in README documentation and project presentation | Task: Update README.md for JSON configuration system following requirement NFR-2 | Restrictions: Update configuration section, deprecate .mayu references, add JSON documentation links, maintain README structure and tone | Success: README accurately reflects JSON system, .mayu marked deprecated, links to documentation added, clear and helpful_
+  - **Status**: Completed. Updated README.md with comprehensive Configuration section:
+    - Added JSON Quick Start example with CapsLock→Escape mapping
+    - Added Documentation section with links to json-schema.md, migration-guide.md, and example configs
+    - Listed key features (Virtual Modifiers, Key Sequences, Fast Loading, IDE Support)
+    - Added configuration file locations for Linux and Windows
+    - Marked .mayu format as deprecated with warning and migration guide link
+    - Updated Core Functionality features to reflect JSON format
+    - Updated example configuration from .mayu to JSON format with deprecation notice
+    - Updated keymaps directory description to mention .json files and deprecated .mayu files
 
 - [ ] 5.8. Final code review and cleanup
   - Review all modified files for code quality

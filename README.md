@@ -12,9 +12,9 @@ The original "Mado tsukai no Yuutsu" (Mayu) used a filter driver to replace key 
 
 ### Core Functionality
 
-- **Key Remapping**: Remap any key to any other key using intuitive `.mayu` configuration syntax
-- **Modal Layers**: Create Vim-style modal layers with custom key behaviors per layer
-- **Substitution System**: Define key substitutions with support for modifiers and combinations
+- **Key Remapping**: Remap any key to any other key using JSON configuration format
+- **Modal Layers**: Create Vim-style modal layers with M00-MFF virtual modifiers
+- **Key Sequences**: Define multi-step key sequences for complex operations
 - **Cross-Platform**: Full support for both Windows and Linux with unified configuration
 
 ### Advanced Features
@@ -28,26 +28,32 @@ Use number keys (0-9) as hardware modifier keys when held, perfect for small key
 - **System-Wide**: Modifiers work in all applications, not just YAMY
 - **Dual-Purpose**: Number keys serve double duty without sacrificing functionality
 
-**Example Configuration:**
+**Example Configuration (JSON):**
 
-```mayu
-# Hold number keys as modifiers
-def numbermod *_1 = *LShift
-def numbermod *_2 = *LCtrl
-def numbermod *_3 = *LAlt
-
-# Tap for function keys
-*_1 = *F1
-*_2 = *F2
-*_3 = *F3
+```json
+{
+  "version": "2.0",
+  "virtualModifiers": {
+    "M00": {"trigger": "_1", "tapAction": "F1"},
+    "M01": {"trigger": "_2", "tapAction": "F2"},
+    "M02": {"trigger": "_3", "tapAction": "F3"}
+  },
+  "mappings": [
+    {"from": "M00-A", "to": "Shift-A"},
+    {"from": "M01-A", "to": "Ctrl-A"},
+    {"from": "M02-A", "to": "Alt-A"}
+  ]
+}
 ```
 
 **Usage:**
 
 - Hold `1` + press `A` → Shift+A (capital A)
-- Tap `1` quickly → F1 (if substitution configured)
+- Tap `1` quickly → F1
 
 See [Number Modifier User Guide](docs/user/NUMBER_MODIFIER_USER_GUIDE.md) for complete documentation.
+
+> **Note**: The legacy `.mayu` configuration format is deprecated. Use JSON format for new configurations. See the [Migration Guide](docs/migration-guide.md) for converting existing configs.
 
 ## Status
 
@@ -150,7 +156,7 @@ The project structure has been reorganized for better clarity and maintainabilit
   - **`app/`**: Application entry points (`yamy.cpp`, `mayu.cpp`).
 - **`proj/`**: External library dependencies.
 - **`driver/`**: Device driver source code and related files (formerly `d/`).
-- **`keymaps/`**: Default and contributed keymap files (`.mayu`).
+- **`keymaps/`**: Example configuration files (`.json`). Legacy `.mayu` files are deprecated.
 - **`resources/`**: Icons, cursors, and other resource files (formerly `r/`).
 - **`scripts/`**: Build, utility, and tracking scripts.
 - **`setup/`**: Installer and setup related files (formerly `s/`).
@@ -228,6 +234,57 @@ scripts/mingw_package.ps1
 - **CMake**: Must be installed and in PATH (or `C:\Program Files\CMake\bin`).
 
 The script automatically detects if the 32-bit toolchain is installed (e.g., at `C:\tools\msys64\mingw32`). If found, it will build the 32-bit binaries (`yamy32.exe`, `yamy32.dll`, `yamyd32.exe`) and include them in the final zip package. If not found, only 64-bit binaries will be built.
+
+## Configuration
+
+Yamy uses **JSON configuration files** to define key mappings, virtual modifiers, and key sequences.
+
+### Quick Start
+
+Create a `config.json` file with your key mappings:
+
+```json
+{
+  "version": "2.0",
+  "keyboard": {
+    "keys": {
+      "CapsLock": "0x3a",
+      "Escape": "0x01"
+    }
+  },
+  "mappings": [
+    {
+      "from": "CapsLock",
+      "to": "Escape"
+    }
+  ]
+}
+```
+
+### Documentation
+
+- **[JSON Schema Documentation](docs/json-schema.md)** - Complete configuration format reference
+- **[Migration Guide](docs/migration-guide.md)** - Convert existing `.mayu` configs to JSON
+- **[Example Configurations](keymaps/)** - Ready-to-use configs:
+  - [vim-mode.json](keymaps/vim-mode.json) - Vim-style modal editing with CapsLock
+  - [emacs-mode.json](keymaps/emacs-mode.json) - Emacs-style Meta key bindings
+  - [config.json](keymaps/config.json) - Basic configuration examples
+
+### Key Features
+
+- **Virtual Modifiers (M00-MFF)**: Create modal layers with hold-vs-tap detection
+- **Key Sequences**: Output multiple keys for a single input
+- **Fast Loading**: JSON configs load in <10ms
+- **IDE Support**: JSON Schema enables autocomplete and validation
+
+### Configuration File Location
+
+- **Linux**: `~/.config/yamy/config.json` or `/etc/yamy/config.json`
+- **Windows**: `%APPDATA%\yamy\config.json` or install directory
+
+### Legacy `.mayu` Format
+
+> **⚠️ Deprecated**: The `.mayu` text format is no longer supported. Please migrate to JSON format using the [Migration Guide](docs/migration-guide.md).
 
 ## Development & Progress Tracking
 
