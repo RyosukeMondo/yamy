@@ -280,7 +280,7 @@
   - _Requirements: NFR-2_
   - _Prompt: Role: DevOps Engineer with expertise in bulk file operations and cleanup | Task: Delete unused command files following requirement NFR-2 for simplified feature set | Restrictions: Delete only cmd_window_*, cmd_clipboard_*, cmd_emacs_* files, preserve core command infrastructure, use careful pattern matching | Success: ~45 command files deleted, ~2,000 LOC removed, core commands preserved_
 
-- [ ] 4.4. Delete window system source files
+- [x] 4.4. Delete window system source files
   - Files: src/core/window/focus.cpp, src/core/window/target.cpp, src/core/window/layoutmanager.cpp (delete)
   - Delete focus.cpp implementation
   - Delete target.cpp implementation
