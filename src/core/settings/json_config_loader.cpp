@@ -32,13 +32,75 @@ bool JsonConfigLoader::parseKeyboard(const nlohmann::json& obj, Setting* setting
 {
     Expects(setting != nullptr);
 
-    // TODO: Implement in task 1.4
-    // - Parse "keyboard.keys" section
-    // - Parse scan codes from hex strings (e.g., "0x1e" → 0x1e)
-    // - Create Key objects and populate Keyboard::m_table
-    // - Build m_keyLookup map for name resolution
+    // Store keyboard pointer for later use by other methods
+    m_keyboard = &setting->m_keyboard;
 
-    return false;
+    // Check if keyboard section exists
+    if (!obj.contains("keyboard")) {
+        logError("Missing 'keyboard' section in configuration");
+        return false;
+    }
+
+    const auto& keyboard = obj["keyboard"];
+
+    // Check if keys section exists
+    if (!keyboard.contains("keys")) {
+        logError("Missing 'keyboard.keys' section in configuration");
+        return false;
+    }
+
+    const auto& keys = keyboard["keys"];
+
+    // Validate keys is an object
+    if (!keys.is_object()) {
+        logError("'keyboard.keys' must be an object");
+        return false;
+    }
+
+    // Clear the lookup map before parsing
+    m_keyLookup.clear();
+
+    // Parse each key definition
+    for (auto& [name, scanCodeValue] : keys.items()) {
+        // Validate scan code value is a string
+        if (!scanCodeValue.is_string()) {
+            logError("Scan code for key '" + name + "' must be a string (e.g., \"0x1e\")");
+            return false;
+        }
+
+        std::string scanCodeHex = scanCodeValue.get<std::string>();
+
+        // Parse scan code from hex string
+        uint16_t scanCode;
+        if (!parseScanCode(scanCodeHex, &scanCode)) {
+            logError("Invalid scan code for key '" + name + "': " + scanCodeHex);
+            return false;
+        }
+
+        // Create Key object
+        Key key;
+        key.addName(name);
+        key.addScanCode(ScanCode(scanCode, 0));  // flags = 0 for basic keys
+
+        // Add key to keyboard
+        m_keyboard->addKey(key);
+
+        // Get pointer to the added key (it's in the keyboard's hash table now)
+        Key* keyPtr = m_keyboard->searchKey(name);
+        if (keyPtr == nullptr) {
+            logError("Failed to add key '" + name + "' to keyboard");
+            return false;
+        }
+
+        // Build lookup map for name resolution
+        m_keyLookup[name] = keyPtr;
+    }
+
+    if (keys.empty()) {
+        logWarning("No keys defined in 'keyboard.keys' section");
+    }
+
+    return true;
 }
 
 bool JsonConfigLoader::parseVirtualModifiers(const nlohmann::json& obj, Setting* setting)
@@ -102,12 +164,35 @@ bool JsonConfigLoader::parseScanCode(const std::string& hex_str, uint16_t* out_c
 {
     Expects(out_code != nullptr);
 
-    // TODO: Implement in task 1.4
-    // - Parse hex string (e.g., "0x1e", "0x3a")
-    // - Validate format (must start with "0x")
-    // - Convert to uint16_t
+    // Validate format (must start with "0x" or "0X")
+    if (hex_str.size() < 3 || (hex_str[0] != '0') || (hex_str[1] != 'x' && hex_str[1] != 'X')) {
+        logError("Invalid scan code format '" + hex_str + "': must start with '0x'");
+        return false;
+    }
 
-    return false;
+    // Parse hex string to uint16_t
+    try {
+        size_t pos;
+        unsigned long value = std::stoul(hex_str, &pos, 16);
+
+        // Check if entire string was consumed
+        if (pos != hex_str.size()) {
+            logError("Invalid scan code format '" + hex_str + "': contains invalid characters");
+            return false;
+        }
+
+        // Check if value fits in uint16_t
+        if (value > 0xFFFF) {
+            logError("Invalid scan code '" + hex_str + "': value too large (max 0xFFFF)");
+            return false;
+        }
+
+        *out_code = static_cast<uint16_t>(value);
+        return true;
+    } catch (const std::exception& e) {
+        logError("Failed to parse scan code '" + hex_str + "': " + e.what());
+        return false;
+    }
 }
 
 void JsonConfigLoader::logError(const std::string& message)
