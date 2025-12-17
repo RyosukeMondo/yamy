@@ -49,10 +49,42 @@ struct KeyDefinition {
     std::vector<ScanCodeDefinition> scanCodes;
 };
 
+struct ModifierDefinition {
+    std::string type; // "shift", "alt", etc.
+    std::vector<std::string> keyNames;
+};
+
+struct AliasDefinition {
+    std::string aliasName;
+    std::string keyName;
+};
+
+struct SubstituteDefinition {
+    std::vector<std::string> from_mods; // Simplified for now
+    std::string from_key;
+    std::string to_mods; // Simplified for now
+    std::string to_key;
+};
+
+struct NumberModifierDefinition {
+    std::string numberKeyName;
+    std::string modifierKeyName;
+};
+
+struct OptionDefinition {
+    std::string name;
+    std::string value;
+};
+
 struct ConfigAST {
     std::vector<std::string> includedFiles;
     std::vector<KeymapDefinition> keymaps;
     std::vector<KeyDefinition> keyDefinitions;
+    std::vector<ModifierDefinition> modifierDefinitions;
+    std::vector<AliasDefinition> aliasDefinitions;
+    std::vector<SubstituteDefinition> substituteDefinitions;
+    std::vector<NumberModifierDefinition> numberModifierDefinitions;
+    std::vector<OptionDefinition> optionDefinitions;
     // ... other definitions like 'def key', 'def mod'
 };
 

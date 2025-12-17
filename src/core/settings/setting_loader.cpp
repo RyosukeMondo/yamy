@@ -206,16 +206,17 @@ void SettingLoader::load_DEFINE_KEY()
 // <DEFINE_MODIFIER>
 void SettingLoader::load_DEFINE_MODIFIER()
 {
+    yamy::ast::ModifierDefinition mod_def;
     Token *t = getToken();
     Modifier::Type mt;
-    if      (*t == "shift"  ) mt = Modifier::Type_Shift;
+    if      (*t == "shift"  ) { mt = Modifier::Type_Shift; mod_def.type = "shift"; }
     else if (*t == "alt"     ||
              *t == "meta"    ||
-             *t == "menu"   ) mt = Modifier::Type_Alt;
+             *t == "menu"   ) { mt = Modifier::Type_Alt; mod_def.type = "alt"; }
     else if (*t == "control" ||
-             *t == "ctrl"   ) mt = Modifier::Type_Control;
+             *t == "ctrl"   ) { mt = Modifier::Type_Control; mod_def.type = "control"; }
     else if (*t == "windows" ||
-             *t == "win"    ) mt = Modifier::Type_Windows;
+             *t == "win"    ) { mt = Modifier::Type_Windows; mod_def.type = "windows"; }
     else throw ErrorMessage() << "`" << *t
         << "': invalid modifier name.";
 
@@ -224,11 +225,16 @@ void SettingLoader::load_DEFINE_MODIFIER()
 
     while (!isEOL()) {
         t = getToken();
+        mod_def.keyNames.push_back(t->getString());
         Key *key =
             m_setting->m_keyboard.searchKeyByNonAliasName(t->getString());
         if (!key)
             throw ErrorMessage() << "`" << *t << "': invalid key name.";
         m_setting->m_keyboard.addModifier(mt, key);
+    }
+
+    if (m_ast) {
+        m_ast->modifierDefinitions.push_back(mod_def);
     }
 }
 
@@ -257,16 +263,22 @@ void SettingLoader::load_DEFINE_SYNC_KEY()
 // <DEFINE_ALIAS>
 void SettingLoader::load_DEFINE_ALIAS()
 {
+    yamy::ast::AliasDefinition alias_def;
     Token *name = getToken();
+    alias_def.aliasName = name->getString();
 
     if (*getToken() != "=")
         throw ErrorMessage() << "there must be `=' after `alias'.";
 
     Token *t = getToken();
+    alias_def.keyName = t->getString();
     Key *key = m_setting->m_keyboard.searchKeyByNonAliasName(t->getString());
     if (!key)
         throw ErrorMessage() << "`" << *t << "': invalid key name.";
     m_setting->m_keyboard.addAlias(name->getString(), key);
+    if (m_ast) {
+        m_ast->aliasDefinitions.push_back(alias_def);
+    }
 }
 
 
@@ -299,9 +311,11 @@ void SettingLoader::load_DEFINE_SUBSTITUTE()
 // Syntax: def numbermod *_1 = *LShift
 void SettingLoader::load_DEFINE_NUMBER_MODIFIER()
 {
+    yamy::ast::NumberModifierDefinition num_mod_def;
     // Get the number key name (e.g., *_1)
     Token *numberKeyToken = getToken();
     std::string numberKeyName = numberKeyToken->getString();
+    num_mod_def.numberKeyName = numberKeyName;
 
     // Look up the number key
     Key *numberKey = m_setting->m_keyboard.searchKeyByNonAliasName(numberKeyName);
@@ -315,6 +329,7 @@ void SettingLoader::load_DEFINE_NUMBER_MODIFIER()
     // Get the modifier key name (e.g., *LShift)
     Token *modifierKeyToken = getToken();
     std::string modifierKeyName = modifierKeyToken->getString();
+    num_mod_def.modifierKeyName = modifierKeyName;
 
     // Validate that it's a valid hardware modifier
     static const char* validModifiers[] = {
@@ -342,6 +357,10 @@ void SettingLoader::load_DEFINE_NUMBER_MODIFIER()
 
     // Add the number modifier mapping
     m_setting->m_keyboard.addNumberModifier(numberKey, modifierKey);
+
+    if (m_ast) {
+        m_ast->numberModifierDefinitions.push_back(num_mod_def);
+    }
 }
 
 
