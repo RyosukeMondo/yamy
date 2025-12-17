@@ -1783,6 +1783,51 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_event_processor_ut COMMAND yamy_event_processor_ut)
 
         # -----------------------------------------------------------------------------
+        # Target: yamy_json_loader_test (JsonConfigLoader Unit Tests)
+        # Unit tests for JSON configuration loader
+        # Part of task 1.10 in json-refactoring spec
+        # -----------------------------------------------------------------------------
+        set(JSON_LOADER_TEST_SOURCES
+            tests/test_json_loader.cpp
+            src/core/settings/json_config_loader.cpp
+            src/core/input/keyboard.cpp
+            src/core/input/keymap.cpp
+            src/core/input/modifier_state.cpp
+            src/core/engine/engine_generator.cpp
+            src/core/functions/function.cpp
+            src/utils/stringtool.cpp
+        )
+
+        add_executable(yamy_json_loader_test
+            ${JSON_LOADER_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_json_loader_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/settings
+            src/core/input
+            src/core/functions
+            src/core/window
+            src/platform/linux
+            src/utils
+        )
+
+        target_compile_definitions(yamy_json_loader_test PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(yamy_json_loader_test PRIVATE
+            pthread
+            yamy_dependencies
+        )
+
+        add_test(NAME yamy_json_loader_test COMMAND yamy_json_loader_test)
+
+        # -----------------------------------------------------------------------------
         # Target: yamy_event_processor_it (EventProcessor Integration Tests)
         # Integration tests for complete Layer 1→2→3 composition
         # Part of task 3.4 in key-remapping-consistency spec
