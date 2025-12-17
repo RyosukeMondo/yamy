@@ -263,6 +263,8 @@ void Engine::keyboardHandler()
 
             break;
         }
+        yamy::platform::releaseMutex(m_queueMutex);
+
         auto keyProcessingStart = std::chrono::high_resolution_clock::now();
 
         KEYBOARD_INPUT_DATA kid = keyEventToKID(event);

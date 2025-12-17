@@ -171,7 +171,7 @@
   - _Requirements: FR-3_
   - _Prompt: Role: C++ Refactoring Specialist with expertise in dead code elimination | Task: Delete focus detection method implementations from engine.cpp following requirement FR-3 | Restrictions: Find and remove all calls to deleted methods, ensure no dangling references, maintain other Engine functionality | Success: All focus methods deleted, no calls to deleted methods remain, engine.cpp compiles, functionality preserved_
 
-- [ ] 2.4. Simplify keyboardHandler to use global keymap
+- [x] 2.4. Simplify keyboardHandler to use global keymap
   - File: src/core/engine/engine_keyboard_handler.cpp
   - Remove focus change detection logic
   - Remove window class/title queries

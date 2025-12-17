@@ -537,10 +537,9 @@ public:
     void commandNotify(yamy::platform::WindowHandle i_hwnd, unsigned int i_message, WParamT i_wParam,
                        LParamT i_lParam)
     {
-        // ... (body same as previous thought)
+        // Simplified: no focus tracking, use provided window handle
         Acquire b(&m_log, 0);
-        yamy::platform::WindowHandle hf = m_hwndFocus;
-        if (!hf)
+        if (!i_hwnd)
             return;
         m_log << "Command Notify (logging disabled during refactor)" << std::endl;
         return;
