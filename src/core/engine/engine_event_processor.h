@@ -36,9 +36,6 @@ enum class EventType {
     REPEAT = 2    // Key repeat (not used in substitution)
 };
 
-/// Substitution table: maps YAMY scan code → YAMY scan code
-using SubstitutionTable = std::unordered_map<uint16_t, uint16_t>;
-
 /// Unified event processor implementing 3-layer architecture
 /// Layer 1: evdev → YAMY scan code
 /// Layer 2: Substitution application
@@ -61,8 +58,7 @@ public:
     };
 
     /// Constructor
-    /// @param subst_table Reference to substitution table (YAMY → YAMY mappings)
-    explicit EventProcessor(const SubstitutionTable& subst_table);
+    EventProcessor();
 
     /// Destructor - defined in .cpp to allow forward declaration of ModifierKeyHandler
     ~EventProcessor();
@@ -131,7 +127,6 @@ private:
     /// Layer 3: Map YAMY scan code to output evdev code
     uint16_t layer3_yamyToEvdev(uint16_t yamy);
 
-    const SubstitutionTable& m_substitutions;       ///< Reference to substitution table
     bool m_debugLogging;                            ///< Debug logging enabled flag
     std::unique_ptr<engine::ModifierKeyHandler> m_modifierHandler;  ///< Number modifier handler
     JourneyEventCallback m_journeyCallback;         ///< Callback for journey event notifications

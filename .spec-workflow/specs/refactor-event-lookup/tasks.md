@@ -27,7 +27,7 @@
     - If no match: return `yamy_in` (pass-through).
   - _Requirements: 1.1, 1.2_
 
-- [ ] 4. Cleanup Legacy Code
+- [x] 4. Cleanup Legacy Code
   - File: `src/core/engine/engine_event_processor.cpp`
   - **Action:** Remove the old linear scan loop over `m_substitutesList`.
   - **Action:** Remove `setSubstitutesList` method if no longer needed.

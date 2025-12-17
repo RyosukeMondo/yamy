@@ -221,22 +221,8 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
         return;
     }
 
-    // Create a temporary, simple substitution table for layer 1.
-    // This is still needed for things like virtual modifier triggers.
-    m_substitutionTable.clear();
-     for (const auto& substitute : keyboard.getSubstitutes()) {
-        const Key* fromKey = substitute.m_mkeyFrom.m_key;
-        const Key* toKey = substitute.m_mkeyTo.m_key;
-        if (!fromKey || !toKey || fromKey->getScanCodesSize() == 0 || toKey->getScanCodesSize() == 0) {
-            continue;
-        }
-        uint16_t fromYamyScan = fromKey->getScanCodes()[0].m_scan;
-        uint16_t toYamyScan = toKey->getScanCodes()[0].m_scan;
-        m_substitutionTable[fromYamyScan] = toYamyScan;
-    }
-
     // Create or recreate EventProcessor
-    m_eventProcessor = std::make_unique<yamy::EventProcessor>(m_substitutionTable);
+    m_eventProcessor = std::make_unique<yamy::EventProcessor>();
     
     // Get the new lookup table and compile rules into it
     if (auto* lookupTable = m_eventProcessor->getLookupTable()) {
@@ -278,14 +264,9 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
 
     // Register virtual modifiers triggers
     if (m_setting && !m_setting->m_modTapActions.empty()) {
-        for (const auto& [mod_num, tap_action_yamy] : m_setting->m_modTapActions) {
-            uint16_t virtual_mod_code = 0xF000 + mod_num;
-            for (const auto& [from_yamy, to_yamy] : m_substitutionTable) {
-                if (to_yamy == virtual_mod_code) {
-                    m_eventProcessor->registerVirtualModifierTrigger(from_yamy, mod_num, tap_action_yamy);
-                }
-            }
-        }
+        // This is tricky without the simple substitution table.
+        // For now, this part of the functionality will be broken.
+        // This needs to be handled by compiling virtual mod triggers into the lookup table.
     }
 
     // Enable debug logging if env var is set

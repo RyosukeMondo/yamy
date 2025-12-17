@@ -269,7 +269,6 @@ private:
 
     // Event processing
     std::unique_ptr<yamy::EventProcessor> m_eventProcessor; /// Unified 3-layer event processor
-    yamy::SubstitutionTable m_substitutionTable; /// YAMY scan code → YAMY scan code mappings
     yamy::input::ModifierState m_modifierState; /// Modal and hardware modifier state tracking
     yamy::input::LockState m_lockState; /// Virtual lock key state tracking (L00-LFF)
 
