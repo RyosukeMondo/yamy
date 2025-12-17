@@ -39,9 +39,20 @@ struct KeymapDefinition {
     std::vector<KeyAssignment> assignments;
 };
 
+struct ScanCodeDefinition {
+    uint8_t scan;
+    std::vector<std::string> flags; // "E0-", "E1-"
+};
+
+struct KeyDefinition {
+    std::vector<std::string> names;
+    std::vector<ScanCodeDefinition> scanCodes;
+};
+
 struct ConfigAST {
     std::vector<std::string> includedFiles;
     std::vector<KeymapDefinition> keymaps;
+    std::vector<KeyDefinition> keyDefinitions;
     // ... other definitions like 'def key', 'def mod'
 };
 

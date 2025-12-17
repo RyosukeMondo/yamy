@@ -123,20 +123,37 @@ void SettingLoader::load_INCLUDE()
 
 
 // <SCAN_CODES>
-void SettingLoader::load_SCAN_CODES(Key *o_key)
+void SettingLoader::load_SCAN_CODES(Key *o_key, std::vector<yamy::ast::ScanCodeDefinition>* o_ast_scan_codes)
 {
     for (int j = 0; j < Key::MAX_SCAN_CODES_SIZE && !isEOL(); ++ j) {
         ScanCode sc;
         sc.m_flags = 0;
+        
+        yamy::ast::ScanCodeDefinition ast_sc;
+
         while (true) {
             Token *t = getToken();
             if (t->isNumber()) {
                 sc.m_scan = (u_char)t->getNumber();
-                o_key->addScanCode(sc);
+                if (o_key)
+                    o_key->addScanCode(sc);
+                
+                if (o_ast_scan_codes) {
+                    ast_sc.scan = sc.m_scan;
+                    o_ast_scan_codes->push_back(ast_sc);
+                }
                 break;
             }
-            if      (*t == "E0-") sc.m_flags |= ScanCode::E0;
-            else if (*t == "E1-") sc.m_flags |= ScanCode::E1;
+            
+            std::string flag_str = t->getString();
+            if (flag_str == "E0-") {
+                sc.m_flags |= ScanCode::E0;
+                if (o_ast_scan_codes) ast_sc.flags.push_back(flag_str);
+            }
+            else if (flag_str == "E1-") {
+                sc.m_flags |= ScanCode::E1;
+                if (o_ast_scan_codes) ast_sc.flags.push_back(flag_str);
+            }
             else  throw ErrorMessage() << "`" << *t
                 << "': invalid modifier.";
         }
@@ -147,24 +164,38 @@ void SettingLoader::load_SCAN_CODES(Key *o_key)
 // <DEFINE_KEY>
 void SettingLoader::load_DEFINE_KEY()
 {
+    yamy::ast::KeyDefinition key_def;
     Token *t = getToken();
     Key key;
 
     // <KEY_NAMES>
     if (*t == '(') {
-        key.addName(getToken()->getString());
-        while (t = getToken(), *t != ')')
-            key.addName(t->getString());
+        std::string name = getToken()->getString();
+        key.addName(name);
+        key_def.names.push_back(name);
+        while (t = getToken(), *t != ')') {
+            name = t->getString();
+            key.addName(name);
+            key_def.names.push_back(name);
+        }
         if (*getToken() != "=")
             throw ErrorMessage() << "there must be `=' after `)'.";
     } else {
-        key.addName(t->getString());
-        while (t = getToken(), *t != "=")
-            key.addName(t->getString());
+        std::string name = t->getString();
+        key.addName(name);
+        key_def.names.push_back(name);
+        while (t = getToken(), *t != "=") {
+            name = t->getString();
+            key.addName(name);
+            key_def.names.push_back(name);
+        }
     }
 
-    load_SCAN_CODES(&key);
+    load_SCAN_CODES(&key, &key_def.scanCodes);
     m_setting->m_keyboard.addKey(key);
+    if (m_ast) {
+        m_ast->keyDefinitions.push_back(key_def);
+    }
 }
 
 
@@ -207,8 +238,15 @@ void SettingLoader::load_DEFINE_SYNC_KEY()
 
     if (*getToken() != "=")
         throw ErrorMessage() << "there must be `=' after `sync'.";
+    
+    yamy::ast::KeyDefinition key_def;
+    key_def.names.push_back("sync");
 
-    load_SCAN_CODES(key);
+    load_SCAN_CODES(key, &key_def.scanCodes);
+
+    if (m_ast) {
+        m_ast->keyDefinitions.push_back(key_def);
+    }
 }
 
 

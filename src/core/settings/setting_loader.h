@@ -100,7 +100,8 @@ private:
     /// &lt;ELSE&gt; &lt;ELSEIF&gt;
     bool load_ENDIF(const std::string &i_token);    /// &lt;ENDIF&gt;
     void load_INCLUDE();                /// &lt;INCLUDE&gt;
-    void load_SCAN_CODES(Key *o_key);        /// &lt;SCAN_CODES&gt;
+    void load_SCAN_CODES(Key *o_key, std::vector<yamy::ast::ScanCodeDefinition>* o_ast_scan_codes = nullptr);
+    /// &lt;SCAN_CODES&gt;
     void load_DEFINE_KEY();            /// &lt;DEFINE_KEY&gt;
     void load_DEFINE_MODIFIER();            /// &lt;DEFINE_MODIFIER&gt;
     void load_DEFINE_SYNC_KEY();            /// &lt;DEFINE_SYNC_KEY&gt;
