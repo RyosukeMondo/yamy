@@ -40,7 +40,7 @@
   - _Requirements: FR-1_
   - _Prompt: Role: C++ Developer with expertise in JSON parsing and data structures | Task: Implement parseKeyboard() method to parse key definitions from JSON following requirement FR-1, creating Key objects and populating Keyboard | Restrictions: Must validate scan code format (hex strings), handle missing "keys" section gracefully, use nlohmann/json API correctly | Success: Valid JSON key definitions load correctly, invalid scan codes are rejected with clear error messages, Key objects created and added to Keyboard_
 
-- [ ] 1.5. Implement resolveKeyName helper method
+- [x] 1.5. Implement resolveKeyName helper method
   - File: src/core/settings/json_config_loader.cpp (continue from 1.4)
   - Implement resolveKeyName() to lookup keys by name
   - Return nullptr for unknown keys with helpful error message

@@ -132,10 +132,36 @@ bool JsonConfigLoader::parseMappings(const nlohmann::json& obj, Setting* setting
 
 Key* JsonConfigLoader::resolveKeyName(const std::string& name)
 {
-    // TODO: Implement in task 1.5
-    // - Lookup key by name in m_keyLookup map
-    // - Return nullptr for unknown keys with helpful error message
+    // Lookup key in the map populated by parseKeyboard()
+    auto it = m_keyLookup.find(name);
 
+    if (it != m_keyLookup.end()) {
+        // Key found - return pointer
+        return it->second;
+    }
+
+    // Key not found - log helpful error with suggestions
+    std::ostringstream suggestions;
+    suggestions << "Unknown key name '" << name << "'. ";
+
+    // If the lookup table has keys, suggest some similar ones
+    if (!m_keyLookup.empty()) {
+        suggestions << "Available keys include: ";
+        int count = 0;
+        for (const auto& [keyName, _] : m_keyLookup) {
+            if (count >= 5) break; // Limit suggestions to first 5 keys
+            if (count > 0) suggestions << ", ";
+            suggestions << "'" << keyName << "'";
+            count++;
+        }
+        if (m_keyLookup.size() > 5) {
+            suggestions << ", and " << (m_keyLookup.size() - 5) << " more...";
+        }
+    } else {
+        suggestions << "No keys have been defined in 'keyboard.keys' section.";
+    }
+
+    logError(suggestions.str());
     return nullptr;
 }
 
