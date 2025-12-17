@@ -826,9 +826,12 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
     bool isKeymap2 = false;
     bool doesLoadDefaultKeySeq = false;
 
+    yamy::ast::KeymapDefinition keymapDef;
+
     if (!isEOL()) {
         Token *t = lookToken();
         if (*i_which == "window") {    // <WINDOW>
+            keymapDef.type = yamy::ast::KeymapDefinition::Type::WINDOW_AND; // default for window
             if (t->isOpenParen())
                 // "(" <WINDOW_CLASS_NAME> "&&" <WINDOW_TITLE_NAME> ")"
                 // "(" <WINDOW_CLASS_NAME> "||" <WINDOW_TITLE_NAME> ")"
@@ -836,10 +839,14 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
                 getToken();
                 windowClassName = getToken()->getRegexp();
                 t = getToken();
-                if (*t == "&&")
+                if (*t == "&&") {
                     type = Keymap::Type_windowAnd;
-                else if (*t == "||")
+                    keymapDef.type = yamy::ast::KeymapDefinition::Type::WINDOW_AND;
+                }
+                else if (*t == "||") {
                     type = Keymap::Type_windowOr;
+                    keymapDef.type = yamy::ast::KeymapDefinition::Type::WINDOW_OR;
+                }
                 else
                     throw ErrorMessage() << "`" << *t << "': unknown operator.";
                 windowTitleName = getToken()->getRegexp();
@@ -848,12 +855,18 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
             } else if (t->isRegexp()) {    // <WINDOW_CLASS_NAME>
                 getToken();
                 type = Keymap::Type_windowAnd;
+                // keymapDef.type is already WINDOW_AND by default
                 windowClassName = t->getRegexp();
             }
         } else if (*i_which == "keymap")
-            ;
+        {
+            keymapDef.type = yamy::ast::KeymapDefinition::Type::KEYMAP;
+        }
         else if (*i_which == "keymap2")
+        {
             isKeymap2 = true;
+            keymapDef.type = yamy::ast::KeymapDefinition::Type::KEYMAP;
+        }
         else
             ASSERT(false);
 
@@ -866,7 +879,6 @@ void SettingLoader::load_KEYMAP_DEFINITION(const Token *i_which)
                                  nullptr, nullptr));
     
     // AST population
-    yamy::ast::KeymapDefinition keymapDef;
     keymapDef.name = to_UTF_8(name->getString());
     keymapDef.windowClassRegex = windowClassName;
     keymapDef.windowTitleRegex = windowTitleName;

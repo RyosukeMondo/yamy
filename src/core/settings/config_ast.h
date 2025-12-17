@@ -32,6 +32,12 @@ struct KeyAssignment {
 };
 
 struct KeymapDefinition {
+    enum class Type {
+        KEYMAP,
+        WINDOW_AND,
+        WINDOW_OR,
+    };
+    Type type = Type::KEYMAP;
     std::string name;
     std::string parentName; // Optional inheritance
     std::string windowClassRegex;

@@ -65,6 +65,35 @@ bool ConfigCompiler::compile()
     // TODO: Implement compilation for other definitions
     // - Process keymap definitions
     // - etc.
+
+    // Process keymap definitions
+    for (const auto& keymap_def : m_ast.keymapDefinitions) {
+        Keymap::Type type;
+        switch (keymap_def.type) {
+            case yamy::ast::KeymapDefinition::Type::KEYMAP:
+                type = Keymap::Type_keymap;
+                break;
+            case yamy::ast::KeymapDefinition::Type::WINDOW_AND:
+                type = Keymap::Type_windowAnd;
+                break;
+            case yamy::ast::KeymapDefinition::Type::WINDOW_OR:
+                type = Keymap::Type_windowOr;
+                break;
+        }
+
+        Keymap* parentKeymap = nullptr;
+        if (!keymap_def.parentName.empty()) {
+            parentKeymap = m_setting.m_keymaps.searchByName(keymap_def.parentName);
+        }
+        
+        // Default keyseq is not in AST yet, so pass nullptr.
+        // Assignments are not in AST yet.
+        Keymap* newKeymap = m_setting.m_keymaps.add(
+            Keymap(type, keymap_def.name, keymap_def.windowClassRegex, keymap_def.windowTitleRegex, nullptr, parentKeymap)
+        );
+    }
+
+    return true;
     return true;
 }
 
