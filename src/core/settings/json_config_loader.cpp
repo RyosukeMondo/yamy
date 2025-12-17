@@ -19,36 +19,9 @@ bool JsonConfigLoader::load(Setting* setting, const std::string& json_path)
 {
     Expects(setting != nullptr);
 
-    // Read JSON file into string
-    std::ifstream file(json_path);
-    if (!file.is_open()) {
-        logError("Failed to open configuration file: " + json_path);
-        return false;
-    }
-
-    // Read entire file into string
-    std::ostringstream buffer;
-    buffer << file.rdbuf();
-    std::string jsonContent = buffer.str();
-    file.close();
-
-    if (jsonContent.empty()) {
-        logError("Configuration file is empty: " + json_path);
-        return false;
-    }
-
-    // Parse JSON with error handling
+    // Read and parse JSON file
     nlohmann::json config;
-    try {
-        config = nlohmann::json::parse(jsonContent);
-    } catch (const nlohmann::json::parse_error& e) {
-        std::ostringstream error;
-        error << "JSON parse error in " << json_path << " at byte " << e.byte
-              << ": " << e.what();
-        logError(error.str());
-        return false;
-    } catch (const std::exception& e) {
-        logError("Failed to parse JSON from " + json_path + ": " + e.what());
+    if (!loadJsonFile(json_path, config)) {
         return false;
     }
 
@@ -76,7 +49,6 @@ bool JsonConfigLoader::load(Setting* setting, const std::string& json_path)
         return false;
     }
 
-    // Success!
     return true;
 }
 
@@ -114,38 +86,9 @@ bool JsonConfigLoader::parseKeyboard(const nlohmann::json& obj, Setting* setting
 
     // Parse each key definition
     for (auto& [name, scanCodeValue] : keys.items()) {
-        // Validate scan code value is a string
-        if (!scanCodeValue.is_string()) {
-            logError("Scan code for key '" + name + "' must be a string (e.g., \"0x1e\")");
+        if (!parseKeyDefinition(name, scanCodeValue)) {
             return false;
         }
-
-        std::string scanCodeHex = scanCodeValue.get<std::string>();
-
-        // Parse scan code from hex string
-        uint16_t scanCode;
-        if (!parseScanCode(scanCodeHex, &scanCode)) {
-            logError("Invalid scan code for key '" + name + "': " + scanCodeHex);
-            return false;
-        }
-
-        // Create Key object
-        Key key;
-        key.addName(name);
-        key.addScanCode(ScanCode(scanCode, 0));  // flags = 0 for basic keys
-
-        // Add key to keyboard
-        m_keyboard->addKey(key);
-
-        // Get pointer to the added key (it's in the keyboard's hash table now)
-        Key* keyPtr = m_keyboard->searchKey(name);
-        if (keyPtr == nullptr) {
-            logError("Failed to add key '" + name + "' to keyboard");
-            return false;
-        }
-
-        // Build lookup map for name resolution
-        m_keyLookup[name] = keyPtr;
     }
 
     if (keys.empty()) {
@@ -174,84 +117,9 @@ bool JsonConfigLoader::parseVirtualModifiers(const nlohmann::json& obj, Setting*
 
     // Parse each virtual modifier definition
     for (auto& [modName, modDef] : vmods.items()) {
-        // Validate modifier name format (M00-MFF)
-        if (modName.length() != 3 || modName[0] != 'M') {
-            logError("Invalid virtual modifier name '" + modName + "': must be M00-MFF");
+        if (!parseVirtualModifier(modName, modDef, setting)) {
             return false;
         }
-
-        // Extract hex number from modifier name (e.g., "M00" → 0x00, "M3A" → 0x3A)
-        uint8_t modNum;
-        try {
-            modNum = static_cast<uint8_t>(std::stoi(modName.substr(1), nullptr, 16));
-        } catch (const std::exception& e) {
-            logError("Invalid modifier number in '" + modName + "': " + e.what());
-            return false;
-        }
-
-        // Validate modDef is an object
-        if (!modDef.is_object()) {
-            logError("Virtual modifier '" + modName + "' definition must be an object");
-            return false;
-        }
-
-        // Parse trigger key (required)
-        if (!modDef.contains("trigger")) {
-            logError("Virtual modifier '" + modName + "' missing required 'trigger' field");
-            return false;
-        }
-
-        if (!modDef["trigger"].is_string()) {
-            logError("Virtual modifier '" + modName + "' trigger must be a string");
-            return false;
-        }
-
-        std::string triggerName = modDef["trigger"].get<std::string>();
-        Key* triggerKey = resolveKeyName(triggerName);
-        if (!triggerKey) {
-            logError("Unknown trigger key for " + modName + ": '" + triggerName + "'");
-            return false;
-        }
-
-        // Get the trigger key's scan code
-        const ScanCode* scanCodes = triggerKey->getScanCodes();
-        if (triggerKey->getScanCodesSize() == 0) {
-            logError("Trigger key '" + triggerName + "' for " + modName + " has no scan codes");
-            return false;
-        }
-
-        // Register virtual modifier trigger
-        // Map: scancode → modifier number
-        setting->m_virtualModTriggers[scanCodes[0].m_scan] = modNum;
-
-        // Parse optional tap action
-        if (modDef.contains("tap")) {
-            if (!modDef["tap"].is_string()) {
-                logError("Virtual modifier '" + modName + "' tap action must be a string");
-                return false;
-            }
-
-            std::string tapName = modDef["tap"].get<std::string>();
-            Key* tapKey = resolveKeyName(tapName);
-            if (!tapKey) {
-                logError("Unknown tap key for " + modName + ": '" + tapName + "'");
-                return false;
-            }
-
-            // Get tap key's scan code
-            const ScanCode* tapScanCodes = tapKey->getScanCodes();
-            if (tapKey->getScanCodesSize() == 0) {
-                logError("Tap key '" + tapName + "' for " + modName + " has no scan codes");
-                return false;
-            }
-
-            // Register tap action
-            // Map: modifier number → tap scancode
-            setting->m_modTapActions[modNum] = tapScanCodes[0].m_scan;
-        }
-
-        // Note: holdThresholdMs is not stored in Setting (would need to be added)
-        // For now we ignore it as it's not in the current Setting structure
     }
 
     if (vmods.empty()) {
@@ -298,103 +166,9 @@ bool JsonConfigLoader::parseMappings(const nlohmann::json& obj, Setting* setting
     int mappingIndex = 0;
     for (const auto& mapping : mappings) {
         mappingIndex++;
-
-        // Validate mapping is an object
-        if (!mapping.is_object()) {
-            logError("Mapping #" + std::to_string(mappingIndex) + " must be an object");
+        if (!parseSingleMapping(mapping, mappingIndex, globalKeymap, setting)) {
             return false;
         }
-
-        // Parse "from" field (required)
-        if (!mapping.contains("from")) {
-            logError("Mapping #" + std::to_string(mappingIndex) + " missing required 'from' field");
-            return false;
-        }
-
-        if (!mapping["from"].is_string()) {
-            logError("Mapping #" + std::to_string(mappingIndex) + " 'from' field must be a string");
-            return false;
-        }
-
-        std::string fromSpec = mapping["from"].get<std::string>();
-        ModifiedKey fromKey = parseModifiedKey(fromSpec);
-        if (!fromKey.m_key) {
-            logError("Failed to parse 'from' key in mapping #" + std::to_string(mappingIndex) + ": '" + fromSpec + "'");
-            return false;
-        }
-
-        // Parse "to" field (required, can be string or array)
-        if (!mapping.contains("to")) {
-            logError("Mapping #" + std::to_string(mappingIndex) + " missing required 'to' field");
-            return false;
-        }
-
-        const auto& toField = mapping["to"];
-
-        // Create a KeySeq to hold the action(s)
-        // Use a unique name for each mapping keyseq
-        std::string keySeqName = "mapping_" + std::to_string(mappingIndex) + "_" + fromSpec;
-        KeySeq keySeq(keySeqName);
-        keySeq.setMode(Modifier::Type_ASSIGN);
-
-        // Check if "to" is a string (single key) or array (sequence)
-        if (toField.is_string()) {
-            // Single key mapping
-            std::string toSpec = toField.get<std::string>();
-            ModifiedKey toKey = parseModifiedKey(toSpec);
-            if (!toKey.m_key) {
-                logError("Failed to parse 'to' key in mapping #" + std::to_string(mappingIndex) + ": '" + toSpec + "'");
-                return false;
-            }
-
-            // Add ActionKey to the KeySeq
-            ActionKey actionKey(toKey);
-            keySeq.add(actionKey);
-        }
-        else if (toField.is_array()) {
-            // Key sequence mapping
-            if (toField.empty()) {
-                logError("Mapping #" + std::to_string(mappingIndex) + " 'to' array is empty");
-                return false;
-            }
-
-            for (size_t i = 0; i < toField.size(); ++i) {
-                if (!toField[i].is_string()) {
-                    logError("Mapping #" + std::to_string(mappingIndex) + " 'to' array element " +
-                             std::to_string(i) + " must be a string");
-                    return false;
-                }
-
-                std::string toSpec = toField[i].get<std::string>();
-                ModifiedKey toKey = parseModifiedKey(toSpec);
-                if (!toKey.m_key) {
-                    logError("Failed to parse 'to' key in mapping #" + std::to_string(mappingIndex) +
-                             " sequence element " + std::to_string(i) + ": '" + toSpec + "'");
-                    return false;
-                }
-
-                // Add ActionKey to the KeySeq
-                ActionKey actionKey(toKey);
-                keySeq.add(actionKey);
-            }
-
-            // Mark as KEYSEQ mode for sequences
-            keySeq.setMode(Modifier::Type_KEYSEQ);
-        }
-        else {
-            logError("Mapping #" + std::to_string(mappingIndex) + " 'to' field must be a string or array");
-            return false;
-        }
-
-        // Add the KeySeq to Setting's KeySeqs collection
-        KeySeq* addedKeySeq = setting->m_keySeqs.add(keySeq);
-        if (!addedKeySeq) {
-            logError("Failed to add keyseq for mapping #" + std::to_string(mappingIndex));
-            return false;
-        }
-
-        // Add the mapping to the global keymap
-        globalKeymap->addAssignment(fromKey, addedKeySeq);
     }
 
     if (mappings.empty()) {
@@ -472,34 +246,7 @@ ModifiedKey JsonConfigLoader::parseModifiedKey(const std::string& from_spec)
 
     // Parse all modifiers (all parts except the last one)
     for (size_t i = 0; i < parts.size() - 1; ++i) {
-        const std::string& mod = parts[i];
-
-        // Check if it's a standard modifier
-        if (mod == "Shift") {
-            mkey.m_modifier.press(Modifier::Type_Shift);
-        }
-        else if (mod == "Ctrl" || mod == "Control") {
-            mkey.m_modifier.press(Modifier::Type_Control);
-        }
-        else if (mod == "Alt") {
-            mkey.m_modifier.press(Modifier::Type_Alt);
-        }
-        else if (mod == "Win" || mod == "Windows") {
-            mkey.m_modifier.press(Modifier::Type_Windows);
-        }
-        // Check if it's a virtual modifier (M00-MFF)
-        else if (mod.length() == 3 && mod[0] == 'M') {
-            // Try to parse as virtual modifier
-            try {
-                uint8_t modNum = static_cast<uint8_t>(std::stoi(mod.substr(1), nullptr, 16));
-                mkey.setVirtualMod(modNum, true);
-            } catch (const std::exception& e) {
-                logError("Invalid virtual modifier '" + mod + "' in expression '" + from_spec + "': " + e.what());
-                return ModifiedKey();
-            }
-        }
-        else {
-            logError("Unknown modifier '" + mod + "' in expression '" + from_spec + "'");
+        if (!applySingleModifier(parts[i], mkey, from_spec)) {
             return ModifiedKey();
         }
     }
@@ -592,6 +339,307 @@ void JsonConfigLoader::logWarning(const std::string& message)
 {
     if (m_log != nullptr) {
         *m_log << "[WARNING] " << message << std::endl;
+    }
+}
+
+bool JsonConfigLoader::parseKeyDefinition(const std::string& name, const nlohmann::json& scanCodeValue)
+{
+    // Validate scan code value is a string
+    if (!scanCodeValue.is_string()) {
+        logError("Scan code for key '" + name + "' must be a string (e.g., \"0x1e\")");
+        return false;
+    }
+
+    std::string scanCodeHex = scanCodeValue.get<std::string>();
+
+    // Parse scan code from hex string
+    uint16_t scanCode;
+    if (!parseScanCode(scanCodeHex, &scanCode)) {
+        logError("Invalid scan code for key '" + name + "': " + scanCodeHex);
+        return false;
+    }
+
+    // Create Key object
+    Key key;
+    key.addName(name);
+    key.addScanCode(ScanCode(scanCode, 0));  // flags = 0 for basic keys
+
+    // Add key to keyboard
+    m_keyboard->addKey(key);
+
+    // Get pointer to the added key (it's in the keyboard's hash table now)
+    Key* keyPtr = m_keyboard->searchKey(name);
+    if (keyPtr == nullptr) {
+        logError("Failed to add key '" + name + "' to keyboard");
+        return false;
+    }
+
+    // Build lookup map for name resolution
+    m_keyLookup[name] = keyPtr;
+    return true;
+}
+
+bool JsonConfigLoader::parseVirtualModifier(const std::string& modName,
+                                            const nlohmann::json& modDef,
+                                            Setting* setting)
+{
+    // Validate modifier name format (M00-MFF)
+    if (modName.length() != 3 || modName[0] != 'M') {
+        logError("Invalid virtual modifier name '" + modName + "': must be M00-MFF");
+        return false;
+    }
+
+    // Extract hex number from modifier name
+    uint8_t modNum;
+    try {
+        modNum = static_cast<uint8_t>(std::stoi(modName.substr(1), nullptr, 16));
+    } catch (const std::exception& e) {
+        logError("Invalid modifier number in '" + modName + "': " + e.what());
+        return false;
+    }
+
+    // Validate modDef is an object
+    if (!modDef.is_object()) {
+        logError("Virtual modifier '" + modName + "' definition must be an object");
+        return false;
+    }
+
+    // Parse trigger key (required)
+    if (!modDef.contains("trigger")) {
+        logError("Virtual modifier '" + modName + "' missing required 'trigger' field");
+        return false;
+    }
+
+    if (!modDef["trigger"].is_string()) {
+        logError("Virtual modifier '" + modName + "' trigger must be a string");
+        return false;
+    }
+
+    std::string triggerName = modDef["trigger"].get<std::string>();
+    Key* triggerKey = resolveKeyName(triggerName);
+    if (!triggerKey) {
+        logError("Unknown trigger key for " + modName + ": '" + triggerName + "'");
+        return false;
+    }
+
+    // Get the trigger key's scan code
+    const ScanCode* scanCodes = triggerKey->getScanCodes();
+    if (triggerKey->getScanCodesSize() == 0) {
+        logError("Trigger key '" + triggerName + "' for " + modName + " has no scan codes");
+        return false;
+    }
+
+    // Register virtual modifier trigger
+    setting->m_virtualModTriggers[scanCodes[0].m_scan] = modNum;
+
+    // Parse optional tap action
+    if (modDef.contains("tap")) {
+        if (!modDef["tap"].is_string()) {
+            logError("Virtual modifier '" + modName + "' tap action must be a string");
+            return false;
+        }
+
+        std::string tapName = modDef["tap"].get<std::string>();
+        Key* tapKey = resolveKeyName(tapName);
+        if (!tapKey) {
+            logError("Unknown tap key for " + modName + ": '" + tapName + "'");
+            return false;
+        }
+
+        // Get tap key's scan code
+        const ScanCode* tapScanCodes = tapKey->getScanCodes();
+        if (tapKey->getScanCodesSize() == 0) {
+            logError("Tap key '" + tapName + "' for " + modName + " has no scan codes");
+            return false;
+        }
+
+        // Register tap action
+        setting->m_modTapActions[modNum] = tapScanCodes[0].m_scan;
+    }
+
+    return true;
+}
+
+bool JsonConfigLoader::parseSingleMapping(const nlohmann::json& mapping,
+                                         int mappingIndex,
+                                         Keymap* globalKeymap,
+                                         Setting* setting)
+{
+    // Validate mapping is an object
+    if (!mapping.is_object()) {
+        logError("Mapping #" + std::to_string(mappingIndex) + " must be an object");
+        return false;
+    }
+
+    // Parse "from" field (required)
+    if (!mapping.contains("from")) {
+        logError("Mapping #" + std::to_string(mappingIndex) + " missing required 'from' field");
+        return false;
+    }
+
+    if (!mapping["from"].is_string()) {
+        logError("Mapping #" + std::to_string(mappingIndex) + " 'from' field must be a string");
+        return false;
+    }
+
+    std::string fromSpec = mapping["from"].get<std::string>();
+    ModifiedKey fromKey = parseModifiedKey(fromSpec);
+    if (!fromKey.m_key) {
+        logError("Failed to parse 'from' key in mapping #" + std::to_string(mappingIndex) + ": '" + fromSpec + "'");
+        return false;
+    }
+
+    // Parse "to" field (required)
+    if (!mapping.contains("to")) {
+        logError("Mapping #" + std::to_string(mappingIndex) + " missing required 'to' field");
+        return false;
+    }
+
+    // Create a KeySeq to hold the action(s)
+    std::string keySeqName = "mapping_" + std::to_string(mappingIndex) + "_" + fromSpec;
+    KeySeq keySeq(keySeqName);
+    keySeq.setMode(Modifier::Type_ASSIGN);
+
+    // Parse "to" field
+    if (!parseToField(mapping["to"], keySeq, mappingIndex)) {
+        return false;
+    }
+
+    // Add the KeySeq to Setting's KeySeqs collection
+    KeySeq* addedKeySeq = setting->m_keySeqs.add(keySeq);
+    if (!addedKeySeq) {
+        logError("Failed to add keyseq for mapping #" + std::to_string(mappingIndex));
+        return false;
+    }
+
+    // Add the mapping to the global keymap
+    globalKeymap->addAssignment(fromKey, addedKeySeq);
+    return true;
+}
+
+bool JsonConfigLoader::parseToField(const nlohmann::json& toField,
+                                    KeySeq& keySeq,
+                                    int mappingIndex)
+{
+    if (toField.is_string()) {
+        // Single key mapping
+        std::string toSpec = toField.get<std::string>();
+        ModifiedKey toKey = parseModifiedKey(toSpec);
+        if (!toKey.m_key) {
+            logError("Failed to parse 'to' key in mapping #" + std::to_string(mappingIndex) + ": '" + toSpec + "'");
+            return false;
+        }
+
+        ActionKey actionKey(toKey);
+        keySeq.add(actionKey);
+        return true;
+    }
+
+    if (toField.is_array()) {
+        // Key sequence mapping
+        if (toField.empty()) {
+            logError("Mapping #" + std::to_string(mappingIndex) + " 'to' array is empty");
+            return false;
+        }
+
+        for (size_t i = 0; i < toField.size(); ++i) {
+            if (!toField[i].is_string()) {
+                logError("Mapping #" + std::to_string(mappingIndex) + " 'to' array element " +
+                         std::to_string(i) + " must be a string");
+                return false;
+            }
+
+            std::string toSpec = toField[i].get<std::string>();
+            ModifiedKey toKey = parseModifiedKey(toSpec);
+            if (!toKey.m_key) {
+                logError("Failed to parse 'to' key in mapping #" + std::to_string(mappingIndex) +
+                         " sequence element " + std::to_string(i) + ": '" + toSpec + "'");
+                return false;
+            }
+
+            ActionKey actionKey(toKey);
+            keySeq.add(actionKey);
+        }
+
+        // Mark as KEYSEQ mode for sequences
+        keySeq.setMode(Modifier::Type_KEYSEQ);
+        return true;
+    }
+
+    logError("Mapping #" + std::to_string(mappingIndex) + " 'to' field must be a string or array");
+    return false;
+}
+
+bool JsonConfigLoader::applySingleModifier(const std::string& mod,
+                                          ModifiedKey& mkey,
+                                          const std::string& fromSpec)
+{
+    // Check if it's a standard modifier
+    if (mod == "Shift") {
+        mkey.m_modifier.press(Modifier::Type_Shift);
+        return true;
+    }
+    if (mod == "Ctrl" || mod == "Control") {
+        mkey.m_modifier.press(Modifier::Type_Control);
+        return true;
+    }
+    if (mod == "Alt") {
+        mkey.m_modifier.press(Modifier::Type_Alt);
+        return true;
+    }
+    if (mod == "Win" || mod == "Windows") {
+        mkey.m_modifier.press(Modifier::Type_Windows);
+        return true;
+    }
+
+    // Check if it's a virtual modifier (M00-MFF)
+    if (mod.length() == 3 && mod[0] == 'M') {
+        try {
+            uint8_t modNum = static_cast<uint8_t>(std::stoi(mod.substr(1), nullptr, 16));
+            mkey.setVirtualMod(modNum, true);
+            return true;
+        } catch (const std::exception& e) {
+            logError("Invalid virtual modifier '" + mod + "' in expression '" + fromSpec + "': " + e.what());
+            return false;
+        }
+    }
+
+    logError("Unknown modifier '" + mod + "' in expression '" + fromSpec + "'");
+    return false;
+}
+
+bool JsonConfigLoader::loadJsonFile(const std::string& json_path, nlohmann::json& config)
+{
+    // Read JSON file into string
+    std::ifstream file(json_path);
+    if (!file.is_open()) {
+        logError("Failed to open configuration file: " + json_path);
+        return false;
+    }
+
+    std::ostringstream buffer;
+    buffer << file.rdbuf();
+    std::string jsonContent = buffer.str();
+    file.close();
+
+    if (jsonContent.empty()) {
+        logError("Configuration file is empty: " + json_path);
+        return false;
+    }
+
+    // Parse JSON with error handling
+    try {
+        config = nlohmann::json::parse(jsonContent);
+        return true;
+    } catch (const nlohmann::json::parse_error& e) {
+        std::ostringstream error;
+        error << "JSON parse error in " << json_path << " at byte " << e.byte
+              << ": " << e.what();
+        logError(error.str());
+        return false;
+    } catch (const std::exception& e) {
+        logError("Failed to parse JSON from " + json_path + ": " + e.what());
+        return false;
     }
 }
 

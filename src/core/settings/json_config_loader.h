@@ -135,6 +135,60 @@ private:
      */
     void logWarning(const std::string& message);
 
+    /**
+     * @brief Parse single key definition
+     * @param name Key name
+     * @param scanCodeValue JSON value for scan code
+     * @return true on success, false on error
+     */
+    bool parseKeyDefinition(const std::string& name, const nlohmann::json& scanCodeValue);
+
+    /**
+     * @brief Parse virtual modifier definition
+     * @param modName Modifier name (e.g., "M00")
+     * @param modDef Modifier definition JSON object
+     * @param setting Setting object to populate
+     * @return true on success, false on error
+     */
+    bool parseVirtualModifier(const std::string& modName, const nlohmann::json& modDef, Setting* setting);
+
+    /**
+     * @brief Parse single mapping
+     * @param mapping Mapping JSON object
+     * @param mappingIndex Index for error messages
+     * @param globalKeymap Target keymap
+     * @param setting Setting object for keyseqs
+     * @return true on success, false on error
+     */
+    bool parseSingleMapping(const nlohmann::json& mapping, int mappingIndex,
+                           Keymap* globalKeymap, Setting* setting);
+
+    /**
+     * @brief Parse "to" field of mapping (string or array)
+     * @param toField JSON value for "to" field
+     * @param keySeq Output KeySeq to populate
+     * @param mappingIndex Index for error messages
+     * @return true on success, false on error
+     */
+    bool parseToField(const nlohmann::json& toField, KeySeq& keySeq, int mappingIndex);
+
+    /**
+     * @brief Apply single modifier to ModifiedKey
+     * @param mod Modifier name (e.g., "Shift", "M00")
+     * @param mkey ModifiedKey to modify
+     * @param fromSpec Full expression for error messages
+     * @return true on success, false on error
+     */
+    bool applySingleModifier(const std::string& mod, ModifiedKey& mkey, const std::string& fromSpec);
+
+    /**
+     * @brief Read and parse JSON file
+     * @param json_path Path to JSON file
+     * @param config Output JSON object
+     * @return true on success, false on error
+     */
+    bool loadJsonFile(const std::string& json_path, nlohmann::json& config);
+
     // State
     std::ostream* m_log;                              ///< Optional logging stream
     std::unordered_map<std::string, Key*> m_keyLookup; ///< Key name → Key* lookup
