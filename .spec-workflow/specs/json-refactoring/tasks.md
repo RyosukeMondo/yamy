@@ -270,7 +270,7 @@
   - _Requirements: NFR-2_
   - _Prompt: Role: DevOps Engineer with expertise in codebase cleanup | Task: Delete setting_loader.h and setting_loader.cpp files following requirement NFR-2 | Restrictions: Delete only setting_loader files, preserve Setting class (setting.h/cpp), ensure complete deletion | Success: setting_loader.h deleted, setting_loader.cpp deleted, ~2,141 LOC removed, Setting class preserved_
 
-- [ ] 4.3. Delete window manipulation command files
+- [x] 4.3. Delete window manipulation command files
   - Files: src/core/commands/cmd_window_*.cpp, src/core/commands/cmd_clipboard_*.cpp, src/core/commands/cmd_emacs_*.cpp (delete)
   - Delete all window command files (~37 files)
   - Delete clipboard command files (~5 files)
