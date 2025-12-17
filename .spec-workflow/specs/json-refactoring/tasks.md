@@ -118,7 +118,7 @@
   - _Requirements: FR-1, FR-2_
   - _Prompt: Role: QA Engineer with expertise in test data creation and JSON formats | Task: Create comprehensive test JSON configuration files covering valid and invalid scenarios following requirements FR-1 and FR-2 | Restrictions: Follow JSON schema exactly, include comments where JSON allows, cover edge cases, ensure files are syntactically correct (except error cases) | Success: valid.json loads successfully, vim-mode.json demonstrates M00 usage, error configs trigger correct error messages_
 
-- [ ] 1.12. Create example JSON configuration files
+- [x] 1.12. Create example JSON configuration files
   - Files: keymaps/config.json, keymaps/vim-mode.json
   - Create config.json with well-commented basic examples
   - Create vim-mode.json with comprehensive vim-style bindings
