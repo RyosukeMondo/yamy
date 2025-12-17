@@ -403,6 +403,80 @@ void SettingLoader::load_KEYBOARD_DEFINITION()
     else throw ErrorMessage() << "syntax error `" << *t << "'.";
 }
 
+// Helper to parse hex digits
+static int parseHex2(const std::string& s) {
+    auto hexToInt = [](char c) -> int {
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+        return 0;
+    };
+    return (hexToInt(s[1]) << 4) | hexToInt(s[2]);
+}
+
+bool SettingLoader::parseMxxModifier(const std::string& token_str, Modifier::Type, Modifier&, Modifier::Type*, Modifier&, int& flag)
+{
+    if (token_str.length() != 4 || token_str[0] != 'M' || token_str[3] != '-') return false;
+    
+    // Validate hex digits
+    auto isHexDigit = [](char c) {
+        return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+    };
+    if (!isHexDigit(token_str[1]) || !isHexDigit(token_str[2])) return false;
+
+    int modNum = parseHex2(token_str);
+    getToken(); // Consume token
+
+    std::cerr << "[PARSER:NEW] Parsed M" << std::hex << std::setw(2) << std::setfill('0') << modNum
+              << "- -> virtual modifier " << std::dec << (int)modNum
+              << " (NEW M00-MFF system)" << std::endl;
+
+    s_pendingVirtualMod = static_cast<uint8_t>(modNum);
+    s_hasVirtualMod = true;
+
+    flag = 0; // PRESS
+    return true;
+}
+
+bool SettingLoader::parseLxxModifier(const std::string& token_str, Modifier::Type i_mode, Modifier& i_modifier, Modifier::Type* o_mode, Modifier& isModifierSpecified, int& flag)
+{
+    if (token_str.length() != 4 || token_str[0] != 'L' || token_str[3] != '-') return false;
+
+    auto isHexDigit = [](char c) {
+        return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+    };
+    if (!isHexDigit(token_str[1]) || !isHexDigit(token_str[2])) return false;
+
+    int modNum = parseHex2(token_str);
+
+    if (modNum < 10) {
+        getToken(); // Consume token
+        Modifier::Type mt = static_cast<Modifier::Type>(Modifier::Type_Lock0 + modNum);
+        if (static_cast<int>(i_mode) <= static_cast<int>(mt))
+            throw ErrorMessage() << "`" << token_str << "': invalid modifier at this context.";
+        
+        switch (flag) {
+            case 0: /*PRESS*/    i_modifier.press(mt); break;
+            case 1: /*RELEASE*/  i_modifier.release(mt); break;
+            case 2: /*DONTCARE*/ i_modifier.dontcare(mt); break;
+        }
+        isModifierSpecified.on(mt);
+        flag = 0; // PRESS
+
+        if (o_mode && *o_mode < mt) {
+            if (mt < Modifier::Type_BASIC)
+                *o_mode = Modifier::Type_BASIC;
+            else if (mt < Modifier::Type_KEYSEQ)
+                *o_mode = Modifier::Type_KEYSEQ;
+            else if (mt < Modifier::Type_ASSIGN)
+                *o_mode = Modifier::Type_ASSIGN;
+        }
+        return true;
+    } else {
+        throw ErrorMessage() << "`" << token_str << "': L10-LFF not yet implemented. Use L00-L09 for now.";
+    }
+}
+
 
 // <..._MODIFIER>
 Modifier SettingLoader::load_MODIFIER(
@@ -466,86 +540,13 @@ continue_loop:
             { "L9-", Modifier::Type_Lock9 },
         };
 
-        // NEW: Dynamic M00-MFF and L00-LFF parsing (256 modifiers/locks)
-        // Pattern: M<hex>- or L<hex>- where <hex> is 00-FF
-        const std::string& token_str = t->getString();
-        if (token_str.length() >= 4 && token_str[token_str.length()-1] == '-') {
-            char prefix = token_str[0];
-            if ((prefix == 'M' || prefix == 'L') && token_str.length() == 4) {
-                // Extract hex digits
-                char hex1 = token_str[1];
-                char hex2 = token_str[2];
-
-                // Validate hex digits
-                auto isHexDigit = [](char c) {
-                    return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
-                };
-
-                if (isHexDigit(hex1) && isHexDigit(hex2)) {
-                    // Parse hex number
-                    auto hexToInt = [](char c) -> int {
-                        if (c >= '0' && c <= '9') return c - '0';
-                        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-                        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-                        return 0;
-                    };
-
-                    int modNum = (hexToInt(hex1) << 4) | hexToInt(hex2);
-
-                    getToken();  // Consume the token
-
-                    // Store in ModifierState (NEW M00-MFF virtual modifier system)
-                    // For now, map to the first available modal modifier slot
-                    // TODO: Extend Modifier class to support 256 modifiers directly
-                    if (prefix == 'M') {
-                        // NEW M00-MFF system: Store in ModifiedKey::m_virtualMods (256 modifiers)
-                        // Token already consumed on line 515 - removed duplicate getToken()
-
-                        std::cerr << "[PARSER:NEW] Parsed M" << std::hex << std::setw(2) << std::setfill('0') << modNum
-                                  << "- → virtual modifier " << std::dec << (int)modNum
-                                  << " (NEW M00-MFF system)" << std::endl;
-
-                        // Store M00-MFF info in thread-local variable
-                        // Will be read when ModifiedKey is created
-                        s_pendingVirtualMod = static_cast<uint8_t>(modNum);
-                        s_hasVirtualMod = true;
-
-                        flag = PRESS;
-                        goto continue_loop;
-                    } else if (prefix == 'L') {
-                        // L00-LFF: Lock keys (256 total)
-                        // Map L00-L09 to Type_Lock0-Lock9 for backward compat
-                        if (modNum < 10) {
-                            Modifier::Type mt = static_cast<Modifier::Type>(Modifier::Type_Lock0 + modNum);
-                            if (static_cast<int>(i_mode) <= static_cast<int>(mt))
-                                throw ErrorMessage() << "`" << token_str
-                                << "': invalid modifier at this context.";
-                            switch (flag) {
-                                case PRESS:    i_modifier.press(mt); break;
-                                case RELEASE:  i_modifier.release(mt); break;
-                                case DONTCARE: i_modifier.dontcare(mt); break;
-                            }
-                            isModifierSpecified.on(mt);
-                            flag = PRESS;
-                            if (o_mode && *o_mode < mt) {
-                                if (mt < Modifier::Type_BASIC)
-                                    *o_mode = Modifier::Type_BASIC;
-                                else if (mt < Modifier::Type_KEYSEQ)
-                                    *o_mode = Modifier::Type_KEYSEQ;
-                                else if (mt < Modifier::Type_ASSIGN)
-                                    *o_mode = Modifier::Type_ASSIGN;
-                            }
-                            goto continue_loop;
-                        } else {
-                            // L10-LFF: Not yet supported in Modifier::Type enum
-                            throw ErrorMessage() << "`" << token_str
-                            << "': L10-LFF not yet implemented. Use L00-L09 for now.";
-                        }
-                    }
-                }
-            }
+        // NEW: Dynamic M00-MFF and L00-LFF parsing
+        if (parseMxxModifier(token_str, i_mode, i_modifier, o_mode, isModifierSpecified, (int&)flag)) {
+            continue;
         }
-        // END: Dynamic M00-MFF and L00-LFF parsing
+        if (parseLxxModifier(token_str, i_mode, i_modifier, o_mode, isModifierSpecified, (int&)flag)) {
+            continue;
+        }
 
         for (int i = 0; i < (int)NUMBER_OF(map); ++ i)
             if (*t == map[i].m_s) {

@@ -149,6 +149,10 @@ private:
     void load_LOCK_ASSIGNMENT();            /// &lt;LOCK_ASSIGN&gt;
     void load_KEYSEQ_DEFINITION();        /// &lt;KEYSEQ_DEFINITION&gt;
 
+    // Helper functions for load_MODIFIER
+    bool parseMxxModifier(const std::string& token_str, Modifier::Type i_mode, Modifier& i_modifier, Modifier::Type* o_mode, Modifier& isModifierSpecified, int& flag);
+    bool parseLxxModifier(const std::string& token_str, Modifier::Type i_mode, Modifier& i_modifier, Modifier::Type* o_mode, Modifier& isModifierSpecified, int& flag);
+
     /// load
     void load(const std::string &i_filename);
 

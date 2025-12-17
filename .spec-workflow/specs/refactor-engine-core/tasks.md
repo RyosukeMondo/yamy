@@ -1,0 +1,43 @@
+# Tasks Document: Core Engine Refactoring
+
+- [x] 1. Refactor `SettingLoader::load_MODIFIER`
+  - File: `src/core/settings/setting_loader.cpp`
+  - Extract M00-MFF and L00-LFF parsing into helper functions.
+  - Replace `goto` logic with structured loops.
+  - Use `std::map` for basic modifier lookup.
+  - _Status: Completed (See recent git history)_
+
+- [ ] 2. Remove Thread-Local Storage Hack
+  - File: `src/core/settings/setting_loader.cpp`
+  - Remove `s_pendingVirtualMod` and `s_hasVirtualMod`.
+  - Pass modifier state explicitly through `load_KEY_SEQUENCE` and `ActionKey` constructors.
+  - _Requirements: 4.1, 4.2_
+
+- [ ] 3. Introduce ConfigAST
+  - File: `src/core/settings/config_ast.h`
+  - Define structs for `KeyDefinition`, `ModifierDefinition`, `KeyAssignment`.
+  - _Requirements: 1.1_
+
+- [ ] 4. Update SettingLoader to use AST (Phase A)
+  - File: `src/core/settings/setting_loader.h`
+  - Add `ConfigAST` member.
+  - Update `load_KEY_ASSIGN` etc. to populate AST *in addition to* legacy structures (Validation step).
+  - _Requirements: 1.1_
+
+- [ ] 5. Implement Compiler Phase
+  - File: `src/core/engine/config_compiler.cpp`
+  - Create class `ConfigCompiler` that takes `ConfigAST` and produces `Keyboard` and `Keymaps`.
+  - _Requirements: 1.3_
+
+- [ ] 6. Refactor EventProcessor Lookup
+  - File: `src/core/engine/engine_event_processor.cpp`
+  - Implement `LookupTable` structure.
+  - Build `LookupTable` from `Keyboard::Substitutes`.
+  - Replace linear scan in `layer2_applySubstitution` with map lookup.
+  - _Requirements: 3.1, 3.3_
+
+- [ ] 7. Unify Modifier State
+  - File: `src/core/input/modifier_state.h`
+  - Expand to support 256+ bits.
+  - Integrate Hardware, Virtual, and Lock states into one vector.
+  - _Requirements: 3.2_
