@@ -212,7 +212,7 @@
   - _Requirements: FR-3_
   - _Prompt: Role: C++ Refactoring Specialist with expertise in class simplification and API design | Task: Remove window matching members from Keymap class following requirement FR-3 | Restrictions: Do not modify KeyAssignments or lookup logic, keep parent keymap support for future, remove only window-related members | Success: Type enum deleted, regex members removed, constructor simplified, class compiles, API cleaner_
 
-- [ ] 3.2. Delete doesSameWindow method from keymap.cpp
+- [x] 3.2. Delete doesSameWindow method from keymap.cpp
   - File: src/core/input/keymap.cpp
   - Delete doesSameWindow() implementation
   - Remove any calls to this method

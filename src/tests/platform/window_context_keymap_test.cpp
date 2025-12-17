@@ -594,27 +594,8 @@ TEST_F(WindowContextKeymapTest, KeymapTypeDetection) {
 
 //=============================================================================
 // Test 17: Does Same Window Method Direct Test
+// REMOVED: doesSameWindow method no longer exists (FR-3: global keymap only)
 //=============================================================================
-
-TEST_F(WindowContextKeymapTest, DoesSameWindowDirectTest) {
-    std::string config = getKeyDefinitions() +
-        _T("keymap Global\n")
-        _T("key A = B\n")
-        _T("window Test /myclass/ : Global\n")
-        _T("key A = C\n");
-
-    LoadConfig(config);
-
-    Keymap* testMap = m_setting.m_keymaps.searchByName(_T("Test"));
-    ASSERT_NE(testMap, nullptr);
-
-    // Direct test of doesSameWindow
-    EXPECT_TRUE(testMap->doesSameWindow("myclass", "any title"));
-    EXPECT_TRUE(testMap->doesSameWindow("myclass", ""));
-    EXPECT_TRUE(testMap->doesSameWindow("prefix-myclass-suffix", "title"));
-    EXPECT_FALSE(testMap->doesSameWindow("otherclass", "any title"));
-    EXPECT_FALSE(testMap->doesSameWindow("", "any title"));
-}
 
 //=============================================================================
 // Test 18: Window Pattern with Anchor (Exact Match)

@@ -469,9 +469,8 @@ TEST_F(KeyRemapLinuxTest, WindowMatchingKeymap) {
     // Verify it has a parent keymap (Global)
     EXPECT_NE(terminalMap->getParentKeymap(), nullptr) << "Terminal should inherit from Global";
 
-    // Note: doesSameWindow is non-const so we test window matching indirectly
-    // by verifying the keymap structure was created correctly with the
-    // window class pattern
+    // Note: Window matching functionality will be removed in FR-3 (global keymap only)
+    // This test verifies the keymap structure was created correctly
 }
 
 //=============================================================================
