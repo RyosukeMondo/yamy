@@ -63,26 +63,6 @@ private:
 
     typedef Keymaps::KeymapPtrList KeymapPtrList;    ///
 
-    /// focus of a thread
-    class FocusOfThread
-    {
-    public:
-        uint32_t m_threadId;                /// thread id
-        yamy::platform::WindowHandle m_hwndFocus;                /** window that has focus on
-                                                    the thread */
-        std::string m_className;            /// class name of hwndFocus
-        std::string m_titleName;            /// title name of hwndFocus
-        bool m_isConsole;                /// is hwndFocus console ?
-        KeymapPtrList m_keymaps;            /// keymaps
-
-    public:
-        ///
-        FocusOfThread() : m_threadId(0), m_hwndFocus(nullptr), m_isConsole(false) { }
-    };
-    typedef std::map<uint32_t /*ThreadId*/, FocusOfThread> FocusOfThreads;    ///
-
-    typedef std::list<uint32_t /*ThreadId*/> ThreadIds;    ///
-
     /// current status in generateKeyboardEvents
     class Current
     {
@@ -242,12 +222,7 @@ private:
         </dl>
     */
     const Keymap * volatile m_currentKeymap;    /// current keymap
-    FocusOfThreads /*volatile*/ m_focusOfThreads;    ///
-    FocusOfThread * volatile m_currentFocusOfThread; ///
-    FocusOfThread m_globalFocus;            ///
-    yamy::platform::WindowHandle m_hwndFocus;                /// current focus window
-    ThreadIds m_attachedThreadIds;    ///
-    ThreadIds m_detachedThreadIds;    ///
+    const Keymap * m_globalKeymap;    /// global keymap for simplified single-keymap model
 
     // for functions
     KeymapPtrList m_keymapPrefixHistory;        /// for &amp;KeymapPrevPrefix
@@ -325,8 +300,6 @@ private:
     /// performance metrics thread (instance method)
     void perfMetricsHandler();
 
-    /// check focus window
-    void checkFocusWindow();
     /// is modifier pressed ?
     bool isPressed(Modifier::Type i_mt);
     /// fix modifier key
@@ -527,20 +500,6 @@ public:
         m_configSwitchCallback = callback;
     }
 
-    /**
-     * @brief Set the focused window and its properties
-     * @param i_hwndFocus Window handle that has focus
-     * @param i_threadId Thread ID owning the focused window
-     * @param i_className Class name of the focused window
-     * @param i_titleName Title name of the focused window
-     * @param i_isConsole Whether the focused window is a console
-     * @return true if focus was set successfully, false otherwise
-     * @pre i_hwndFocus != nullptr
-     * @pre i_threadId > 0
-     */
-    bool setFocus(yamy::platform::WindowHandle i_hwndFocus, uint32_t i_threadId,
-                  const std::string &i_className,
-                  const std::string &i_titleName, bool i_isConsole);
 
     /// lock state
     bool setLockState(bool i_isNumLockToggled, bool i_isCapsLockToggled,
@@ -560,21 +519,6 @@ public:
     /// sync
     bool syncNotify();
 
-    /**
-     * @brief Notify engine of thread attachment
-     * @param i_threadId Thread ID being attached
-     * @return true if notification was processed successfully
-     * @pre i_threadId > 0
-     */
-    bool threadAttachNotify(uint32_t i_threadId);
-
-    /**
-     * @brief Notify engine of thread detachment
-     * @param i_threadId Thread ID being detached
-     * @return true if notification was processed successfully
-     * @pre i_threadId > 0
-     */
-    bool threadDetachNotify(uint32_t i_threadId);
 
     /// shell execute
     void shellExecute();
@@ -602,15 +546,6 @@ public:
         return;
     }
 
-    /// get current window class name
-    const std::string &getCurrentWindowClassName() const {
-        return m_currentFocusOfThread->m_className;
-    }
-
-    /// get current window title name
-    const std::string &getCurrentWindowTitleName() const {
-        return m_currentFocusOfThread->m_titleName;
-    }
 
     yamy::EngineState getState() const {
         return m_state;

@@ -138,7 +138,7 @@
 
 ## Phase 2: Simplify Engine
 
-- [ ] 2.1. Remove FocusOfThread class from engine.h
+- [x] 2.1. Remove FocusOfThread class from engine.h
   - File: src/core/engine/engine.h
   - Delete FocusOfThread class definition (lines 67-81)
   - Delete related members (m_focusOfThreads, m_currentFocusOfThread, m_globalFocus, m_hwndFocus, m_attachedThreadIds, m_detachedThreadIds)
