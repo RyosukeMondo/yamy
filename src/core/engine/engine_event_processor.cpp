@@ -20,6 +20,7 @@ EventProcessor::EventProcessor(const SubstitutionTable& subst_table)
     , m_debugLogging(false)
     , m_modifierHandler(std::make_unique<engine::ModifierKeyHandler>())
     , m_currentEventIsTap(false)
+    , m_lookupTable(std::make_unique<engine::RuleLookupTable>())
 {
     // Check for debug logging environment variable
     const char* debug_env = std::getenv("YAMY_DEBUG_KEYCODE");

@@ -10,6 +10,7 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include "lookup_table.h"
 
 namespace yamy {
 
@@ -122,6 +123,11 @@ public:
         m_journeyCallback = callback;
     }
 
+    /// Get the rule lookup table
+    engine::RuleLookupTable* getLookupTable() {
+        return m_lookupTable.get();
+    }
+
 private:
     /// Layer 1: Map evdev code to YAMY scan code
     uint16_t layer1_evdevToYamy(uint16_t evdev);
@@ -144,6 +150,7 @@ private:
 
     using ScanCodeToSubstitutesMap = std::unordered_map<uint16_t, std::vector<const Substitute*>>;
     ScanCodeToSubstitutesMap m_scanCodeToSubstitutes; ///< Map for faster substitution lookup
+    std::unique_ptr<engine::RuleLookupTable> m_lookupTable; ///< New bucket-based lookup table
 };
 
 } // namespace yamy

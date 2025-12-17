@@ -13,6 +13,9 @@
 #include "windowstool.h"
 #include "modifier_key_handler.h"
 #include "../../utils/platform_logger.h"
+#include "compiled_rule.h"
+#include "lookup_table.h"
+#include "engine_event_processor.h"
 
 #include <iomanip>
 #include <string>
@@ -20,6 +23,74 @@
 #include <thread>
 #include <chrono>
 #include <gsl/gsl>
+
+namespace {
+
+// Maps a legacy Modifier::Type to its corresponding bit index in the new ModifierState bitset.
+// Returns -1 if the type is not a stateful modifier that should be part of the bitmask.
+int legacyTypeToBitIndex(Modifier::Type type) {
+    switch (type) {
+        // Standard hardware modifiers
+        case Modifier::Type_Shift:   return static_cast<int>(yamy::input::ModifierState::StdModifier::Shift);
+        case Modifier::Type_Control: return static_cast<int>(yamy::input::ModifierState::StdModifier::Control);
+        case Modifier::Type_Alt:     return static_cast<int>(yamy::input::ModifierState::StdModifier::Alt);
+        case Modifier::Type_Windows: return static_cast<int>(yamy::input::ModifierState::StdModifier::Windows);
+
+        // Lock states
+        case Modifier::Type_CapsLock:   return static_cast<int>(yamy::input::ModifierState::LockKeys::CapsLock);
+        case Modifier::Type_NumLock:    return static_cast<int>(yamy::input::ModifierState::LockKeys::NumLock);
+        case Modifier::Type_ScrollLock: return static_cast<int>(yamy::input::ModifierState::LockKeys::ScrollLock);
+        case Modifier::Type_KanaLock:   return static_cast<int>(yamy::input::ModifierState::LockKeys::KanaLock);
+
+        default:
+            return -1;
+    }
+}
+
+yamy::engine::CompiledRule compileSubstitute(const Keyboard::Substitute& sub) {
+    yamy::engine::CompiledRule rule;
+
+    // --- Compile Input Conditions ---
+    const Modifier& fromMod = sub.m_mkeyFrom.m_modifier;
+
+    for (int i = Modifier::Type_begin; i < Modifier::Type_ASSIGN; ++i) {
+        auto type = static_cast<Modifier::Type>(i);
+        
+        if (fromMod.isDontcare(type)) {
+            continue;
+        }
+
+        int bitIndex = legacyTypeToBitIndex(type);
+        if (bitIndex != -1) {
+            if (fromMod.isOn(type)) {
+                rule.requiredOn.set(bitIndex);
+            } else {
+                rule.requiredOff.set(bitIndex);
+            }
+        }
+    }
+    
+    for (int i = 0; i < 256; ++i) {
+        if (sub.m_mkeyFrom.isVirtualModActive(i)) {
+            int bitIndex = static_cast<int>(yamy::input::ModifierState::VirtualModifiersStart) + i;
+            rule.requiredOn.set(bitIndex);
+        }
+    }
+
+    // --- Compile Output ---
+    const Key* toKey = sub.m_mkeyTo.m_key;
+    if (toKey && toKey->getScanCodesSize() > 0) {
+        rule.outputScanCode = toKey->getScanCodes()[0].m_scan;
+    } else {
+        // If there's no 'to' key, it might be a function call or other action.
+        // For now, we represent this as a scancode of 0, meaning "do nothing".
+        rule.outputScanCode = 0;
+    }
+
+    return rule;
+}
+
+} // namespace
 
 
 // manageTs4mayu removed (moved to InputDriver)
@@ -210,204 +281,77 @@ bool Engine::switchConfiguration(const std::string& configPath) {
 
 // Build substitution table from Keyboard::Substitutes
 void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
-    static int call_count = 0;
-    call_count++;
-
-    std::cerr << "[BUILD_SUBST] buildSubstitutionTable() CALLED (call #" << call_count << ")" << std::endl;
-
     // GUARD: Prevent rebuilding during event processing
-    // If we're in the middle of generating events, defer the rebuild
     if (m_generateKeyboardEventsRecursionGuard > 0) {
-        std::cerr << "[BUILD_SUBST] BLOCKED - event generation in progress (recursion guard = "
-                  << m_generateKeyboardEventsRecursionGuard << ")" << std::endl;
         return;
     }
-    // Clear existing table
+
+    // Create a temporary, simple substitution table for layer 1.
+    // This is still needed for things like virtual modifier triggers.
     m_substitutionTable.clear();
-
-    // Iterate through all substitutions defined in .mayu file
-    // Substitutes are stored as std::list<Substitute> in m_substitutes
-    std::cerr << "[BUILD_SUBST] Number of substitutions: " << keyboard.getSubstitutes().size() << std::endl;
-
-    for (const auto& substitute : keyboard.getSubstitutes()) {
-        // Each Substitute contains:
-        // - m_mkeyFrom: Source key (with modifiers)
-        // - m_mkeyTo: Target key (with modifiers)
-
-        // Extract YAMY scan codes from Key objects
-        // Note: For now, we ignore modifiers and only map the raw scan codes
-        // This matches the current EventProcessor design which operates on scan codes
-
+     for (const auto& substitute : keyboard.getSubstitutes()) {
         const Key* fromKey = substitute.m_mkeyFrom.m_key;
         const Key* toKey = substitute.m_mkeyTo.m_key;
-        std::cerr << "[BUILD_SUBST] Processing substitute: fromKey=" << fromKey << ", toKey=" << toKey << std::endl;
-
-        if (!fromKey || !toKey) {
-            // Skip invalid substitutions
+        if (!fromKey || !toKey || fromKey->getScanCodesSize() == 0 || toKey->getScanCodesSize() == 0) {
             continue;
         }
-
-        // Get scan codes (each key may have multiple scan codes)
-        const ScanCode* fromScans = fromKey->getScanCodes();
-        const ScanCode* toScans = toKey->getScanCodes();
-        size_t fromSize = fromKey->getScanCodesSize();
-        size_t toSize = toKey->getScanCodesSize();
-
-        std::cerr << "[BUILD_SUBST] fromSize=" << fromSize << ", toSize=" << toSize << std::endl;
-
-        if (fromSize == 0 || toSize == 0) {
-            // Skip keys without scan codes
-            std::cerr << "[BUILD_SUBST] SKIPPED - no scan codes!" << std::endl;
-            continue;
-        }
-
-        // Use the first scan code from each key
-        // The m_scan field is the actual YAMY scan code (uint16_t)
-        uint16_t fromYamyScan = fromScans[0].m_scan;
-        uint16_t toYamyScan = toScans[0].m_scan;
-
-        std::cerr << "[BUILD_SUBST] Substitution: 0x" << std::hex << std::setfill('0')
-                  << std::setw(4) << fromYamyScan << " → 0x" << std::setw(4) << toYamyScan
-                  << std::dec << std::endl;
-
-        // Add to substitution table: fromYamyScan → toYamyScan
+        uint16_t fromYamyScan = fromKey->getScanCodes()[0].m_scan;
+        uint16_t toYamyScan = toKey->getScanCodes()[0].m_scan;
         m_substitutionTable[fromYamyScan] = toYamyScan;
+    }
 
-        // Log the substitution for debugging
-        {
-            Acquire a(&m_log, 1);
-            m_log << "Substitution: 0x" << std::hex << std::setfill('0')
-                  << std::setw(4) << fromYamyScan
-                  << " → 0x" << std::setw(4) << toYamyScan
-                  << std::dec << std::endl;
+    // Create or recreate EventProcessor
+    m_eventProcessor = std::make_unique<yamy::EventProcessor>(m_substitutionTable);
+    
+    // Get the new lookup table and compile rules into it
+    if (auto* lookupTable = m_eventProcessor->getLookupTable()) {
+        lookupTable->clear();
+        for (const auto& substitute : keyboard.getSubstitutes()) {
+            const Key* fromKey = substitute.m_mkeyFrom.m_key;
+            if (!fromKey || fromKey->getScanCodesSize() == 0) {
+                continue;
+            }
+            uint16_t inputScanCode = fromKey->getScanCodes()[0].m_scan;
+            yamy::engine::CompiledRule rule = compileSubstitute(substitute);
+            lookupTable->addRule(inputScanCode, rule);
         }
     }
 
     // Log summary
     {
         Acquire a(&m_log, 0);
-        m_log << "Built substitution table with " << m_substitutionTable.size()
-              << " mappings" << std::endl;
+        m_log << "Built new rule lookup table with " << keyboard.getSubstitutes().size()
+              << " rules." << std::endl;
     }
 
-    // Create or recreate EventProcessor with new substitution table
-    m_eventProcessor = std::make_unique<yamy::EventProcessor>(m_substitutionTable);
-    m_eventProcessor->setDebugLogging(true);  // Enable debug logging
-    m_eventProcessor->setSubstitutesList(&keyboard.getSubstitutes()); // Inject full substitute list
-    std::cerr << "[BUILD_SUBST] EventProcessor created with " << m_substitutionTable.size() << " substitutions, debug=ON" << std::endl;
+    m_eventProcessor->setDebugLogging(true);
+    m_eventProcessor->setSubstitutesList(&keyboard.getSubstitutes());
 
-    // Register number modifiers from .mayu configuration
+    // Register number modifiers
     for (const auto& numberMod : keyboard.getNumberModifiers()) {
-        const Key* numberKey = numberMod.m_numberKey;
-        const Key* modifierKey = numberMod.m_modifierKey;
-
-        if (!numberKey || !modifierKey) {
+        if (!numberMod.m_numberKey || !numberMod.m_modifierKey || numberMod.m_numberKey->getScanCodesSize() == 0 || numberMod.m_modifierKey->getScanCodesSize() == 0) {
             continue;
         }
-
-        // Get YAMY scan codes
-        const ScanCode* numberScans = numberKey->getScanCodes();
-        const ScanCode* modifierScans = modifierKey->getScanCodes();
-        size_t numberSize = numberKey->getScanCodesSize();
-        size_t modifierSize = modifierKey->getScanCodesSize();
-
-        if (numberSize == 0 || modifierSize == 0) {
-            continue;
-        }
-
-        uint16_t numberYamyScan = numberScans[0].m_scan;
-        uint16_t modifierYamyScan = modifierScans[0].m_scan;
-
+        uint16_t numberYamyScan = numberMod.m_numberKey->getScanCodes()[0].m_scan;
+        uint16_t modifierYamyScan = numberMod.m_modifierKey->getScanCodes()[0].m_scan;
         m_eventProcessor->registerNumberModifier(numberYamyScan, modifierYamyScan);
-
-        // Log the number modifier registration
-        {
-            Acquire a(&m_log, 1);
-            m_log << "Number Modifier: 0x" << std::hex << std::setfill('0')
-                  << std::setw(4) << numberYamyScan
-                  << " → 0x" << std::setw(4) << modifierYamyScan
-                  << std::dec << std::endl;
-        }
     }
 
-    {
-        Acquire a(&m_log, 0);
-        m_log << "Registered " << keyboard.getNumberModifiers().size()
-              << " number modifiers" << std::endl;
-    }
-
-    // Register virtual modifiers (M00-MFF) from mod assign statements
-    // CRITICAL FIX: We need to register PHYSICAL KEYS that trigger virtual modifiers,
-    // not the virtual modifier codes themselves!
-    //
-    // Flow:
-    // 1. m_modTapActions maps: mod_num (e.g., 0x00 for M00) → tap_output (e.g., Enter YAMY code)
-    // 2. m_substitutionTable maps: physical_key (e.g., 0x30 for B) → virtual_mod (e.g., 0xF000 for M00)
-    // 3. We need to find which physical keys substitute to each virtual modifier
-    // 4. Register those physical keys with ModifierKeyHandler
+    // Register virtual modifiers triggers
     if (m_setting && !m_setting->m_modTapActions.empty()) {
-        int registered_count = 0;
-
         for (const auto& [mod_num, tap_action_yamy] : m_setting->m_modTapActions) {
-            uint16_t virtual_mod_code = 0xF000 + mod_num;  // e.g., M00 = 0xF000
-
-            // Find physical key(s) that substitute to this virtual modifier
+            uint16_t virtual_mod_code = 0xF000 + mod_num;
             for (const auto& [from_yamy, to_yamy] : m_substitutionTable) {
                 if (to_yamy == virtual_mod_code) {
-                    // Found a physical key (from_yamy) that maps to this virtual modifier
-                    // Register the PHYSICAL KEY as the trigger, not the virtual modifier code!
-                    if (m_eventProcessor && m_eventProcessor->getModifierHandler()) {
-                        // Call registerVirtualModifier with:
-                        // - trigger_key: physical key that user presses (e.g., B = 0x30)
-                        // - mod_num: virtual modifier number (e.g., 0x00 for M00)
-                        // - tap_output: what to output on tap (e.g., Enter YAMY code)
-
-                        std::cerr << "[BUILD_SUBST] Found virtual modifier mapping: physical 0x" << std::hex
-                                  << from_yamy << " → M" << std::setw(2) << std::setfill('0') << (int)mod_num
-                                  << " (0x" << virtual_mod_code << "), tap=0x" << tap_action_yamy << std::dec << std::endl;
-
-                        // Register the PHYSICAL KEY as the trigger!
-                        m_eventProcessor->registerVirtualModifierTrigger(from_yamy, mod_num, tap_action_yamy);
-                        registered_count++;
-                    }
+                    m_eventProcessor->registerVirtualModifierTrigger(from_yamy, mod_num, tap_action_yamy);
                 }
             }
         }
-
-        {
-            Acquire a(&m_log, 0);
-            m_log << "Found " << registered_count
-                  << " physical keys that trigger virtual modifiers (M00-MFF)" << std::endl;
-        }
     }
 
-    // Register modal modifiers from .mayu configuration
-    // Modal modifiers (mod mod9 = !!A) are stored in keymap modifier assignments
-    // Iterate through all keymaps to find modal modifier assignments
-    int modalModCount = 0;
-    const auto& keymapList = m_setting->m_keymaps.getKeymapList();
-    for (const auto& keymap : keymapList) {
-        // Only check for standard modifiers if needed, but since we removed Mod0-Mod19 enum values,
-        // we can't iterate over them anymore. The new virtual modifier system (M00-MFF) handles this
-        // via registerVirtualModifierTrigger above.
-        
-        // If there are any legacy "modal modifier" concepts remaining that aren't M00-MFF,
-        // they would need to be handled here, but the plan is to fully migrate to M00-MFF.
-    }
-
-    {
-        Acquire a(&m_log, 0);
-        m_log << "Registered " << modalModCount
-              << " modal modifiers"
-              << std::endl;
-    }
-
-    // Enable debug logging if YAMY_DEBUG_KEYCODE env var is set
+    // Enable debug logging if env var is set
     const char* debugEnv = std::getenv("YAMY_DEBUG_KEYCODE");
     if (debugEnv && std::string(debugEnv) == "1") {
-        // Enable EventProcessor debug logging
         m_eventProcessor->setDebugLogging(true);
-        Acquire a(&m_log, 0);
-        m_log << "EventProcessor debug logging enabled" << std::endl;
     }
 }
