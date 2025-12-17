@@ -1,0 +1,284 @@
+{
+  "$schema": "../schema/config.schema.json",
+  "version": "2.0",
+  "description": "Emacs-style keybindings for yamy. CapsLock acts as Control when held, Escape when tapped.",
+  "keyboard": {
+    "keys": {
+      "A": "0x1e",
+      "B": "0x30",
+      "C": "0x2e",
+      "D": "0x20",
+      "E": "0x12",
+      "F": "0x21",
+      "G": "0x22",
+      "H": "0x23",
+      "I": "0x17",
+      "J": "0x24",
+      "K": "0x25",
+      "L": "0x26",
+      "M": "0x32",
+      "N": "0x31",
+      "O": "0x18",
+      "P": "0x19",
+      "Q": "0x10",
+      "R": "0x13",
+      "S": "0x1f",
+      "T": "0x14",
+      "U": "0x16",
+      "V": "0x2f",
+      "W": "0x11",
+      "X": "0x2d",
+      "Y": "0x15",
+      "Z": "0x2c",
+      "Semicolon": "0x27",
+      "Comma": "0x33",
+      "Period": "0x34",
+      "Slash": "0x35",
+      "Space": "0x39",
+      "Backspace": "0x0e",
+      "Enter": "0x1c",
+      "Escape": "0x01",
+      "Tab": "0x0f",
+      "CapsLock": "0x3a",
+      "Left": "0xcb",
+      "Right": "0xcd",
+      "Up": "0xc8",
+      "Down": "0xd0",
+      "Home": "0xc7",
+      "End": "0xcf",
+      "PageUp": "0xc9",
+      "PageDown": "0xd1",
+      "Delete": "0xd3"
+    }
+  },
+  "virtualModifiers": {
+    "M01": {
+      "trigger": "CapsLock",
+      "tapAction": "Escape",
+      "holdThresholdMs": 200,
+      "description": "CapsLock as Control (M01-X maps to C-X), tap for Escape"
+    }
+  },
+  "mappings": [
+    {
+      "description": "=== EMACS CURSOR MOVEMENT ===",
+      "from": "M01-F",
+      "to": "Right"
+    },
+    {
+      "description": "C-f: forward-char (move right)",
+      "from": "M01-F",
+      "to": "Right"
+    },
+    {
+      "description": "C-b: backward-char (move left)",
+      "from": "M01-B",
+      "to": "Left"
+    },
+    {
+      "description": "C-n: next-line (move down)",
+      "from": "M01-N",
+      "to": "Down"
+    },
+    {
+      "description": "C-p: previous-line (move up)",
+      "from": "M01-P",
+      "to": "Up"
+    },
+    {
+      "description": "C-a: beginning-of-line",
+      "from": "M01-A",
+      "to": "Home"
+    },
+    {
+      "description": "C-e: end-of-line",
+      "from": "M01-E",
+      "to": "End"
+    },
+    {
+      "description": "=== EMACS WORD MOVEMENT ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "Alt-f: forward-word",
+      "from": "Alt-F",
+      "to": "Ctrl-Right"
+    },
+    {
+      "description": "Alt-b: backward-word",
+      "from": "Alt-B",
+      "to": "Ctrl-Left"
+    },
+    {
+      "description": "=== EMACS PAGE MOVEMENT ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-v: scroll down (page down)",
+      "from": "M01-V",
+      "to": "PageDown"
+    },
+    {
+      "description": "Alt-v: scroll up (page up)",
+      "from": "Alt-V",
+      "to": "PageUp"
+    },
+    {
+      "description": "Alt-<: beginning of buffer",
+      "from": "Alt-Shift-Comma",
+      "to": "Ctrl-Home"
+    },
+    {
+      "description": "Alt->: end of buffer",
+      "from": "Alt-Shift-Period",
+      "to": "Ctrl-End"
+    },
+    {
+      "description": "=== EMACS EDITING COMMANDS ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-d: delete-char (delete forward)",
+      "from": "M01-D",
+      "to": "Delete"
+    },
+    {
+      "description": "C-h: delete-backward-char",
+      "from": "M01-H",
+      "to": "Backspace"
+    },
+    {
+      "description": "Alt-d: kill-word (delete word forward)",
+      "from": "Alt-D",
+      "to": ["Shift-Ctrl-Right", "Ctrl-X"]
+    },
+    {
+      "description": "Alt-Backspace: backward-kill-word",
+      "from": "Alt-Backspace",
+      "to": ["Shift-Ctrl-Left", "Ctrl-X"]
+    },
+    {
+      "description": "C-k: kill-line (delete to end of line)",
+      "from": "M01-K",
+      "to": ["Shift-End", "Ctrl-X"]
+    },
+    {
+      "description": "=== EMACS NEWLINE COMMANDS ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-j: newline",
+      "from": "M01-J",
+      "to": "Enter"
+    },
+    {
+      "description": "C-m: return (same as Enter)",
+      "from": "M01-M",
+      "to": "Enter"
+    },
+    {
+      "description": "C-o: open-line (insert newline and stay)",
+      "from": "M01-O",
+      "to": ["Enter", "Left"]
+    },
+    {
+      "description": "=== EMACS KILL/YANK (CUT/COPY/PASTE) ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-w: kill-region (cut)",
+      "from": "M01-W",
+      "to": "Ctrl-X"
+    },
+    {
+      "description": "Alt-w: copy-region",
+      "from": "Alt-W",
+      "to": "Ctrl-C"
+    },
+    {
+      "description": "C-y: yank (paste)",
+      "from": "M01-Y",
+      "to": "Ctrl-V"
+    },
+    {
+      "description": "=== EMACS UNDO ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-/: undo",
+      "from": "M01-Slash",
+      "to": "Ctrl-Z"
+    },
+    {
+      "description": "=== EMACS SEARCH ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-s: isearch-forward (search)",
+      "from": "M01-S",
+      "to": "Ctrl-F"
+    },
+    {
+      "description": "C-r: isearch-backward (reverse search)",
+      "from": "M01-R",
+      "to": "Shift-Ctrl-F"
+    },
+    {
+      "description": "=== EMACS C-X PREFIX COMMANDS ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-x C-s: save-buffer (save file)",
+      "from": "M01-X",
+      "to": ["Ctrl-S"]
+    },
+    {
+      "description": "C-x C-f: find-file (open file)",
+      "from": "Ctrl-X",
+      "to": ["Ctrl-O"]
+    },
+    {
+      "description": "C-x C-w: write-file (save as)",
+      "from": "Ctrl-Shift-X",
+      "to": ["Alt-F", "A"]
+    },
+    {
+      "description": "=== EMACS CANCEL ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-g: keyboard-quit (cancel)",
+      "from": "M01-G",
+      "to": "Escape"
+    },
+    {
+      "description": "=== EMACS MARK (SELECTION) ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-Space: set-mark (start selection) - Note: Use Shift+movement after to select",
+      "from": "M01-Space",
+      "to": "Shift-Right"
+    },
+    {
+      "description": "=== EMACS TRANSPOSE ===",
+      "from": "M01-Semicolon",
+      "to": "Space"
+    },
+    {
+      "description": "C-t: transpose-chars (swap characters)",
+      "from": "M01-T",
+      "to": ["Shift-Right", "Ctrl-X", "Left", "Ctrl-V", "Right"]
+    }
+  ]
+}

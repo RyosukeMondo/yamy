@@ -371,10 +371,10 @@
   - _Requirements: NFR-2_
   - _Prompt: Role: Technical Writer with expertise in migration guides and user documentation | Task: Write comprehensive migration guide from .mayu to JSON following requirement NFR-2 | Restrictions: Cover common patterns, provide clear examples, explain removed features honestly, suggest workarounds, maintain helpful tone | Success: Guide is comprehensive and helpful, examples are clear, removed features explained, users can successfully migrate configs_
 
-- [ ] 5.4. Create comprehensive example configurations
+- [x] 5.4. Create comprehensive example configurations
   - File: keymaps/emacs-mode.json
-  - Create emacs-mode.json with Semicolon as meta key
-  - Add common emacs bindings (M01-W→Ctrl-C, M01-Y→Ctrl-V, etc.)
+  - Create emacs-mode.json with CapsLock as Control (M01)
+  - Add common emacs bindings (M01-W→Ctrl-X, M01-Y→Ctrl-V, etc.)
   - Include inline documentation via descriptions
   - Purpose: Provide emacs users with ready-to-use config
   - _Leverage: JSON schema, user stories, emacs keybindings knowledge_
