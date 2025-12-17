@@ -360,7 +360,7 @@
   - _Requirements: FR-1, FR-6_
   - _Prompt: Role: JSON Schema Expert with expertise in schema design and validation | Task: Create formal JSON Schema file for config validation following requirements FR-1 and FR-6 | Restrictions: Use JSON Schema draft-07, include all fields from design, add helpful descriptions, enable IDE features | Success: Schema is valid JSON Schema, validates config correctly, enables IDE autocomplete, rejects invalid configs_
 
-- [ ] 5.3. Write migration guide from .mayu to JSON
+- [x] 5.3. Write migration guide from .mayu to JSON
   - File: docs/migration-guide.md
   - Document conversion process for common .mayu patterns
   - Provide side-by-side examples (.mayu vs JSON)
