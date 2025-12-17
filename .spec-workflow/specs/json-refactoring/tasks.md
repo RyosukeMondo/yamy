@@ -252,7 +252,7 @@
 
 ## Phase 4: Delete Parser
 
-- [ ] 4.1. Delete parser source files
+- [x] 4.1. Delete parser source files
   - Files: src/core/settings/parser.h, src/core/settings/parser.cpp (delete)
   - Delete parser.h header file
   - Delete parser.cpp implementation file
