@@ -31,7 +31,7 @@
   - Create class `ConfigCompiler` that takes `ConfigAST` and produces `Keyboard` and `Keymaps`.
   - _Requirements: 1.3_
 
-- [ ] 6. Refactor EventProcessor Lookup
+- [x] 6. Refactor EventProcessor Lookup
   - File: `src/core/engine/engine_event_processor.cpp`
   - Implement `LookupTable` structure.
   - Build `LookupTable` from `Keyboard::Substitutes`.

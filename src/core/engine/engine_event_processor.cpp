@@ -161,18 +161,18 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
     uint16_t yamy_out = yamy_in;
     bool mapped = false;
 
-    if (m_substitutesList) {
+    // Use the new map for faster lookup
+    auto it = m_scanCodeToSubstitutes.find(yamy_in);
+    if (it != m_scanCodeToSubstitutes.end()) {
+        const auto& substitutesForScanCode = it->second;
+
         // Create Modifier object from current state for legacy checks
         yamy::input::Modifier currentMod = io_modState ? io_modState->toModifier() : yamy::input::Modifier();
         
-        // Iterate through all substitutions to find the first matching rule
-        for (const auto& subst : *m_substitutesList) {
-            // 1. Check Key Match
-            const Key* fromKey = subst.m_mkeyFrom.m_key;
-            if (!fromKey || fromKey->getScanCodesSize() == 0) continue;
-            
-            // Check if input scan code matches the rule's scan code
-            if (fromKey->getScanCodes()[0].m_scan != yamy_in) continue;
+        // Iterate through the smaller list of substitutes for this scan code
+        for (const auto* subst_ptr : substitutesForScanCode) {
+            const auto& subst = *subst_ptr;
+            // 1. Check Key Match (already done by map lookup)
 
             // 2. Check Legacy Modifiers (Shift, Ctrl, Alt, Win)
             // Use doesMatch which handles dontcare logic
@@ -180,7 +180,6 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
 
             // 3. Check Virtual Modifiers (M00-MFF)
             // Strict match: Required Virtual Mods must match Current Virtual Mods exactly
-            // (Assuming ModifiedKey::m_virtualMods represents required state and 0s are required OFF)
             bool vmod_match = true;
             if (io_modState) {
                 const uint32_t* current_vmods = io_modState->getModifierBits(); // [8]
@@ -212,20 +211,18 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
                 
                 if (m_debugLogging) {
                     LOG_DEBUG("[EventProcessor] [LAYER2:MATCH] 0x{:04X} -> 0x{:04X} (Rule: {})", 
-                              yamy_in, yamy_out, fromKey->getName());
+                              yamy_in, yamy_out, subst.m_mkeyFrom.m_key->getName());
                 }
             }
             break; // Stop after first match (priority based on file order)
         }
     }
 
-            break; // Stop after first match (priority based on file order)
-        }
-    } else {
-        // Fallback to simple map lookup ONLY if list is not available
-        auto it = m_substitutions.find(yamy_in);
-        if (it != m_substitutions.end()) {
-             yamy_out = it->second;
+    // If no modifier-aware rule was found, check the simple table.
+    if (!mapped) {
+        auto simple_it = m_substitutions.find(yamy_in);
+        if (simple_it != m_substitutions.end()) {
+             yamy_out = simple_it->second;
         }
     }
 
@@ -464,6 +461,21 @@ void EventProcessor::registerNumberModifier(uint16_t yamy_scancode, uint16_t mod
     m_modifierHandler->registerNumberModifier(yamy_scancode, hw_mod);
     LOG_INFO("[EventProcessor] Registered number modifier: 0x{:04X} → 0x{:04X} (evdev {})",
              yamy_scancode, modifier_yamy_code, modifier_evdev);
+}
+
+void EventProcessor::buildSubstituteMap()
+{
+    m_scanCodeToSubstitutes.clear();
+    if (!m_substitutesList) {
+        return;
+    }
+
+    for (const auto& subst : *m_substitutesList) {
+        if (subst.m_mkeyFrom.m_key && subst.m_mkeyFrom.m_key->getScanCodesSize() > 0) {
+            uint16_t scanCode = subst.m_mkeyFrom.m_key->getScanCodes()[0].m_scan;
+            m_scanCodeToSubstitutes[scanCode].push_back(&subst);
+        }
+    }
 }
 
 } // namespace yamy

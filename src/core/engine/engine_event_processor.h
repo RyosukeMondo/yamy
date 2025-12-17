@@ -105,6 +105,7 @@ public:
     /// @param substitutes Pointer to keyboard substitutes list
     void setSubstitutesList(const Keyboard::Substitutes* substitutes) {
         m_substitutesList = substitutes;
+        buildSubstituteMap();
     }
 
     /// Register a PHYSICAL KEY as a virtual modifier trigger (correct way)
@@ -147,12 +148,18 @@ private:
     /// @note Logs: [LAYER3:OUT] yamy 0xYYYY → evdev Z
     uint16_t layer3_yamyToEvdev(uint16_t yamy);
 
+    /// Build the map from scan code to substitutes for faster lookup
+    void buildSubstituteMap();
+
     const SubstitutionTable& m_substitutions;       ///< Reference to substitution table
     bool m_debugLogging;                            ///< Debug logging enabled flag
     std::unique_ptr<engine::ModifierKeyHandler> m_modifierHandler;  ///< Number modifier handler
     JourneyEventCallback m_journeyCallback;         ///< Callback for journey event notifications
     bool m_currentEventIsTap;                       ///< Set by layer2 when TAP detected on RELEASE
     const Keyboard::Substitutes* m_substitutesList = nullptr; ///< Pointer to full substitution list (modifier-aware)
+
+    using ScanCodeToSubstitutesMap = std::unordered_map<uint16_t, std::vector<const Substitute*>>;
+    ScanCodeToSubstitutesMap m_scanCodeToSubstitutes; ///< Map for faster substitution lookup
 };
 
 } // namespace yamy
