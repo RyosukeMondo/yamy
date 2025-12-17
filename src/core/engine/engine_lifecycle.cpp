@@ -251,7 +251,7 @@ void Engine::initializeIPC() {
     }
 
     // Set up LockState notification callback to send IPC messages
-    m_lockState.setNotificationCallback([this](const uint32_t lockBits[8]) {
+    m_modifierState.setNotificationCallback([this](const uint32_t lockBits[8]) {
         // Create LockStatusMessage and send via IPC
         yamy::ipc::LockStatusMessage msg;
         std::memcpy(msg.lockBits, lockBits, sizeof(msg.lockBits));

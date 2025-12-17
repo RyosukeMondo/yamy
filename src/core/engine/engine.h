@@ -25,7 +25,6 @@
 #  include "../functions/function.h"
 #  include "../input/input_event.h" // For KEYBOARD_INPUT_DATA (legacy)
 #  include "../input/modifier_state.h" // For ModifierState tracking
-#  include "../input/lock_state.h" // For LockState tracking
 #  include "../platform/types.h" // For KeyEvent
 #  include "../platform/message_constants.h"
 #  include "engine_event_processor.h" // For unified 3-layer event processing
@@ -270,7 +269,6 @@ private:
     // Event processing
     std::unique_ptr<yamy::EventProcessor> m_eventProcessor; /// Unified 3-layer event processor
     yamy::input::ModifierState m_modifierState; /// Modal and hardware modifier state tracking
-    yamy::input::LockState m_lockState; /// Virtual lock key state tracking (L00-LFF)
 
     /// Keymap entry for virtual modifier/lock-based key matching
     struct KeymapEntry {
@@ -395,9 +393,8 @@ private:
     /// Lookup keymap entry with modifier/lock matching and specificity priority
     /// @param key Input YAMY scan code to match
     /// @param mods Active modifier state (M00-MFF)
-    /// @param locks Active lock state (L00-LFF)
     /// @return Output YAMY scan code, or 0 if no match found
-    uint16_t lookupKeymap(uint16_t key, const yamy::input::ModifierState& mods, const yamy::input::LockState& locks) const;
+    uint16_t lookupKeymap(uint16_t key, const yamy::input::ModifierState& mods) const;
 
     /// Sort keymap entries by specificity (highest first) after loading
     void sortKeymapBySpecificity();

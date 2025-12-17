@@ -22,10 +22,11 @@ from framework.reporter import ReportGenerator, TestResult
 from framework.defs import KeyMapping
 
 class E2EOrchestrator:
-    def __init__(self, config_path: str, yamy_path: str, yamy_ctl_path: str, report_path: str):
+    def __init__(self, config_path: str, yamy_path: str, yamy_ctl_path: str, yamy_test_path: str, report_path: str):
         self.config_path = config_path
         self.yamy_path = yamy_path
         self.yamy_ctl_path = yamy_ctl_path
+        self.yamy_test_path = yamy_test_path
         self.report_path = report_path
         
         self.parser = MayuParser(self.config_path)
@@ -35,14 +36,19 @@ class E2EOrchestrator:
     def setup_yamy(self):
         """Kills any existing YAMY instance and starts a new one."""
         print("[Orchestrator] Setting up YAMY environment...")
+        sys.stdout.flush()
         
         # Forcefully stop any running yamy process
-        subprocess.run(['pkill', '-9', '-f', self.yamy_path], stderr=subprocess.DEVNULL)
+        # Use basename and -x (exact match) to avoid killing self (the test runner)
+        proc_name = os.path.basename(self.yamy_path)
+        subprocess.run(['pkill', '-9', '-x', proc_name], stderr=subprocess.DEVNULL)
         time.sleep(1)
 
         # Start yamy in the background
         print(f"[Orchestrator] Starting '{self.yamy_path}' daemon...")
-        log_file = open('/tmp/yamy_e2e_runner.log', 'w')
+        sys.stdout.flush()
+        # Use .out extension to avoid gitignore
+        log_file = open('yamy_e2e_runner.out', 'w')
         env = os.environ.copy()
         env['YAMY_DEBUG_KEYCODE'] = '1' # Enable keycode logging
         self.yamy_process = subprocess.Popen(
@@ -57,8 +63,13 @@ class E2EOrchestrator:
 
         # Load the specified configuration
         print(f"[Orchestrator] Loading config: '{self.config_path}'")
-        subprocess.run([self.yamy_ctl_path, 'reload', '--config', self.config_path], check=True)
-        subprocess.run([self.yamy_ctl_path, 'start'], check=True)
+        sys.stdout.flush()
+        try:
+            subprocess.run([self.yamy_ctl_path, 'reload', '--config', self.config_path], check=True)
+            subprocess.run([self.yamy_ctl_path, 'start'], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"[Orchestrator] Failed to load config. Exit code: {e.returncode}")
+            raise
         time.sleep(1) # Allow time for config to be applied
 
     def cleanup_yamy(self):
@@ -75,7 +86,8 @@ class E2EOrchestrator:
                 self.yamy_process = None
         
         # Final cleanup
-        subprocess.run(['pkill', '-9', '-f', self.yamy_path], stderr=subprocess.DEVNULL)
+        proc_name = os.path.basename(self.yamy_path)
+        subprocess.run(['pkill', '-9', '-x', proc_name], stderr=subprocess.DEVNULL)
 
     def run_single_test(self, mapping: KeyMapping, injector: EventInjector, monitor: LogMonitor):
         """Injects one key and checks for the correct output."""
@@ -119,27 +131,38 @@ class E2EOrchestrator:
         print("PASS" if passed else f"FAIL ({error_msg})")
 
 
-    def run(self):
+    def run(self, quick_mode: bool = False):
         """Executes the full E2E test suite."""
         print("======== YAMY E2E Test Runner ========")
+        sys.stdout.flush()
         
         # 1. Parse the mappings from the config file
         mappings = self.parser.parse()
         if not mappings:
             print("No 'def subst' mappings found to test. Exiting.")
             return True
+            
+        if quick_mode:
+            print("[Orchestrator] Quick mode enabled. Selecting representative subset...")
+            # Pick representative keys for quick testing
+            representative_keys = {'A', '_0', 'F1', 'LCtrl', 'Space'}
+            mappings = [m for m in mappings if m.input_key in representative_keys]
+            
         print(f"Found {len(mappings)} key substitutions to test.")
+        sys.stdout.flush()
 
         try:
-            # 2. Set up YAMY
-            self.setup_yamy()
-            
-            # 3. Use context managers for injector and monitor
-            with EventInjector() as injector, LogMonitor() as monitor:
-                print("\n=== Running Tests ===")
-                for mapping in mappings:
-                    self.run_single_test(mapping, injector, monitor)
-                    time.sleep(0.05) # Small delay between tests
+            # 1. Start EventInjector (creates virtual keyboard)
+            with EventInjector(self.yamy_test_path) as injector:
+                # 2. Set up YAMY (now YAMY can see the virtual keyboard)
+                self.setup_yamy()
+                
+                # 3. Use context manager for monitor
+                with LogMonitor() as monitor:
+                    print("\n=== Running Tests ===")
+                    for mapping in mappings:
+                        self.run_single_test(mapping, injector, monitor)
+                        time.sleep(0.05) # Small delay between tests
 
         except Exception as e:
             print(f"\nFATAL ERROR during test execution: {e}")
@@ -153,7 +176,7 @@ class E2EOrchestrator:
             self.reporter.save_json()
 
         # Return success if all tests passed
-        return self.reporter.summary['failed'] == 0
+        return sum(1 for r in self.reporter.results if not r.passed) == 0
 
 
 def main():
@@ -182,6 +205,17 @@ def main():
         default='./build/bin/yamy-ctl',
         help="Path to the 'yamy-ctl' control tool."
     )
+    parser.add_argument(
+        '--yamy-test-path',
+        type=str,
+        default='./build/bin/yamy-test',
+        help="Path to the 'yamy-test' utility."
+    )
+    parser.add_argument(
+        '--quick',
+        action='store_true',
+        help="Run a quick subset of tests (representative keys only)."
+    )
     args = parser.parse_args()
 
     # Basic validation
@@ -194,15 +228,19 @@ def main():
     if not os.path.exists(args.yamy_ctl_path):
         print(f"Error: yamy-ctl executable not found at '{args.yamy_ctl_path}'")
         sys.exit(1)
+    if not os.path.exists(args.yamy_test_path):
+        print(f"Error: yamy-test executable not found at '{args.yamy_test_path}'")
+        sys.exit(1)
         
     orchestrator = E2EOrchestrator(
         config_path=args.config,
         yamy_path=args.yamy_path,
         yamy_ctl_path=args.yamy_ctl_path,
+        yamy_test_path=args.yamy_test_path,
         report_path=args.report_path
     )
     
-    success = orchestrator.run()
+    success = orchestrator.run(quick_mode=args.quick)
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":

@@ -287,9 +287,11 @@ void Engine::generateKeyboardEvents(const Current &i_c)
 // Check if any virtual modifiers (M00-MFF) are active
 bool Engine::hasActiveVirtualModifiers() const
 {
-    const uint32_t* modBits = m_modifierState.getModifierBits();
-    for (int i = 0; i < 8; ++i) {
-        if (modBits[i] != 0) return true;
+    const auto& state = m_modifierState.getFullState();
+    for (int i = 0; i < 256; ++i) {
+        if (state.test(yamy::input::ModifierState::VIRTUAL_OFFSET + i)) {
+            return true;
+        }
     }
     return false;
 }
@@ -301,9 +303,12 @@ ModifiedKey Engine::buildPhysicalModifiedKey(const Current& i_c) const
     mkey.m_key = i_c.m_mkey.m_key;  // Physical key (before substitution)
 
     // Copy active virtual modifiers from ModifierState
-    const uint32_t* modBits = m_modifierState.getModifierBits();
-    for (int i = 0; i < 8; ++i) {
-        mkey.m_virtualMods[i] = modBits[i];
+    std::memset(mkey.m_virtualMods, 0, sizeof(mkey.m_virtualMods));
+    const auto& state = m_modifierState.getFullState();
+    for (int i = 0; i < 256; ++i) {
+        if (state.test(yamy::input::ModifierState::VIRTUAL_OFFSET + i)) {
+            mkey.m_virtualMods[i / 32] |= (1U << (i % 32));
+        }
     }
 
     // Copy standard modifiers (Shift, Ctrl, Alt, Win, etc.)
@@ -361,8 +366,8 @@ void Engine::beginGeneratingKeyboardEvents(
 
         // Process through all 3 layers
         // Pass ModifierState to track and update modal modifier state (mod0-mod19)
-        // Pass LockState to track and update lock key state (L00-LFF)
-        yamy::EventProcessor::ProcessedEvent result = m_eventProcessor->processEvent(i_c.m_evdev_code, event_type, &m_modifierState, &m_lockState);
+        // LockState is now integrated into ModifierState
+        yamy::EventProcessor::ProcessedEvent result = m_eventProcessor->processEvent(i_c.m_evdev_code, event_type, &m_modifierState);
 
         // CRITICAL: Check if event was suppressed at Layer 3 (virtual key, lock key, etc.)
         // If output_evdev is 0, the event should NOT be generated/output
@@ -448,60 +453,6 @@ void Engine::beginGeneratingKeyboardEvents(
             generateKeyEvent(output_key, isPhysicallyPressed, false);
         }
         return; // Skip old keymap logic entirely
-    } else if (cnew.m_mkey.m_key && cnew.m_mkey.m_key->getScanCodesSize() > 0 && !m_substitutionTable.empty()) {
-        // Fallback: Direct substitution table access (if EventProcessor not available or no evdev code)
-        const ScanCode *input_sc = cnew.m_mkey.m_key->getScanCodes();
-        uint16_t input_yamy = input_sc[0].m_scan;
-
-        // Apply Layer 2 substitution: look up in substitution table
-        uint16_t output_yamy = input_yamy; // Default: passthrough
-        auto it = m_substitutionTable.find(input_yamy);
-        if (it != m_substitutionTable.end()) {
-            output_yamy = it->second; // Substitution found
-            PLATFORM_LOG_INFO("Layer2", "[LAYER2:SUBST:FALLBACK] 0x%04X -> 0x%04X",
-                input_yamy, output_yamy);
-        } else {
-            PLATFORM_LOG_INFO("Layer2", "[LAYER2:PASSTHROUGH:FALLBACK] 0x%04X (no substitution)",
-                input_yamy);
-        }
-
-        // If substitution occurred (output differs from input)
-        if (output_yamy != input_yamy) {
-            // Find the key object for the substituted scan code
-            Key* substituted_key = nullptr;
-            for (Keyboard::KeyIterator it = m_setting->m_keyboard.getKeyIterator(); *it; ++it) {
-                const ScanCode *sc = (*it)->getScanCodes();
-                if ((*it)->getScanCodesSize() > 0 && sc[0].m_scan == output_yamy) {
-                    substituted_key = *it;
-                    break;
-                }
-            }
-
-            if (substituted_key) {
-                ModifiedKey mkey(substituted_key);
-                cnew.m_mkey = mkey;
-                if (isPhysicallyPressed) {
-                    cnew.m_mkey.m_modifier.off(Modifier::Type_Up);
-                    cnew.m_mkey.m_modifier.on(Modifier::Type_Down);
-                } else {
-                    cnew.m_mkey.m_modifier.on(Modifier::Type_Up);
-                    cnew.m_mkey.m_modifier.off(Modifier::Type_Down);
-                }
-                for (int i = Modifier::Type_begin; i != Modifier::Type_end; ++ i) {
-                    Modifier::Type type = static_cast<Modifier::Type>(i);
-                    if (cnew.m_mkey.m_modifier.isDontcare(type) &&
-                            !i_c.m_mkey.m_modifier.isDontcare(type))
-                        cnew.m_mkey.m_modifier.press(
-                            type, i_c.m_mkey.m_modifier.isPressed(type));
-                }
-
-                {
-                    Acquire a(&m_log, 1);
-                    m_log << "* substitute (fallback direct table)" << std::endl;
-                }
-                outputToLog(substituted_key, cnew.m_mkey, 1);
-            }
-        }
     } else {
         // No EventProcessor and no substitution table - use old logic
         // Layer 2: Log input to substitution lookup
@@ -570,13 +521,16 @@ void Engine::beginGeneratingKeyboardEvents(
     cnew.m_mkey.m_modifier.add(activeModifiers);
 
     // NEW M00-MFF system: Copy virtual modifiers directly to new field
-    const uint32_t* modBits = m_modifierState.getModifierBits();
-    for (int i = 0; i < 8; ++i) {
-        cnew.m_mkey.m_virtualMods[i] = modBits[i];
+    std::memset(cnew.m_mkey.m_virtualMods, 0, sizeof(cnew.m_mkey.m_virtualMods));
+    const auto& state = m_modifierState.getFullState();
+    for (int i = 0; i < 256; ++i) {
+        if (state.test(yamy::input::ModifierState::VIRTUAL_OFFSET + i)) {
+            cnew.m_mkey.m_virtualMods[i / 32] |= (1U << (i % 32));
+        }
     }
 
     std::cerr << "[GEN] Applied active modifiers: OLD=" << activeModifiers
-              << ", NEW_M00=" << ((modBits[0] & 1) ? "1" : "0") << std::endl;
+              << ", NEW_M00=" << (state.test(yamy::input::ModifierState::VIRTUAL_OFFSET) ? "1" : "0") << std::endl;
 
     // generate key event !
     std::cerr << "[GEN] About to generate key events for cnew.m_mkey.m_key="

@@ -24,10 +24,6 @@
 #include <chrono>
 #include <gsl/gsl>
 
-} // namespace
-
-
-
 // manageTs4mayu removed (moved to InputDriver)
 
 
@@ -225,9 +221,9 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
     m_eventProcessor = std::make_unique<yamy::EventProcessor>();
     
     // Get the new lookup table and compile rules into it
+    int total_rules = 0;
     if (auto* lookupTable = m_eventProcessor->getLookupTable()) {
         lookupTable->clear();
-        int total_rules = 0;
         for (const auto& substitute : keyboard.getSubstitutes()) {
             const Key* fromKey = substitute.m_mkeyFrom.m_key;
             if (!fromKey || fromKey->getScanCodesSize() == 0) {
@@ -263,10 +259,16 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
     }
 
     // Register virtual modifiers triggers
-    if (m_setting && !m_setting->m_modTapActions.empty()) {
-        // This is tricky without the simple substitution table.
-        // For now, this part of the functionality will be broken.
-        // This needs to be handled by compiling virtual mod triggers into the lookup table.
+    if (m_setting) {
+        for (const auto& [trigger, modNum] : m_setting->m_virtualModTriggers) {
+            uint16_t tapOutput = 0;
+            auto it = m_setting->m_modTapActions.find(modNum);
+            if (it != m_setting->m_modTapActions.end()) {
+                tapOutput = it->second;
+            }
+            // Register: trigger -> modNum (with optional tapOutput)
+            m_eventProcessor->registerVirtualModifierTrigger(trigger, modNum, tapOutput);
+        }
     }
 
     // Enable debug logging if env var is set

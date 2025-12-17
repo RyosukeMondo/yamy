@@ -382,6 +382,7 @@ private:
         }
     };
     typedef std::map<std::string, Key *, CaseInsensitiveCompare> Aliases;    /// key name aliases
+public:
     ///
     class Substitute
     {

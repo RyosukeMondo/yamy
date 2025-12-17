@@ -275,7 +275,7 @@ bool InputHookLinux::install(KeyCallback keyCallback, MouseCallback mouseCallbac
     for (const auto& kbInfo : keyboards) {
         std::cerr << "[DEBUG] Processing keyboard: " << kbInfo.devNode << " (" << kbInfo.name << ")" << std::endl;
         // Skip devices we should never grab
-        if (kbInfo.name.find("Yamy Virtual") != std::string::npos ||
+        if (kbInfo.name.find("Yamy Remapped Output Device") != std::string::npos || // Skip Yamy's own output
             kbInfo.name.find("mouse-button-passthrough") != std::string::npos ||
             kbInfo.name.find("Mouse") != std::string::npos ||
             kbInfo.name.find("TrackBall") != std::string::npos ||

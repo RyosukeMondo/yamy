@@ -11,9 +11,9 @@ except ImportError:
     evdev = None
 
 class LogMonitor:
-    def __init__(self, device_name: str = "Yamy Virtual"):
+    def __init__(self, device_name: str = "Yamy Remapped Output Device"):
         self.device_name = device_name
-        self.device = None
+        self.device: Optional[InputDevice] = None # Use self.device consistently
 
     def find_device(self) -> bool:
         """Finds the virtual device created by YAMY."""
@@ -21,19 +21,22 @@ class LogMonitor:
             return False
             
         print(f"[LogMonitor] Searching for output device: '{self.device_name}'...")
+        found = False # Initialize found here
         for path in list_devices():
             try:
                 d = InputDevice(path)
-                if self.device_name in d.name:
-                    self.device = d
+                if self.device_name in d.name: # Use self.device_name for consistency
+                    self.device = d # Use self.device consistently
                     print(f"[LogMonitor] Found output device: {d.name} at {path}")
-                    return True
+                    found = True
+                    break # Break once found
             except Exception as e:
                 # Can fail on some devices, e.g. permission denied
                 print(f"[LogMonitor] Warning: Could not inspect device at {path}: {e}")
         
-        print(f"[LogMonitor] ERROR: Could not find output device named '{self.device_name}'.")
-        return False
+        if not found: # Only print error if not found after loop
+            print(f"[LogMonitor] ERROR: Could not find output device named '{self.device_name}'.")
+        return found # Return found status
 
     def start(self):
         """Starts monitoring by finding and grabbing the device."""
@@ -46,8 +49,9 @@ class LogMonitor:
 
         try:
             # Grab the device to prevent other applications from receiving events
-            self.device.grab()
-            print("[LogMonitor] Device grabbed exclusively.")
+            # self.device.grab()
+            # print("[LogMonitor] Device grabbed exclusively.")
+            print("[LogMonitor] Device NOT grabbed (debug).")
         except Exception as e:
             print(f"[LogMonitor] Warning: Could not grab device. Events may leak. Error: {e}")
 
@@ -58,7 +62,7 @@ class LogMonitor:
 
         print("[LogMonitor] Stopping monitor...")
         try:
-            self.device.ungrab()
+            # self.device.ungrab()
             self.device.close()
             print("[LogMonitor] Device released.")
         except Exception as e:
@@ -84,7 +88,7 @@ class LogMonitor:
                 # No more events pending
                 break
 
-    def capture_next_key_event(self, timeout: float = 1.0) -> Optional[Tuple[int, int]]:
+    def capture_next_key_event(self, timeout: float = 2.0) -> Optional[Tuple[int, int]]:
         """
         Captures the next single EV_KEY event from the device.
 
@@ -105,6 +109,7 @@ class LogMonitor:
             if r:
                 try:
                     for event in self.device.read():
+                        print(f"[LogMonitor Debug] Event: type={event.type}, code={event.code}, value={event.value}") # DEBUG
                         if event.type == ecodes.EV_KEY:
                             return (event.code, event.value)
                 except (IOError, BlockingIOError):

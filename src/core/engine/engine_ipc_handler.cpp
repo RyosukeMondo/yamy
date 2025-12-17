@@ -80,8 +80,15 @@ void Engine::handleIpcMessage(const yamy::ipc::Message& message)
 
         // Send current lock state to GUI
         yamy::ipc::LockStatusMessage msg;
-        const uint32_t* lockBits = m_lockState.getLockBits();
-        std::memcpy(msg.lockBits, lockBits, sizeof(msg.lockBits));
+        std::memset(msg.lockBits, 0, sizeof(msg.lockBits));
+        
+        const auto& state = m_modifierState.getFullState();
+        // Locks are at LOCK_OFFSET in ModifierState
+        for (int i = 0; i < 256; ++i) {
+            if (state.test(yamy::input::ModifierState::LOCK_OFFSET + i)) {
+                msg.lockBits[i / 32] |= (1U << (i % 32));
+            }
+        }
 
         yamy::ipc::Message response;
         response.type = toIpcType(yamy::MessageType::LockStatusUpdate);

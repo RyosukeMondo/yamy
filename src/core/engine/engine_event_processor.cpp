@@ -162,12 +162,87 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
 
 uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
 {
-    std::cerr << "[LAYER3] ENTRY: yamy=0x" << std::hex << yamy << std::dec << std::endl;
-
+    if (m_debugLogging) {
+        LOG_DEBUG("[EventProcessor] [LAYER3:IN] Processing yamy 0x{:04X}", yamy);
+    }
     // Layer 3: YAMY → evdev conversion with virtual key suppression
-    // ... (rest of the function is the same)
+    // Virtual keys (V_*, M00-MFF, L00-LFF) have no evdev codes and must NOT
+    // be output to the system.
+    bool is_virtual = yamy::platform::isVirtualKey(yamy);
+    bool is_modifier = yamy::platform::isModifier(yamy);
+    bool is_lock = yamy::platform::isLock(yamy);
+
+    if (is_virtual || is_modifier || is_lock) {
+        if (m_debugLogging) {
+            LOG_DEBUG("[EventProcessor] [LAYER3:SUPPRESS] yamy 0x{:04X} (virtual key, not output)", yamy);
+        }
+        return 0;  // Suppress virtual keys (no evdev output)
+    }
+
+    // Call existing keycode mapping function for physical keys
+    uint16_t evdev = yamy::platform::yamyToEvdevKeyCode(yamy);
+
+    if (m_debugLogging) {
+        if (evdev != 0) {
+            const char* key_name = yamy::platform::getKeyName(evdev);
+            LOG_DEBUG("[EventProcessor] [LAYER3:OUT] yamy 0x{:04X} → evdev {} ({})",
+                      yamy, evdev, key_name);
+        } else {
+            LOG_DEBUG("[EventProcessor] [LAYER3:OUT] yamy 0x{:04X} → NOT FOUND", yamy);
+        }
+    }
+
+    return evdev;
 }
 
 // ... other functions ...
+
+void EventProcessor::setModifierHandler(std::unique_ptr<engine::ModifierKeyHandler> handler)
+{
+    m_modifierHandler = std::move(handler);
+}
+
+void EventProcessor::registerVirtualModifiers(const std::unordered_map<uint8_t, uint16_t>& mod_tap_actions)
+{
+    if (m_modifierHandler) {
+        m_modifierHandler->registerVirtualModifiersFromMap(mod_tap_actions);
+    }
+}
+
+void EventProcessor::registerVirtualModifierTrigger(uint16_t trigger_key, uint8_t mod_num, uint16_t tap_output)
+{
+    if (m_modifierHandler) {
+        m_modifierHandler->registerVirtualModifierTrigger(trigger_key, mod_num, tap_output);
+    }
+}
+
+void EventProcessor::registerNumberModifier(uint16_t yamy_scancode, uint16_t modifier_yamy_code)
+{
+    // Convert modifier YAMY scan code to evdev code to determine HardwareModifier enum
+    uint16_t modifier_evdev = yamy::platform::yamyToEvdevKeyCode(modifier_yamy_code);
+
+    if (modifier_evdev == 0) {
+        return;
+    }
+
+    // Map evdev codes to HardwareModifier enum
+    engine::HardwareModifier hw_mod = engine::HardwareModifier::NONE;
+    switch (modifier_evdev) {
+        case 42:  hw_mod = engine::HardwareModifier::LSHIFT; break;
+        case 54:  hw_mod = engine::HardwareModifier::RSHIFT; break;
+        case 29:  hw_mod = engine::HardwareModifier::LCTRL; break;
+        case 97:  hw_mod = engine::HardwareModifier::RCTRL; break;
+        case 56:  hw_mod = engine::HardwareModifier::LALT; break;
+        case 100: hw_mod = engine::HardwareModifier::RALT; break;
+        case 125: hw_mod = engine::HardwareModifier::LWIN; break;
+        case 126: hw_mod = engine::HardwareModifier::RWIN; break;
+        default:
+            return;
+    }
+
+    if (m_modifierHandler) {
+        m_modifierHandler->registerNumberModifier(yamy_scancode, hw_mod);
+    }
+}
 
 } // namespace yamy

@@ -238,7 +238,7 @@ private:
         struct uinput_user_dev uidev;
         memset(&uidev, 0, sizeof(uidev));
 
-        snprintf(uidev.name, UINPUT_MAX_NAME_SIZE, "Yamy Virtual Input Device");
+        snprintf(uidev.name, UINPUT_MAX_NAME_SIZE, "Yamy Remapped Output Device");
         uidev.id.bustype = BUS_USB;
         uidev.id.vendor  = 0x1;
         uidev.id.product = 0x1;

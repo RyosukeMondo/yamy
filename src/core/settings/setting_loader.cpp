@@ -138,9 +138,13 @@ void SettingLoader::load_SCAN_CODES(Key *o_key, std::vector<yamy::ast::ScanCodeD
         while (true) {
             Token *t = getToken();
             if (t->isNumber()) {
-                sc.m_scan = (u_char)t->getNumber();
-                if (o_key)
-                    o_key->addScanCode(sc);
+                // Before adding, apply E0/E1 flags to scan code as per YAMY internal convention
+                if (sc.m_flags & ScanCode::E0) {
+                    sc.m_scan |= 0xE000;
+                } else if (sc.m_flags & ScanCode::E1) {
+                    sc.m_scan |= 0xE100; // Assuming E1 maps to 0xE100 prefix, adjust if different
+                }
+                o_key->addScanCode(sc);
                 
                 if (o_ast_scan_codes) {
                     ast_sc.scan = sc.m_scan;
@@ -309,6 +313,7 @@ void SettingLoader::load_DEFINE_SUBSTITUTE()
 
 // <DEFINE_NUMBER_MODIFIER>
 // Syntax: def numbermod *_1 = *LShift
+// Syntax: def numbermod *B = *M00 (Virtual Modifier)
 void SettingLoader::load_DEFINE_NUMBER_MODIFIER()
 {
     yamy::ast::NumberModifierDefinition num_mod_def;
@@ -331,6 +336,30 @@ void SettingLoader::load_DEFINE_NUMBER_MODIFIER()
     std::string modifierKeyName = modifierKeyToken->getString();
     num_mod_def.modifierKeyName = modifierKeyName;
 
+    // NEW: Check for Virtual Modifier M00-MFF or M0-M9
+    if (modifierKeyName[0] == 'M') {
+        int modNum = -1;
+        // Handle M0-M9 short format
+        if (modifierKeyName.length() == 2 && std::isdigit(modifierKeyName[1])) {
+             modNum = modifierKeyName[1] - '0';
+        } 
+        // Handle M00-MFF hex format
+        else if (modifierKeyName.length() == 3 && std::isxdigit(modifierKeyName[1]) && std::isxdigit(modifierKeyName[2])) {
+             auto hexToInt = [](char c) { return (c >= '0' && c <= '9') ? c - '0' : (std::toupper(c) - 'A' + 10); };
+             modNum = (hexToInt(modifierKeyName[1]) << 4) | hexToInt(modifierKeyName[2]);
+        }
+
+        if (modNum >= 0) {
+            if (numberKey->getScanCodesSize() > 0) {
+                uint16_t scanCode = numberKey->getScanCodes()[0].m_scan;
+                m_setting->m_virtualModTriggers[scanCode] = static_cast<uint8_t>(modNum);
+                
+                if (m_ast) m_ast->numberModifierDefinitions.push_back(num_mod_def);
+                return;
+            }
+        }
+    }
+
     // Validate that it's a valid hardware modifier
     static const char* validModifiers[] = {
         "LShift", "RShift", "LCtrl", "RCtrl",
@@ -346,7 +375,7 @@ void SettingLoader::load_DEFINE_NUMBER_MODIFIER()
     if (!isValidModifier) {
         ErrorMessage e;
         e << "`" << modifierKeyName << "': invalid modifier key. ";
-        e << "Valid modifiers: LShift, RShift, LCtrl, RCtrl, LAlt, RAlt, LWin, RWin.";
+        e << "Valid modifiers: LShift, RShift, LCtrl, RCtrl, LAlt, RAlt, LWin, RWin, or M00-MFF.";
         throw e;
     }
 
@@ -478,26 +507,40 @@ static int parseHex2(const std::string& s) {
 
 bool SettingLoader::parseMxxModifier(const std::string& token_str, Modifier::Type, Modifier&, Modifier::Type*, Modifier&, int& flag)
 {
-    if (token_str.length() != 4 || token_str[0] != 'M' || token_str[3] != '-') return false;
+    int modNum = -1;
+
+    // Handle M00-MFF (length 4: Mxx-)
+    if (token_str.length() == 4 && token_str[0] == 'M' && token_str[3] == '-') {
+        // Validate hex digits
+        auto isHexDigit = [](char c) {
+            return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+        };
+        if (isHexDigit(token_str[1]) && isHexDigit(token_str[2])) {
+            modNum = parseHex2(token_str);
+        }
+    } 
+    // Handle M0-M9 (length 3: Mx-)
+    else if (token_str.length() == 3 && token_str[0] == 'M' && token_str[2] == '-') {
+        if (std::isdigit(token_str[1])) {
+            modNum = token_str[1] - '0';
+        }
+    }
+
+    if (modNum >= 0) {
+        getToken(); // Consume token
+
+        std::cerr << "[PARSER:NEW] Parsed M" << std::hex << std::setw(2) << std::setfill('0') << modNum
+                  << "- -> virtual modifier " << std::dec << (int)modNum
+                  << " (NEW M00-MFF system)" << std::endl;
+
+        m_parserContext.pendingVirtualMod = static_cast<uint8_t>(modNum);
+        m_parserContext.hasVirtualMod = true;
+
+        flag = 0; // PRESS
+        return true;
+    }
     
-    // Validate hex digits
-    auto isHexDigit = [](char c) {
-        return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
-    };
-    if (!isHexDigit(token_str[1]) || !isHexDigit(token_str[2])) return false;
-
-    int modNum = parseHex2(token_str);
-    getToken(); // Consume token
-
-    std::cerr << "[PARSER:NEW] Parsed M" << std::hex << std::setw(2) << std::setfill('0') << modNum
-              << "- -> virtual modifier " << std::dec << (int)modNum
-              << " (NEW M00-MFF system)" << std::endl;
-
-    m_parserContext.pendingVirtualMod = static_cast<uint8_t>(modNum);
-    m_parserContext.hasVirtualMod = true;
-
-    flag = 0; // PRESS
-    return true;
+    return false;
 }
 
 bool SettingLoader::parseLxxModifier(const std::string& token_str, Modifier::Type i_mode, Modifier& i_modifier, Modifier::Type* o_mode, Modifier& isModifierSpecified, int& flag)
@@ -562,47 +605,9 @@ continue_loop:
     while (!isEOL()) {
         t = lookToken();
 
-        const static struct {
-            const char *m_s;
-            Modifier::Type m_mt;
-        } map[] = {
-            // <BASIC_MODIFIER>
-            { "S-",  Modifier::Type_Shift },
-            { "A-",  Modifier::Type_Alt },
-            { "M-",  Modifier::Type_Alt },
-            { "C-",  Modifier::Type_Control },
-            { "W-",  Modifier::Type_Windows },
-            // <KEYSEQ_MODIFIER>
-            { "U-",  Modifier::Type_Up },
-            { "D-",  Modifier::Type_Down },
-            // <ASSIGN_MODIFIER>
-            { "R-",  Modifier::Type_Repeat },
-            { "IL-", Modifier::Type_ImeLock },
-            { "IC-", Modifier::Type_ImeComp },
-            { "I-",  Modifier::Type_ImeComp },
-            { "NL-", Modifier::Type_NumLock },
-            { "CL-", Modifier::Type_CapsLock },
-            { "SL-", Modifier::Type_ScrollLock },
-            { "KL-", Modifier::Type_KanaLock },
-            { "MAX-", Modifier::Type_Maximized },
-            { "MIN-", Modifier::Type_Minimized },
-            { "MMAX-", Modifier::Type_MdiMaximized },
-            { "MMIN-", Modifier::Type_MdiMinimized },
-            { "T-", Modifier::Type_Touchpad },
-            { "TS-", Modifier::Type_TouchpadSticky },
-            { "L0-", Modifier::Type_Lock0 },
-            { "L1-", Modifier::Type_Lock1 },
-            { "L2-", Modifier::Type_Lock2 },
-            { "L3-", Modifier::Type_Lock3 },
-            { "L4-", Modifier::Type_Lock4 },
-            { "L5-", Modifier::Type_Lock5 },
-            { "L6-", Modifier::Type_Lock6 },
-            { "L7-", Modifier::Type_Lock7 },
-            { "L8-", Modifier::Type_Lock8 },
-            { "L9-", Modifier::Type_Lock9 },
-        };
+        const std::string& token_str = t->getString();
 
-        // NEW: Dynamic M00-MFF and L00-LFF parsing
+        // 1. Check Helpers (M00-MFF, L00-LFF)
         if (parseMxxModifier(token_str, i_mode, i_modifier, o_mode, isModifierSpecified, (int&)flag)) {
             continue;
         }
@@ -610,37 +615,51 @@ continue_loop:
             continue;
         }
 
-        for (int i = 0; i < (int)NUMBER_OF(map); ++ i)
-            if (*t == map[i].m_s) {
-                getToken();
-                Modifier::Type mt = map[i].m_mt;
-                if (static_cast<int>(i_mode) <= static_cast<int>(mt))
-                    throw ErrorMessage() << "`" << *t
-                    << "': invalid modifier at this context.";
-                switch (flag) {
-                case PRESS:
-                    i_modifier.press(mt);
-                    break;
-                case RELEASE:
-                    i_modifier.release(mt);
-                    break;
-                case DONTCARE:
-                    i_modifier.dontcare(mt);
-                    break;
-                }
-                isModifierSpecified.on(mt);
-                flag = PRESS;
+        // 2. Check Static Map (Standard Modifiers)
+        static const std::map<std::string, Modifier::Type> s_modifierMap = {
+            { "S-",  Modifier::Type_Shift }, { "A-",  Modifier::Type_Alt },
+            { "M-",  Modifier::Type_Alt }, { "C-",  Modifier::Type_Control },
+            { "W-",  Modifier::Type_Windows }, { "U-",  Modifier::Type_Up },
+            { "D-",  Modifier::Type_Down }, { "R-",  Modifier::Type_Repeat },
+            { "IL-", Modifier::Type_ImeLock }, { "IC-", Modifier::Type_ImeComp },
+            { "I-",  Modifier::Type_ImeComp }, { "NL-", Modifier::Type_NumLock },
+            { "CL-", Modifier::Type_CapsLock }, { "SL-", Modifier::Type_ScrollLock },
+            { "KL-", Modifier::Type_KanaLock }, { "MAX-", Modifier::Type_Maximized },
+            { "MIN-", Modifier::Type_Minimized }, { "MMAX-", Modifier::Type_MdiMaximized },
+            { "MMIN-", Modifier::Type_MdiMinimized }, { "T-", Modifier::Type_Touchpad },
+            { "TS-", Modifier::Type_TouchpadSticky },
+            { "L0-", Modifier::Type_Lock0 }, { "L1-", Modifier::Type_Lock1 },
+            { "L2-", Modifier::Type_Lock2 }, { "L3-", Modifier::Type_Lock3 },
+            { "L4-", Modifier::Type_Lock4 }, { "L5-", Modifier::Type_Lock5 },
+            { "L6-", Modifier::Type_Lock6 }, { "L7-", Modifier::Type_Lock7 },
+            { "L8-", Modifier::Type_Lock8 }, { "L9-", Modifier::Type_Lock9 },
+        };
 
-                if (o_mode && *o_mode < mt) {
-                    if (mt < Modifier::Type_BASIC)
-                        *o_mode = Modifier::Type_BASIC;
-                    else if (mt < Modifier::Type_KEYSEQ)
-                        *o_mode = Modifier::Type_KEYSEQ;
-                    else if (mt < Modifier::Type_ASSIGN)
-                        *o_mode = Modifier::Type_ASSIGN;
-                }
-                goto continue_loop;
+        auto it = s_modifierMap.find(token_str);
+        if (it != s_modifierMap.end()) {
+            getToken();
+            Modifier::Type mt = it->second;
+            if (static_cast<int>(i_mode) <= static_cast<int>(mt))
+                throw ErrorMessage() << "`" << token_str << "': invalid modifier at this context.";
+            
+            switch (flag) {
+                case PRESS:    i_modifier.press(mt); break;
+                case RELEASE:  i_modifier.release(mt); break;
+                case DONTCARE: i_modifier.dontcare(mt); break;
             }
+            isModifierSpecified.on(mt);
+            flag = PRESS;
+
+            if (o_mode && *o_mode < mt) {
+                if (mt < Modifier::Type_BASIC)
+                    *o_mode = Modifier::Type_BASIC;
+                else if (mt < Modifier::Type_KEYSEQ)
+                    *o_mode = Modifier::Type_KEYSEQ;
+                else if (mt < Modifier::Type_ASSIGN)
+                    *o_mode = Modifier::Type_ASSIGN;
+            }
+            continue;
+        }
 
         if (*t == "*") {
             getToken();
@@ -1843,6 +1862,21 @@ void SettingLoader::loadFromData(const std::string &data)
         m_prefixes = new std::vector<std::string>;
         for (size_t i = 0; i < NUMBER_OF(prefixes); ++ i)
             m_prefixes->push_back(prefixes[i]);
+
+        // Add dynamic prefixes for M00-MFF and L00-LFF
+        char buf[8];
+        for (int i = 0; i < 256; ++i) {
+            snprintf(buf, sizeof(buf), "M%02X-", i);
+            m_prefixes->push_back(std::string(buf));
+            snprintf(buf, sizeof(buf), "L%02X-", i);
+            m_prefixes->push_back(std::string(buf));
+        }
+        // Add legacy 1-digit prefixes M0-M9
+        for (int i = 0; i < 10; ++i) {
+            snprintf(buf, sizeof(buf), "M%X-", i);
+            m_prefixes->push_back(std::string(buf));
+        }
+
         std::sort(m_prefixes->begin(), m_prefixes->end(), prefixSortPred);
     }
     m_prefixesRefCcount ++;

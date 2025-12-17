@@ -3,7 +3,6 @@
 
 #include "misc.h"
 #include "engine.h"
-#include "../input/lock_state.h"
 #include <algorithm>
 #include <cstring>
 
@@ -44,11 +43,9 @@ static uint8_t popcount_array(const uint32_t* bits, size_t count) {
 
 uint16_t Engine::lookupKeymap(
     uint16_t key,
-    const yamy::input::ModifierState& mods,
-    const yamy::input::LockState& locks
+    const yamy::input::ModifierState& mods
 ) const {
-    const uint32_t* active_mods = mods.getModifierBits();
-    const uint32_t* active_locks = locks.getLockBits();
+    const auto& state = mods.getFullState();
 
     // Check most specific entries first (vector is sorted by specificity DESC)
     for (const auto& entry : m_virtualKeymap) {
@@ -57,24 +54,35 @@ uint16_t Engine::lookupKeymap(
             continue;
         }
 
-        // Check if all required modifiers are active
-        // For each word in the bitmask array, verify that all required bits are set
-        // Formula: (active_mods[i] & required_mods[i]) == required_mods[i]
+        // Check Virtual Modifiers (M00-MFF)
         bool mods_match = true;
-        for (int i = 0; i < 8; ++i) {
-            if ((active_mods[i] & entry.required_mods[i]) != entry.required_mods[i]) {
+        for (int i = 0; i < 256; ++i) {
+            // Check if this specific modifier bit is required by the entry
+            bool required = (entry.required_mods[i / 32] >> (i % 32)) & 1;
+            
+            // Check if the modifier is active in the current state
+            // VIRTUAL_OFFSET is where M00 starts
+            bool active = state.test(yamy::input::ModifierState::VIRTUAL_OFFSET + i);
+
+            // Strict match on REQUIRED bits: If required, must be active
+            if (required && !active) {
                 mods_match = false;
                 break;
             }
+            // Note: We ignore "required OFF" for now in this legacy structure, 
+            // as m_virtualKeymap seems to only store required_mods mask (positive match).
         }
         if (!mods_match) {
             continue;
         }
 
-        // Check if all required locks are active
+        // Check Lock States (L00-LFF)
         bool locks_match = true;
-        for (int i = 0; i < 8; ++i) {
-            if ((active_locks[i] & entry.required_locks[i]) != entry.required_locks[i]) {
+        for (int i = 0; i < 256; ++i) {
+            bool required = (entry.required_locks[i / 32] >> (i % 32)) & 1;
+            bool active = state.test(yamy::input::ModifierState::LOCK_OFFSET + i);
+
+            if (required && !active) {
                 locks_match = false;
                 break;
             }

@@ -34,6 +34,7 @@ public:
     int32_t m_dragThreshold;            ///
     unsigned int m_oneShotRepeatableDelay;    ///
     std::unordered_map<uint8_t, uint16_t> m_modTapActions;  /// Tap actions for M00-MFF modifiers
+    std::unordered_map<uint16_t, uint8_t> m_virtualModTriggers; /// Trigger keys for M00-MFF modifiers
 
 public:
     Setting()

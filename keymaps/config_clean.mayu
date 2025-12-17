@@ -122,24 +122,24 @@ def subst *LWin = *LWin				# Left Win → Left Win
 def subst *Apps = *Apps				# Apps → Apps
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Modal Layers - NOW IMPLEMENTED on Linux YAMY!
+# Modal Layers - Updated for Virtual Modifiers (M00-MFF)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #mod mod9 = !!A				# Hold A for mod9 (DISABLED - conflicts with M0-A)
-mod mod4 = !!_1					# Hold 1 for mod4
-mod mod0 = !!B					# Hold physical B keycap for mod0 (!! checks BEFORE substitution)
+def numbermod _1 = M04			# Hold 1 for M04
+def numbermod B = M00				# Hold physical B keycap for M00 (!! checks BEFORE substitution)
 mod Alt += F4					# F4 acts as Alt (standard modifier - works)
-mod mod1 = !!V					# Hold V for mod1
+def numbermod V = M01				# Hold V for M01
 mod Alt += Hiragana				# Hiragana acts as Alt (standard modifier - works)
 mod Win += F1					# F1 acts as Win (standard modifier - works)
-mod mod8 = !!R					# Hold R for mod8
+def numbermod R = M08				# Hold R for M08
 mod Shift += F2					# F2 acts as Shift (standard modifier - works)
 mod Ctrl += F3					# F3 acts as Ctrl (standard modifier - works)
 #mod mod7 = !!T					# Hold T for mod7 (DISABLED - conflicts with M0-T)
-mod mod2 = !!X					# Hold X for mod2
-mod mod3 = !!C					# Hold C for mod3
+def numbermod X = M02				# Hold X for M02
+def numbermod C = M03				# Hold C for M03
 mod Ctrl += LWin				# LWin acts as Ctrl (standard modifier - works)
-mod mod5 = !!N					# Hold N for mod5
-mod mod6 = !!M					# Hold M for mod6
+def numbermod N = M05				# Hold N for M05
+def numbermod M = M06				# Hold M for M06
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Keymap Bindings - Test modal modifiers
@@ -147,28 +147,24 @@ mod mod6 = !!M					# Hold M for mod6
 keymap Global : GLOBAL
 	# M0 + keys → Numbers (use SUBSTITUTED key names!)
 	# Bindings match AFTER substitution: W→A, O→T, E→O, U→D
-	key M0-A = *_1					# Hold B, press W (→A) → 1
-	key M0-T = *_2					# Hold B, press O (→T) → 2
-	key M0-O = *X					# Hold B, press E (→O) → 3 (X→_3)
-	key M0-D = *Delete				# Hold B, press U (→D) → 4 (Delete→_4)
+	key M00-A = *_1					# Hold B, press W (→A) → 1
+	key M00-T = *_2					# Hold B, press O (→T) → 2
+	key M00-O = *X					# Hold B, press E (→O) → 3 (X→_3)
+	key M00-D = *Delete				# Hold B, press U (→D) → 4 (Delete→_4)
 
 	# Original test that worked
-	key M0-Z = *Y					# Hold B, press Z → y (for testing)
+	key M00-Z = *Y					# Hold B, press Z → y (for testing)
 
 	# Debug: Toggle detailed key logging
 	key F12 = &InvestigateCommand			# Press F12 to toggle detailed logging
 
 	# Test: A (mod9) + E → 2
-	key M9-E = *_2					# When holding A, press E to get 2
+	# key M09-E = *_2					# When holding A, press E to get 2 (A is commented out)
 
 	# Test: _1 (mod4) + U → 3
-	key M4-U = *_3					# When holding 1, press U to get 3
+	key M04-U = *_3					# When holding 1, press U to get 3
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Notes:
-# - All keys verified to exist in 109_clean.mayu
-# - All scan codes verified in g_scanToEvdevMap_US/JP
-# - Modal modifiers NOW IMPLEMENTED on Linux!
-# - Standard modifiers work: Shift (s-), Ctrl (c-), Alt (a-), Win (w-), RC (Right Ctrl)
-# - M0-M19 = Modal modifiers (mod0 through mod19)
+# - Updated to use M00-MFF virtual modifiers
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
