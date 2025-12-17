@@ -1,6 +1,6 @@
 # Tasks Document: Refactor E2E Test Infrastructure
 
-- [ ] 1. Create Framework Structure
+- [x] 1. Create Framework Structure
   - **Action:** Create directories `tests/framework` and `tests/e2e`.
   - **Action:** Create empty `__init__.py` files.
   - _Requirements: 1.1_
