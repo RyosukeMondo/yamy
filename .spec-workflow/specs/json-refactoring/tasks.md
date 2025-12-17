@@ -304,7 +304,7 @@
   - _Requirements: NFR-2_
   - _Prompt: Role: Build Engineer with expertise in CMake and build configuration | Task: Update CMakeLists.txt to remove all deleted files following requirement NFR-2 | Restrictions: Remove only deleted files from SOURCES lists, preserve json_config_loader.cpp, maintain build structure, test build after changes | Success: All deleted files removed from CMakeLists.txt, build configuration updated, no references to deleted files remain_
 
-- [ ] 4.6. Update main.cpp to use JsonConfigLoader only
+- [x] 4.6. Update main.cpp to use JsonConfigLoader only
   - File: src/app/main_linux.cpp (or appropriate entry point)
   - Replace SettingLoader with JsonConfigLoader
   - Update config file path to use .json extension
