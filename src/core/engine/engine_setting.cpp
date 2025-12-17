@@ -64,23 +64,27 @@ bool Engine::setSetting(Setting *i_setting) {
 
     auto* hookData = yamy::platform::getHookData();
     hookData->m_correctKanaLockHandling = m_setting->m_correctKanaLockHandling;
-    if (m_currentFocusOfThread) {
-        for (FocusOfThreads::iterator i = m_focusOfThreads.begin();
-                i != m_focusOfThreads.end(); i ++) {
-            FocusOfThread *fot = &(*i).second;
-            m_setting->m_keymaps.searchWindow(&fot->m_keymaps,
-                                              fot->m_className, fot->m_titleName);
+
+    // Get global keymap (simplified - no per-window focus tracking)
+    m_globalKeymap = m_setting->m_keymaps.searchByName("Global");
+    if (!m_globalKeymap) {
+        Acquire a(&m_log, 0);
+        m_log << "Warning: No 'Global' keymap found, using first keymap" << std::endl;
+        // Fallback: use first keymap if Global not found
+        const auto& keymapList = m_setting->m_keymaps.getKeymapList();
+        if (!keymapList.empty()) {
+            m_globalKeymap = const_cast<Keymap*>(&keymapList.front());
         }
     }
-    m_setting->m_keymaps.searchWindow(&m_globalFocus.m_keymaps, "", "");
-    if (m_globalFocus.m_keymaps.empty()) {
+
+    if (m_globalKeymap) {
+        setCurrentKeymap(m_globalKeymap);
         Acquire a(&m_log, 0);
-        m_log << "internal error: m_globalFocus.m_keymap is empty"
-        << std::endl;
+        m_log << "Loaded global keymap: " << (m_globalKeymap->getName().empty() ? "(unnamed)" : m_globalKeymap->getName()) << std::endl;
+    } else {
+        Acquire a(&m_log, 0);
+        m_log << "Error: No keymaps available" << std::endl;
     }
-    m_currentFocusOfThread = &m_globalFocus;
-    setCurrentKeymap(m_globalFocus.m_keymaps.front());
-    m_hwndFocus = nullptr;
 
     // Build substitution table and initialize EventProcessor
     buildSubstitutionTable(m_setting->m_keyboard);
