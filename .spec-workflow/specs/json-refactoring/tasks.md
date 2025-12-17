@@ -127,7 +127,7 @@
   - _Requirements: FR-1, FR-2, FR-4_
   - _Prompt: Role: Technical Writer with expertise in configuration examples and user documentation | Task: Create user-friendly example JSON configs following requirements FR-1, FR-2, FR-4 with clear comments and explanations | Restrictions: Must be valid JSON, include inline comments via description fields if needed, cover common use cases, keep examples simple and clear | Success: Examples are clear and well-documented, vim-mode.json demonstrates M00 modal editing, users can easily adapt examples_
 
-- [ ] 1.13. Verify existing .mayu tests still pass
+- [x] 1.13. Verify existing .mayu tests still pass
   - Verify all existing unit tests still pass with .mayu configs
   - Ensure no regressions in EventProcessor tests
   - Confirm M00-MFF functionality unchanged

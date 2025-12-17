@@ -1751,10 +1751,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         # -----------------------------------------------------------------------------
         set(EVENT_PROCESSOR_UT_SOURCES
             tests/test_event_processor_ut.cpp
-            src/platform/linux/keycode_mapping.cpp
-            src/core/engine/engine_event_processor.cpp
-            src/core/engine/modifier_key_handler.cpp
-            src/core/logger/journey_logger.cpp
         )
 
         add_executable(yamy_event_processor_ut
@@ -1778,6 +1774,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_event_processor_ut PRIVATE
             pthread
+            yamy_dependencies
+            yamy_core
         )
 
         add_test(NAME yamy_event_processor_ut COMMAND yamy_event_processor_ut)
@@ -1834,10 +1832,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         # -----------------------------------------------------------------------------
         set(EVENT_PROCESSOR_IT_SOURCES
             tests/test_event_processor_it.cpp
-            src/platform/linux/keycode_mapping.cpp
-            src/core/engine/engine_event_processor.cpp
-            src/core/engine/modifier_key_handler.cpp
-            src/core/logger/journey_logger.cpp
         )
 
         add_executable(yamy_event_processor_it
@@ -1861,6 +1855,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
 
         target_link_libraries(yamy_event_processor_it PRIVATE
             pthread
+            yamy_dependencies
+            yamy_core
         )
 
         add_test(NAME yamy_event_processor_it COMMAND yamy_event_processor_it)
