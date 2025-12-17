@@ -42,31 +42,23 @@ class E2EOrchestrator:
 
         # Start yamy in the background
         print(f"[Orchestrator] Starting '{self.yamy_path}' daemon...")
-        self.yamy_process = subprocess.Popen([self.yamy_path])
+        log_file = open('/tmp/yamy_e2e_runner.log', 'w')
+        env = os.environ.copy()
+        env['YAMY_DEBUG_KEYCODE'] = '1' # Enable keycode logging
+        self.yamy_process = subprocess.Popen(
+            [self.yamy_path],
+            stdout=log_file,
+            stderr=log_file,
+            env=env
+        )
         
         # Allow time for the daemon to initialize
-        print("[Orchestrator] Waiting for YAMY daemon to be ready...")
-        socket_path = '/tmp/yamy-engine.sock'
-        for _ in range(10): # Wait up to 10 seconds
-            if os.path.exists(socket_path):
-                print("[Orchestrator] YAMY daemon is ready.")
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError("YAMY daemon did not start in time.")
+        time.sleep(3) 
 
         # Load the specified configuration
         print(f"[Orchestrator] Loading config: '{self.config_path}'")
-        reload_result = subprocess.run([self.yamy_ctl_path, 'reload', '--config', self.config_path], capture_output=True, text=True)
-        print(f"[Orchestrator] yamy-ctl reload stdout: {reload_result.stdout}")
-        print(f"[Orchestrator] yamy-ctl reload stderr: {reload_result.stderr}")
-        reload_result.check_returncode()
-
-        start_result = subprocess.run([self.yamy_ctl_path, 'start'], capture_output=True, text=True)
-        print(f"[Orchestrator] yamy-ctl start stdout: {start_result.stdout}")
-        print(f"[Orchestrator] yamy-ctl start stderr: {start_result.stderr}")
-        start_result.check_returncode()
-        
+        subprocess.run([self.yamy_ctl_path, 'reload', '--config', self.config_path], check=True)
+        subprocess.run([self.yamy_ctl_path, 'start'], check=True)
         time.sleep(1) # Allow time for config to be applied
 
     def cleanup_yamy(self):

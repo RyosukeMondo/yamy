@@ -23,5 +23,6 @@ audit.log
 *.txt
 UAT/
 *.log
+*.log
 
 venv/
