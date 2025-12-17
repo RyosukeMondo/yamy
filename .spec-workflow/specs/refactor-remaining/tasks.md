@@ -13,7 +13,7 @@
   - _Requirements: FR-1, NFR-4_
   - _Prompt: Role: DevOps Engineer with expertise in CMake build systems and test automation | Task: Configure and build the project with Ninja, run all tests, and document results following requirements FR-1 and NFR-4 | Restrictions: Must use Ninja generator for fast builds, must run tests with --output-on-failure for debugging, do not skip any tests, ensure clean build from scratch | Success: Build completes with no errors, all tests pass (test_json_loader 15+ tests, yamy_property_keymap_test all tests), test results documented with pass/fail counts and any issues noted_
 
-- [ ] 2. Verify M00-MFF end-to-end functionality
+- [x] 2. Verify M00-MFF end-to-end functionality
   - File: tests/test_e2e_vim_mode.cpp (create) or manual test procedure
   - Load vim-mode.json config
   - Test tap behavior: CapsLock quick press → Escape
