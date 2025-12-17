@@ -159,7 +159,7 @@
   - _Requirements: FR-3_
   - _Prompt: Role: C++ Developer with expertise in refactoring and simplification | Task: Simplify Engine::setSetting() to use single global keymap following requirement FR-3 | Restrictions: Remove all focus/window logic, call Keymaps::getGlobalKeymap(), update EventProcessor if needed, use Quill logging | Success: Method simplified from ~100 lines to ~10 lines, m_globalKeymap set correctly, EventProcessor updated, no focus logic_
 
-- [ ] 2.3. Remove focus detection methods from engine.cpp
+- [x] 2.3. Remove focus detection methods from engine.cpp
   - File: src/core/engine/engine.cpp
   - Delete checkFocusWindow() implementation
   - Delete setFocus() implementation

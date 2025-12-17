@@ -83,9 +83,9 @@ void Engine::describeBindings()
 
     Keymap::DescribeParam dp;
     tstringstream ss;
-    for (KeymapPtrList::iterator i = m_currentFocusOfThread->m_keymaps.begin();
-            i != m_currentFocusOfThread->m_keymaps.end(); ++ i)
-        (*i)->describe(ss, &dp);
+    if (m_globalKeymap) {
+        m_globalKeymap->describe(ss, &dp);
+    }
     m_log << ss.str() << std::endl;
 }
 

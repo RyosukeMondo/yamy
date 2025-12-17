@@ -213,7 +213,7 @@ void Engine::generateActionEvents(const Current &i_c, const Action *i_a,
 
         FunctionParam param;
         param.m_isPressed = i_doPress;
-        param.m_hwnd = m_currentFocusOfThread->m_hwndFocus;
+        param.m_hwnd = m_windowSystem->getForegroundWindow();
         param.m_c = i_c;
         param.m_doesNeedEndl = true;
         param.m_af = af;
@@ -369,9 +369,14 @@ void Engine::beginGeneratingKeyboardEvents(
         // LockState is now integrated into ModifierState
         yamy::EventProcessor::ProcessedEvent result = m_eventProcessor->processEvent(i_c.m_evdev_code, event_type, &m_modifierState);
 
+        std::cerr << "[GEN:DEBUG] processEvent result: valid=" << result.valid 
+                  << " output_evdev=" << result.output_evdev 
+                  << " output_yamy=0x" << std::hex << result.output_yamy << std::dec << std::endl;
+
         // CRITICAL: Check if event was suppressed at Layer 3 (virtual key, lock key, etc.)
         // If output_evdev is 0, the event should NOT be generated/output
         if (result.output_evdev == 0) {
+            std::cerr << "[GEN:DEBUG] Event suppressed (output_evdev == 0)" << std::endl;
             return;  // Early return - don't generate any keyboard output
         }
 
@@ -510,7 +515,7 @@ void Engine::beginGeneratingKeyboardEvents(
     else if (isPhysicallyPressed)            // when (3)
         m_isPrefix = false;
     else if (!isPhysicallyPressed)        // when (2)
-        m_currentKeymap = m_currentFocusOfThread->m_keymaps.front();
+        m_currentKeymap = m_globalKeymap;
 
     // for m_emacsEditKillLine function
     m_emacsEditKillLine.m_doForceReset = !i_isModifier;
@@ -555,7 +560,7 @@ void Engine::beginGeneratingKeyboardEvents(
     if (i_isModifier)
         ;
     else if (!m_isPrefix)                // when (1), (4)
-        m_currentKeymap = m_currentFocusOfThread->m_keymaps.front();
+        m_currentKeymap = m_globalKeymap;
     else if (!isPhysicallyPressed)        // when (2)
         m_currentKeymap = tmpKeymap;
 }

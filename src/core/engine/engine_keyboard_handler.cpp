@@ -54,8 +54,6 @@ void Engine::keyboardHandler()
         KEYBOARD_INPUT_DATA kid = keyEventToKID(event);
         bool isPhysicallyPressed = event.isKeyDown;
 
-        checkFocusWindow();
-
         if (!m_setting || !m_isEnabled) {
             if (m_isLogMode) {
                 Key logKey;
@@ -73,15 +71,10 @@ void Engine::keyboardHandler()
 
         Acquire a(&m_cs);
 
-        if (!m_currentFocusOfThread ||
-                !m_currentKeymap) {
+        if (!m_currentKeymap) {
             injectInput(&kid, nullptr);
             Acquire b(&m_log, 0);
-            if (!m_currentFocusOfThread)
-                m_log << "internal error: m_currentFocusOfThread == nullptr"
-                << std::endl;
-            if (!m_currentKeymap)
-                m_log << "internal error: m_currentKeymap == nullptr"
+            m_log << "internal error: m_currentKeymap == nullptr"
                 << std::endl;
             updateLastPressedKey(nullptr);
             continue;
@@ -89,7 +82,6 @@ void Engine::keyboardHandler()
 
         Current c;
         c.m_keymap = m_currentKeymap;
-        c.m_i = m_currentFocusOfThread->m_keymaps.begin();
         c.m_evdev_code = static_cast<uint16_t>(event.scanCode);
 
         const uint32_t MOUSE_EVENT_MARKER = 0x59414D59;
@@ -271,14 +263,11 @@ void Engine::keyboardHandler()
 
             break;
         }
-        yamy::platform::releaseMutex(m_queueMutex);
-
         auto keyProcessingStart = std::chrono::high_resolution_clock::now();
 
         KEYBOARD_INPUT_DATA kid = keyEventToKID(event);
+        std::cerr << "[HANDLER:DEBUG] Processing event: scan=" << std::hex << kid.MakeCode << std::dec << std::endl;
         bool isPhysicallyPressed = event.isKeyDown;
-
-        checkFocusWindow();
 
         if (!m_setting || !m_isEnabled) {
             if (m_isLogMode) {
@@ -297,15 +286,10 @@ void Engine::keyboardHandler()
 
         Acquire a(&m_cs);
 
-        if (!m_currentFocusOfThread ||
-                !m_currentKeymap) {
+        if (!m_currentKeymap) {
             injectInput(&kid, nullptr);
             Acquire b(&m_log, 0);
-            if (!m_currentFocusOfThread)
-                m_log << "internal error: m_currentFocusOfThread == nullptr"
-                << std::endl;
-            if (!m_currentKeymap)
-                m_log << "internal error: m_currentKeymap == nullptr"
+            m_log << "internal error: m_currentKeymap == nullptr"
                 << std::endl;
             updateLastPressedKey(nullptr);
             continue;
@@ -313,7 +297,6 @@ void Engine::keyboardHandler()
 
         Current c;
         c.m_keymap = m_currentKeymap;
-        c.m_i = m_currentFocusOfThread->m_keymaps.begin();
         c.m_evdev_code = static_cast<uint16_t>(event.scanCode);
 
         const uint32_t MOUSE_EVENT_MARKER = 0x59414D59;
@@ -332,6 +315,12 @@ void Engine::keyboardHandler()
         }
 
         c.m_mkey = m_setting->m_keyboard.searchKey(*pProcessingKey);
+        if (c.m_mkey.m_key) {
+             std::cerr << "[HANDLER:DEBUG] Key found: " << c.m_mkey.m_key->getName() << std::endl;
+        } else {
+             std::cerr << "[HANDLER:DEBUG] Key NOT found for scan=" << std::hex << kid.MakeCode << std::dec << std::endl;
+        }
+
         if (!c.m_mkey.m_key) {
             if (!isMouseEvent) {
                 c.m_mkey.m_key = m_setting->m_keyboard.searchPrefixKey(*pProcessingKey);

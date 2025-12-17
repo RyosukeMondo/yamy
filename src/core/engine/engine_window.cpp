@@ -137,10 +137,12 @@ std::string Engine::getClipboardText() const
 
 std::string Engine::getStrExprWindowClassName() const
 {
-    return m_currentFocusOfThread->m_className;
+    yamy::platform::WindowHandle hwnd = m_windowSystem->getForegroundWindow();
+    return hwnd ? m_windowSystem->getClassName(hwnd) : "";
 }
 
 std::string Engine::getStrExprWindowTitleName() const
 {
-    return m_currentFocusOfThread->m_titleName;
+    yamy::platform::WindowHandle hwnd = m_windowSystem->getForegroundWindow();
+    return hwnd ? m_windowSystem->getWindowText(hwnd) : "";
 }
