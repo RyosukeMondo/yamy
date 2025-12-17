@@ -14,7 +14,7 @@
   - **Action:** Move `s_pendingVirtualMod` and `s_hasVirtualMod` from the anonymous namespace into this `ParserContext` struct instance (passed down from `load_MODIFIER` -> `parseMxxModifier`).
   - _Requirements: 4.1, 4.2_
 
-- [ ] 3. Introduce ConfigAST
+- [x] 3. Introduce ConfigAST
   - File: `src/core/settings/config_ast.h`
   - **Implementation Detail:** Copy the struct definitions from `design.md` (Technical Specifications section) into this new header file.
   - **Action:** Ensure namespaces match `yamy::ast`.
