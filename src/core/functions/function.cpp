@@ -7,7 +7,6 @@
 #include "mayu.h"
 #include "mayurc.h"
 #include "misc.h"
-#include "setting_loader.h"
 #include "vkeytable.h"
 // #include "windowstool.h" // Removed Win32 dependency
 #include <algorithm>

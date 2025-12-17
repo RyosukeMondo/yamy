@@ -18,8 +18,8 @@
 #include "keyboard.h"
 #include <list>
 #include "hook.h" // for MouseHookType
+#include "../settings/setting_loader.h" // Stub for compatibility
 
-class SettingLoader;
 class Engine;
 class FunctionParam;
 

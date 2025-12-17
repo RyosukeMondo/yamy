@@ -8,7 +8,6 @@
 
 
 #  include "../input/keymap.h"
-#  include "parser.h"
 #  include "multithread.h"
 #  include "../utils/config_store.h"
 #  include <set>

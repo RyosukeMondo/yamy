@@ -1,0 +1,109 @@
+Starting YAMY headless daemon
+Log: /home/rmondo/.local/share/YAMY/YAMY/yamy-daemon.log
+[Linux] Creating stub WindowSystem
+[WindowSystemLinux] X11 display opened successfully
+[Linux] Creating stub InputDriver
+[STUB] changeMessageFilter(74, 1)
+Restoring previous session...
+Warning: Failed to restore session (corrupt or invalid)
+No session restored; starting engine with defaults
+2025-12-17 22:26:41 [I] [Engine] Engine::start() called
+2025-12-17 22:26:41 [I] [Engine] Starting engine...
+2025-12-17 22:26:41 [I] [Engine] Starting performance metrics...
+2025-12-17 22:26:41 [I] [Engine] Installing input hook...
+[DEBUG] Engine: About to call m_inputHook->install(), m_inputHook=0x571f72bdc230
+[DEBUG] InputHookLinux::install() CALLED
+[DEBUG] About to enumerate keyboards...
+[DEBUG] Checking /dev/input directory...
+[DEBUG] /dev/input exists, calling enumerateKeyboards...
+[DEBUG] About to call m_deviceManager.enumerateKeyboards()...
+No plugins loaded (plugin directory: /home/rmondo/.local/share/yamy/plugins/)
+IPCControlServer: Listening on /tmp/yamy-engine.sock
+IPC control server started at: /tmp/yamy-engine.sock
+[IPCChannelQt] Listening on /tmp/yamy-yamy-engine-1000
+2025-12-17 22:26:42 [I] [Engine] IPC channel initialized and listening
+[DEBUG] enumerateKeyboards() returned 9 keyboards
+[DEBUG] Starting keyboard grab loop...
+[DEBUG] Processing keyboard: /dev/input/event2 (ARCHISS PK85PD)
+[DEBUG] Attempting to open: /dev/input/event2
+[DEBUG] openDevice() returned fd=11
+[DEBUG] Device opened successfully (fd=11)
+[DEBUG] Creating reader thread for /dev/input/event2
+[DEBUG] Reader thread started successfully for /dev/input/event2
+[READER_THREAD] *** RUN() STARTED for /dev/input/event2 ***
+[DEBUG] Processing keyboard: /dev/input/event9 (Kingston HyperX SoloCast Consumer Control)
+[DEBUG] Attempting to open: /dev/input/event9
+[DEBUG] openDevice() returned fd=12
+[DEBUG] Device opened successfully (fd=12)
+[DEBUG] Creating reader thread for /dev/input/event9
+[DEBUG] Reader thread started successfully for /dev/input/event9
+[DEBUG] Processing keyboard: /dev/input/event25 (ELECOM ELECOM TrackBall Mouse)
+[READER_THREAD] *** RUN() STARTED for /dev/input/event9[DEBUG] Skipping device: ELECOM ELECOM TrackBall Mouse
+[DEBUG] Processing keyboard: /dev/input/event11 (USB Keyboard)
+[DEBUG] Attempting to open: /dev/input/event11
+ ***
+[DEBUG] openDevice() returned fd=13
+[DEBUG] Device opened successfully (fd=13)
+[DEBUG] Creating reader thread for /dev/input/event11
+[DEBUG] Reader thread started successfully for /dev/input/event11
+[READER_THREAD] *** RUN() STARTED for /dev/input/event11 ***
+[DEBUG] Processing keyboard: /dev/input/event24 (USB Keyboard Consumer Control)
+[DEBUG] Attempting to open: /dev/input/event24
+[DEBUG] openDevice() returned fd=14
+[DEBUG] Device opened successfully (fd=14)
+[DEBUG] Creating reader thread for /dev/input/event24
+[DEBUG] Reader thread started successfully for /dev/input/event24
+[DEBUG] Processing keyboard: /dev/input/event29 (Test Keyboard for YAMY E2E)
+[DEBUG] Attempting to open: /dev/input/event29
+[READER_THREAD] *** RUN() STARTED for /dev/input/event24 ***
+[DEBUG] openDevice() returned fd=15
+[DEBUG] Device opened successfully (fd=15)
+[DEBUG] Creating reader thread for /dev/input/event29
+[DEBUG] Reader thread started successfully for /dev/input/event29
+[READER_THREAD] *** RUN() STARTED for /dev/input/event29 ***
+[DEBUG] Processing keyboard: /dev/input/event30 (Yamy Remapped Output Device)
+[DEBUG] Skipping device: Yamy Remapped Output Device
+[DEBUG] Processing keyboard: /dev/input/event28 (mouse-button-passthrough)
+[DEBUG] Skipping device: mouse-button-passthrough
+[DEBUG] Processing keyboard: /dev/input/event7 (Digio2 BT5.0 Tball Consumer Control)
+[DEBUG] Attempting to open: /dev/input/event7
+[DEBUG] openDevice() returned fd=16
+[DEBUG] Device opened successfully (fd=16)
+[DEBUG] Creating reader thread for /dev/input/event7
+[DEBUG] Reader thread started successfully for /dev/input/event7
+[READER_THREAD] *** RUN() STARTED for /dev/input/event7 ***[DEBUG] InputHook installation complete! 6 reader threads active
+[DEBUG] InputHookLinux::install() returning true
+
+2025-12-17 22:26:42 [I] [Engine] Creating input queue and synchronization objects...
+2025-12-17 22:26:42 [I] [Engine] Opening input driver...
+[STUB] InputDriver::open() - not supported on Linux
+2025-12-17 22:26:42 [I] [Engine] Creating keyboard handler thread...
+2025-12-17 22:26:42 [I] [Engine] Creating performance metrics thread...
+2025-12-17 22:26:42 [I] [Engine] Keyboard handler thread started, waiting for events...
+2025-12-17 22:26:42 [I] [Engine] Engine started successfully!
+IPC: Received reload command (config: keymaps/config_clean.mayu)
+  loading: /home/rmondo/repos/yamy/keymaps/config_clean.mayu
+2025-12-17 22:26:44 [I] [Parser] Parser initialized.
+[STUB] InputDriver::manageExtension()
+[STUB] InputDriver::manageExtension()
+  loading: /home/rmondo/repos/yamy/keymaps/config_clean.mayu
+Built new rule lookup table with 5 compiled rules from 5 substitutes.
+  loading: /home/rmondo/repos/yamy/keymaps/config_clean.mayu
+Built new rule lookup table with 5 compiled rules from 5 substitutes.
+switchConfiguration: successfully switched to: keymaps/config_clean.mayu
+IPC: Received start command
+EngineAdapter::start() - Engine thread already running
+[EVENT] Read from /dev/input/event29: scancode=0x1e DOWN
+[EVENT] Callback returned BLOCK
+[HANDLER:DEBUG] Processing event: scan=1e
+[EVENT] Read from /dev/input/event29: scancode=0x1e UP
+[HANDLER:DEBUG] Key NOT found for scan=1e
+  loading: /home/rmondo/repos/yamy/keymaps/config_clean.mayu
+Built new rule lookup table with 5 compiled rules from 5 substitutes.
+switchConfiguration: successfully switched to: keymaps/config_clean.mayu
+  loading: /home/rmondo/repos/yamy/keymaps/config_clean.mayu
+Built new rule lookup table with 5 compiled rules from 5 substitutes.
+switchConfiguration: successfully switched to: keymaps/config_clean.mayu
+  loading: /home/rmondo/repos/yamy/keymaps/config_clean.mayu
+Built new rule lookup table with 5 compiled rules from 5 substitutes.
+switchConfiguration: successfully switched to: keymaps/config_clean.mayu

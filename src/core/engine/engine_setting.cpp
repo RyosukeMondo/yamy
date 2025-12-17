@@ -8,7 +8,7 @@
 #include "errormessage.h"
 #include "../platform/hook_interface.h"
 #include "mayurc.h"
-#include "setting_loader.h"
+#include "../settings/json_config_loader.h"
 #include "stringtool.h"
 #include "windowstool.h"
 #include "modifier_key_handler.h"
@@ -103,7 +103,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
 
 #ifdef _WIN32
     // Windows stub - not yet implemented due to wide stream incompatibility
-    // SettingLoader expects std::ostream* but m_log is std::wostream-based on Windows
+    // JsonConfigLoader expects std::ostream* but m_log is std::wostream-based on Windows
     Acquire a(&m_log, 0);
     m_log << "switchConfiguration: not supported on Windows yet" << std::endl;
     notifyGUI(yamy::MessageType::ConfigError, "Configuration switching not supported on Windows");
@@ -134,7 +134,7 @@ bool Engine::switchConfiguration(const std::string& configPath) {
     // Try to parse the new config file
     bool parseSuccess = false;
     try {
-        SettingLoader loader(&m_log, &m_log, m_configStore);
+        yamy::settings::JsonConfigLoader loader(&m_log);
         parseSuccess = loader.load(newSetting, configPath);
     } catch (const std::exception& e) {
         Acquire a(&m_log, 0);

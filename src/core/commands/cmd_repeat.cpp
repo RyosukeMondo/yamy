@@ -1,12 +1,10 @@
 ﻿#include "cmd_repeat.h"
 #include "../engine/engine.h"
 #include "../functions/function.h"
-#include "../settings/setting_loader.h"
 #include "../input/keymap.h"
 
 // Specialization for loading KeySeq*
-// Since SettingLoader::load_ARGUMENT might not support KeySeq* directly or we need specific behavior (load_KeySeq),
-// we might need to override load.
+// The JSON loader handles key sequences directly in the mappings section.
 // Also KeySeq ownership: FunctionData_Repeat deletes m_keySeq in destructor!
 // So Command_Repeat must also own it.
 // Tuple `std::tuple<KeySeq*, int>` will store the pointer.

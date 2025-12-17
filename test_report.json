@@ -1,0 +1,74 @@
+{
+    "summary": {
+        "total": 5,
+        "passed": 0,
+        "failed": 5
+    },
+    "results": [
+        {
+            "mapping": {
+                "input_key": "A",
+                "output_key": "Tab",
+                "input_evdev": 30,
+                "output_evdev": 15
+            },
+            "event_type": "TAP",
+            "passed": false,
+            "expected_evdev": 15,
+            "actual_evdev": null,
+            "error_message": "No output event received"
+        },
+        {
+            "mapping": {
+                "input_key": "_0",
+                "output_key": "R",
+                "input_evdev": 11,
+                "output_evdev": 19
+            },
+            "event_type": "TAP",
+            "passed": false,
+            "expected_evdev": 19,
+            "actual_evdev": null,
+            "error_message": "No output event received"
+        },
+        {
+            "mapping": {
+                "input_key": "Space",
+                "output_key": "Space",
+                "input_evdev": 57,
+                "output_evdev": 57
+            },
+            "event_type": "TAP",
+            "passed": false,
+            "expected_evdev": 57,
+            "actual_evdev": null,
+            "error_message": "No output event received"
+        },
+        {
+            "mapping": {
+                "input_key": "F1",
+                "output_key": "LWin",
+                "input_evdev": 59,
+                "output_evdev": 125
+            },
+            "event_type": "TAP",
+            "passed": false,
+            "expected_evdev": 125,
+            "actual_evdev": null,
+            "error_message": "No output event received"
+        },
+        {
+            "mapping": {
+                "input_key": "LCtrl",
+                "output_key": "Space",
+                "input_evdev": 29,
+                "output_evdev": 57
+            },
+            "event_type": "TAP",
+            "passed": false,
+            "expected_evdev": 57,
+            "actual_evdev": null,
+            "error_message": "No output event received"
+        }
+    ]
+}

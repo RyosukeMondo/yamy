@@ -5,7 +5,6 @@
 #include "utils/stringtool.h"
 #include "function.h"
 #include "engine.h"
-#include "setting_loader.h"
 #include "strexpr.h"
 #include "utils/stringtool.h"
 
