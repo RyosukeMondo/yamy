@@ -122,3 +122,110 @@ void Engine::addKeymapEntry(
     // Add to keymap (will be sorted later by sortKeymapBySpecificity)
     m_virtualKeymap.push_back(entry);
 }
+
+std::vector<yamy::engine::CompiledRule> Engine::compileSubstitute(const Keyboard::Substitute& sub) {
+    using namespace yamy::input;
+
+    std::vector<yamy::engine::CompiledRule> rules;
+    yamy::engine::CompiledRule base_rule;
+
+    // --- Compile Output ---
+    const Key* toKey = sub.m_mkeyTo.m_key;
+    if (toKey && toKey->getScanCodesSize() > 0) {
+        base_rule.outputScanCode = toKey->getScanCodes()[0].m_scan;
+    } else {
+        base_rule.outputScanCode = 0;
+    }
+
+    // --- Compile Input Conditions ---
+    const Modifier& fromMod = sub.m_mkeyFrom.m_modifier;
+    std::vector<std::pair<size_t, size_t>> generic_modifiers;
+
+    // --- Handle Generic Modifiers (Shift, Ctrl, Alt, Win) ---
+    if (fromMod.isOn(Modifier::Type_Shift)) {
+        generic_modifiers.push_back({ModifierState::LSHIFT, ModifierState::RSHIFT});
+    } else if (!fromMod.isDontcare(Modifier::Type_Shift)) {
+        base_rule.requiredOff.set(ModifierState::LSHIFT);
+        base_rule.requiredOff.set(ModifierState::RSHIFT);
+    }
+
+    if (fromMod.isOn(Modifier::Type_Control)) {
+        generic_modifiers.push_back({ModifierState::LCTRL, ModifierState::RCTRL});
+    } else if (!fromMod.isDontcare(Modifier::Type_Control)) {
+        base_rule.requiredOff.set(ModifierState::LCTRL);
+        base_rule.requiredOff.set(ModifierState::RCTRL);
+    }
+
+    if (fromMod.isOn(Modifier::Type_Alt)) {
+        generic_modifiers.push_back({ModifierState::LALT, ModifierState::RALT});
+    } else if (!fromMod.isDontcare(Modifier::Type_Alt)) {
+        base_rule.requiredOff.set(ModifierState::LALT);
+        base_rule.requiredOff.set(ModifierState::RALT);
+    }
+
+    if (fromMod.isOn(Modifier::Type_Windows)) {
+        generic_modifiers.push_back({ModifierState::LWIN, ModifierState::RWIN});
+    } else if (!fromMod.isDontcare(Modifier::Type_Windows)) {
+        base_rule.requiredOff.set(ModifierState::LWIN);
+        base_rule.requiredOff.set(ModifierState::RWIN);
+    }
+
+    // --- Handle Specific State Modifiers ---
+    if (fromMod.isOn(Modifier::Type_CapsLock)) {
+        base_rule.requiredOn.set(ModifierState::CAPSLOCK);
+    } else if (!fromMod.isDontcare(Modifier::Type_CapsLock)) {
+        base_rule.requiredOff.set(ModifierState::CAPSLOCK);
+    }
+    if (fromMod.isOn(Modifier::Type_NumLock)) {
+        base_rule.requiredOn.set(ModifierState::NUMLOCK);
+    } else if (!fromMod.isDontcare(Modifier::Type_NumLock)) {
+        base_rule.requiredOff.set(ModifierState::NUMLOCK);
+    }
+    if (fromMod.isOn(Modifier::Type_ScrollLock)) {
+        base_rule.requiredOn.set(ModifierState::SCROLLLOCK);
+    } else if (!fromMod.isDontcare(Modifier::Type_ScrollLock)) {
+        base_rule.requiredOff.set(ModifierState::SCROLLLOCK);
+    }
+     if (fromMod.isOn(Modifier::Type_Up)) {
+        base_rule.requiredOn.set(ModifierState::UP);
+    } else if (!fromMod.isDontcare(Modifier::Type_Up)) {
+        base_rule.requiredOff.set(ModifierState::UP);
+    }
+
+    // --- Handle Virtual Modifiers (M00-MFF) ---
+    for (int i = 0; i < 256; ++i) {
+        if (sub.m_mkeyFrom.isVirtualModActive(i)) {
+            base_rule.requiredOn.set(ModifierState::VIRTUAL_OFFSET + i);
+        }
+    }
+    
+    // --- Handle Lock Modifiers (L00-LFF) ---
+    for (int i = 0; i < 10; ++i) {
+        Modifier::Type lockType = static_cast<Modifier::Type>(Modifier::Type_Lock0 + i);
+        if (fromMod.isOn(lockType)) {
+            base_rule.requiredOn.set(ModifierState::LOCK_OFFSET + i);
+        } else if (!fromMod.isDontcare(lockType)) {
+            base_rule.requiredOff.set(ModifierState::LOCK_OFFSET + i);
+        }
+    }
+
+    // --- Expand Generic Modifiers ---
+    if (generic_modifiers.empty()) {
+        rules.push_back(base_rule);
+    } else {
+        size_t num_expansions = 1 << generic_modifiers.size();
+        for (size_t i = 0; i < num_expansions; ++i) {
+            yamy::engine::CompiledRule new_rule = base_rule;
+            for (size_t j = 0; j < generic_modifiers.size(); ++j) {
+                if ((i >> j) & 1) {
+                    new_rule.requiredOn.set(generic_modifiers[j].second); // e.g., RSHIFT
+                } else {
+                    new_rule.requiredOn.set(generic_modifiers[j].first);  // e.g., LSHIFT
+                }
+            }
+            rules.push_back(new_rule);
+        }
+    }
+
+    return rules;
+}

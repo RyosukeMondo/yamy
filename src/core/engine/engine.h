@@ -29,6 +29,7 @@
 #  include "../platform/types.h" // For KeyEvent
 #  include "../platform/message_constants.h"
 #  include "engine_event_processor.h" // For unified 3-layer event processing
+#  include "compiled_rule.h" // For CompiledRule
 #  include <functional>
 #  include <gsl/gsl>
 
@@ -410,6 +411,9 @@ private:
     void addKeymapEntry(uint16_t input_key, uint16_t output_key,
                         const uint32_t required_mods[8],
                         const uint32_t required_locks[8]);
+
+    /// Compile a legacy Substitute rule into the new format for the O(1) lookup table
+    std::vector<yamy::engine::CompiledRule> compileSubstitute(const Keyboard::Substitute& sub);
 
     /** open mayu device
         @return true if mayu device successfully is opened

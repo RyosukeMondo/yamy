@@ -6,7 +6,7 @@
   - **Action:** Ensure `ModifierState` header is included correctly for `TOTAL_BITS`.
   - _Requirements: 2.1, 2.2_
 
-- [ ] 2. Implement Rule Compilation
+- [x] 2. Implement Rule Compilation
   - File: `src/core/engine/engine.cpp` (or `engine_compiler.cpp` if created)
   - **Implementation Detail:** Create a helper method `compileSubstitute(const Substitute& sub)` that returns a `CompiledRule`.
   - **Action:**
