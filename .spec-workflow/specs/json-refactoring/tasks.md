@@ -181,7 +181,7 @@
   - _Requirements: FR-3_
   - _Prompt: Role: C++ Developer with expertise in event processing and refactoring | Task: Simplify keyboardHandler() to use m_globalKeymap directly following requirement FR-3 | Restrictions: Do not modify EventProcessor integration, remove window focus checks only, maintain event processing flow, use m_globalKeymap consistently | Success: keyboardHandler() simplified by ~50 lines, uses m_globalKeymap directly, no focus logic, event processing works correctly_
 
-- [ ] 2.5. Delete engine_focus.cpp file
+- [x] 2.5. Delete engine_focus.cpp file
   - File: src/core/engine/engine_focus.cpp (delete)
   - Delete entire file (~800 LOC)
   - Update CMakeLists.txt to remove from build

@@ -300,7 +300,6 @@ set(ENGINE_SOURCES
     src/core/engine/engine_input.cpp
     src/core/engine/engine_modifier.cpp
     src/core/engine/engine_generator.cpp
-    src/core/engine/engine_focus.cpp
     src/core/engine/engine_window.cpp
     src/core/engine/engine_setting.cpp
     src/core/engine/engine_log.cpp
@@ -517,7 +516,6 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/engine/engine_input.cpp
         src/core/engine/engine_modifier.cpp
         src/core/engine/engine_generator.cpp
-        src/core/engine/engine_focus.cpp
         src/core/engine/engine_window.cpp
         src/core/engine/engine_setting.cpp
         src/core/engine/engine_log.cpp
@@ -1550,7 +1548,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/engine/engine_input.cpp
             src/core/engine/engine_modifier.cpp
             src/core/engine/engine_generator.cpp
-            src/core/engine/engine_focus.cpp
             src/core/engine/engine_window.cpp
             src/core/engine/engine_setting.cpp
             src/core/engine/engine_log.cpp
@@ -2309,7 +2306,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/engine/engine_input.cpp
             src/core/engine/engine_modifier.cpp
             src/core/engine/engine_generator.cpp
-            src/core/engine/engine_focus.cpp
             src/core/engine/engine_window.cpp
             src/core/engine/engine_setting.cpp
             src/core/engine/engine_log.cpp

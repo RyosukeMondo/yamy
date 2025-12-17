@@ -13,7 +13,6 @@
 // - engine_event_processor.cpp: Event processing logic
 // - engine_generator.cpp: Key event generation
 // - engine_modifier.cpp: Modifier key handling
-// - engine_focus.cpp: Window focus management
 // - engine_window.cpp: Window management
 // - engine_setting.cpp: Settings management
 // - engine_input.cpp: Input injection
