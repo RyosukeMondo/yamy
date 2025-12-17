@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "keyboard": {
+    "keys": {
+      "A": "0x1e",
+      "B": "not_a_hex_value",
+      "C": "0x2e"
+    }
+  },
+  "mappings": [
+    {
+      "from": "A",
+      "to": "C"
+    }
+  ]
+}

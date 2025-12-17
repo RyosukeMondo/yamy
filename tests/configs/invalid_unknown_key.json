@@ -1,0 +1,15 @@
+{
+  "version": "2.0",
+  "keyboard": {
+    "keys": {
+      "A": "0x1e",
+      "B": "0x30"
+    }
+  },
+  "mappings": [
+    {
+      "from": "A",
+      "to": "UnknownKey"
+    }
+  ]
+}

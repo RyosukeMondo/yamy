@@ -96,7 +96,7 @@
   - _Requirements: FR-1, FR-6_
   - _Prompt: Role: C++ Developer with expertise in orchestration and error handling | Task: Implement main load() method to orchestrate JSON loading following requirements FR-1 and FR-6, with comprehensive error handling | Restrictions: Use try-catch for nlohmann::json::parse_error, validate version field first, call parsers in correct order, return false on any error | Success: Valid JSON loads successfully, invalid JSON syntax caught with line numbers, missing version rejected, all sections parse correctly_
 
-- [ ] 1.10. Create unit tests for JsonConfigLoader
+- [x] 1.10. Create unit tests for JsonConfigLoader
   - File: tests/test_json_loader.cpp
   - Write test cases for all parsing methods
   - Test valid JSON configurations
@@ -108,7 +108,7 @@
   - _Requirements: FR-1, FR-2, FR-4, FR-6_
   - _Prompt: Role: QA Engineer with expertise in C++ unit testing and Google Test framework | Task: Create comprehensive unit tests for JsonConfigLoader covering all requirements, using Google Test framework | Restrictions: Must test both success and failure paths, use test fixtures for JSON files, mock Setting object where appropriate, achieve >80% code coverage | Success: All test cases pass, error paths tested, M00-MFF parsing tested, key sequences tested, code coverage >80%_
 
-- [ ] 1.11. Create test JSON configuration files
+- [x] 1.11. Create test JSON configuration files
   - Files: tests/configs/valid.json, tests/configs/vim-mode.json, tests/configs/invalid_*.json
   - Create valid.json with basic key definitions and mappings
   - Create vim-mode.json with M00 CapsLock vim bindings
