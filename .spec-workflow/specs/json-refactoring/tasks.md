@@ -290,7 +290,7 @@
   - _Requirements: NFR-2_
   - _Prompt: Role: DevOps Engineer with expertise in codebase architecture cleanup | Task: Delete window system implementation files following requirement NFR-2 | Restrictions: Delete only window/*.cpp files, preserve platform window interfaces if still needed, ensure complete deletion | Success: 3 window system files deleted, ~500 LOC removed, platform interfaces preserved if needed_
 
-- [ ] 4.5. Update CMakeLists.txt to remove deleted files
+- [x] 4.5. Update CMakeLists.txt to remove deleted files
   - File: CMakeLists.txt
   - Remove parser.cpp from SOURCES
   - Remove setting_loader.cpp from SOURCES

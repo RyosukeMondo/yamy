@@ -307,7 +307,6 @@ set(ENGINE_SOURCES
     src/core/engine/modifier_key_handler.cpp
     src/core/logging/logger.cpp
     src/core/logger/journey_logger.cpp
-    src/core/window/focus.cpp
     src/core/functions/function.cpp
     src/core/functions/function_creator.cpp
     src/core/commands/cmd_keymap_parent.cpp
@@ -335,36 +334,8 @@ set(ENGINE_SOURCES
     src/core/commands/cmd_describe_bindings.cpp
     src/core/commands/cmd_help_message.cpp
     src/core/commands/cmd_help_variable.cpp
-    src/core/commands/cmd_window_raise.cpp
-    src/core/commands/cmd_window_lower.cpp
-    src/core/commands/cmd_window_minimize.cpp
-    src/core/commands/cmd_window_maximize.cpp
-    src/core/commands/cmd_window_h_maximize.cpp
-    src/core/commands/cmd_window_v_maximize.cpp
-    src/core/commands/cmd_window_hv_maximize.cpp
-    src/core/commands/cmd_window_move.cpp
-    src/core/commands/cmd_window_move_to.cpp
-    src/core/commands/cmd_window_move_visibly.cpp
-    src/core/commands/cmd_window_monitor_to.cpp
-    src/core/commands/cmd_window_monitor.cpp
-    src/core/commands/cmd_window_cling_to_left.cpp
-    src/core/commands/cmd_window_cling_to_right.cpp
-    src/core/commands/cmd_window_cling_to_top.cpp
-    src/core/commands/cmd_window_cling_to_bottom.cpp
-    src/core/commands/cmd_window_close.cpp
-    src/core/commands/cmd_window_toggle_top_most.cpp
-    src/core/commands/cmd_window_identify.cpp
-    src/core/commands/cmd_window_set_alpha.cpp
-    src/core/commands/cmd_window_redraw.cpp
-    src/core/commands/cmd_window_resize_to.cpp
     src/core/commands/cmd_mouse_move.cpp
     src/core/commands/cmd_mouse_wheel.cpp
-    src/core/commands/cmd_clipboard_change_case.cpp
-    src/core/commands/cmd_clipboard_upcase_word.cpp
-    src/core/commands/cmd_clipboard_downcase_word.cpp
-    src/core/commands/cmd_clipboard_copy.cpp
-    src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
-    src/core/commands/cmd_emacs_edit_kill_line_func.cpp
     src/core/commands/cmd_log_clear.cpp
     src/core/commands/cmd_recenter.cpp
     src/core/commands/cmd_direct_sstp.cpp
@@ -380,9 +351,6 @@ set(ENGINE_SOURCES
     src/core/input/modifier_state.cpp
     src/core/input/lock_state.cpp
     src/core/input/vkeytable.cpp
-    src/core/window/layoutmanager.cpp
-    src/core/window/target.cpp
-    src/core/settings/parser.cpp
     src/platform/windows/input_driver_win32.cpp
     src/platform/windows/utf_conversion.cpp
     src/platform/windows/registry.cpp
@@ -391,7 +359,6 @@ set(ENGINE_SOURCES
     src/platform/windows/windowstool.cpp
     src/platform/windows/platform_paths_win32.cpp
     src/core/settings/setting.cpp
-    src/core/settings/setting_loader.cpp
     src/core/settings/json_config_loader.cpp
     src/core/settings/config_backup.cpp
     src/core/audio/sound_manager.cpp
@@ -523,7 +490,6 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/engine/modifier_key_handler.cpp
         src/core/logging/logger.cpp
         src/core/logger/journey_logger.cpp
-        src/core/window/focus.cpp
         src/core/functions/function.cpp
         src/core/functions/function_creator.cpp
         src/core/commands/cmd_keymap_parent.cpp
@@ -551,36 +517,8 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/commands/cmd_describe_bindings.cpp
         src/core/commands/cmd_help_message.cpp
         src/core/commands/cmd_help_variable.cpp
-        src/core/commands/cmd_window_raise.cpp
-        src/core/commands/cmd_window_lower.cpp
-        src/core/commands/cmd_window_minimize.cpp
-        src/core/commands/cmd_window_maximize.cpp
-        src/core/commands/cmd_window_h_maximize.cpp
-        src/core/commands/cmd_window_v_maximize.cpp
-        src/core/commands/cmd_window_hv_maximize.cpp
-        src/core/commands/cmd_window_move.cpp
-        src/core/commands/cmd_window_move_to.cpp
-        src/core/commands/cmd_window_move_visibly.cpp
-        src/core/commands/cmd_window_monitor_to.cpp
-        src/core/commands/cmd_window_monitor.cpp
-        src/core/commands/cmd_window_cling_to_left.cpp
-        src/core/commands/cmd_window_cling_to_right.cpp
-        src/core/commands/cmd_window_cling_to_top.cpp
-        src/core/commands/cmd_window_cling_to_bottom.cpp
-        src/core/commands/cmd_window_close.cpp
-        src/core/commands/cmd_window_toggle_top_most.cpp
-        src/core/commands/cmd_window_identify.cpp
-        src/core/commands/cmd_window_set_alpha.cpp
-        src/core/commands/cmd_window_redraw.cpp
-        src/core/commands/cmd_window_resize_to.cpp
         src/core/commands/cmd_mouse_move.cpp
         src/core/commands/cmd_mouse_wheel.cpp
-        src/core/commands/cmd_clipboard_change_case.cpp
-        src/core/commands/cmd_clipboard_upcase_word.cpp
-        src/core/commands/cmd_clipboard_downcase_word.cpp
-        src/core/commands/cmd_clipboard_copy.cpp
-        src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
-        src/core/commands/cmd_emacs_edit_kill_line_func.cpp
         src/core/commands/cmd_log_clear.cpp
         src/core/commands/cmd_recenter.cpp
         src/core/commands/cmd_direct_sstp.cpp
@@ -596,11 +534,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/input/modifier_state.cpp
 
         src/core/input/vkeytable.cpp
-        src/core/window/layoutmanager.cpp
-        src/core/window/target.cpp
-        src/core/settings/parser.cpp
         src/core/settings/setting.cpp
-        src/core/settings/setting_loader.cpp
         src/core/settings/json_config_loader.cpp
         src/core/settings/config_backup.cpp
         src/core/settings/config_manager.cpp
@@ -917,7 +851,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/config_metadata.cpp
             src/core/settings/config_watcher.cpp
             src/core/settings/session_manager.cpp
-            src/core/settings/parser.cpp
             src/utils/stringtool.cpp
             src/utils/metrics.cpp
             src/core/logging/logger.cpp
@@ -1369,37 +1302,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_notification_dispatcher_test COMMAND yamy_notification_dispatcher_test)
 
         # -----------------------------------------------------------------------------
-        # Target: yamy_parser_utf8_test (UTF-8 Parser Tests)
-        # Tests for UTF-8 character length detection and validation
-        # -----------------------------------------------------------------------------
-        set(PARSER_UTF8_TEST_SOURCES
-            tests/core/settings/parser_utf8_test.cpp
-            src/core/settings/parser.cpp
-            src/core/logging/logger.cpp
-            src/utils/stringtool.cpp
-        )
-
-        add_executable(yamy_parser_utf8_test
-            ${PARSER_UTF8_TEST_SOURCES}
-            src/tests/googletest/src/gtest-all.cc
-        )
-
-        target_include_directories(yamy_parser_utf8_test PRIVATE
-            ${GTEST_DIR}/include
-            ${GTEST_DIR}
-            src
-            src/core
-            src/core/settings
-            src/utils
-        )
-
-        target_link_libraries(yamy_parser_utf8_test PRIVATE
-            pthread
-        )
-
-        add_test(NAME yamy_parser_utf8_test COMMAND yamy_parser_utf8_test)
-
-        # -----------------------------------------------------------------------------
         # Target: yamy_notification_prefs_test (NotificationPrefs Tests)
         # Tests for NotificationPrefs filtering system
         # -----------------------------------------------------------------------------
@@ -1526,9 +1428,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/input/modifier_state.cpp
     
             src/core/input/vkeytable.cpp
-            src/core/settings/parser.cpp
             src/core/settings/setting.cpp
-            src/core/settings/setting_loader.cpp
             src/core/settings/json_config_loader.cpp
             src/core/settings/config_backup.cpp
             src/core/settings/config_manager.cpp
@@ -1540,9 +1440,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/functions/strexpr.cpp
             src/core/functions/function.cpp
             src/core/functions/function_creator.cpp
-            src/core/window/focus.cpp
-            src/core/window/layoutmanager.cpp
-            src/core/window/target.cpp
             src/core/engine/engine.cpp
             src/core/engine/engine_lifecycle.cpp
             src/core/engine/engine_input.cpp
@@ -1598,36 +1495,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/commands/cmd_describe_bindings.cpp
             src/core/commands/cmd_help_message.cpp
             src/core/commands/cmd_help_variable.cpp
-            src/core/commands/cmd_window_raise.cpp
-            src/core/commands/cmd_window_lower.cpp
-            src/core/commands/cmd_window_minimize.cpp
-            src/core/commands/cmd_window_maximize.cpp
-            src/core/commands/cmd_window_h_maximize.cpp
-            src/core/commands/cmd_window_v_maximize.cpp
-            src/core/commands/cmd_window_hv_maximize.cpp
-            src/core/commands/cmd_window_move.cpp
-            src/core/commands/cmd_window_move_to.cpp
-            src/core/commands/cmd_window_move_visibly.cpp
-            src/core/commands/cmd_window_monitor_to.cpp
-            src/core/commands/cmd_window_monitor.cpp
-            src/core/commands/cmd_window_cling_to_left.cpp
-            src/core/commands/cmd_window_cling_to_right.cpp
-            src/core/commands/cmd_window_cling_to_top.cpp
-            src/core/commands/cmd_window_cling_to_bottom.cpp
-            src/core/commands/cmd_window_close.cpp
-            src/core/commands/cmd_window_toggle_top_most.cpp
-            src/core/commands/cmd_window_identify.cpp
-            src/core/commands/cmd_window_set_alpha.cpp
-            src/core/commands/cmd_window_redraw.cpp
-            src/core/commands/cmd_window_resize_to.cpp
             src/core/commands/cmd_mouse_move.cpp
             src/core/commands/cmd_mouse_wheel.cpp
-            src/core/commands/cmd_clipboard_change_case.cpp
-            src/core/commands/cmd_clipboard_upcase_word.cpp
-            src/core/commands/cmd_clipboard_downcase_word.cpp
-            src/core/commands/cmd_clipboard_copy.cpp
-            src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
-            src/core/commands/cmd_emacs_edit_kill_line_func.cpp
             src/core/commands/cmd_log_clear.cpp
             src/core/commands/cmd_recenter.cpp
             src/core/commands/cmd_direct_sstp.cpp
@@ -2285,9 +2154,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/input/modifier_state.cpp
     
             src/core/input/vkeytable.cpp
-            src/core/settings/parser.cpp
             src/core/settings/setting.cpp
-            src/core/settings/setting_loader.cpp
             src/core/settings/json_config_loader.cpp
             src/core/settings/config_backup.cpp
             src/core/settings/config_manager.cpp
@@ -2298,9 +2165,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/functions/strexpr.cpp
             src/core/functions/function.cpp
             src/core/functions/function_creator.cpp
-            src/core/window/focus.cpp
-            src/core/window/layoutmanager.cpp
-            src/core/window/target.cpp
             src/core/engine/engine.cpp
             src/core/engine/engine_lifecycle.cpp
             src/core/engine/engine_input.cpp
@@ -2345,36 +2209,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/commands/cmd_describe_bindings.cpp
             src/core/commands/cmd_help_message.cpp
             src/core/commands/cmd_help_variable.cpp
-            src/core/commands/cmd_window_raise.cpp
-            src/core/commands/cmd_window_lower.cpp
-            src/core/commands/cmd_window_minimize.cpp
-            src/core/commands/cmd_window_maximize.cpp
-            src/core/commands/cmd_window_h_maximize.cpp
-            src/core/commands/cmd_window_v_maximize.cpp
-            src/core/commands/cmd_window_hv_maximize.cpp
-            src/core/commands/cmd_window_move.cpp
-            src/core/commands/cmd_window_move_to.cpp
-            src/core/commands/cmd_window_move_visibly.cpp
-            src/core/commands/cmd_window_monitor_to.cpp
-            src/core/commands/cmd_window_monitor.cpp
-            src/core/commands/cmd_window_cling_to_left.cpp
-            src/core/commands/cmd_window_cling_to_right.cpp
-            src/core/commands/cmd_window_cling_to_top.cpp
-            src/core/commands/cmd_window_cling_to_bottom.cpp
-            src/core/commands/cmd_window_close.cpp
-            src/core/commands/cmd_window_toggle_top_most.cpp
-            src/core/commands/cmd_window_identify.cpp
-            src/core/commands/cmd_window_set_alpha.cpp
-            src/core/commands/cmd_window_redraw.cpp
-            src/core/commands/cmd_window_resize_to.cpp
             src/core/commands/cmd_mouse_move.cpp
             src/core/commands/cmd_mouse_wheel.cpp
-            src/core/commands/cmd_clipboard_change_case.cpp
-            src/core/commands/cmd_clipboard_upcase_word.cpp
-            src/core/commands/cmd_clipboard_downcase_word.cpp
-            src/core/commands/cmd_clipboard_copy.cpp
-            src/core/commands/cmd_emacs_edit_kill_line_pred.cpp
-            src/core/commands/cmd_emacs_edit_kill_line_func.cpp
             src/core/commands/cmd_log_clear.cpp
             src/core/commands/cmd_recenter.cpp
             src/core/commands/cmd_direct_sstp.cpp
