@@ -98,6 +98,10 @@ void SettingLoader::load_INCLUDE()
 {
     std::string filename = to_UTF_8((*getToken()).getString());
 
+    if (m_ast) {
+        m_ast->includedFiles.push_back(filename);
+    }
+
     try {
         // RAII guard for include stack - automatically handles push/pop
         yamy::IncludeGuard guard(*m_includeContext, filename);
