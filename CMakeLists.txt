@@ -508,20 +508,14 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/commands/cmd_keymap_prev_prefix.cpp
         src/core/commands/cmd_load_setting.cpp
         src/core/commands/cmd_shell_execute.cpp
-        src/core/commands/cmd_set_foreground_window.cpp
         src/core/commands/cmd_investigate_command.cpp
         src/core/commands/cmd_mayu_dialog.cpp
         src/core/commands/cmd_describe_bindings.cpp
-        src/core/commands/cmd_help_message.cpp
         src/core/commands/cmd_help_variable.cpp
         src/core/commands/cmd_mouse_move.cpp
         src/core/commands/cmd_mouse_wheel.cpp
         src/core/commands/cmd_log_clear.cpp
-        src/core/commands/cmd_recenter.cpp
         src/core/commands/cmd_direct_sstp.cpp
-        src/core/commands/cmd_plugin.cpp
-        src/core/commands/cmd_set_ime_status.cpp
-        src/core/commands/cmd_set_ime_string.cpp
         src/core/commands/cmd_mouse_hook.cpp
         src/core/commands/cmd_cancel_prefix.cpp
         src/core/commands/cmd_metrics.cpp
@@ -535,7 +529,6 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/settings/json_config_loader.cpp
         src/core/settings/config_backup.cpp
         src/core/settings/config_manager.cpp
-        src/core/settings/config_validator.cpp
         src/core/settings/config_metadata.cpp
         src/core/settings/config_watcher.cpp
         src/core/settings/session_manager.cpp
@@ -834,7 +827,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/tests/platform/ipc_linux_test.cpp
             src/tests/platform/ipc_multi_instance_test.cpp
             src/tests/platform/config_manager_test.cpp
-            src/tests/platform/config_validator_test.cpp
             src/tests/platform/config_metadata_test.cpp
             src/tests/platform/session_manager_test.cpp
             src/platform/linux/window_system_linux_queries.cpp
@@ -844,7 +836,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/platform/linux/device_manager_linux.cpp
             src/platform/linux/ipc_linux.cpp
             src/core/settings/config_manager.cpp
-            src/core/settings/config_validator.cpp
             src/core/settings/config_metadata.cpp
             src/core/settings/config_watcher.cpp
             src/core/settings/session_manager.cpp
@@ -1430,7 +1421,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/config_backup.cpp
             src/core/settings/config_manager.cpp
             src/core/settings/config_watcher.cpp
-            src/core/settings/config_validator.cpp
             src/core/settings/config_metadata.cpp
             src/core/settings/session_manager.cpp
             src/resources/templates/template_manager.cpp
@@ -1483,20 +1473,14 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/commands/cmd_keymap_prev_prefix.cpp
             src/core/commands/cmd_load_setting.cpp
             src/core/commands/cmd_shell_execute.cpp
-            src/core/commands/cmd_set_foreground_window.cpp
             src/core/commands/cmd_investigate_command.cpp
             src/core/commands/cmd_mayu_dialog.cpp
             src/core/commands/cmd_describe_bindings.cpp
-            src/core/commands/cmd_help_message.cpp
             src/core/commands/cmd_help_variable.cpp
             src/core/commands/cmd_mouse_move.cpp
             src/core/commands/cmd_mouse_wheel.cpp
             src/core/commands/cmd_log_clear.cpp
-            src/core/commands/cmd_recenter.cpp
             src/core/commands/cmd_direct_sstp.cpp
-            src/core/commands/cmd_plugin.cpp
-            src/core/commands/cmd_set_ime_status.cpp
-            src/core/commands/cmd_set_ime_string.cpp
             src/core/commands/cmd_mouse_hook.cpp
             src/core/commands/cmd_cancel_prefix.cpp
             src/core/commands/cmd_metrics.cpp
@@ -2101,7 +2085,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 src/tests/platform/ipc_linux_test.cpp
                 src/tests/platform/ipc_multi_instance_test.cpp
                 src/tests/platform/config_manager_test.cpp
-                src/tests/platform/config_validator_test.cpp
                 src/tests/platform/config_metadata_test.cpp
                 # UTF-8 integration tests
                 tests/core/settings/setting_loader_utf8_test.cpp
@@ -2150,7 +2133,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/json_config_loader.cpp
             src/core/settings/config_backup.cpp
             src/core/settings/config_manager.cpp
-            src/core/settings/config_validator.cpp
             src/core/settings/config_metadata.cpp
             src/core/settings/session_manager.cpp
             src/core/settings/config_watcher.cpp
@@ -2192,20 +2174,14 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/commands/cmd_keymap_prev_prefix.cpp
             src/core/commands/cmd_load_setting.cpp
             src/core/commands/cmd_shell_execute.cpp
-            src/core/commands/cmd_set_foreground_window.cpp
             src/core/commands/cmd_investigate_command.cpp
             src/core/commands/cmd_mayu_dialog.cpp
             src/core/commands/cmd_describe_bindings.cpp
-            src/core/commands/cmd_help_message.cpp
             src/core/commands/cmd_help_variable.cpp
             src/core/commands/cmd_mouse_move.cpp
             src/core/commands/cmd_mouse_wheel.cpp
             src/core/commands/cmd_log_clear.cpp
-            src/core/commands/cmd_recenter.cpp
             src/core/commands/cmd_direct_sstp.cpp
-            src/core/commands/cmd_plugin.cpp
-            src/core/commands/cmd_set_ime_status.cpp
-            src/core/commands/cmd_set_ime_string.cpp
             src/core/commands/cmd_mouse_hook.cpp
             src/core/commands/cmd_cancel_prefix.cpp
             src/core/commands/cmd_metrics.cpp
