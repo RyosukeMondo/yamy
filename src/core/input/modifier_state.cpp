@@ -1,30 +1,14 @@
-﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// modifier_state.cpp - Platform-agnostic modifier state tracking
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// modifier_state.cpp - Unified modifier and lock state tracking
 
 #include "modifier_state.h"
 #include "input_event.h"
 #include "../../utils/misc.h"  // For VK_* constants
+#include <cstring>
+#include <cstdio>
 
-// Additional VK_* constants not in misc.h
 namespace {
-#ifndef VK_LWIN
-    constexpr uint16_t VK_LWIN      = 0x5B;
-#endif
-#ifndef VK_RWIN
-    constexpr uint16_t VK_RWIN      = 0x5C;
-#endif
-#ifndef VK_CAPITAL
-    constexpr uint16_t VK_CAPITAL   = 0x14;  // Caps Lock
-#endif
-#ifndef VK_NUMLOCK
-    constexpr uint16_t VK_NUMLOCK   = 0x90;
-#endif
-#ifndef VK_SCROLL
-    constexpr uint16_t VK_SCROLL    = 0x91;  // Scroll Lock
-#endif
-
     // Windows scancodes for modifier keys
-    // These are hardware scan codes from keyboard
     constexpr uint16_t SC_LSHIFT    = 0x2A;
     constexpr uint16_t SC_RSHIFT    = 0x36;
     constexpr uint16_t SC_LCTRL     = 0x1D;
@@ -38,7 +22,6 @@ namespace {
     constexpr uint16_t SC_SCROLLLOCK = 0x46;
 
     // Linux evdev keycodes for modifiers (from input-event-codes.h)
-    // These values match linux/input-event-codes.h
     constexpr uint32_t KEY_LEFTSHIFT   = 42;
     constexpr uint32_t KEY_RIGHTSHIFT  = 54;
     constexpr uint32_t KEY_LEFTCTRL    = 29;
@@ -55,233 +38,142 @@ namespace {
 namespace yamy::input {
 
 ModifierState::ModifierState()
-    : m_flags(MOD_NONE), m_modal{0}
 {
+    m_state.reset();
 }
 
 void ModifierState::reset()
 {
-    m_flags = MOD_NONE;
-    for (int i = 0; i < 8; ++i) {
-        m_modal[i] = 0;
-    }
+    m_state.reset();
+    notifyGUILocks();
 }
 
 bool ModifierState::updateFromKeyEvent(const yamy::platform::KeyEvent& event)
 {
-    // KeyEvent contains:
-    // - scanCode: platform-specific scan code (Windows scancode or Linux evdev keycode)
-    // - isKeyDown: true if key pressed, false if released
-    // - isExtended: true for extended keys (E0 prefix on Windows)
-    // - flags: additional flags
+    StdModifier mod = scancodeToStdModifier(static_cast<uint16_t>(event.scanCode), event.isExtended ? KEYBOARD_INPUT_DATA::E0 : 0);
+    if (mod == RCTRL && !event.isExtended) mod = LCTRL; // Disambiguate
+    if (mod == RALT && !event.isExtended) mod = LALT;
 
-    // Try Windows scancode detection first
-    uint16_t flags = event.isExtended ? KEYBOARD_INPUT_DATA::E0 : 0;
-    ModifierFlag mod = detectModifierFromScancode(
-        static_cast<uint16_t>(event.scanCode), flags);
-
-    if (mod == MOD_NONE) {
-        // Try Linux keycode detection
-        mod = detectModifierFromKeycode(event.scanCode);
+    if (mod == static_cast<StdModifier>(-1)) { // a bit of a hack
+        mod = keycodeToStdModifier(event.scanCode);
     }
-
-    if (mod != MOD_NONE) {
-        setFlag(mod, event.isKeyDown);
+    
+    if (mod != static_cast<StdModifier>(-1)) {
+        setStdFlag(mod, event.isKeyDown);
         return true;
     }
-
     return false;
 }
 
 bool ModifierState::updateFromKID(const KEYBOARD_INPUT_DATA& kid)
 {
     bool isKeyDown = !(kid.Flags & KEYBOARD_INPUT_DATA::BREAK);
-
-    ModifierFlag mod = detectModifierFromScancode(kid.MakeCode, kid.Flags);
-
-    if (mod != MOD_NONE) {
-        setFlag(mod, isKeyDown);
+    StdModifier mod = scancodeToStdModifier(kid.MakeCode, kid.Flags);
+    if (mod != static_cast<StdModifier>(-1)) {
+        setStdFlag(mod, isKeyDown);
         return true;
     }
-
     return false;
 }
 
-void ModifierState::setLockState(bool capsLock, bool numLock, bool scrollLock)
-{
-    setFlag(MOD_CAPSLOCK, capsLock);
-    setFlag(MOD_NUMLOCK, numLock);
-    setFlag(MOD_SCROLLLOCK, scrollLock);
+bool ModifierState::isShiftPressed() const { return m_state[LSHIFT] || m_state[RSHIFT]; }
+bool ModifierState::isCtrlPressed() const { return m_state[LCTRL] || m_state[RCTRL]; }
+bool ModifierState::isAltPressed() const { return m_state[LALT] || m_state[RALT]; }
+bool ModifierState::isWinPressed() const { return m_state[LWIN] || m_state[RWIN]; }
+
+void ModifierState::activateModifier(uint8_t mod_num) {
+    m_state[VIRTUAL_OFFSET + mod_num] = true;
 }
 
-Modifier ModifierState::toModifier() const
-{
+void ModifierState::deactivateModifier(uint8_t mod_num) {
+    m_state[VIRTUAL_OFFSET + mod_num] = false;
+}
+
+bool ModifierState::isModifierActive(uint8_t mod_num) const {
+    return m_state[VIRTUAL_OFFSET + mod_num];
+}
+
+void ModifierState::toggleLock(uint8_t lock_num) {
+    size_t bit = LOCK_OFFSET + lock_num;
+    m_state.flip(bit);
+    fprintf(stderr, "[LockState] Lock L%02X toggled to %s\n", lock_num, m_state[bit] ? "ACTIVE" : "INACTIVE");
+    fflush(stderr);
+    notifyGUILocks();
+}
+
+bool ModifierState::isLockActive(uint8_t lock_num) const {
+    return m_state[LOCK_OFFSET + lock_num];
+}
+
+void ModifierState::notifyGUILocks() {
+    if (m_notifyCallback) {
+        uint32_t lock_bits[8] = {0};
+        for (int i = 0; i < 256; ++i) {
+            if (isLockActive(i)) {
+                lock_bits[i / 32] |= (1u << (i % 32));
+            }
+        }
+        m_notifyCallback(lock_bits);
+    }
+}
+
+Modifier ModifierState::toModifier() const {
     Modifier mod;
-
-    // Map internal flags to Modifier type
-    if (isShiftPressed()) {
-        mod.press(Modifier::Type_Shift);
-    }
-    if (isCtrlPressed()) {
-        mod.press(Modifier::Type_Control);
-    }
-    if (isAltPressed()) {
-        mod.press(Modifier::Type_Alt);
-    }
-    if (isWinPressed()) {
-        mod.press(Modifier::Type_Windows);
-    }
-    if (isCapsLockOn()) {
-        mod.press(Modifier::Type_CapsLock);
-    }
-    if (isNumLockOn()) {
-        mod.press(Modifier::Type_NumLock);
-    }
-    if (isScrollLockOn()) {
-        mod.press(Modifier::Type_ScrollLock);
-    }
-
+    if (isShiftPressed()) mod.press(Modifier::Type_Shift);
+    if (isCtrlPressed()) mod.press(Modifier::Type_Control);
+    if (isAltPressed()) mod.press(Modifier::Type_Alt);
+    if (isWinPressed()) mod.press(Modifier::Type_Windows);
+    if (m_state[CAPSLOCK]) mod.press(Modifier::Type_CapsLock);
+    if (m_state[NUMLOCK]) mod.press(Modifier::Type_NumLock);
+    if (m_state[SCROLLLOCK]) mod.press(Modifier::Type_ScrollLock);
     return mod;
 }
 
-bool ModifierState::isModifierScancode(uint16_t scancode, uint16_t flags)
-{
-    return detectModifierFromScancode(scancode, flags) != MOD_NONE;
+void ModifierState::setStdFlag(StdModifier flag, bool pressed) {
+    m_state[STD_OFFSET + flag] = pressed;
 }
 
-bool ModifierState::isModifierKeycode(uint32_t keycode)
-{
-    return detectModifierFromKeycode(keycode) != MOD_NONE;
-}
-
-void ModifierState::setFlag(ModifierFlag flag, bool pressed)
-{
-    if (pressed) {
-        m_flags |= flag;
-    } else {
-        m_flags &= ~flag;
-    }
-}
-
-ModifierFlag ModifierState::detectModifierFromScancode(uint16_t scancode, uint16_t flags)
-{
+// Static helper functions for mapping
+ModifierState::StdModifier ModifierState::scancodeToStdModifier(uint16_t scancode, uint16_t flags) {
     bool isExtended = (flags & KEYBOARD_INPUT_DATA::E0) != 0;
 
     switch (scancode) {
-        case SC_LSHIFT:
-            return MOD_LSHIFT;
-
-        case SC_RSHIFT:
-            return MOD_RSHIFT;
-
-        case SC_LCTRL:  // 0x1D
-            // Left and Right Ctrl have same scancode, distinguished by E0
-            return isExtended ? MOD_RCTRL : MOD_LCTRL;
-
-        case SC_LALT:   // 0x38
-            // Left and Right Alt have same scancode, distinguished by E0
-            return isExtended ? MOD_RALT : MOD_LALT;
-
-        case SC_LWIN:   // 0x5B with E0
-            if (isExtended) return MOD_LWIN;
-            break;
-
-        case SC_RWIN:   // 0x5C with E0
-            if (isExtended) return MOD_RWIN;
-            break;
-
-        case SC_CAPSLOCK:
-            return MOD_CAPSLOCK;
-
-        case SC_NUMLOCK:
-            return MOD_NUMLOCK;
-
-        case SC_SCROLLLOCK:
-            return MOD_SCROLLLOCK;
+        case 0x2A: return LSHIFT;
+        case 0x36: return RSHIFT;
+        case 0x1D: return isExtended ? RCTRL : LCTRL;
+        case 0x38: return isExtended ? RALT : LALT;
+        case 0x5B: if (isExtended) return LWIN; break;
+        case 0x5C: if (isExtended) return RWIN; break;
+        case 0x3A: return CAPSLOCK;
+        case 0x45: return NUMLOCK;
+        case 0x46: return SCROLLLOCK;
     }
-
-    return MOD_NONE;
+    return static_cast<StdModifier>(-1);
 }
 
-ModifierFlag ModifierState::detectModifierFromKeycode(uint32_t keycode)
-{
+ModifierState::StdModifier ModifierState::keycodeToStdModifier(uint32_t keycode) {
     switch (keycode) {
-        case KEY_LEFTSHIFT:
-            return MOD_LSHIFT;
-
-        case KEY_RIGHTSHIFT:
-            return MOD_RSHIFT;
-
-        case KEY_LEFTCTRL:
-            return MOD_LCTRL;
-
-        case KEY_RIGHTCTRL:
-            return MOD_RCTRL;
-
-        case KEY_LEFTALT:
-            return MOD_LALT;
-
-        case KEY_RIGHTALT:
-            return MOD_RALT;
-
-        case KEY_LEFTMETA:
-            return MOD_LWIN;
-
-        case KEY_RIGHTMETA:
-            return MOD_RWIN;
-
-        case KEY_CAPSLOCK:
-            return MOD_CAPSLOCK;
-
-        case KEY_NUMLOCK:
-            return MOD_NUMLOCK;
-
-        case KEY_SCROLLLOCK:
-            return MOD_SCROLLLOCK;
+        case 42: return LSHIFT;
+        case 54: return RSHIFT;
+        case 29: return LCTRL;
+        case 97: return RCTRL;
+        case 56: return LALT;
+        case 100: return RALT;
+        case 125: return LWIN;
+        case 126: return RWIN;
+        case 58: return CAPSLOCK;
+        case 69: return NUMLOCK;
+        case 70: return SCROLLLOCK;
     }
-
-    return MOD_NONE;
+    return static_cast<StdModifier>(-1);
 }
 
-// New modal modifier methods - Virtual Key System (M00-MFF)
-
-void ModifierState::activateModifier(uint8_t mod_num)
-{
-    // Calculate word index and bit index
-    // mod_num 0-31 -> word 0, bit 0-31
-    // mod_num 32-63 -> word 1, bit 0-31
-    // etc.
-    uint8_t word_idx = mod_num / 32;  // 0-7
-    uint8_t bit_idx = mod_num % 32;   // 0-31
-    uint32_t mask = 1u << bit_idx;
-
-    m_modal[word_idx] |= mask;
+bool ModifierState::isModifierScancode(uint16_t scancode, uint16_t flags) {
+    return scancodeToStdModifier(scancode, flags) != static_cast<StdModifier>(-1);
 }
 
-void ModifierState::deactivateModifier(uint8_t mod_num)
-{
-    uint8_t word_idx = mod_num / 32;
-    uint8_t bit_idx = mod_num % 32;
-    uint32_t mask = 1u << bit_idx;
-
-    m_modal[word_idx] &= ~mask;
-}
-
-bool ModifierState::isModifierActive(uint8_t mod_num) const
-{
-    uint8_t word_idx = mod_num / 32;
-    uint8_t bit_idx = mod_num % 32;
-    uint32_t mask = 1u << bit_idx;
-
-    return (m_modal[word_idx] & mask) != 0;
-}
-
-void ModifierState::clear()
-{
-    m_flags = MOD_NONE;
-    for (int i = 0; i < 8; ++i) {
-        m_modal[i] = 0;
-    }
+bool ModifierState::isModifierKeycode(uint32_t keycode) {
+    return keycodeToStdModifier(keycode) != static_cast<StdModifier>(-1);
 }
 
 } // namespace yamy::input

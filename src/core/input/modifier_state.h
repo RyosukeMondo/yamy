@@ -1,9 +1,6 @@
-﻿#pragma once
+#pragma once
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// modifier_state.h - Platform-agnostic modifier state tracking
-//
-// Provides detection of modifier keys from platform-neutral KeyEvent structure.
-// Supports both Windows scancodes and Linux keycodes transparently.
+// modifier_state.h - Unified modifier and lock state tracking
 
 #ifndef _MODIFIER_STATE_H
 #define _MODIFIER_STATE_H
@@ -11,145 +8,80 @@
 #include "../platform/types.h"
 #include "keyboard.h"
 #include <cstdint>
+#include <bitset>
+#include <functional>
 
 namespace yamy::input {
 
-/// Modifier key flags (bitmask)
-enum ModifierFlag : uint32_t {
-    MOD_NONE       = 0,
-    MOD_LSHIFT     = 1 << 0,
-    MOD_RSHIFT     = 1 << 1,
-    MOD_LCTRL      = 1 << 2,
-    MOD_RCTRL      = 1 << 3,
-    MOD_LALT       = 1 << 4,
-    MOD_RALT       = 1 << 5,
-    MOD_LWIN       = 1 << 6,   // Windows key / Super key on Linux
-    MOD_RWIN       = 1 << 7,
-    MOD_CAPSLOCK   = 1 << 8,
-    MOD_NUMLOCK    = 1 << 9,
-    MOD_SCROLLLOCK = 1 << 10,
+/// Callback type for GUI notification when lock state changes
+/// The callback receives a pointer to the 8-element lock bits array
+using LockStateChangeCallback = std::function<void(const uint32_t lockBits[8])>;
 
-    // Combined flags for convenience (renamed to avoid Windows macro conflicts)
-    MODFLAG_SHIFT  = MOD_LSHIFT | MOD_RSHIFT,
-    MODFLAG_CTRL   = MOD_LCTRL | MOD_RCTRL,
-    MODFLAG_ALT    = MOD_LALT | MOD_RALT,
-    MODFLAG_WIN    = MOD_LWIN | MOD_RWIN,
-};
-
-/// Platform-agnostic modifier state tracker
+/// Unified, platform-agnostic modifier and lock state tracker
 class ModifierState {
 public:
+    // Bitset layout constants
+    static constexpr size_t STD_MOD_COUNT = 16;
+    static constexpr size_t VIRTUAL_MOD_COUNT = 256;
+    static constexpr size_t LOCK_COUNT = 256;
+
+    static constexpr size_t STD_OFFSET = 0;
+    static constexpr size_t VIRTUAL_OFFSET = STD_OFFSET + STD_MOD_COUNT;
+    static constexpr size_t LOCK_OFFSET = VIRTUAL_OFFSET + VIRTUAL_MOD_COUNT;
+    static constexpr size_t TOTAL_BITS = LOCK_OFFSET + LOCK_COUNT;
+
+    // Standard modifier flags (for indexing into the bitset)
+    enum StdModifier : size_t {
+        LSHIFT = 0, RSHIFT, LCTRL, RCTRL, LALT, RALT, LWIN, RWIN,
+        CAPSLOCK, NUMLOCK, SCROLLLOCK,
+        // For engine compatibility
+        UP, DOWN, REPEAT, IMELOCK, IMECOMP
+    };
+
     ModifierState();
 
-    /// Reset all modifier states to not pressed
+    /// Reset all modifier and lock states to not pressed/inactive
     void reset();
 
     /// Update modifier state from a KeyEvent
-    /// @param event The key event to process
-    /// @return true if the event was a modifier key, false otherwise
     bool updateFromKeyEvent(const yamy::platform::KeyEvent& event);
 
     /// Update modifier state from KEYBOARD_INPUT_DATA (legacy compatibility)
-    /// @param kid The keyboard input data
-    /// @return true if the event was a modifier key, false otherwise
     bool updateFromKID(const KEYBOARD_INPUT_DATA& kid);
 
-    /// Get current modifier flags
-    uint32_t getFlags() const { return m_flags; }
-
-    /// Check if any shift key is pressed
-    bool isShiftPressed() const { return (m_flags & MODFLAG_SHIFT) != 0; }
-
-    /// Check if any control key is pressed
-    bool isCtrlPressed() const { return (m_flags & MODFLAG_CTRL) != 0; }
-
-    /// Check if any alt key is pressed
-    bool isAltPressed() const { return (m_flags & MODFLAG_ALT) != 0; }
-
-    /// Check if any windows/super key is pressed
-    bool isWinPressed() const { return (m_flags & MODFLAG_WIN) != 0; }
-
-    /// Check if left shift is pressed
-    bool isLShiftPressed() const { return (m_flags & MOD_LSHIFT) != 0; }
-
-    /// Check if right shift is pressed
-    bool isRShiftPressed() const { return (m_flags & MOD_RSHIFT) != 0; }
-
-    /// Check if left control is pressed
-    bool isLCtrlPressed() const { return (m_flags & MOD_LCTRL) != 0; }
-
-    /// Check if right control is pressed
-    bool isRCtrlPressed() const { return (m_flags & MOD_RCTRL) != 0; }
-
-    /// Check if left alt is pressed
-    bool isLAltPressed() const { return (m_flags & MOD_LALT) != 0; }
-
-    /// Check if right alt is pressed
-    bool isRAltPressed() const { return (m_flags & MOD_RALT) != 0; }
-
-    /// Check if left windows/super is pressed
-    bool isLWinPressed() const { return (m_flags & MOD_LWIN) != 0; }
-
-    /// Check if right windows/super is pressed
-    bool isRWinPressed() const { return (m_flags & MOD_RWIN) != 0; }
-
-    /// Check if caps lock is active (toggled on)
-    bool isCapsLockOn() const { return (m_flags & MOD_CAPSLOCK) != 0; }
-
-    /// Check if num lock is active (toggled on)
-    bool isNumLockOn() const { return (m_flags & MOD_NUMLOCK) != 0; }
-
-    /// Check if scroll lock is active (toggled on)
-    bool isScrollLockOn() const { return (m_flags & MOD_SCROLLLOCK) != 0; }
-
-    /// Set lock key state (e.g., from system query)
-    void setLockState(bool capsLock, bool numLock, bool scrollLock);
-
-    // New modal modifier methods (M00-MFF) - Virtual Key System
-
-    /// Activate a modal modifier by number (M00-MFF)
-    /// @param mod_num Modifier number (0x00-0xFF)
+    // --- Standard Modifier Accessors ---
+    bool isShiftPressed() const;
+    bool isCtrlPressed() const;
+    bool isAltPressed() const;
+    bool isWinPressed() const;
+    
+    // --- Virtual Modifier (M00-MFF) Methods ---
     void activateModifier(uint8_t mod_num);
-
-    /// Deactivate a modal modifier by number (M00-MFF)
-    /// @param mod_num Modifier number (0x00-0xFF)
     void deactivateModifier(uint8_t mod_num);
-
-    /// Check if a modal modifier is active by number (M00-MFF)
-    /// @param mod_num Modifier number (0x00-0xFF)
-    /// @return true if the modal modifier is active, false otherwise
     bool isModifierActive(uint8_t mod_num) const;
+    const std::bitset<TOTAL_BITS>& getFullState() const { return m_state; }
 
-    /// Get pointer to the complete modal modifier bitmask array
-    /// @return Pointer to 8 x uint32_t array (256 bits total) for M00-MFF
-    const uint32_t* getModifierBits() const { return m_modal; }
+    // --- Lock (L00-LFF) Methods ---
+    void toggleLock(uint8_t lock_num);
+    bool isLockActive(uint8_t lock_num) const;
+    void setNotificationCallback(LockStateChangeCallback callback) { m_notifyCallback = callback; }
 
-    /// Clear all modifiers (standard and modal)
-    void clear();
-
-    /// Convert internal modifier flags to Modifier object for engine compatibility
+    /// Convert internal state to legacy Modifier object for engine compatibility
     Modifier toModifier() const;
 
     /// Check if a given scancode represents a modifier key (Windows)
     static bool isModifierScancode(uint16_t scancode, uint16_t flags);
-
     /// Check if a given keycode represents a modifier key (Linux)
     static bool isModifierKeycode(uint32_t keycode);
 
 private:
-    /// Set or clear a modifier flag based on key press state
-    void setFlag(ModifierFlag flag, bool pressed);
+    void setStdFlag(StdModifier flag, bool pressed);
+    static StdModifier scancodeToStdModifier(uint16_t scancode, uint16_t flags);
+    static StdModifier keycodeToStdModifier(uint32_t keycode);
+    void notifyGUILocks();
 
-    /// Detect modifier from Windows scancode
-    /// @return The modifier flag, or MOD_NONE if not a modifier
-    static ModifierFlag detectModifierFromScancode(uint16_t scancode, uint16_t flags);
-
-    /// Detect modifier from Linux keycode
-    /// @return The modifier flag, or MOD_NONE if not a modifier
-    static ModifierFlag detectModifierFromKeycode(uint32_t keycode);
-
-    uint32_t m_flags;     // Standard modifier flags (shift, ctrl, alt, win, locks)
-    uint32_t m_modal[8];  // Modal modifier bitmask array (M00-MFF, 256 bits total)
+    std::bitset<TOTAL_BITS> m_state;
+    LockStateChangeCallback m_notifyCallback;
 };
 
 } // namespace yamy::input

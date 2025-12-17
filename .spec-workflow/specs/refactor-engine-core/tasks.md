@@ -38,7 +38,7 @@
   - Replace linear scan in `layer2_applySubstitution` with map lookup.
   - _Requirements: 3.1, 3.3_
 
-- [ ] 7. Unify Modifier State
+- [x] 7. Unify Modifier State
   - File: `src/core/input/modifier_state.h`
   - Expand to support 256+ bits.
   - Integrate Hardware, Virtual, and Lock states into one vector.
