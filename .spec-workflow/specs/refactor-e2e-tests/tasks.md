@@ -23,7 +23,7 @@
   - **Action:** Implement timeout logic for event capture.
   - _Requirements: 1.1_
 
-- [ ] 5. Implement ReportGenerator
+- [x] 5. Implement ReportGenerator
   - File: `tests/framework/reporter.py`
   - **Implementation Detail:** Create a class that stores `TestResult` objects.
   - **Action:** Implement `save_json` method.
