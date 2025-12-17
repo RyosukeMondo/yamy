@@ -338,7 +338,7 @@
 
 ## Phase 5: Documentation
 
-- [ ] 5.1. Write JSON schema documentation
+- [x] 5.1. Write JSON schema documentation
   - File: docs/json-schema.md
   - Document complete JSON schema structure
   - Explain each section (version, keyboard, virtualModifiers, mappings)
