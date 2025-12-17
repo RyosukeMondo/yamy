@@ -21,6 +21,18 @@ class SettingLoader
 {
     template <typename Derived, typename... Args>
     friend class Command;
+
+public:
+    ///
+    /// Holds transient state during parsing to avoid thread-local storage hacks.
+    /// This is necessary because modifier information (like M00-MFF) needs to be
+    /// communicated between load_MODIFIER and load_KEY_SEQUENCE/load_KEY_NAME, which
+    /// are not in a direct call chain.
+    struct ParserContext {
+        uint8_t pendingVirtualMod = 0xFF;
+        bool hasVirtualMod = false;
+    };
+
 #  define FUNCTION_FRIEND
 #  include "../functions/function_friends.h"
 #  undef FUNCTION_FRIEND
@@ -61,6 +73,8 @@ private:
     Keymap *m_currentKeymap;            /// current keymap
 
     CanReadStack m_canReadStack;            /// for &lt;COND_SYMBOL&gt;
+
+    ParserContext m_parserContext;          ///< Transient state for parsing.
 
     Modifier m_defaultAssignModifier;        /** default
                                                     &lt;ASSIGN_MODIFIER&gt; */

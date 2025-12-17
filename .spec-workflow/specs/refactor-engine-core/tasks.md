@@ -7,7 +7,7 @@
   - Use `std::map` for basic modifier lookup.
   - _Status: Completed (See recent git history)_
 
-- [ ] 2. Remove Thread-Local Storage Hack
+- [x] 2. Remove Thread-Local Storage Hack
   - File: `src/core/settings/setting_loader.h` / `.cpp`
   - **Implementation Detail:** Define `struct ParserContext` (see `design.md` Tech Specs) inside `SettingLoader`.
   - **Action:** Update `parseMxxModifier`, `load_KEY_SEQUENCE`, and `load_KEY_NAME` to accept `ParserContext& ctx` as an argument.

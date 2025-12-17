@@ -23,13 +23,6 @@
 #include <sys/stat.h>
 #include <cstdio>
 
-// NEW M00-MFF system: Thread-local storage for pending virtual modifier
-// Set by parser when M00-MFF is encountered, read when creating ModifiedKey
-namespace {
-    thread_local uint8_t s_pendingVirtualMod = 0xFF;
-    thread_local bool s_hasVirtualMod = false;
-}
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // SettingLoader
 
@@ -431,8 +424,8 @@ bool SettingLoader::parseMxxModifier(const std::string& token_str, Modifier::Typ
               << "- -> virtual modifier " << std::dec << (int)modNum
               << " (NEW M00-MFF system)" << std::endl;
 
-    s_pendingVirtualMod = static_cast<uint8_t>(modNum);
-    s_hasVirtualMod = true;
+    m_parserContext.pendingVirtualMod = static_cast<uint8_t>(modNum);
+    m_parserContext.hasVirtualMod = true;
 
     flag = 0; // PRESS
     return true;
@@ -1205,11 +1198,11 @@ KeySeq *SettingLoader::load_KEY_SEQUENCE(
             mkey.m_key = load_KEY_NAME();
 
             // NEW M00-MFF system: Set virtual modifier if pending
-            if (s_hasVirtualMod) {
-                mkey.setVirtualMod(s_pendingVirtualMod, true);
-                std::cerr << "[PARSER:NEW] Set virtual mod M" << std::hex << std::setw(2) << std::setfill('0') << (int)s_pendingVirtualMod
+            if (m_parserContext.hasVirtualMod) {
+                mkey.setVirtualMod(m_parserContext.pendingVirtualMod, true);
+                std::cerr << "[PARSER:NEW] Set virtual mod M" << std::hex << std::setw(2) << std::setfill('0') << (int)m_parserContext.pendingVirtualMod
                           << " in ModifiedKey for key " << (mkey.m_key ? mkey.m_key->getName() : "NULL") << std::dec << std::endl;
-                s_hasVirtualMod = false; // Reset after use
+                m_parserContext.hasVirtualMod = false; // Reset after use
             }
 
             keySeq.add(ActionKey(mkey));
