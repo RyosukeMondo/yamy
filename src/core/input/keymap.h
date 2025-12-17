@@ -187,12 +187,6 @@ class Keymap
 {
 public:
     ///
-    enum Type {
-        Type_keymap,                /// this is keymap
-        Type_windowAnd,                /// this is window &amp;&amp;
-        Type_windowOr,                /// this is window ||
-    };
-    ///
     enum AssignOperator {
         AO_new,                    /// =
         AO_add,                    /// +=
@@ -269,12 +263,7 @@ private:
     /// modifier assignments
     ModAssignments m_modAssignments[Modifier::Type_ASSIGN];
 
-    Type m_type;                    /// type
     std::string m_name;                /// keymap name
-    std::regex m_windowClass;                /// window class name regexp
-    std::string m_windowClassStr;            /// window class name string (for description)
-    std::regex m_windowTitle;                /// window title name regexp
-    std::string m_windowTitleStr;            /// window title name string (for description)
 
     KeySeq *m_defaultKeySeq;            /// default keySeq
     Keymap *m_parentKeymap;            /// parent keymap
@@ -287,10 +276,7 @@ private:
 
 public:
     ///
-    Keymap(Type i_type,
-           const std::string &i_name,
-           const std::string &i_windowClass,
-           const std::string &i_windowTitle,
+    Keymap(const std::string &i_name,
            KeySeq *i_defaultKeySeq,
            Keymap *i_parentKeymap);
 
@@ -317,25 +303,6 @@ public:
     const std::string &getName() const {
         return m_name;
     }
-
-    /// get window class regex string (for description/debugging)
-    const std::string &getWindowClassStr() const {
-        return m_windowClassStr;
-    }
-
-    /// get window title regex string (for description/debugging)
-    const std::string &getWindowTitleStr() const {
-        return m_windowTitleStr;
-    }
-
-    /// get keymap type
-    Type getType() const {
-        return m_type;
-    }
-
-    /// does same window
-    bool doesSameWindow(const std::string &i_className,
-                        const std::string &i_titleName);
 
     /// adjust modifier
     void adjustModifier(Keyboard &i_keyboard);
@@ -377,10 +344,8 @@ public:
     /// search by name
     Keymap *searchByName(const std::string &i_name);
 
-    /// search window
-    void searchWindow(KeymapPtrList *o_keymapPtrList,
-                      const std::string &i_className,
-                      const std::string &i_titleName);
+    /// get global keymap (named "Global")
+    Keymap *getGlobalKeymap();
 
     /// add keymap
     Keymap *add(const Keymap &i_keymap);

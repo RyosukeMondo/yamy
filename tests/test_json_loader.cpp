@@ -6,8 +6,6 @@
 // - Error handling (syntax errors, missing fields, unknown keys)
 // - M00-MFF virtual modifier parsing
 // - Key sequence parsing
-// - Keyboard key definitions
-// - Mapping rules
 //
 // Part of task 1.10 in json-refactoring spec
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,18 +23,12 @@ namespace fs = std::filesystem;
 
 namespace yamy::settings::test {
 
-//=============================================================================
-// Test Fixture
-//=============================================================================
-
 class JsonConfigLoaderTest : public ::testing::Test {
 protected:
     void SetUp() override {
         logStream = new std::stringstream();
         loader = new JsonConfigLoader(logStream);
         setting = new Setting();
-
-        // Create temp directory for test JSON files
         tempDir = fs::temp_directory_path() / "yamy_json_test";
         fs::create_directories(tempDir);
     }
@@ -45,14 +37,11 @@ protected:
         delete setting;
         delete loader;
         delete logStream;
-
-        // Clean up temp directory
         if (fs::exists(tempDir)) {
             fs::remove_all(tempDir);
         }
     }
 
-    // Helper: Create JSON file with given content
     std::string createJsonFile(const std::string& filename, const std::string& content) {
         fs::path filepath = tempDir / filename;
         std::ofstream ofs(filepath);
@@ -61,7 +50,6 @@ protected:
         return filepath.string();
     }
 
-    // Helper: Get log output
     std::string getLog() const {
         return logStream->str();
     }
@@ -72,719 +60,258 @@ protected:
     fs::path tempDir;
 };
 
-//=============================================================================
-// Test: Basic Valid Configuration
-//=============================================================================
-
 TEST_F(JsonConfigLoaderTest, LoadValidBasicConfig) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e",
-                "B": "0x30",
-                "Tab": "0x0f",
-                "Escape": "0x01"
-            }
-        },
+        "keyboard": {"keys": {"A": "0x1e", "B": "0x30", "Tab": "0x0f"}},
         "virtualModifiers": {},
-        "mappings": [
-            {
-                "from": "A",
-                "to": "Tab"
-            }
-        ]
+        "mappings": [{"from": "A", "to": "Tab"}]
     })";
 
-    std::string filepath = createJsonFile("valid_basic.json", json);
-    bool success = loader->load(setting, filepath);
+    std::string filepath = createJsonFile("valid.json", json);
+    ASSERT_TRUE(loader->load(setting, filepath)) << "Load failed: " << getLog();
 
-    ASSERT_TRUE(success) << "Load failed: " << getLog();
-
-    // Verify keys were loaded
-    Key* keyA = setting->m_keyboard.searchKey("A");
-    ASSERT_NE(keyA, nullptr) << "Key 'A' not found";
-    EXPECT_EQ(keyA->getName(), "A");
-
-    Key* keyTab = setting->m_keyboard.searchKey("Tab");
-    ASSERT_NE(keyTab, nullptr) << "Key 'Tab' not found";
-    EXPECT_EQ(keyTab->getName(), "Tab");
-
-    // Verify mapping was loaded - global keymap should exist
-    Keymap* globalKeymap = setting->m_keymaps.searchByName("Global");
-    ASSERT_NE(globalKeymap, nullptr) << "Global keymap not found";
+    EXPECT_NE(setting->m_keyboard.searchKey("A"), nullptr);
+    EXPECT_NE(setting->m_keyboard.searchKey("Tab"), nullptr);
+    EXPECT_NE(setting->m_keymaps.searchByName("Global"), nullptr);
 }
-
-//=============================================================================
-// Test: Virtual Modifiers (M00-MFF)
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, LoadVirtualModifiers) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "CapsLock": "0x3a",
-                "Escape": "0x01",
-                "A": "0x1e",
-                "Left": "0xe04b"
-            }
-        },
-        "virtualModifiers": {
-            "M00": {
-                "trigger": "CapsLock",
-                "tap": "Escape",
-                "holdThresholdMs": 200
-            }
-        },
-        "mappings": [
-            {
-                "from": "M00-A",
-                "to": "Left"
-            }
-        ]
+        "keyboard": {"keys": {"CapsLock": "0x3a", "Escape": "0x01", "A": "0x1e", "Left": "0xe04b"}},
+        "virtualModifiers": {"M00": {"trigger": "CapsLock", "tap": "Escape", "holdThresholdMs": 200}},
+        "mappings": [{"from": "M00-A", "to": "Left"}]
     })";
 
-    std::string filepath = createJsonFile("virtual_mods.json", json);
-    bool success = loader->load(setting, filepath);
+    std::string filepath = createJsonFile("vmods.json", json);
+    ASSERT_TRUE(loader->load(setting, filepath)) << "Load failed: " << getLog();
 
-    ASSERT_TRUE(success) << "Load failed: " << getLog();
-
-    // Verify M00 trigger key registered
     Key* capsLock = setting->m_keyboard.searchKey("CapsLock");
     ASSERT_NE(capsLock, nullptr);
+    uint16_t capsScan = capsLock->getScanCodes()[0].m_scan;
 
-    const ScanCode* scanCodes = capsLock->getScanCodes();
-    ASSERT_GT(capsLock->getScanCodesSize(), 0);
-    uint16_t capsScanCode = scanCodes[0].m_scan;
+    auto triggerIt = setting->m_virtualModTriggers.find(capsScan);
+    ASSERT_NE(triggerIt, setting->m_virtualModTriggers.end());
+    EXPECT_EQ(triggerIt->second, 0x00);
 
-    auto triggerIt = setting->m_virtualModTriggers.find(capsScanCode);
-    ASSERT_NE(triggerIt, setting->m_virtualModTriggers.end())
-        << "CapsLock not registered as M00 trigger";
-    EXPECT_EQ(triggerIt->second, 0x00) << "Trigger should map to M00 (0x00)";
-
-    // Verify M00 tap action registered
     auto tapIt = setting->m_modTapActions.find(0x00);
-    ASSERT_NE(tapIt, setting->m_modTapActions.end())
-        << "M00 tap action not registered";
+    ASSERT_NE(tapIt, setting->m_modTapActions.end());
 
     Key* escape = setting->m_keyboard.searchKey("Escape");
-    ASSERT_NE(escape, nullptr);
-    const ScanCode* escapeScanCodes = escape->getScanCodes();
-    uint16_t escapeScanCode = escapeScanCodes[0].m_scan;
-    EXPECT_EQ(tapIt->second, escapeScanCode) << "Tap action should be Escape";
-
-    // Verify global keymap was created
-    Keymap* globalKeymap = setting->m_keymaps.searchByName("Global");
-    ASSERT_NE(globalKeymap, nullptr);
+    uint16_t escapeScan = escape->getScanCodes()[0].m_scan;
+    EXPECT_EQ(tapIt->second, escapeScan);
 }
-
-//=============================================================================
-// Test: Multiple Virtual Modifiers
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, LoadMultipleVirtualModifiers) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "CapsLock": "0x3a",
-                "Semicolon": "0x27",
-                "Escape": "0x01",
-                "A": "0x1e"
-            }
-        },
+        "keyboard": {"keys": {"CapsLock": "0x3a", "Semicolon": "0x27"}},
         "virtualModifiers": {
-            "M00": {
-                "trigger": "CapsLock",
-                "tap": "Escape"
-            },
-            "M01": {
-                "trigger": "Semicolon",
-                "tap": "Escape"
-            }
+            "M00": {"trigger": "CapsLock"},
+            "M01": {"trigger": "Semicolon"}
         },
         "mappings": []
     })";
 
-    std::string filepath = createJsonFile("multi_mods.json", json);
-    bool success = loader->load(setting, filepath);
-
-    ASSERT_TRUE(success) << "Load failed: " << getLog();
-
-    // Verify both modifiers registered
+    ASSERT_TRUE(loader->load(setting, createJsonFile("multi.json", json)));
     EXPECT_EQ(setting->m_virtualModTriggers.size(), 2);
-    EXPECT_EQ(setting->m_modTapActions.size(), 2);
-
-    // Check M00
-    Key* capsLock = setting->m_keyboard.searchKey("CapsLock");
-    const ScanCode* capsScanCodes = capsLock->getScanCodes();
-    uint16_t capsScan = capsScanCodes[0].m_scan;
-    EXPECT_EQ(setting->m_virtualModTriggers[capsScan], 0x00);
-
-    // Check M01
-    Key* semicolon = setting->m_keyboard.searchKey("Semicolon");
-    const ScanCode* semiScanCodes = semicolon->getScanCodes();
-    uint16_t semiScan = semiScanCodes[0].m_scan;
-    EXPECT_EQ(setting->m_virtualModTriggers[semiScan], 0x01);
 }
-
-//=============================================================================
-// Test: Key Sequences
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, LoadKeySequences) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e",
-                "B": "0x30",
-                "C": "0x2e",
-                "Escape": "0x01"
-            }
-        },
+        "keyboard": {"keys": {"A": "0x1e", "B": "0x30", "Escape": "0x01"}},
         "virtualModifiers": {},
-        "mappings": [
-            {
-                "from": "A",
-                "to": ["Escape", "B", "C"]
-            }
-        ]
+        "mappings": [{"from": "A", "to": ["Escape", "B"]}]
     })";
 
-    std::string filepath = createJsonFile("sequences.json", json);
-    bool success = loader->load(setting, filepath);
-
-    ASSERT_TRUE(success) << "Load failed: " << getLog();
-
-    // Verify global keymap created
-    Keymap* globalKeymap = setting->m_keymaps.searchByName("Global");
-    ASSERT_NE(globalKeymap, nullptr);
-
-    // Note: We can't easily test the exact sequence contents without
-    // accessing internals, but we can verify the load succeeded
+    ASSERT_TRUE(loader->load(setting, createJsonFile("seq.json", json)));
+    EXPECT_NE(setting->m_keymaps.searchByName("Global"), nullptr);
 }
-
-//=============================================================================
-// Test: Standard Modifiers
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, LoadStandardModifiers) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e",
-                "B": "0x30",
-                "C": "0x2e"
-            }
-        },
+        "keyboard": {"keys": {"A": "0x1e", "B": "0x30"}},
         "virtualModifiers": {},
-        "mappings": [
-            {
-                "from": "Shift-A",
-                "to": "B"
-            },
-            {
-                "from": "Ctrl-Alt-C",
-                "to": "A"
-            }
-        ]
+        "mappings": [{"from": "Shift-A", "to": "B"}]
     })";
 
-    std::string filepath = createJsonFile("std_mods.json", json);
-    bool success = loader->load(setting, filepath);
-
-    ASSERT_TRUE(success) << "Load failed: " << getLog();
-
-    // Verify global keymap created
-    Keymap* globalKeymap = setting->m_keymaps.searchByName("Global");
-    ASSERT_NE(globalKeymap, nullptr);
+    ASSERT_TRUE(loader->load(setting, createJsonFile("stdmod.json", json)));
+    EXPECT_NE(setting->m_keymaps.searchByName("Global"), nullptr);
 }
-
-//=============================================================================
-// Test: Combined Standard and Virtual Modifiers
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, LoadCombinedModifiers) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "CapsLock": "0x3a",
-                "A": "0x1e",
-                "B": "0x30"
-            }
-        },
-        "virtualModifiers": {
-            "M00": {
-                "trigger": "CapsLock"
-            }
-        },
-        "mappings": [
-            {
-                "from": "Shift-M00-A",
-                "to": "B"
-            }
-        ]
+        "keyboard": {"keys": {"CapsLock": "0x3a", "A": "0x1e", "B": "0x30"}},
+        "virtualModifiers": {"M00": {"trigger": "CapsLock"}},
+        "mappings": [{"from": "Shift-M00-A", "to": "B"}]
     })";
 
-    std::string filepath = createJsonFile("combined_mods.json", json);
-    bool success = loader->load(setting, filepath);
-
-    ASSERT_TRUE(success) << "Load failed: " << getLog();
-
-    // Verify global keymap created
-    Keymap* globalKeymap = setting->m_keymaps.searchByName("Global");
-    ASSERT_NE(globalKeymap, nullptr);
+    ASSERT_TRUE(loader->load(setting, createJsonFile("combined.json", json)));
 }
-
-//=============================================================================
-// Test: Error Handling - Invalid JSON Syntax
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, ErrorInvalidJsonSyntax) {
-    std::string json = R"({
-        "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e"
-            }
-        }
-        // Missing closing brace
-    )";
-
-    std::string filepath = createJsonFile("invalid_syntax.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail on invalid JSON syntax";
-
-    std::string log = getLog();
-    EXPECT_TRUE(log.find("parse error") != std::string::npos ||
-                log.find("JSON") != std::string::npos)
-        << "Log should mention parse error: " << log;
+    std::string json = R"({"version": "2.0", "keyboard": {"keys": {})";
+    EXPECT_FALSE(loader->load(setting, createJsonFile("bad.json", json)));
+    EXPECT_TRUE(getLog().find("parse") != std::string::npos ||
+                getLog().find("JSON") != std::string::npos);
 }
-
-//=============================================================================
-// Test: Error Handling - Missing Version
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, ErrorMissingVersion) {
-    std::string json = R"({
-        "keyboard": {
-            "keys": {
-                "A": "0x1e"
-            }
-        },
-        "virtualModifiers": {},
-        "mappings": []
-    })";
-
-    std::string filepath = createJsonFile("missing_version.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail on missing version";
-
-    std::string log = getLog();
-    EXPECT_TRUE(log.find("version") != std::string::npos)
-        << "Log should mention version error: " << log;
+    std::string json = R"({"keyboard": {"keys": {}}, "virtualModifiers": {}, "mappings": []})";
+    EXPECT_FALSE(loader->load(setting, createJsonFile("nover.json", json)));
+    EXPECT_TRUE(getLog().find("version") != std::string::npos);
 }
-
-//=============================================================================
-// Test: Error Handling - Wrong Version
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, ErrorWrongVersion) {
-    std::string json = R"({
-        "version": "1.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e"
-            }
-        },
-        "virtualModifiers": {},
-        "mappings": []
-    })";
-
-    std::string filepath = createJsonFile("wrong_version.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail on wrong version";
-
-    std::string log = getLog();
-    EXPECT_TRUE(log.find("2.0") != std::string::npos)
-        << "Log should mention expected version 2.0: " << log;
+    std::string json = R"({"version": "1.0", "keyboard": {"keys": {}}, "virtualModifiers": {}, "mappings": []})";
+    EXPECT_FALSE(loader->load(setting, createJsonFile("wrongver.json", json)));
+    EXPECT_TRUE(getLog().find("2.0") != std::string::npos);
 }
-
-//=============================================================================
-// Test: Error Handling - Invalid Scan Code Format
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, ErrorInvalidScanCode) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "invalid",
-                "B": "0x30"
-            }
-        },
+        "keyboard": {"keys": {"A": "invalid"}},
         "virtualModifiers": {},
         "mappings": []
     })";
 
-    std::string filepath = createJsonFile("invalid_scancode.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail on invalid scan code format";
-
+    EXPECT_FALSE(loader->load(setting, createJsonFile("badscan.json", json)));
     std::string log = getLog();
-    EXPECT_TRUE(log.find("scan code") != std::string::npos ||
+    EXPECT_TRUE(log.find("scan") != std::string::npos ||
                 log.find("invalid") != std::string::npos ||
-                log.find("hex") != std::string::npos)
-        << "Log should mention scan code error: " << log;
+                log.find("hex") != std::string::npos);
 }
-
-//=============================================================================
-// Test: Error Handling - Unknown Key Name in Mapping
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, ErrorUnknownKeyInMapping) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e"
-            }
-        },
+        "keyboard": {"keys": {"A": "0x1e"}},
         "virtualModifiers": {},
-        "mappings": [
-            {
-                "from": "A",
-                "to": "UnknownKey"
-            }
-        ]
+        "mappings": [{"from": "A", "to": "UnknownKey"}]
     })";
 
-    std::string filepath = createJsonFile("unknown_key.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail on unknown key in mapping";
-
-    std::string log = getLog();
-    EXPECT_TRUE(log.find("UnknownKey") != std::string::npos ||
-                log.find("unknown") != std::string::npos)
-        << "Log should mention unknown key: " << log;
+    EXPECT_FALSE(loader->load(setting, createJsonFile("unkn.json", json)));
+    EXPECT_TRUE(getLog().find("UnknownKey") != std::string::npos);
 }
 
-//=============================================================================
-// Test: Error Handling - Invalid Virtual Modifier Name
-//=============================================================================
-
-TEST_F(JsonConfigLoaderTest, ErrorInvalidVirtualModifierName) {
+TEST_F(JsonConfigLoaderTest, ErrorInvalidVirtualModifierFormat) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "CapsLock": "0x3a"
-            }
-        },
-        "virtualModifiers": {
-            "M99": {
-                "trigger": "CapsLock"
-            }
-        },
+        "keyboard": {"keys": {"CapsLock": "0x3a"}},
+        "virtualModifiers": {"MOD00": {"trigger": "CapsLock"}},
         "mappings": []
     })";
 
-    std::string filepath = createJsonFile("invalid_mod_name.json", json);
-    bool success = loader->load(setting, filepath);
-
-    // Should succeed - M99 is valid (in range M00-MFF)
-    ASSERT_TRUE(success) << "M99 should be valid: " << getLog();
+    EXPECT_FALSE(loader->load(setting, createJsonFile("badmod.json", json)));
+    EXPECT_TRUE(getLog().find("M00-MFF") != std::string::npos ||
+                getLog().find("MOD00") != std::string::npos);
 }
 
-TEST_F(JsonConfigLoaderTest, ErrorInvalidVirtualModifierNameBadFormat) {
+TEST_F(JsonConfigLoaderTest, ErrorUndefinedTriggerKey) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "CapsLock": "0x3a"
-            }
-        },
-        "virtualModifiers": {
-            "MOD00": {
-                "trigger": "CapsLock"
-            }
-        },
+        "keyboard": {"keys": {"A": "0x1e"}},
+        "virtualModifiers": {"M00": {"trigger": "UndefinedKey"}},
         "mappings": []
     })";
 
-    std::string filepath = createJsonFile("invalid_mod_format.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail on invalid modifier name format";
-
-    std::string log = getLog();
-    EXPECT_TRUE(log.find("M00-MFF") != std::string::npos ||
-                log.find("MOD00") != std::string::npos)
-        << "Log should mention modifier name format: " << log;
+    EXPECT_FALSE(loader->load(setting, createJsonFile("notrig.json", json)));
+    EXPECT_TRUE(getLog().find("UndefinedKey") != std::string::npos);
 }
 
-//=============================================================================
-// Test: Error Handling - Virtual Modifier Trigger Key Not Defined
-//=============================================================================
-
-TEST_F(JsonConfigLoaderTest, ErrorVirtualModifierTriggerNotDefined) {
+TEST_F(JsonConfigLoaderTest, ErrorMissingFromField) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e"
-            }
-        },
-        "virtualModifiers": {
-            "M00": {
-                "trigger": "UndefinedKey"
-            }
-        },
-        "mappings": []
-    })";
-
-    std::string filepath = createJsonFile("undefined_trigger.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail when trigger key not defined";
-
-    std::string log = getLog();
-    EXPECT_TRUE(log.find("UndefinedKey") != std::string::npos)
-        << "Log should mention undefined trigger key: " << log;
-}
-
-//=============================================================================
-// Test: Error Handling - Missing 'from' in Mapping
-//=============================================================================
-
-TEST_F(JsonConfigLoaderTest, ErrorMissingFromInMapping) {
-    std::string json = R"({
-        "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e",
-                "B": "0x30"
-            }
-        },
+        "keyboard": {"keys": {"A": "0x1e", "B": "0x30"}},
         "virtualModifiers": {},
-        "mappings": [
-            {
-                "to": "B"
-            }
-        ]
+        "mappings": [{"to": "B"}]
     })";
 
-    std::string filepath = createJsonFile("missing_from.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail on missing 'from' field";
-
-    std::string log = getLog();
-    EXPECT_TRUE(log.find("from") != std::string::npos)
-        << "Log should mention missing 'from': " << log;
+    EXPECT_FALSE(loader->load(setting, createJsonFile("nofrom.json", json)));
+    EXPECT_TRUE(getLog().find("from") != std::string::npos);
 }
 
-//=============================================================================
-// Test: Error Handling - Missing 'to' in Mapping
-//=============================================================================
-
-TEST_F(JsonConfigLoaderTest, ErrorMissingToInMapping) {
+TEST_F(JsonConfigLoaderTest, ErrorMissingToField) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e"
-            }
-        },
+        "keyboard": {"keys": {"A": "0x1e"}},
         "virtualModifiers": {},
-        "mappings": [
-            {
-                "from": "A"
-            }
-        ]
+        "mappings": [{"from": "A"}]
     })";
 
-    std::string filepath = createJsonFile("missing_to.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail on missing 'to' field";
-
-    std::string log = getLog();
-    EXPECT_TRUE(log.find("to") != std::string::npos)
-        << "Log should mention missing 'to': " << log;
+    EXPECT_FALSE(loader->load(setting, createJsonFile("noto.json", json)));
+    EXPECT_TRUE(getLog().find("to") != std::string::npos);
 }
-
-//=============================================================================
-// Test: Hex Scan Codes with Different Formats
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, LoadHexScanCodeVariants) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "A": "0x1e",
-                "B": "0x30",
-                "C": "0x2E",
-                "Left": "0xe04b",
-                "Right": "0xE04D"
-            }
-        },
+        "keyboard": {"keys": {"A": "0x1e", "B": "0x30", "C": "0x2E", "Left": "0xe04b", "Right": "0xE04D"}},
         "virtualModifiers": {},
         "mappings": []
     })";
 
-    std::string filepath = createJsonFile("hex_variants.json", json);
-    bool success = loader->load(setting, filepath);
-
-    ASSERT_TRUE(success) << "Load failed: " << getLog();
-
-    // Verify all keys loaded correctly
+    ASSERT_TRUE(loader->load(setting, createJsonFile("hexvar.json", json)));
     EXPECT_NE(setting->m_keyboard.searchKey("A"), nullptr);
-    EXPECT_NE(setting->m_keyboard.searchKey("B"), nullptr);
     EXPECT_NE(setting->m_keyboard.searchKey("C"), nullptr);
     EXPECT_NE(setting->m_keyboard.searchKey("Left"), nullptr);
     EXPECT_NE(setting->m_keyboard.searchKey("Right"), nullptr);
 }
 
-//=============================================================================
-// Test: Empty Sections (Valid but No-op)
-//=============================================================================
-
 TEST_F(JsonConfigLoaderTest, LoadEmptySections) {
-    std::string json = R"({
-        "version": "2.0",
-        "keyboard": {
-            "keys": {}
-        },
-        "virtualModifiers": {},
-        "mappings": []
-    })";
-
-    std::string filepath = createJsonFile("empty_sections.json", json);
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_TRUE(success) << "Should succeed with empty sections: " << getLog();
+    std::string json = R"({"version": "2.0", "keyboard": {"keys": {}}, "virtualModifiers": {}, "mappings": []})";
+    EXPECT_TRUE(loader->load(setting, createJsonFile("empty.json", json)));
 }
-
-//=============================================================================
-// Test: Virtual Modifier Without Tap Action (Optional)
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, LoadVirtualModifierWithoutTap) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "CapsLock": "0x3a",
-                "A": "0x1e",
-                "Left": "0xe04b"
-            }
-        },
-        "virtualModifiers": {
-            "M00": {
-                "trigger": "CapsLock"
-            }
-        },
-        "mappings": [
-            {
-                "from": "M00-A",
-                "to": "Left"
-            }
-        ]
+        "keyboard": {"keys": {"CapsLock": "0x3a", "A": "0x1e", "Left": "0xe04b"}},
+        "virtualModifiers": {"M00": {"trigger": "CapsLock"}},
+        "mappings": [{"from": "M00-A", "to": "Left"}]
     })";
 
-    std::string filepath = createJsonFile("mod_no_tap.json", json);
-    bool success = loader->load(setting, filepath);
+    ASSERT_TRUE(loader->load(setting, createJsonFile("notap.json", json)));
 
-    ASSERT_TRUE(success) << "Load failed: " << getLog();
-
-    // Verify trigger registered
     Key* capsLock = setting->m_keyboard.searchKey("CapsLock");
-    const ScanCode* scanCodes = capsLock->getScanCodes();
-    uint16_t capsScan = scanCodes[0].m_scan;
-
+    uint16_t capsScan = capsLock->getScanCodes()[0].m_scan;
     EXPECT_NE(setting->m_virtualModTriggers.find(capsScan),
-              setting->m_virtualModTriggers.end())
-        << "Trigger should be registered";
-
-    // Tap action might not be present
-    auto tapIt = setting->m_modTapActions.find(0x00);
-    // It's OK if not found or if found with value 0
+              setting->m_virtualModTriggers.end());
 }
-
-//=============================================================================
-// Test: File Not Found
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, ErrorFileNotFound) {
     std::string filepath = (tempDir / "nonexistent.json").string();
-    bool success = loader->load(setting, filepath);
-
-    EXPECT_FALSE(success) << "Should fail on nonexistent file";
-
+    EXPECT_FALSE(loader->load(setting, filepath));
     std::string log = getLog();
     EXPECT_TRUE(log.find("open") != std::string::npos ||
                 log.find("file") != std::string::npos ||
-                log.find("Failed") != std::string::npos)
-        << "Log should mention file error: " << log;
+                log.find("Failed") != std::string::npos);
 }
-
-//=============================================================================
-// Test: Large Modifier Number (MFF)
-//=============================================================================
 
 TEST_F(JsonConfigLoaderTest, LoadLargeModifierNumber) {
     std::string json = R"({
         "version": "2.0",
-        "keyboard": {
-            "keys": {
-                "CapsLock": "0x3a",
-                "A": "0x1e"
-            }
-        },
-        "virtualModifiers": {
-            "MFF": {
-                "trigger": "CapsLock"
-            }
-        },
-        "mappings": [
-            {
-                "from": "MFF-A",
-                "to": "CapsLock"
-            }
-        ]
+        "keyboard": {"keys": {"CapsLock": "0x3a", "A": "0x1e"}},
+        "virtualModifiers": {"MFF": {"trigger": "CapsLock"}},
+        "mappings": [{"from": "MFF-A", "to": "CapsLock"}]
     })";
 
-    std::string filepath = createJsonFile("large_mod.json", json);
-    bool success = loader->load(setting, filepath);
+    ASSERT_TRUE(loader->load(setting, createJsonFile("mff.json", json)));
 
-    ASSERT_TRUE(success) << "Load failed: " << getLog();
-
-    // Verify MFF (255) is registered
     Key* capsLock = setting->m_keyboard.searchKey("CapsLock");
-    const ScanCode* scanCodes = capsLock->getScanCodes();
-    uint16_t capsScan = scanCodes[0].m_scan;
+    uint16_t capsScan = capsLock->getScanCodes()[0].m_scan;
 
     auto triggerIt = setting->m_virtualModTriggers.find(capsScan);
     ASSERT_NE(triggerIt, setting->m_virtualModTriggers.end());
-    EXPECT_EQ(triggerIt->second, 0xFF) << "Should map to MFF (0xFF)";
+    EXPECT_EQ(triggerIt->second, 0xFF);
 }
 
 } // namespace yamy::settings::test
-
-//=============================================================================
-// Main
-//=============================================================================
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);

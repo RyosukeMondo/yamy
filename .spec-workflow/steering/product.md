@@ -44,23 +44,31 @@ Bring enterprise-grade keyboard remapping to Linux while maintaining 100% featur
 
 ## Product Goals
 
-### Short-Term (Q1 2025)
-1. **Linux Feature Parity** - Complete Track 1-6 core refactoring
-2. **Qt GUI Polish** - Match Windows GUI UX quality
-3. **Documentation** - Comprehensive user guides for both platforms
-4. **Community Building** - GitHub discussions, example configurations
+### Immediate (Q1 2025) - JSON Refactoring **[IN PROGRESS]**
+1. **Simplify Configuration** - Replace complex .mayu parser with JSON-based config
+2. **Focus on Core Remapping** - M00-MFF virtual modifiers + basic key remapping
+3. **Remove Complexity** - Drop window matching, thread tracking (~5,000 LOC removed)
+4. **Improve Performance** - 50% faster event processing, <10ms config load time
+5. **Better Maintainability** - Codebase reduced by ~30%, cleaner architecture
 
-### Medium-Term (Q2-Q3 2025)
-1. **Modern C++ Toolchain** - <5 second incremental builds, zero-latency logging
+**Rationale**: The current .mayu parser and window/focus system are overly complex for most users' needs. By focusing on core key remapping functionality with a simple JSON config, we can deliver a more maintainable product that's easier to extend and debug.
+
+### Short-Term (Q2 2025)
+1. **Documentation** - JSON schema docs, migration guide from .mayu
+2. **Example Configs** - Vim-mode, Emacs-mode, basic remapping templates
+3. **Testing** - Property-based tests for M00-MFF, comprehensive E2E coverage
+4. **Build System** - <5 second incremental builds with Mold/LLD + ccache
+
+### Medium-Term (Q3-Q4 2025)
+1. **Optional Features** - Add back per-window keymaps if there's user demand
 2. **Wayland Support** - Native Wayland input capture (no X11 dependency)
-3. **Configuration Sharing** - Cloud sync of .mayu files across devices
-4. **Visual Configurator** - GUI-based keymap editor (no .mayu file editing)
-5. **Plugin System** - Lua scripting for custom key actions
+3. **Visual Configurator** - GUI-based JSON keymap editor
+4. **Advanced Modifiers** - Lock keys (L00-LFF) support if needed
 
-### Long-Term (Q4 2025+)
+### Long-Term (2026+)
 1. **macOS Port** - Complete cross-platform trinity
-2. **Mobile Companion** - Android/iOS remote control
-3. **Enterprise Features** - Centralized management, policy enforcement
+2. **Plugin System** - Lua scripting for custom key actions
+3. **Configuration Sharing** - Cloud sync across devices
 4. **Marketplace** - Community keymap sharing platform
 
 ---
@@ -203,7 +211,9 @@ Bring enterprise-grade keyboard remapping to Linux while maintaining 100% featur
 
 ### Explicitly Rejected
 - ❌ **Electron GUI** - Qt is lighter and native
-- ❌ **YAML/TOML config** - .mayu syntax is established
+- ❌ **.mayu text format** - Replaced by JSON for simplicity and maintainability
+- ❌ **Per-window keymaps (Phase 1)** - Focusing on global keymap first, can add later if needed
+- ❌ **Backward compatibility with .mayu** - Clean break for better future
 - ❌ **Paid tiers** - Free forever, donations only
 - ❌ **Telemetry** - Zero data collection (structured logging is for development/debugging only)
 

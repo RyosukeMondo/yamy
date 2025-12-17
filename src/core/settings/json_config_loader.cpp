@@ -283,10 +283,7 @@ bool JsonConfigLoader::parseMappings(const nlohmann::json& obj, Setting* setting
     if (!globalKeymap) {
         // Create the global keymap if it doesn't exist
         Keymap newKeymap(
-            Keymap::Type_keymap,
             "Global",
-            "",  // no window class regex
-            "",  // no window title regex
             nullptr,  // no default keyseq
             nullptr   // no parent keymap
         );

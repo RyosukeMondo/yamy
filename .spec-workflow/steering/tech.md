@@ -550,40 +550,88 @@ option(ENABLE_CONTRACTS "Enable GSL contract checking" ON)
 
 ---
 
-## Configuration File Format (.mayu)
+## Configuration File Format (JSON) **[NEW - Phase 1]**
 
-### Syntax Overview
+### Rationale for JSON
 
+**Why JSON replaces .mayu**:
+- ✅ Simpler parser (use nlohmann/json, not custom 2,700 LOC parser)
+- ✅ Schema validation (JSON Schema for IDE autocomplete)
+- ✅ No preprocessor complexity (no includes, defines, conditionals)
+- ✅ Faster loading (<10ms vs ~100ms for .mayu)
+- ✅ Standard tooling support (jq, IDEs, validators)
+- ❌ **Trade-off**: No backward compatibility with .mayu files
+
+### JSON Schema Overview
+
+```json
+{
+  "version": "2.0",
+  "keyboard": {
+    "keys": {
+      "A": "0x1e",
+      "CapsLock": "0x3a"
+    }
+  },
+  "virtualModifiers": {
+    "M00": {
+      "trigger": "CapsLock",
+      "tap": "Escape",
+      "holdThresholdMs": 200
+    }
+  },
+  "mappings": [
+    {
+      "from": "A",
+      "to": "Tab"
+    },
+    {
+      "from": "M00-A",
+      "to": "Left"
+    }
+  ]
+}
 ```
-# Comments start with #
-include "base.mayu"          # File inclusion
-define USE_EMACS_BINDINGS    # Preprocessor
 
-key *C-A = &Ignore           # Global binding (all windows)
-key ~C-x = &Prefix           # Prefix key (chording)
-key A-Tab = &OtherWindow     # Modifier combinations
+### JSON Loader Architecture
 
-window Firefox /            # Window-specific bindings
-    key C-r = &Reload
-/end
-```
+**Technology**: nlohmann/json 3.11.3
+- **Rationale**: Header-only, MIT license, widely adopted, excellent error messages
+- **Benefits**: Zero runtime dependencies, compile-time validation, STL integration
 
-### Parser Architecture
+**Loader** (`json_config_loader.cpp`):
+- JSON parsing with exception handling
+- Schema validation (version, required fields)
+- Key name resolution (string → scan code)
+- Modifier parsing (e.g., "Shift-M00-A" → ModifiedKey)
+- Mapping compilation (JSON → CompiledRule → RuleLookupTable)
 
-**Lexer** (`setting_loader.cpp`):
+**Error Handling**:
+- Validates JSON syntax (nlohmann/json built-in)
+- Validates schema structure (custom validation)
+- Reports line numbers for syntax errors
+- Reports field names for missing/invalid keys
+
+### Legacy .mayu Support **[DEPRECATED]**
+
+**Status**: Being removed in Phase 4 of JSON refactoring
+
+**Lexer** (`setting_loader.cpp`) - **TO BE DELETED**:
 - Regex-based token recognition
 - Line-by-line streaming
 - UTF-8 support
 
-**Parser**:
+**Parser** - **TO BE DELETED**:
 - Recursive descent
 - No AST (direct object construction)
 - Error recovery (continue after syntax errors)
 
-**Preprocessor**:
+**Preprocessor** - **TO BE DELETED**:
 - `include` - File merging
 - `ifdef`/`ifndef` - Conditional compilation
 - `define` - Symbol definition
+
+**Migration Path**: Users must convert .mayu → JSON manually (migration guide provided)
 
 ---
 
@@ -739,7 +787,10 @@ evdev read (100μs) → Lookup (10μs) → Execute (100μs) = ~210μs total
 - ms-gsl/4.0.0
 - rapidcheck/cci.20230815
 - catch2/3.5.0
+- nlohmann_json/3.11.3  [NEW - Phase 1]
 ```
+
+**Note**: nlohmann/json is header-only, no runtime linking required
 
 ---
 

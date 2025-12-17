@@ -14,20 +14,22 @@ yamy/
 │   │
 │   ├── core/                 # Platform-agnostic core logic
 │   │   ├── engine/           # Keyboard remapping engine
-│   │   │   ├── engine.h/.cpp           # Main orchestrator
+│   │   │   ├── engine.h/.cpp           # Main orchestrator (simplified - Phase 2)
 │   │   │   ├── engine_lifecycle.cpp    # Start/stop/pause
-│   │   │   ├── engine_input.cpp        # Input event processing
-│   │   │   ├── engine_modifier.cpp     # Modifier state tracking
+│   │   │   ├── engine_keyboard_handler.cpp  # Input event processing (simplified - Phase 2)
+│   │   │   ├── engine_event_processor.cpp   # 3-layer event processing (KEEP UNCHANGED)
 │   │   │   ├── engine_generator.cpp    # Event generation
-│   │   │   ├── engine_focus.cpp        # Focus tracking
+│   │   │   ├── engine_focus.cpp        # Focus tracking **[REMOVE - Phase 2]**
 │   │   │   ├── engine_window.cpp       # Window manipulation
 │   │   │   ├── engine_setting.cpp      # Configuration loading
+│   │   │   ├── modifier_key_handler.cpp # M00-MFF hold-vs-tap (KEEP UNCHANGED)
 │   │   │   └── engine_log.cpp          # Logging
 │   │   │
 │   │   ├── settings/         # Configuration management
-│   │   │   ├── setting.h/.cpp          # Configuration representation
-│   │   │   ├── setting_loader.h/.cpp   # .mayu file parser
-│   │   │   └── parser.cpp              # Parsing utilities
+│   │   │   ├── setting.h/.cpp          # Configuration representation (simplified)
+│   │   │   ├── json_config_loader.h/.cpp   # JSON config loader **[NEW - Phase 1]**
+│   │   │   ├── setting_loader.h/.cpp   # .mayu file parser **[DEPRECATED - Remove Phase 4]**
+│   │   │   └── parser.cpp              # Parsing utilities **[DEPRECATED - Remove Phase 4]**
 │   │   │
 │   │   ├── input/            # Input abstractions
 │   │   │   ├── keyboard.h/.cpp         # Keyboard state
@@ -1176,7 +1178,66 @@ value = settings.value("keymaps/configs/0").toString();
 
 ---
 
-**Document Version**: 2.0
-**Last Updated**: 2025-12-15
-**Changes**: Added AI-compatible project layout, CMakePresets.json patterns, modern CMake integration
+---
+
+## JSON Refactoring Architecture Changes **[IN PROGRESS]**
+
+### Phase 1: Add JSON Loader (Additive)
+**Files Created**:
+- `src/core/settings/json_config_loader.h` (~150 lines)
+- `src/core/settings/json_config_loader.cpp` (~400 lines)
+- `tests/test_json_loader.cpp` (~200 lines)
+- `keymaps/config.json` (example config)
+
+**No files deleted yet** - .mayu and JSON loaders coexist
+
+### Phase 2: Simplify Engine (Remove ~800 LOC)
+**Files Modified**:
+- `src/core/engine/engine.h` - Remove FocusOfThread class, thread tracking
+- `src/core/engine/engine.cpp` - Simplify keyboard handler
+- `src/core/engine/engine_keyboard_handler.cpp` - Remove focus detection
+
+**Files Deleted**:
+- `src/core/engine/engine_focus.cpp` (~800 LOC)
+
+### Phase 3: Simplify Keymap (Single Global)
+**Files Modified**:
+- `src/core/input/keymap.h` - Remove window regex, Type enum
+- `src/core/input/keymap.cpp` - Remove searchWindow(), parent traversal
+
+### Phase 4: Delete Legacy Parser (~5,000 LOC Removed)
+**Files Deleted**:
+- `src/core/settings/parser.h`
+- `src/core/settings/parser.cpp` (536 LOC)
+- `src/core/settings/setting_loader.h`
+- `src/core/settings/setting_loader.cpp` (2,141 LOC)
+- `src/core/engine/engine_focus.cpp` (800 LOC)
+- `src/core/window/*.cpp` (3 files)
+- `src/core/commands/cmd_window_*.cpp` (~37 files)
+- `src/core/commands/cmd_clipboard_*.cpp` (~5 files)
+- `src/core/commands/cmd_emacs_*.cpp` (~3 files)
+
+**Total Removal**: ~5,000 LOC, ~50 files
+
+### Phase 5: Documentation & Examples
+**Files Created**:
+- `keymaps/vim-mode.json`
+- `keymaps/emacs-mode.json`
+- `docs/json-schema.md`
+- `docs/migration-guide.md`
+- `schema/config.schema.json`
+
+### What Stays Unchanged (Critical)
+✅ `src/core/engine/engine_event_processor.cpp` - 3-layer architecture (verified by tests)
+✅ `src/core/input/modifier_state.h/cpp` - 528-bit state tracking
+✅ `src/core/engine/modifier_key_handler.cpp` - Hold-vs-tap detection
+✅ `src/core/engine/lookup_table.h` - O(1) rule matching
+✅ `src/core/input/keyboard.h/cpp` - Key definitions
+✅ `src/core/input/keymap.h/cpp` - Key binding registry (simplified but not rewritten)
+
+---
+
+**Document Version**: 2.1
+**Last Updated**: 2025-12-17
+**Changes**: Added JSON refactoring architecture overview, marked deprecated files, added phase-by-phase breakdown
 **Reviewed By**: (Pending approval)

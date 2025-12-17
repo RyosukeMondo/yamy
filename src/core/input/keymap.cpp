@@ -238,30 +238,13 @@ Keymap::getKeyAssignments(const ModifiedKey &i_mk) const
 }
 
 
-Keymap::Keymap(Type i_type,
-               const std::string &i_name,
-               const std::string &i_windowClass,
-               const std::string &i_windowTitle,
+Keymap::Keymap(const std::string &i_name,
                KeySeq *i_defaultKeySeq,
                Keymap *i_parentKeymap)
-        : m_type(i_type),
-        m_name(i_name),
-        m_windowClass(".*"),
-        m_windowTitle(".*"),
+        : m_name(i_name),
         m_defaultKeySeq(i_defaultKeySeq),
         m_parentKeymap(i_parentKeymap)
 {
-    if (i_type == Type_windowAnd || i_type == Type_windowOr)
-        try {
-            std::regex::flag_type f = (std::regex::ECMAScript |
-                                       std::regex::icase);
-            if (!i_windowClass.empty())
-                m_windowClass.assign(i_windowClass, f);
-            if (!i_windowTitle.empty())
-                m_windowTitle.assign(i_windowTitle, f);
-        } catch (std::regex_error &i_e) {
-            throw ErrorMessage() << i_e.what();
-        }
 }
 
 
@@ -335,27 +318,6 @@ Keymap::searchAssignment(const ModifiedKey &i_mk) const
         }
 
     return nullptr;
-}
-
-
-bool Keymap::doesSameWindow(const std::string &i_className,
-                            const std::string &i_titleName)
-{
-    if (m_type == Type_keymap)
-        return false;
-
-    std::smatch what;
-    if (std::regex_search(i_className, what, m_windowClass)) {
-        if (m_type == Type_windowAnd)
-            return std::regex_search(i_titleName, what, m_windowTitle);
-        else // type == Type_windowOr
-            return true;
-    } else {
-        if (m_type == Type_windowAnd)
-            return false;
-        else // type == Type_windowOr
-            return std::regex_search(i_titleName, what, m_windowTitle);
-    }
 }
 
 
@@ -444,24 +406,7 @@ void Keymap::describe(tostream &i_ost, DescribeParam *i_dp) const
         i_dp->m_dkeymap.push_back(this);
     }
 
-    switch (m_type) {
-    case Type_keymap:
-        i_ost << "keymap " << m_name;
-        break;
-    case Type_windowAnd:
-        i_ost << "window " << m_name << " ";
-        if (m_windowTitleStr == ".*")
-            i_ost << "/" << m_windowClassStr << "/";
-        else
-            i_ost << "( /" << m_windowClassStr << "/ && /"
-            << m_windowTitleStr << "/ )";
-        break;
-    case Type_windowOr:
-        i_ost << "window " << m_name << " ( /"
-        << m_windowClassStr << "/ || /" << m_windowTitleStr
-        << "/ )";
-        break;
-    }
+    i_ost << "keymap " << m_name;
     if (m_parentKeymap)
         i_ost << " : " << m_parentKeymap->m_name;
     i_ost << " = " << *m_defaultKeySeq << std::endl;
@@ -575,16 +520,10 @@ Keymap *Keymaps::searchByName(const std::string &i_name)
 }
 
 
-// search window
-void Keymaps::searchWindow(KeymapPtrList *o_keymapPtrList,
-                           const std::string &i_className,
-                           const std::string &i_titleName)
+// get global keymap (named "Global")
+Keymap *Keymaps::getGlobalKeymap()
 {
-    o_keymapPtrList->clear();
-    for (KeymapList::iterator
-            i = m_keymapList.begin(); i != m_keymapList.end(); ++ i)
-        if ((*i).doesSameWindow(i_className, i_titleName))
-            o_keymapPtrList->push_back(&(*i));
+    return searchByName("Global");
 }
 
 

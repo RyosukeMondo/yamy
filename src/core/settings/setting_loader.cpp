@@ -2100,8 +2100,7 @@ bool SettingLoader::initialize(Setting *i_setting)
 
     // add default keymap
     m_currentKeymap = m_setting->m_keymaps.add(
-                          Keymap(Keymap::Type_windowOr, "Global", "", "",
-                                 globalDefault, nullptr));
+                          Keymap("Global", globalDefault, nullptr));
     return true;
 }
 

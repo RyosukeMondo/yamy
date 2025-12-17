@@ -201,7 +201,7 @@
 
 ## Phase 3: Simplify Keymap
 
-- [ ] 3.1. Remove window matching from Keymap class
+- [x] 3.1. Remove window matching from Keymap class
   - File: src/core/input/keymap.h
   - Delete Type enum (Type_keymap, Type_windowAnd, Type_windowOr)
   - Delete m_windowClass member (std::regex)

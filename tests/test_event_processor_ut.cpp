@@ -301,37 +301,45 @@ TEST_F(EventProcessorLayer1Test, LockKeyMapping) {
 class EventProcessorLayer2Test : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Create mock substitution table for testing
-        // Based on config_clean.mayu substitutions
+        // Create ModifierState
+        modState = std::make_unique<yamy::input::ModifierState>();
+
+        // Create EventProcessor (no args)
+        processor = new yamy::EventProcessor();
+        processor->setDebugLogging(false);
+
+        auto* table = processor->getLookupTable();
+
+        // Helper to add simple substitution (Input -> Output)
+        auto addSimple = [&](uint16_t in, uint16_t out) {
+            yamy::engine::CompiledRule rule;
+            rule.outputScanCode = out;
+            // No modifier requirements for simple tests
+            table->addRule(in, rule);
+        };
 
         // Regular letter substitutions (e.g., W→A)
-        mockSubstitutions[0x0011] = 0x001E;  // W → A
-        mockSubstitutions[0x0013] = 0x0012;  // R → E
-        mockSubstitutions[0x0014] = 0x0016;  // T → U
+        addSimple(0x0011, 0x001E);  // W → A
+        addSimple(0x0013, 0x0012);  // R → E
+        addSimple(0x0014, 0x0016);  // T → U
 
         // Number key substitution
-        mockSubstitutions[0x0002] = 0x0003;  // 1 → 2
+        addSimple(0x0002, 0x0003);  // 1 → 2
 
         // Modifier key substitutions (critical: must work identically to regular keys)
         // N → LShift (0x0031 → VK_LSHIFT which is 0xA0)
-        mockSubstitutions[0x0031] = 0xA0;    // N → LShift (VK_LSHIFT)
+        addSimple(0x0031, 0xA0);    // N → LShift (VK_LSHIFT)
 
         // Arrow key substitution (E0-extended scan codes)
-        mockSubstitutions[0xE048] = 0xE050;  // Up → Down (for testing)
-
-        // Create EventProcessor with mock substitution table
-        processor = new yamy::EventProcessor(mockSubstitutions);
-
-        // Disable debug logging for unit tests (cleaner output)
-        processor->setDebugLogging(false);
+        addSimple(0xE048, 0xE050);  // Up → Down (for testing)
     }
 
     void TearDown() override {
         delete processor;
     }
 
-    yamy::SubstitutionTable mockSubstitutions;
     yamy::EventProcessor* processor;
+    std::unique_ptr<yamy::input::ModifierState> modState;
 };
 
 // Test: Key WITH substitution returns transformed code
@@ -339,7 +347,7 @@ TEST_F(EventProcessorLayer2Test, SubstitutionApplied) {
     // W→A substitution: 0x0011 → 0x001E
     // Process event through all layers (we only care about Layer 2 for this test)
     // Input: KEY_W (evdev 17) which maps to 0x0011 in Layer 1
-    auto result = processor->processEvent(KEY_W, yamy::EventType::PRESS);
+    auto result = processor->processEvent(KEY_W, yamy::EventType::PRESS, modState.get());
 
     // Verify Layer 2 applied the substitution
     // Layer 1: evdev 17 → yamy 0x0011 (W)
@@ -355,7 +363,7 @@ TEST_F(EventProcessorLayer2Test, SubstitutionApplied) {
 TEST_F(EventProcessorLayer2Test, PassthroughWhenNoSubstitution) {
     // Test a key that has NO substitution in our mock table
     // KEY_S (evdev 31) → yamy 0x001F (not in mockSubstitutions)
-    auto result = processor->processEvent(KEY_S, yamy::EventType::PRESS);
+    auto result = processor->processEvent(KEY_S, yamy::EventType::PRESS, modState.get());
 
     // Verify Layer 2 passed through unchanged
     // Layer 1: evdev 31 → yamy 0x001F (S)
@@ -370,12 +378,12 @@ TEST_F(EventProcessorLayer2Test, PassthroughWhenNoSubstitution) {
 // Test: Multiple substitutions work correctly
 TEST_F(EventProcessorLayer2Test, MultipleSubstitutions) {
     // R→E: 0x0013 → 0x0012
-    auto result_r = processor->processEvent(KEY_R, yamy::EventType::PRESS);
+    auto result_r = processor->processEvent(KEY_R, yamy::EventType::PRESS, modState.get());
     EXPECT_EQ(result_r.output_yamy, 0x0012);  // Should be E scan code
     EXPECT_EQ(result_r.output_evdev, KEY_E);
 
     // T→U: 0x0014 → 0x0016
-    auto result_t = processor->processEvent(KEY_T, yamy::EventType::PRESS);
+    auto result_t = processor->processEvent(KEY_T, yamy::EventType::PRESS, modState.get());
     EXPECT_EQ(result_t.output_yamy, 0x0016);  // Should be U scan code
     EXPECT_EQ(result_t.output_evdev, KEY_U);
 }
@@ -386,7 +394,7 @@ TEST_F(EventProcessorLayer2Test, ModifierSubstitutionIdenticalToRegular) {
     // N→LShift must use IDENTICAL logic to W→A, with NO special cases
 
     // Test N→LShift: 0x0031 → 0xA0 (VK_LSHIFT)
-    auto result = processor->processEvent(KEY_N, yamy::EventType::PRESS);
+    auto result = processor->processEvent(KEY_N, yamy::EventType::PRESS, modState.get());
 
     // Verify Layer 2 applied substitution identically to regular keys
     // Layer 1: evdev 49 → yamy 0x0031 (N)
@@ -403,7 +411,7 @@ TEST_F(EventProcessorLayer2Test, ModifierSubstitutionIdenticalToRegular) {
 // Test: Number key substitution works
 TEST_F(EventProcessorLayer2Test, NumberKeySubstitution) {
     // 1→2: 0x0002 → 0x0003
-    auto result = processor->processEvent(KEY_1, yamy::EventType::PRESS);
+    auto result = processor->processEvent(KEY_1, yamy::EventType::PRESS, modState.get());
 
     // Layer 1: evdev 2 → yamy 0x0002 (1)
     // Layer 2: yamy 0x0002 → yamy 0x0003 (2)
@@ -416,7 +424,7 @@ TEST_F(EventProcessorLayer2Test, NumberKeySubstitution) {
 // Test: Extended scan code (E0-prefixed) substitution works
 TEST_F(EventProcessorLayer2Test, ExtendedScanCodeSubstitution) {
     // Up→Down: 0xE048 → 0xE050
-    auto result = processor->processEvent(KEY_UP, yamy::EventType::PRESS);
+    auto result = processor->processEvent(KEY_UP, yamy::EventType::PRESS, modState.get());
 
     // Layer 1: evdev 103 → yamy 0xE048 (Up Arrow)
     // Layer 2: yamy 0xE048 → yamy 0xE050 (Down Arrow)
@@ -429,7 +437,7 @@ TEST_F(EventProcessorLayer2Test, ExtendedScanCodeSubstitution) {
 // Test: Event type preservation through Layer 2 (PRESS)
 TEST_F(EventProcessorLayer2Test, EventTypePreservationPress) {
     // Test that PRESS in → PRESS out, even with substitution
-    auto result = processor->processEvent(KEY_W, yamy::EventType::PRESS);
+    auto result = processor->processEvent(KEY_W, yamy::EventType::PRESS, modState.get());
 
     // Event type must be preserved regardless of substitution
     EXPECT_EQ(result.type, yamy::EventType::PRESS);
@@ -438,7 +446,7 @@ TEST_F(EventProcessorLayer2Test, EventTypePreservationPress) {
 // Test: Event type preservation through Layer 2 (RELEASE)
 TEST_F(EventProcessorLayer2Test, EventTypePreservationRelease) {
     // Test that RELEASE in → RELEASE out, even with substitution
-    auto result = processor->processEvent(KEY_W, yamy::EventType::RELEASE);
+    auto result = processor->processEvent(KEY_W, yamy::EventType::RELEASE, modState.get());
 
     // Event type must be preserved regardless of substitution
     EXPECT_EQ(result.type, yamy::EventType::RELEASE);
@@ -447,8 +455,8 @@ TEST_F(EventProcessorLayer2Test, EventTypePreservationRelease) {
 // Test: Both PRESS and RELEASE work with same substitution
 TEST_F(EventProcessorLayer2Test, PressAndReleaseSymmetry) {
     // Test W→A for both PRESS and RELEASE
-    auto press_result = processor->processEvent(KEY_W, yamy::EventType::PRESS);
-    auto release_result = processor->processEvent(KEY_W, yamy::EventType::RELEASE);
+    auto press_result = processor->processEvent(KEY_W, yamy::EventType::PRESS, modState.get());
+    auto release_result = processor->processEvent(KEY_W, yamy::EventType::RELEASE, modState.get());
 
     // Both should produce same output key (A), just different event types
     EXPECT_EQ(press_result.output_yamy, 0x001E);
@@ -466,8 +474,8 @@ TEST_F(EventProcessorLayer2Test, PressAndReleaseSymmetry) {
 // Test: Passthrough also works for both PRESS and RELEASE
 TEST_F(EventProcessorLayer2Test, PassthroughPressAndReleaseSymmetry) {
     // Test S (no substitution) for both PRESS and RELEASE
-    auto press_result = processor->processEvent(KEY_S, yamy::EventType::PRESS);
-    auto release_result = processor->processEvent(KEY_S, yamy::EventType::RELEASE);
+    auto press_result = processor->processEvent(KEY_S, yamy::EventType::PRESS, modState.get());
+    auto release_result = processor->processEvent(KEY_S, yamy::EventType::RELEASE, modState.get());
 
     // Both should passthrough as S, with different event types
     EXPECT_EQ(press_result.output_yamy, 0x001F);
@@ -482,17 +490,19 @@ TEST_F(EventProcessorLayer2Test, PassthroughPressAndReleaseSymmetry) {
 
 // Test: Empty substitution table (all keys passthrough)
 TEST_F(EventProcessorLayer2Test, EmptySubstitutionTable) {
-    // Create processor with empty substitution table
-    yamy::SubstitutionTable emptyTable;
-    yamy::EventProcessor emptyProcessor(emptyTable);
+    // Create processor with empty substitution table (default)
+    yamy::EventProcessor emptyProcessor;
     emptyProcessor.setDebugLogging(false);
+    
+    // Create local ModifierState
+    yamy::input::ModifierState localState;
 
     // All keys should passthrough unchanged
-    auto result_w = emptyProcessor.processEvent(KEY_W, yamy::EventType::PRESS, nullptr);
+    auto result_w = emptyProcessor.processEvent(KEY_W, yamy::EventType::PRESS, &localState);
     EXPECT_EQ(result_w.output_yamy, 0x0011);  // W unchanged
     EXPECT_EQ(result_w.output_evdev, KEY_W);
 
-    auto result_a = emptyProcessor.processEvent(KEY_A, yamy::EventType::PRESS, nullptr);
+    auto result_a = emptyProcessor.processEvent(KEY_A, yamy::EventType::PRESS, &localState);
     EXPECT_EQ(result_a.output_yamy, 0x001E);  // A unchanged
     EXPECT_EQ(result_a.output_evdev, KEY_A);
 }
@@ -501,15 +511,20 @@ TEST_F(EventProcessorLayer2Test, EmptySubstitutionTable) {
 TEST_F(EventProcessorLayer2Test, NoDoubleSubstitution) {
     // Create a chain: A→B, B→C
     // When we input A, we should get B, NOT C (no recursive substitution)
-    yamy::SubstitutionTable chainTable;
-    chainTable[0x001E] = 0x0030;  // A → B
-    chainTable[0x0030] = 0x002E;  // B → C
-
-    yamy::EventProcessor chainProcessor(chainTable);
+    yamy::EventProcessor chainProcessor;
     chainProcessor.setDebugLogging(false);
+    auto* table = chainProcessor.getLookupTable();
+    
+    yamy::input::ModifierState localState;
+
+    yamy::engine::CompiledRule ruleAB; ruleAB.outputScanCode = 0x0030; // A -> B
+    table->addRule(0x001E, ruleAB);
+
+    yamy::engine::CompiledRule ruleBC; ruleBC.outputScanCode = 0x002E; // B -> C
+    table->addRule(0x0030, ruleBC);
 
     // Input A should output B (single substitution lookup only)
-    auto result = chainProcessor.processEvent(KEY_A, yamy::EventType::PRESS, nullptr);
+    auto result = chainProcessor.processEvent(KEY_A, yamy::EventType::PRESS, &localState);
     EXPECT_EQ(result.output_yamy, 0x0030);  // Should be B, not C
     EXPECT_EQ(result.output_evdev, KEY_B);  // After Layer 3: KEY_B
 
@@ -519,13 +534,16 @@ TEST_F(EventProcessorLayer2Test, NoDoubleSubstitution) {
 // Test: Identity substitution (key maps to itself)
 TEST_F(EventProcessorLayer2Test, IdentitySubstitution) {
     // Add identity mapping: A → A
-    yamy::SubstitutionTable identityTable;
-    identityTable[0x001E] = 0x001E;  // A → A
-
-    yamy::EventProcessor identityProcessor(identityTable);
+    yamy::EventProcessor identityProcessor;
     identityProcessor.setDebugLogging(false);
+    auto* table = identityProcessor.getLookupTable();
+    
+    yamy::input::ModifierState localState;
 
-    auto result = identityProcessor.processEvent(KEY_A, yamy::EventType::PRESS, nullptr);
+    yamy::engine::CompiledRule ruleAA; ruleAA.outputScanCode = 0x001E; // A -> A
+    table->addRule(0x001E, ruleAA);
+
+    auto result = identityProcessor.processEvent(KEY_A, yamy::EventType::PRESS, &localState);
     EXPECT_EQ(result.output_yamy, 0x001E);  // A → A
     EXPECT_EQ(result.output_evdev, KEY_A);
     EXPECT_TRUE(result.valid);

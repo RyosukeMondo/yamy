@@ -51,12 +51,12 @@ uint16_t getModifierForNumberKey(uint16_t yamy_scancode);
 // Virtual Key System (Spec: virtual-key-system)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-/// Virtual regular keys (V_*): Range 0xE000-0xEFFF (4096 keys)
+/// Virtual regular keys (V_*): Range 0xD000-0xDFFF (4096 keys)
 /// These are virtual keys that don't correspond to physical keys.
 /// Used for intermediate mappings in substitution layer.
 /// Example: def subst *A = *V_B creates virtual key V_B
-constexpr uint16_t YAMY_VIRTUAL_KEY_BASE = 0xE000;
-constexpr uint16_t YAMY_VIRTUAL_KEY_MAX = 0xEFFF;
+constexpr uint16_t YAMY_VIRTUAL_KEY_BASE = 0xD000;
+constexpr uint16_t YAMY_VIRTUAL_KEY_MAX = 0xDFFF;
 
 /// Modal modifiers (M00-MFF): Range 0xF000-0xF0FF (256 modifiers)
 /// These are user-defined modal modifiers that can be activated/deactivated.
