@@ -4,6 +4,7 @@
 #include "json_config_loader.h"
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <gsl/gsl>
 
 namespace yamy::settings {
@@ -260,14 +261,70 @@ Key* JsonConfigLoader::resolveKeyName(const std::string& name)
 
 ModifiedKey JsonConfigLoader::parseModifiedKey(const std::string& from_spec)
 {
-    // TODO: Implement in task 1.7
-    // - Parse modifier strings
-    // - Parse standard modifiers (Shift, Ctrl, Alt, Win)
-    // - Parse virtual modifiers (M00-MFF)
-    // - Extract key name and resolve to Key*
-    // - Build ModifiedKey object with all modifiers
+    // Split by '-' delimiter to extract modifiers and key name
+    std::vector<std::string> parts;
+    std::istringstream stream(from_spec);
+    std::string part;
 
-    return ModifiedKey();
+    while (std::getline(stream, part, '-')) {
+        if (!part.empty()) {
+            parts.push_back(part);
+        }
+    }
+
+    if (parts.empty()) {
+        logError("Empty key specification");
+        return ModifiedKey();
+    }
+
+    // Last part is the key name, everything before is modifiers
+    std::string keyName = parts.back();
+
+    // Resolve key name to Key*
+    Key* key = resolveKeyName(keyName);
+    if (!key) {
+        // Error already logged by resolveKeyName()
+        return ModifiedKey();
+    }
+
+    // Create ModifiedKey with the resolved key
+    ModifiedKey mkey(key);
+
+    // Parse all modifiers (all parts except the last one)
+    for (size_t i = 0; i < parts.size() - 1; ++i) {
+        const std::string& mod = parts[i];
+
+        // Check if it's a standard modifier
+        if (mod == "Shift") {
+            mkey.m_modifier.press(Modifier::Type_Shift);
+        }
+        else if (mod == "Ctrl" || mod == "Control") {
+            mkey.m_modifier.press(Modifier::Type_Control);
+        }
+        else if (mod == "Alt") {
+            mkey.m_modifier.press(Modifier::Type_Alt);
+        }
+        else if (mod == "Win" || mod == "Windows") {
+            mkey.m_modifier.press(Modifier::Type_Windows);
+        }
+        // Check if it's a virtual modifier (M00-MFF)
+        else if (mod.length() == 3 && mod[0] == 'M') {
+            // Try to parse as virtual modifier
+            try {
+                uint8_t modNum = static_cast<uint8_t>(std::stoi(mod.substr(1), nullptr, 16));
+                mkey.setVirtualMod(modNum, true);
+            } catch (const std::exception& e) {
+                logError("Invalid virtual modifier '" + mod + "' in expression '" + from_spec + "': " + e.what());
+                return ModifiedKey();
+            }
+        }
+        else {
+            logError("Unknown modifier '" + mod + "' in expression '" + from_spec + "'");
+            return ModifiedKey();
+        }
+    }
+
+    return mkey;
 }
 
 bool JsonConfigLoader::validateSchema(const nlohmann::json& config)

@@ -60,7 +60,7 @@
   - _Requirements: FR-2_
   - _Prompt: Role: C++ Developer with expertise in modifier key systems and state management | Task: Implement parseVirtualModifiers() to register M00-MFF modifiers following requirement FR-2, supporting trigger keys and tap actions | Restrictions: Validate modifier name format (M00-MFF), ensure trigger keys exist, tap action is optional, extract hex number correctly | Success: M00-MFF modifiers register correctly, trigger keys linked to modifier numbers, tap actions stored, invalid modifier names rejected_
 
-- [ ] 1.7. Implement parseModifiedKey helper method
+- [x] 1.7. Implement parseModifiedKey helper method
   - File: src/core/settings/json_config_loader.cpp (continue from 1.6)
   - Implement parseModifiedKey() to parse modifier strings
   - Parse standard modifiers (Shift, Ctrl, Alt, Win)
