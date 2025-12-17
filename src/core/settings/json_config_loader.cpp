@@ -19,14 +19,65 @@ bool JsonConfigLoader::load(Setting* setting, const std::string& json_path)
 {
     Expects(setting != nullptr);
 
-    // TODO: Implement in task 1.9
-    // - Read JSON file into string
-    // - Parse with nlohmann::json with error handling
-    // - Validate schema (version field required, must be "2.0")
-    // - Call parseKeyboard(), parseVirtualModifiers(), parseMappings() in order
+    // Read JSON file into string
+    std::ifstream file(json_path);
+    if (!file.is_open()) {
+        logError("Failed to open configuration file: " + json_path);
+        return false;
+    }
 
-    logError("JsonConfigLoader::load() not yet implemented");
-    return false;
+    // Read entire file into string
+    std::ostringstream buffer;
+    buffer << file.rdbuf();
+    std::string jsonContent = buffer.str();
+    file.close();
+
+    if (jsonContent.empty()) {
+        logError("Configuration file is empty: " + json_path);
+        return false;
+    }
+
+    // Parse JSON with error handling
+    nlohmann::json config;
+    try {
+        config = nlohmann::json::parse(jsonContent);
+    } catch (const nlohmann::json::parse_error& e) {
+        std::ostringstream error;
+        error << "JSON parse error in " << json_path << " at byte " << e.byte
+              << ": " << e.what();
+        logError(error.str());
+        return false;
+    } catch (const std::exception& e) {
+        logError("Failed to parse JSON from " + json_path + ": " + e.what());
+        return false;
+    }
+
+    // Validate schema
+    if (!validateSchema(config)) {
+        logError("Schema validation failed for " + json_path);
+        return false;
+    }
+
+    // Parse keyboard definitions (required section)
+    if (!parseKeyboard(config, setting)) {
+        logError("Failed to parse keyboard section in " + json_path);
+        return false;
+    }
+
+    // Parse virtual modifiers (optional section)
+    if (!parseVirtualModifiers(config, setting)) {
+        logError("Failed to parse virtualModifiers section in " + json_path);
+        return false;
+    }
+
+    // Parse mappings (optional section)
+    if (!parseMappings(config, setting)) {
+        logError("Failed to parse mappings section in " + json_path);
+        return false;
+    }
+
+    // Success!
+    return true;
 }
 
 bool JsonConfigLoader::parseKeyboard(const nlohmann::json& obj, Setting* setting)
@@ -461,11 +512,41 @@ ModifiedKey JsonConfigLoader::parseModifiedKey(const std::string& from_spec)
 
 bool JsonConfigLoader::validateSchema(const nlohmann::json& config)
 {
-    // TODO: Implement in task 1.9
-    // - Check "version" field exists and equals "2.0"
-    // - Check required sections present
+    // Validate root is an object
+    if (!config.is_object()) {
+        logError("Configuration root must be a JSON object");
+        return false;
+    }
 
-    return false;
+    // Check "version" field exists
+    if (!config.contains("version")) {
+        logError("Missing required 'version' field");
+        return false;
+    }
+
+    // Validate version is a string
+    if (!config["version"].is_string()) {
+        logError("'version' field must be a string");
+        return false;
+    }
+
+    // Check version is "2.0"
+    std::string version = config["version"].get<std::string>();
+    if (version != "2.0") {
+        logError("Unsupported version '" + version + "': expected '2.0'");
+        return false;
+    }
+
+    // Check required sections present
+    if (!config.contains("keyboard")) {
+        logError("Missing required 'keyboard' section");
+        return false;
+    }
+
+    // Optional sections don't need validation here
+    // (virtualModifiers and mappings are checked in their respective parsers)
+
+    return true;
 }
 
 bool JsonConfigLoader::parseScanCode(const std::string& hex_str, uint16_t* out_code)
