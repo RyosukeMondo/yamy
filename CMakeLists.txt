@@ -393,6 +393,7 @@ set(ENGINE_SOURCES
     src/platform/windows/platform_paths_win32.cpp
     src/core/settings/setting.cpp
     src/core/settings/setting_loader.cpp
+    src/core/settings/json_config_loader.cpp
     src/core/settings/config_backup.cpp
     src/core/audio/sound_manager.cpp
     src/resources/templates/template_manager.cpp
@@ -602,6 +603,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/settings/parser.cpp
         src/core/settings/setting.cpp
         src/core/settings/setting_loader.cpp
+        src/core/settings/json_config_loader.cpp
         src/core/settings/config_backup.cpp
         src/core/settings/config_manager.cpp
         src/core/settings/config_validator.cpp
@@ -1529,6 +1531,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/parser.cpp
             src/core/settings/setting.cpp
             src/core/settings/setting_loader.cpp
+            src/core/settings/json_config_loader.cpp
             src/core/settings/config_backup.cpp
             src/core/settings/config_manager.cpp
             src/core/settings/config_watcher.cpp
@@ -2247,6 +2250,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/settings/parser.cpp
             src/core/settings/setting.cpp
             src/core/settings/setting_loader.cpp
+            src/core/settings/json_config_loader.cpp
             src/core/settings/config_backup.cpp
             src/core/settings/config_manager.cpp
             src/core/settings/config_validator.cpp
