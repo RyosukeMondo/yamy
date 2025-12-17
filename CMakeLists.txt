@@ -177,6 +177,7 @@ target_link_libraries(yamy_dependencies INTERFACE
     fmt::fmt
     Microsoft.GSL::GSL
     quill::quill
+    nlohmann_json::nlohmann_json
 )
 
 # Configure GSL contract behavior based on build type
