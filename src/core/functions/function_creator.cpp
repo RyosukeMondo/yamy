@@ -5,8 +5,6 @@
 #include "../commands/cmd_default.h"
 #include "../commands/cmd_keymap_prev_prefix.h"
 #include "../commands/cmd_keymap_parent.h"
-#include "../commands/cmd_keymap_window.h"
-#include "../commands/cmd_other_window_class.h"
 #include "../commands/cmd_prefix.h"
 #include "../commands/cmd_keymap.h"
 #include "../commands/cmd_sync.h"
@@ -55,8 +53,6 @@ FunctionData *createFunctionData(const std::string &i_name)
   { "Default", Command_Default::create },
   { "KeymapParent", Command_KeymapParent::create },
   { "KeymapPrevPrefix", Command_KeymapPrevPrefix::create },
-  { "KeymapWindow", Command_KeymapWindow::create },
-  { "OtherWindowClass", Command_OtherWindowClass::create },
   { "Prefix", Command_Prefix::create },
   { "Keymap", Command_Keymap::create },
   { "Sync", Command_Sync::create },

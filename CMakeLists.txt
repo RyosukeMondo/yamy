@@ -310,8 +310,6 @@ set(ENGINE_SOURCES
     src/core/functions/function.cpp
     src/core/functions/function_creator.cpp
     src/core/commands/cmd_keymap_parent.cpp
-    src/core/commands/cmd_keymap_window.cpp
-    src/core/commands/cmd_other_window_class.cpp
     src/core/commands/cmd_prefix.cpp
     src/core/commands/cmd_keymap.cpp
     src/core/commands/cmd_sync.cpp

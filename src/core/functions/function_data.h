@@ -15,13 +15,7 @@
 // FunctionData_KeymapParent is now Command_KeymapParent in commands/cmd_keymap_parent.h
 // Replaced by generic Command template system.
 
-// FunctionData_KeymapWindow is now Command_KeymapWindow in commands/cmd_keymap_window.h
-// Replaced by generic Command template system.
-
 // FunctionData_KeymapPrevPrefix is now Command_KeymapPrevPrefix in commands/cmd_keymap_prev_prefix.h
-// Replaced by generic Command template system.
-
-// FunctionData_OtherWindowClass is now Command_OtherWindowClass in commands/cmd_other_window_class.h
 // Replaced by generic Command template system.
 
 // FunctionData_Prefix is now Command_Prefix in commands/cmd_prefix.h

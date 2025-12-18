@@ -9,7 +9,7 @@ void Command_Sync::exec(Engine *i_engine, FunctionParam *i_param) const
 {
     if (i_param->m_isPressed)
         i_engine->generateModifierEvents(i_param->m_af->m_modifier);
-    if (!i_param->m_isPressed || i_engine->m_currentFocusOfThread->m_isConsole)
+    if (!i_param->m_isPressed || i_engine->getWindowSystem()->isConsoleWindow(i_param->m_hwnd))
         return;
 
     Key *sync = i_engine->m_setting->m_keyboard.getSyncKey();

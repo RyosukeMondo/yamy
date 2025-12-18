@@ -54,7 +54,7 @@
   - _Requirements: FR-3, NFR-3_
   - _Prompt: Role: Software Engineer with expertise in code cleanup and build system maintenance | Task: Complete Phase 4 file deletions by removing unused command files following requirements FR-3 and NFR-3, updating CMakeLists.txt after each deletion and verifying build | Restrictions: Must review each file before deletion to ensure it's not needed, must delete incrementally (not all at once), must rebuild after each deletion, do not delete essential commands (keymap, load_setting, default, ignore), keep mouse commands if potentially needed | Success: All window/clipboard/emacs command files deleted (~10-15 files), CMakeLists.txt updated correctly, clean build succeeds after all deletions, only essential command files remain (~20-25 files)_
 
-- [ ] 5. Remove stale FocusOfThread references
+- [x] 5. Remove stale FocusOfThread references
   - File: src/core/commands/cmd_sync.cpp, cmd_other_window_class.cpp, cmd_keymap_window.cpp
   - Grep for all FocusOfThread references in src/core/
   - Review cmd_sync.cpp: update or delete

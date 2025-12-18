@@ -69,7 +69,7 @@ private:
     public:
         const Keymap *m_keymap;            /// current keymap
         ModifiedKey m_mkey;        /// current processing key that user inputed
-        /// index in currentFocusOfThread-&gt;keymaps
+        /// index in keymap list for iteration
         Keymaps::KeymapPtrList::iterator m_i;
         /// Original evdev code for EventProcessor (0 if not available)
         uint16_t m_evdev_code;
