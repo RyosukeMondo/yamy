@@ -317,6 +317,17 @@ public:
 
     /// set default keySeq and parent keymap if default keySeq has not been set
     bool setIfNotYet(KeySeq *i_keySeq, Keymap *i_parentKeymap);
+
+    /// iterate all key assignments (for rule compilation)
+    template<typename Func>
+    void forEachAssignment(Func func) const {
+        for (size_t i = 0; i < HASHED_KEY_ASSIGNMENT_SIZE; ++i) {
+            const KeyAssignments &ka = m_hashedKeyAssignments[i];
+            for (const auto& assignment : ka) {
+                func(assignment);
+            }
+        }
+    }
 };
 
 

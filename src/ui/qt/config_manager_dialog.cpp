@@ -654,7 +654,7 @@ void ConfigManagerDialog::onNew()
 
     // Create path for new config
     QString configDir = QString::fromStdString(ConfigManager::getDefaultConfigDir());
-    QString targetPath = configDir + "/" + configName + ".mayu";
+    QString targetPath = configDir + "/" + configName + ".json";
 
     // Check if file already exists
     if (QFileInfo::exists(targetPath)) {
@@ -722,7 +722,7 @@ void ConfigManagerDialog::onDuplicate()
         return;
     }
 
-    QString targetPath = sourceInfo.dir().filePath(newName + ".mayu");
+    QString targetPath = sourceInfo.dir().filePath(newName + ".json");
 
     if (QFileInfo::exists(targetPath)) {
         QMessageBox::warning(
@@ -828,7 +828,7 @@ void ConfigManagerDialog::onRename()
         return;
     }
 
-    QString newPath = info.dir().filePath(newName + ".mayu");
+    QString newPath = info.dir().filePath(newName + ".json");
 
     if (QFileInfo::exists(newPath)) {
         QMessageBox::warning(
@@ -891,7 +891,7 @@ void ConfigManagerDialog::onImport()
     if (result.success) {
         // Add imported configs to the manager
         for (const auto& file : result.filesProcessed) {
-            if (file.find(".mayu") != std::string::npos) {
+            if (file.find(".json") != std::string::npos) {
                 configMgr.addConfig(file);
             }
         }

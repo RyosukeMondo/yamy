@@ -369,14 +369,9 @@ void Engine::beginGeneratingKeyboardEvents(
         // LockState is now integrated into ModifierState
         yamy::EventProcessor::ProcessedEvent result = m_eventProcessor->processEvent(i_c.m_evdev_code, event_type, &m_modifierState);
 
-        std::cerr << "[GEN:DEBUG] processEvent result: valid=" << result.valid 
-                  << " output_evdev=" << result.output_evdev 
-                  << " output_yamy=0x" << std::hex << result.output_yamy << std::dec << std::endl;
-
         // CRITICAL: Check if event was suppressed at Layer 3 (virtual key, lock key, etc.)
         // If output_evdev is 0, the event should NOT be generated/output
         if (result.output_evdev == 0) {
-            std::cerr << "[GEN:DEBUG] Event suppressed (output_evdev == 0)" << std::endl;
             return;  // Early return - don't generate any keyboard output
         }
 

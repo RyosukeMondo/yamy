@@ -70,14 +70,14 @@ void DialogExamplesQt::onSaveAs()
     }
 
     QString defaultName = m_exampleList->currentItem()
-        ? m_exampleList->currentItem()->text().toLower().replace(" ", "_") + ".mayu"
-        : "example.mayu";
+        ? m_exampleList->currentItem()->text().toLower().replace(" ", "_") + ".json"
+        : "example.json";
 
     QString fileName = QFileDialog::getSaveFileName(
         this,
         "Save Configuration Example",
         QDir::homePath() + "/.config/yamy/" + defaultName,
-        "YAMY Configuration (*.mayu);;All Files (*)"
+        "YAMY Configuration (*.json);;All Files (*)"
     );
 
     if (!fileName.isEmpty()) {

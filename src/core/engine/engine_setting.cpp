@@ -226,8 +226,11 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
     
     // Get the new lookup table and compile rules into it
     int total_rules = 0;
+    int keymap_rules = 0;
     if (auto* lookupTable = m_eventProcessor->getLookupTable()) {
         lookupTable->clear();
+
+        // Compile rules from legacy Keyboard::Substitutes (old .mayu system)
         for (const auto& substitute : keyboard.getSubstitutes()) {
             const Key* fromKey = substitute.m_mkeyFrom.m_key;
             if (!fromKey || fromKey->getScanCodesSize() == 0) {
@@ -240,14 +243,31 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
             }
             total_rules += rules.size();
         }
+
+        // Compile rules from Keymap::Assignments (new JSON system)
+        if (m_globalKeymap) {
+            m_globalKeymap->forEachAssignment([&](const Keymap::KeyAssignment& assignment) {
+                const Key* fromKey = assignment.m_modifiedKey.m_key;
+                if (!fromKey || fromKey->getScanCodesSize() == 0) {
+                    return;
+                }
+                uint16_t inputScanCode = fromKey->getScanCodes()[0].m_scan;
+                std::vector<yamy::engine::CompiledRule> rules = this->compileKeyAssignment(assignment);
+                for (const auto& rule : rules) {
+                    lookupTable->addRule(inputScanCode, rule);
+                }
+                keymap_rules += rules.size();
+                total_rules += rules.size();
+            });
+        }
     }
 
     // Log summary
     {
         Acquire a(&m_log, 0);
         m_log << "Built new rule lookup table with " << total_rules
-              << " compiled rules from " << keyboard.getSubstitutes().size()
-              << " substitutes." << std::endl;
+              << " compiled rules (" << keyboard.getSubstitutes().size()
+              << " from substitutes, " << keymap_rules << " from keymap assignments)." << std::endl;
     }
 
     m_eventProcessor->setDebugLogging(true);

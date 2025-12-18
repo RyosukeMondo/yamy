@@ -79,7 +79,7 @@ void DialogSettingsQt::onAddKeymap()
         this,
         tr("Add Keymap Files"),
         dir,
-        tr("Mayu Config Files (*.mayu);;All Files (*)")
+        tr("JSON Config Files (*.json);;All Files (*)")
     );
 
     if (files.isEmpty()) {
@@ -373,7 +373,7 @@ void DialogSettingsQt::setupUI()
     QHBoxLayout* pathLayout = new QHBoxLayout(pathGroup);
 
     m_editKeymapPath = new QLineEdit();
-    m_editKeymapPath->setPlaceholderText("Directory containing .mayu files");
+    m_editKeymapPath->setPlaceholderText("Directory containing .json config files");
     pathLayout->addWidget(m_editKeymapPath);
 
     m_btnBrowse = new QPushButton("Browse...");

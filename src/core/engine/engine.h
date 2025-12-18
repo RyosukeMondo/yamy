@@ -384,6 +384,9 @@ private:
     /// Compile a legacy Substitute rule into the new format for the O(1) lookup table
     std::vector<yamy::engine::CompiledRule> compileSubstitute(const Keyboard::Substitute& sub);
 
+    /// Compile a Keymap::KeyAssignment rule into the new format for the O(1) lookup table
+    std::vector<yamy::engine::CompiledRule> compileKeyAssignment(const Keymap::KeyAssignment& assignment);
+
     /** open mayu device
         @return true if mayu device successfully is opened
     */

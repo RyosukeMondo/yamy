@@ -144,6 +144,73 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
 
 uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState)
 {
+    if (m_debugLogging) {
+        LOG_DEBUG("[LAYER2] Processing 0x{:04X} modHandler={} modState={}",
+                  yamy_in, (m_modifierHandler ? "YES" : "NO"), (io_modState ? "YES" : "NO"));
+    }
+
+    // Step 0: Process virtual modifier triggers (e.g., CapsLock → M00)
+    if (m_modifierHandler && io_modState) {
+        auto result = m_modifierHandler->processNumberKey(yamy_in, type);
+
+        // CRITICAL: Handle actions even if valid=false!
+        // WAITING_FOR_THRESHOLD returns valid=false but we MUST suppress the key
+        if (m_debugLogging) {
+            LOG_DEBUG("[MOD] processNumberKey 0x{:04X} action={} valid={} mod_type={}",
+                      yamy_in, (int)result.action, result.valid, result.modifier_type);
+        }
+
+        switch (result.action) {
+            case engine::ProcessingAction::NOT_A_NUMBER_MODIFIER:
+                // Not a modifier trigger key, continue to rule lookup
+                break;
+
+            case engine::ProcessingAction::WAITING_FOR_THRESHOLD:
+                // CRITICAL: Suppress trigger key while waiting (even though valid=false)
+                if (m_debugLogging) {
+                    LOG_DEBUG("[MOD] WAITING for threshold - SUPPRESSING");
+                }
+                return 0;
+
+            case engine::ProcessingAction::ACTIVATE_MODIFIER:
+                if (result.modifier_type >= 0) {
+                    // Virtual modifier (M00-MFF)
+                    io_modState->activateModifier(result.modifier_type);
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[MOD] Activated M{:02X}", result.modifier_type);
+                    }
+                }
+                // Return 0 to suppress the trigger key output
+                return 0;
+
+            case engine::ProcessingAction::DEACTIVATE_MODIFIER:
+                if (result.modifier_type >= 0) {
+                    // Virtual modifier (M00-MFF)
+                    io_modState->deactivateModifier(result.modifier_type);
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[MOD] Deactivated M{:02X}", result.modifier_type);
+                    }
+                }
+                // Return 0 to suppress the trigger key output
+                return 0;
+
+            case engine::ProcessingAction::APPLY_SUBSTITUTION_PRESS:
+            case engine::ProcessingAction::APPLY_SUBSTITUTION_RELEASE:
+                // TAP detected - output the tap key
+                if (result.output_yamy_code != 0) {
+                    if (m_debugLogging) {
+                        LOG_DEBUG("[MOD] TAP detected, output 0x{:04X}", result.output_yamy_code);
+                    }
+                    m_currentEventIsTap = true;
+                    return result.output_yamy_code;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
     // Step 1: Apply substitution using the new RuleLookupTable
     if (io_modState && m_lookupTable) {
         const auto& state = io_modState->getFullState();
