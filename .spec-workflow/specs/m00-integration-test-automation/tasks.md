@@ -68,7 +68,7 @@
   - _Requirements: US-1 (Automated Integration Testing), US-2 (Root Cause Investigation)_
   - _Prompt: Role: QA Engineer | Task: Re-enable all M00 integration tests and verify reliability for spec m00-integration-test-automation. Remove DISABLED_ prefix from all 5 tests (TapAShouldOutputB, HoldAPlusShouldOutputD, VimModeSemicolonPlusHOutputsLeft, VimModeSemicolonTapOutputsSemicolon, VimModeAllArrowKeys). Remove comment blocks explaining why tests were disabled. Build and run tests. If any test fails check logs with YAMY_DEBUG_KEYCODE=1, verify timing values, check synchronization (waitForOutput timeout), fix and re-test. Run 10 times to verify: for i in {1..10}; do ./build_ninja/bin/yamy_m00_integration_test || exit 1; done | Restrictions: Do NOT disable tests again fix the issue if they fail, do NOT skip verification must pass 10 consecutive times, do NOT proceed if execution time >10 seconds | Success: All 5 tests pass consistently, total execution <10s, test output shows clear pass/fail. Tests pass 10 consecutive times with no flaky failures_
 
-- [ ] 6. Document testing approach and integrate with CI/CD
+- [x] 6. Document testing approach and integrate with CI/CD
   - File: tests/README.md or docs/testing.md (new/modify)
   - File: .github/workflows/tests.yml or CI config (modify)
   - Document M00 test architecture (EventSimulator, timing, synchronization)
