@@ -125,6 +125,9 @@ void PerformanceMetrics::stopPeriodicLogging()
         m_loggingThread.join();
     }
     m_loggingActive = false;
+
+    // Reset the thread object to ensure clean state for next start
+    m_loggingThread = std::thread();
 }
 
 void PerformanceMetrics::loggingThread()

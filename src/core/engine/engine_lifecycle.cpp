@@ -269,7 +269,10 @@ void Engine::stop() {
 
     m_isPerfThreadRunning = false;
     if (m_perfThreadHandle) {
-        yamy::platform::waitForObject(m_perfThreadHandle, 2000);
+        yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Waiting for perf metrics thread to terminate...");
+        yamy::platform::WaitResult perfResult = yamy::platform::waitForObject(m_perfThreadHandle, 2000);
+        yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
+            std::string("Perf metrics thread wait result: ") + (perfResult == yamy::platform::WaitResult::Success ? "Success" : "Failed/Timeout"));
         CHECK_TRUE( yamy::platform::destroyThread(m_perfThreadHandle) );
         m_perfThreadHandle = nullptr;
     }
@@ -283,12 +286,18 @@ void Engine::stop() {
     yamy::platform::setEvent(m_readEvent);
     yamy::platform::releaseMutex(m_queueMutex);
 
-    yamy::platform::waitForObject(m_threadHandle, 2000);
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine", "Waiting for keyboard handler thread to terminate...");
+    yamy::platform::WaitResult result = yamy::platform::waitForObject(m_threadHandle, 2000);
+    yamy::logging::Logger::getInstance().log(yamy::logging::LogLevel::Info, "Engine",
+        std::string("Keyboard handler thread wait result: ") + (result == yamy::platform::WaitResult::Success ? "Success" : "Failed/Timeout"));
     CHECK_TRUE( yamy::platform::destroyThread(m_threadHandle) );
     m_threadHandle = nullptr;
 
     CHECK_TRUE( yamy::platform::destroyEvent(m_readEvent) );
     m_readEvent = nullptr;
+
+    CHECK_TRUE( yamy::platform::destroyMutex(m_queueMutex) );
+    m_queueMutex = nullptr;
 
 #ifdef _WIN32
     // Windows: Send null messages to attached threads to wake them on shutdown
@@ -424,7 +433,12 @@ void* Engine::perfMetricsHandler(void *i_this)
 void Engine::perfMetricsHandler()
 {
     while (m_isPerfThreadRunning) {
-        std::this_thread::sleep_for(std::chrono::seconds(60));
+        // Sleep in small increments (100ms) to allow quick shutdown
+        // Check m_isPerfThreadRunning after each sleep to respond to stop() quickly
+        for (int i = 0; i < 600 && m_isPerfThreadRunning; ++i) {  // 600 * 100ms = 60 seconds
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
         if (!m_isPerfThreadRunning) break;
 
         // Send latency report

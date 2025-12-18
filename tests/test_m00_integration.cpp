@@ -181,10 +181,13 @@ public:
         capturedKeyCallback = keyCallback;
         return true;
     }
-    void uninstall() override {}
+    void uninstall() override {
+        // Clear the callback to prevent dangling reference after engine shutdown
+        capturedKeyCallback = nullptr;
+    }
     bool isInstalled() const override { return true; }
 
-    KeyCallback capturedKeyCallback;
+    KeyCallback capturedKeyCallback = nullptr;
 };
 
 class MockInputDriver : public IInputDriver {
@@ -213,7 +216,9 @@ protected:
     }
 
     void TearDown() override {
+        // Stop the engine - this properly waits for all threads to terminate
         engine->stop();
+
         delete engine;
         delete logStream;
 

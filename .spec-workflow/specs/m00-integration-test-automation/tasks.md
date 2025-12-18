@@ -83,7 +83,7 @@
   - _Requirements: US-5 (CI/CD Integration)_
   - _Prompt: Role: DevOps Engineer | Task: Document testing approach and integrate M00 tests into CI/CD for spec m00-integration-test-automation. Create/update documentation explaining how M00 integration tests work (EventSimulator, timing, synchronization), how to run tests locally, how to debug test failures (YAMY_DEBUG_KEYCODE=1), and optionally include test architecture diagram. Update CI/CD to add M00 integration test job to GitHub Actions/CI, run tests on pull requests, report results (pass/fail + execution time), and block merge if tests fail | Restrictions: Do NOT skip documentation critical for maintenance, do NOT allow CI failures to be ignored, do NOT add flaky test detection tests must be reliable | Success: Tests run automatically in CI, documentation is clear, team can maintain tests without manual UAT. CI blocks merges on test failures_
 
-- [ ] 7. Fix test isolation issue - segfault when running full test suite
+- [-] 7. Fix test isolation issue - segfault when running full test suite
   - File: tests/test_m00_integration.cpp (modify)
   - File: src/core/engine/engine_lifecycle.cpp (possibly modify)
   - Fix segmentation fault that occurs when running all tests together
