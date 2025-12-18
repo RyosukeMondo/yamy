@@ -1677,6 +1677,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         # -----------------------------------------------------------------------------
         set(M00_INTEGRATION_TEST_SOURCES
             tests/test_m00_integration.cpp
+            tests/test_utils/event_simulator.cpp
         )
 
         add_executable(yamy_m00_integration_test
@@ -1697,6 +1698,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             src/core/platform
             src/platform/linux
             src/utils
+            tests/test_utils
         )
 
         target_compile_definitions(yamy_m00_integration_test PRIVATE
