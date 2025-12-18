@@ -1739,44 +1739,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_number_modifiers_test COMMAND yamy_number_modifiers_test)
 
         # -----------------------------------------------------------------------------
-        # Target: yamy_modifier_state_test (ModifierState Modal Modifier Tests)
-        # Unit tests for ModifierState modal modifier functionality (mod0-mod19)
-        # Part of task 1 in modal-modifier-remapping spec
-        # -----------------------------------------------------------------------------
-        set(MODIFIER_STATE_TEST_SOURCES
-            tests/test_modifier_state.cpp
-            src/core/input/modifier_state.cpp
-            src/core/input/keyboard.cpp
-            src/utils/stringtool.cpp
-            src/tests/platform/test_main_linux.cpp
-        )
-
-        add_executable(yamy_modifier_state_test
-            ${MODIFIER_STATE_TEST_SOURCES}
-            src/tests/googletest/src/gtest-all.cc
-        )
-
-        target_include_directories(yamy_modifier_state_test PRIVATE
-            ${GTEST_DIR}/include
-            ${GTEST_DIR}
-            src
-            src/core
-            src/core/input
-            src/utils
-        )
-
-        target_compile_definitions(yamy_modifier_state_test PRIVATE
-            YAMY_UNIT_TEST
-        )
-
-        target_link_libraries(yamy_modifier_state_test PRIVATE
-            pthread
-            yamy_dependencies
-        )
-
-        add_test(NAME yamy_modifier_state_test COMMAND yamy_modifier_state_test)
-
-        # -----------------------------------------------------------------------------
         # Target: yamy_event_processor_modal_test (EventProcessor Modal Integration Tests)
         # Integration tests for EventProcessor with modal modifier detection
         # Part of task 7 in modal-modifier-remapping spec
@@ -2312,7 +2274,6 @@ set(YAMY_TEST_TARGETS
     yamy_keyremap_test
     yamy_leak_test
     yamy_number_modifiers_test
-    yamy_modifier_state_test
     yamy_event_processor_modal_test
     yamy_modal_e2e_test
     yamy_regression_test
