@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/m00-integration-test-automation/tasks.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-18T16:51:44.604Z",
+      "trigger": "initial",
+      "approvalId": "approval_1766076704595_8p0mvuspo",
+      "approvalTitle": "Tasks: M00 Integration Test Automation"
+    }
+  ]
+}

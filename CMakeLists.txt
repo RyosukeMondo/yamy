@@ -528,6 +528,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
         src/core/settings/config_backup.cpp
         src/core/settings/config_manager.cpp
         src/core/settings/config_metadata.cpp
+        src/core/settings/config_validator.cpp
         src/core/settings/config_watcher.cpp
         src/core/settings/session_manager.cpp
         src/core/platform/ipc_channel_interface.cpp
@@ -1630,6 +1631,85 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
 
         add_test(NAME yamy_json_loader_test COMMAND yamy_json_loader_test)
+
+        # -----------------------------------------------------------------------------
+        # Target: yamy_m00_virtual_modifier_test (M00 Virtual Modifier Activation Tests)
+        # CRITICAL unit tests that verify M00 virtual modifier activation works correctly
+        # Tests the fix for the bug where EventProcessor wasn't calling processNumberKey()
+        # -----------------------------------------------------------------------------
+        set(M00_VIRTUAL_MODIFIER_TEST_SOURCES
+            tests/test_m00_virtual_modifier_ut.cpp
+        )
+
+        add_executable(yamy_m00_virtual_modifier_test
+            ${M00_VIRTUAL_MODIFIER_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_m00_virtual_modifier_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            src
+            src/core
+            src/core/engine
+            src/core/input
+            src/core/logger
+            src/platform/linux
+            src/utils
+        )
+
+        target_compile_definitions(yamy_m00_virtual_modifier_test PRIVATE
+            YAMY_UNIT_TEST
+        )
+
+        target_link_libraries(yamy_m00_virtual_modifier_test PRIVATE
+            pthread
+            yamy_core
+            yamy_dependencies
+        )
+
+        add_test(NAME yamy_m00_virtual_modifier_test COMMAND yamy_m00_virtual_modifier_test)
+
+        # -----------------------------------------------------------------------------
+        # Target: yamy_m00_integration_test (M00 Integration Tests)
+        # CRITICAL integration tests that verify M00 works through the full Engine
+        # Tests JSON config loading and end-to-end M00 activation with real Engine
+        # -----------------------------------------------------------------------------
+        set(M00_INTEGRATION_TEST_SOURCES
+            tests/test_m00_integration.cpp
+        )
+
+        add_executable(yamy_m00_integration_test
+            ${M00_INTEGRATION_TEST_SOURCES}
+            src/tests/googletest/src/gtest-all.cc
+        )
+
+        target_include_directories(yamy_m00_integration_test PRIVATE
+            ${GTEST_DIR}/include
+            ${GTEST_DIR}
+            ${JSON_INCLUDE_DIR}
+            src
+            src/core
+            src/core/engine
+            src/core/input
+            src/core/settings
+            src/core/logger
+            src/core/platform
+            src/platform/linux
+            src/utils
+        )
+
+        target_compile_definitions(yamy_m00_integration_test PRIVATE
+            YAMY_INTEGRATION_TEST
+        )
+
+        target_link_libraries(yamy_m00_integration_test PRIVATE
+            pthread
+            yamy_core
+            yamy_dependencies
+        )
+
+        add_test(NAME yamy_m00_integration_test COMMAND yamy_m00_integration_test)
 
         # -----------------------------------------------------------------------------
         # Target: yamy_number_modifiers_test (Number Modifiers Unit Tests)
