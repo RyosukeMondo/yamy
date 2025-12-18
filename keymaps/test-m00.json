@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/config.schema.json",
+  "version": "2.0",
+  "description": "M00 Test Configuration - A key as virtual modifier",
+  "keyboard": {
+    "keys": {
+      "A": "0x1e",
+      "B": "0x30",
+      "S": "0x1f",
+      "D": "0x20",
+      "Escape": "0x01"
+    }
+  },
+  "virtualModifiers": {
+    "M00": {
+      "trigger": "A",
+      "tap": "B",
+      "holdThresholdMs": 200,
+      "description": "Test: A key - hold for M00, tap for B"
+    }
+  },
+  "keymaps": [
+    {
+      "name": "Global",
+      "default": true,
+      "mappings": [
+        {
+          "from": "M00-S",
+          "to": "D",
+          "description": "M00+S -> D"
+        }
+      ]
+    }
+  ]
+}

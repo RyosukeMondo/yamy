@@ -1,0 +1,46 @@
+{
+  "version": "2.0",
+  "keyboard": {
+    "keys": {
+      "Semicolon": "0x27",
+      "H": "0x23",
+      "J": "0x24",
+      "K": "0x25",
+      "L": "0x26",
+      "Left": "0xE04B",
+      "Down": "0xE050",
+      "Up": "0xE048",
+      "Right": "0xE04D",
+      "Escape": "0x01"
+    }
+  },
+  "virtualModifiers": {
+    "M00": {
+      "trigger": "Semicolon",
+      "tap": "Semicolon",
+      "holdThresholdMs": 200
+    }
+  },
+  "mappings": [
+    {
+      "from": "M00-H",
+      "to": "Left",
+      "comment": "Hold Semicolon + H -> Left arrow"
+    },
+    {
+      "from": "M00-J",
+      "to": "Down",
+      "comment": "Hold Semicolon + J -> Down arrow"
+    },
+    {
+      "from": "M00-K",
+      "to": "Up",
+      "comment": "Hold Semicolon + K -> Up arrow"
+    },
+    {
+      "from": "M00-L",
+      "to": "Right",
+      "comment": "Hold Semicolon + L -> Right arrow"
+    }
+  ]
+}
