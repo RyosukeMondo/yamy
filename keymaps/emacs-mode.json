@@ -54,7 +54,7 @@
   "virtualModifiers": {
     "M01": {
       "trigger": "CapsLock",
-      "tapAction": "Escape",
+      "tap": "Escape",
       "holdThresholdMs": 200,
       "description": "CapsLock as Control (M01-X maps to C-X), tap for Escape"
     }
