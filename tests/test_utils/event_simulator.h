@@ -4,10 +4,11 @@
 #include <chrono>
 #include <cstdint>
 #include <functional>
+#include <thread>
+#include <iostream>
 
 // Forward declarations
 class Engine;
-class MockInputInjector;
 
 namespace yamy::platform {
     struct KeyEvent;
@@ -70,11 +71,12 @@ public:
     /**
      * Wait for mock injector to produce expected number of outputs
      *
-     * @param mockInjector The mock injector to monitor
+     * @param mockInjector The mock injector to monitor (must have public int injectCallCount field)
      * @param expectedCallCount Expected number of inject calls
      * @return true if output received, false if timeout
      */
-    bool waitForOutput(MockInputInjector* mockInjector, int expectedCallCount);
+    template<typename MockInjectorT>
+    bool waitForOutput(MockInjectorT* mockInjector, int expectedCallCount);
 
     /**
      * Inject a sequence of events with proper timing
@@ -110,6 +112,42 @@ public:
 private:
     Config m_config;
 };
+
+// Template implementation must be in header
+template<typename MockInjectorT>
+bool EventSimulator::waitForOutput(MockInjectorT* mockInjector, int expectedCallCount) {
+    if (!mockInjector) {
+        std::cerr << "[EventSimulator] ERROR: null mockInjector pointer" << std::endl;
+        return false;
+    }
+
+    auto startTime = std::chrono::steady_clock::now();
+    auto timeout = std::chrono::milliseconds(m_config.outputTimeoutMs);
+    int initialCount = mockInjector->injectCallCount;
+
+    while (true) {
+        auto currentTime = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime);
+
+        if (elapsed >= timeout) {
+            std::cerr << "[EventSimulator] TIMEOUT: Expected " << expectedCallCount
+                      << " outputs, got " << (mockInjector->injectCallCount - initialCount)
+                      << " after " << m_config.outputTimeoutMs << "ms" << std::endl;
+            return false;
+        }
+
+        // Check if we've received expected number of outputs
+        int currentCount = mockInjector->injectCallCount - initialCount;
+        if (currentCount >= expectedCallCount) {
+            std::cout << "[EventSimulator] Received " << currentCount
+                      << " outputs after " << elapsed.count() << "ms" << std::endl;
+            return true;
+        }
+
+        // Sleep before next poll
+        std::this_thread::sleep_for(std::chrono::milliseconds(m_config.pollIntervalMs));
+    }
+}
 
 } // namespace test
 } // namespace yamy

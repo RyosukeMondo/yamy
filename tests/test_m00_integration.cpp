@@ -289,7 +289,7 @@ protected:
  * Test 1: Tap A <200ms → should output B
  * CRITICAL: Verifies hold-vs-tap detection works in full engine context
  */
-TEST_F(M00IntegrationTest, DISABLED_TapAShouldOutputB) {
+TEST_F(M00IntegrationTest, TapAShouldOutputB) {
     loadJsonConfig(TEST_CONFIG_M00);
     mockInputInjector->reset();
 
@@ -316,7 +316,7 @@ TEST_F(M00IntegrationTest, DISABLED_TapAShouldOutputB) {
  * Test 2: Hold A >200ms + press S → should output D
  * CRITICAL: Verifies M00 activation and rule matching through full engine
  */
-TEST_F(M00IntegrationTest, DISABLED_HoldAPlusShouldOutputD) {
+TEST_F(M00IntegrationTest, HoldAPlusShouldOutputD) {
     loadJsonConfig(TEST_CONFIG_M00);
     mockInputInjector->reset();
 
@@ -343,7 +343,7 @@ TEST_F(M00IntegrationTest, DISABLED_HoldAPlusShouldOutputD) {
  * Test 3: Vim-mode Semicolon+H → LEFT arrow
  * CRITICAL: Verifies M00 works with arrow keys (extended scan codes)
  */
-TEST_F(M00IntegrationTest, DISABLED_VimModeSemicolonPlusHOutputsLeft) {
+TEST_F(M00IntegrationTest, VimModeSemicolonPlusHOutputsLeft) {
     loadJsonConfig(TEST_CONFIG_VIM);
     mockInputInjector->reset();
 
@@ -370,7 +370,7 @@ TEST_F(M00IntegrationTest, DISABLED_VimModeSemicolonPlusHOutputsLeft) {
  * Test 4: Vim-mode Semicolon tap → Semicolon
  * Verifies tap detection for Semicolon trigger
  */
-TEST_F(M00IntegrationTest, DISABLED_VimModeSemicolonTapOutputsSemicolon) {
+TEST_F(M00IntegrationTest, VimModeSemicolonTapOutputsSemicolon) {
     loadJsonConfig(TEST_CONFIG_VIM);
     mockInputInjector->reset();
 
@@ -397,7 +397,7 @@ TEST_F(M00IntegrationTest, DISABLED_VimModeSemicolonTapOutputsSemicolon) {
  * Test 5: All vim arrow keys (HJKL → Left/Down/Up/Right)
  * Comprehensive test for all 4 arrow key mappings
  */
-TEST_F(M00IntegrationTest, DISABLED_VimModeAllArrowKeys) {
+TEST_F(M00IntegrationTest, VimModeAllArrowKeys) {
     loadJsonConfig(TEST_CONFIG_VIM);
 
     struct TestCase {

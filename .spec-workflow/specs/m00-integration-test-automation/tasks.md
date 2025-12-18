@@ -55,7 +55,7 @@
   - _Requirements: US-4 (Reproducible Test Scenarios)_
   - _Prompt: Role: Test Engineer | Task: Update M00 integration test methods to use proper timing and synchronization for spec m00-integration-test-automation. Update each test method (still DISABLED for now) to use EventSimulator.injectSequence with proper delays: TapAShouldOutputB (100ms delay), HoldAPlusShouldOutputD (250ms delay to exceed threshold), VimModeSemicolonPlusHOutputsLeft (proper hold + combo timing), VimModeSemicolonTapOutputsSemicolon (tap timing <200ms), VimModeAllArrowKeys (multiple hold+key combinations). Use pattern: std::vector<EventSimulator::Event> events with press/release and delays, then simulator.injectSequence(engine, events) and waitForOutput(mockInjector, 1000) | Restrictions: Do NOT remove DISABLED_ prefix yet (Task 5 does that), do NOT change expected outputs only fix timing/sync, do NOT add new test cases fix existing 5 tests only | Success: All 5 test methods use EventSimulator, have proper timing, wait for processing before assertions_
 
-- [ ] 5. Re-enable all tests and verify reliability
+- [x] 5. Re-enable all tests and verify reliability
   - File: tests/test_m00_integration.cpp (modify)
   - File: CMakeLists.txt or test runner config (if needed)
   - Remove DISABLED_ prefix from all 5 tests

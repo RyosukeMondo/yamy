@@ -6,12 +6,6 @@
 #include <thread>
 #include <iostream>
 
-// Forward declare MockInputInjector for compilation
-class MockInputInjector {
-public:
-    int injectCallCount;
-};
-
 namespace yamy {
 namespace test {
 
@@ -51,39 +45,7 @@ bool EventSimulator::waitForEngineReady(Engine* engine) {
     }
 }
 
-bool EventSimulator::waitForOutput(MockInputInjector* mockInjector, int expectedCallCount) {
-    if (!mockInjector) {
-        std::cerr << "[EventSimulator] ERROR: null mockInjector pointer" << std::endl;
-        return false;
-    }
-
-    auto startTime = std::chrono::steady_clock::now();
-    auto timeout = std::chrono::milliseconds(m_config.outputTimeoutMs);
-    int initialCount = mockInjector->injectCallCount;
-
-    while (true) {
-        auto currentTime = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime);
-
-        if (elapsed >= timeout) {
-            std::cerr << "[EventSimulator] TIMEOUT: Expected " << expectedCallCount
-                      << " outputs, got " << (mockInjector->injectCallCount - initialCount)
-                      << " after " << m_config.outputTimeoutMs << "ms" << std::endl;
-            return false;
-        }
-
-        // Check if we've received expected number of outputs
-        int currentCount = mockInjector->injectCallCount - initialCount;
-        if (currentCount >= expectedCallCount) {
-            std::cout << "[EventSimulator] Received " << currentCount
-                      << " outputs after " << elapsed.count() << "ms" << std::endl;
-            return true;
-        }
-
-        // Sleep before next poll
-        std::this_thread::sleep_for(std::chrono::milliseconds(m_config.pollIntervalMs));
-    }
-}
+// waitForOutput is now a template in the header
 
 void EventSimulator::injectSequence(yamy::platform::KeyCallback keyCallback,
                                    const std::vector<Event>& events) {
