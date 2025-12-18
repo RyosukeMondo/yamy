@@ -11,8 +11,10 @@
 #include "../../src/core/platform/input_hook_interface.h"
 #include "../../src/core/platform/input_driver_interface.h"
 #include "../../src/utils/msgstream.h"
+#include "test_utils/event_simulator.h"
 
 using namespace yamy::platform;
+using namespace yamy::test;
 
 // --- Test Config ---
 const std::string TEST_CONFIG_M00 = R"({
@@ -205,6 +207,9 @@ protected:
         mockInputDriver = new MockInputDriver();
 
         engine = new Engine(*logStream, mockWindowSystem, nullptr, mockInputInjector, mockInputHook, mockInputDriver);
+
+        // Initialize EventSimulator with default config
+        simulator = new EventSimulator();
     }
 
     void TearDown() override {
@@ -216,6 +221,7 @@ protected:
         delete mockInputInjector;
         delete mockInputHook;
         delete mockInputDriver;
+        delete simulator;
     }
 
     void loadJsonConfig(const std::string& jsonContent) {
@@ -234,21 +240,26 @@ protected:
         // Start engine and apply setting
         engine->start();
 
-        // Give engine time to initialize threads
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        // Wait for engine to be fully initialized and ready
+        bool isReady = simulator->waitForEngineReady(engine);
+        ASSERT_TRUE(isReady) << "Engine failed to become ready within timeout";
 
         engine->setSetting(setting);
 
         // Wait for engine to fully process the setting and stabilize
         // This ensures EventProcessor, ModifierHandler, and rule tables are ready
-        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        // Increased from 300ms to 500ms for more reliable EventProcessor registration
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
-    void injectKey(uint16_t scanCode, bool isKeyDown) {
+    void injectKey(uint16_t yamyScanCode, bool isKeyDown) {
         ASSERT_TRUE(mockInputHook->capturedKeyCallback) << "InputHook callback not captured";
 
+        // Convert YAMY scan code to evdev code for proper event processing
+        uint16_t evdevCode = EventSimulator::yamyToEvdev(yamyScanCode);
+
         KeyEvent event;
-        event.scanCode = scanCode;
+        event.scanCode = evdevCode;
         event.isKeyDown = isKeyDown;
         event.extraInfo = 0;
 
@@ -269,6 +280,7 @@ protected:
     MockInputHook* mockInputHook;
     MockInputDriver* mockInputDriver;
     Engine* engine;
+    EventSimulator* simulator;
 };
 
 // --- Tests ---

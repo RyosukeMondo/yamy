@@ -28,7 +28,7 @@
   - _Requirements: US-3 (Comprehensive Observability)_
   - _Prompt: Role: Observability Engineer | Task: Add comprehensive logging to M00 event processing for spec m00-integration-test-automation. Add DEBUG-level logging to EventProcessor::processEvent() (log input, modifier checks, rule lookups, outputs), ModifierKeyHandler::checkAndActivateWaitingModifiers() (log threshold checks, activations), and ModifierKeyHandler::processNumberKey() (log state transitions WAITING → ACTIVE). Use [TEST] prefix for easy filtering and include hex codes for keys/scancodes | Restrictions: Do NOT change any logic only add logging, do NOT log on every event (only when m_debugLogging is true or env var set), do NOT add excessive logging that impacts performance | Success: Running tests with YAMY_DEBUG_KEYCODE=1 shows detailed event flow, state transitions, and timing. Existing functionality unchanged_
 
-- [ ] 3. Fix EngineTestFixture initialization and synchronization
+- [-] 3. Fix EngineTestFixture initialization and synchronization
   - File: tests/test_m00_integration.cpp (modify)
   - Update test fixture to properly initialize Engine and wait for readiness before injecting events
   - Add waitForEngineReady() call in loadJsonConfig()
