@@ -1667,42 +1667,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_number_modifiers_test COMMAND yamy_number_modifiers_test)
 
         # -----------------------------------------------------------------------------
-        # Target: benchmark_modal_modifier (Modal Modifier Performance Benchmark)
-        # Standalone performance benchmark to measure modal modifier pipeline latency
-        # Part of task 12 in modal-modifier-remapping spec
-        # -----------------------------------------------------------------------------
-        set(BENCHMARK_MODAL_MODIFIER_SOURCES
-            tests/benchmark_modal_modifier.cpp
-            src/core/engine/modifier_key_handler.cpp
-            src/core/input/modifier_state.cpp
-            src/core/input/keyboard.cpp
-            src/core/logger/journey_logger.cpp
-            src/utils/stringtool.cpp
-        )
-
-        add_executable(benchmark_modal_modifier
-            ${BENCHMARK_MODAL_MODIFIER_SOURCES}
-        )
-
-        target_include_directories(benchmark_modal_modifier PRIVATE
-            src
-            src/core
-            src/core/engine
-            src/core/input
-            src/platform
-            src/utils
-        )
-
-        target_compile_definitions(benchmark_modal_modifier PRIVATE
-            YAMY_UNIT_TEST
-        )
-
-        target_link_libraries(benchmark_modal_modifier PRIVATE
-            pthread
-            yamy_dependencies
-        )
-
-        # -----------------------------------------------------------------------------
         # Target: benchmark_logging (Quill Logging Performance Benchmark)
         # Standalone performance benchmark to measure LOG_INFO hot-path latency
         # Part of task 3.4 in modern-cpp-toolchain spec
