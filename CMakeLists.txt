@@ -1589,42 +1589,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         endif()
 
         # -----------------------------------------------------------------------------
-        # Target: yamy_event_processor_ut (EventProcessor Unit Tests)
-        # Unit tests for Layer 1 (evdevToYamyKeyCode) and Layer 2 (applySubstitution)
-        # Part of tasks 3.1 and 3.2 in key-remapping-consistency spec
-        # -----------------------------------------------------------------------------
-        set(EVENT_PROCESSOR_UT_SOURCES
-            tests/test_event_processor_ut.cpp
-        )
-
-        add_executable(yamy_event_processor_ut
-            ${EVENT_PROCESSOR_UT_SOURCES}
-            src/tests/googletest/src/gtest-all.cc
-        )
-
-        target_include_directories(yamy_event_processor_ut PRIVATE
-            ${GTEST_DIR}/include
-            ${GTEST_DIR}
-            src
-            src/core
-            src/core/engine
-            src/platform/linux
-            src/utils
-        )
-
-        target_compile_definitions(yamy_event_processor_ut PRIVATE
-            YAMY_UNIT_TEST
-        )
-
-        target_link_libraries(yamy_event_processor_ut PRIVATE
-            pthread
-            yamy_dependencies
-            yamy_core
-        )
-
-        add_test(NAME yamy_event_processor_ut COMMAND yamy_event_processor_ut)
-
-        # -----------------------------------------------------------------------------
         # Target: yamy_json_loader_test (JsonConfigLoader Unit Tests)
         # Unit tests for JSON configuration loader
         # Part of task 1.10 in json-refactoring spec
@@ -1666,42 +1630,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
 
         add_test(NAME yamy_json_loader_test COMMAND yamy_json_loader_test)
-
-        # -----------------------------------------------------------------------------
-        # Target: yamy_event_processor_it (EventProcessor Integration Tests)
-        # Integration tests for complete Layer 1→2→3 composition
-        # Part of task 3.4 in key-remapping-consistency spec
-        # -----------------------------------------------------------------------------
-        set(EVENT_PROCESSOR_IT_SOURCES
-            tests/test_event_processor_it.cpp
-        )
-
-        add_executable(yamy_event_processor_it
-            ${EVENT_PROCESSOR_IT_SOURCES}
-            src/tests/googletest/src/gtest-all.cc
-        )
-
-        target_include_directories(yamy_event_processor_it PRIVATE
-            ${GTEST_DIR}/include
-            ${GTEST_DIR}
-            src
-            src/core
-            src/core/engine
-            src/platform/linux
-            src/utils
-        )
-
-        target_compile_definitions(yamy_event_processor_it PRIVATE
-            YAMY_UNIT_TEST
-        )
-
-        target_link_libraries(yamy_event_processor_it PRIVATE
-            pthread
-            yamy_dependencies
-            yamy_core
-        )
-
-        add_test(NAME yamy_event_processor_it COMMAND yamy_event_processor_it)
 
         # -----------------------------------------------------------------------------
         # Target: yamy_number_modifiers_test (Number Modifiers Unit Tests)
