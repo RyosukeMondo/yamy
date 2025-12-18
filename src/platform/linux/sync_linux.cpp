@@ -1,6 +1,11 @@
 ﻿//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // sync_linux.cpp - POSIX synchronization implementation (Track 6)
 
+// Define _GNU_SOURCE for pthread_tryjoin_np
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "../../core/platform/sync.h"
 #include <pthread.h>
 #include <errno.h>
@@ -22,6 +27,51 @@ WaitResult waitForObject(void* handle, uint32_t timeout_ms) {
         return WaitResult::Failed;
     }
 
+    // Try to detect if this is a ThreadHandle or an Event
+    // ThreadHandles are pthread_t values cast to void*
+    // Events are pointers to our Event struct
+    // We use a heuristic: if the value looks like a valid pthread_t (large integer),
+    // and pthread_tryjoin_np succeeds or would wait, it's likely a thread
+    pthread_t thread = (pthread_t)handle;
+
+    // Try non-blocking join to detect if it's a valid thread
+    int tryjoin_result = pthread_tryjoin_np(thread, nullptr);
+
+    if (tryjoin_result == 0) {
+        // Thread already exited
+        return WaitResult::Success;
+    } else if (tryjoin_result == EBUSY) {
+        // Valid thread, still running - wait for it
+        if (timeout_ms == WAIT_INFINITE) {
+            // Join with infinite wait
+            int result = pthread_join(thread, nullptr);
+            return (result == 0) ? WaitResult::Success : WaitResult::Failed;
+        } else {
+            // pthread_join doesn't support timeouts, so we need to poll
+            // This is not ideal but necessary for timeout support
+            uint32_t elapsed = 0;
+            const uint32_t poll_interval = 10; // Poll every 10ms
+
+            while (elapsed < timeout_ms) {
+                int result = pthread_tryjoin_np(thread, nullptr);
+                if (result == 0) {
+                    return WaitResult::Success;
+                } else if (result != EBUSY) {
+                    return WaitResult::Failed;
+                }
+
+                // Sleep for poll interval
+                struct timespec ts;
+                ts.tv_sec = 0;
+                ts.tv_nsec = poll_interval * 1000000;
+                nanosleep(&ts, nullptr);
+                elapsed += poll_interval;
+            }
+            return WaitResult::Timeout;
+        }
+    }
+
+    // Not a thread, assume it's an Event
     Event* event = static_cast<Event*>(handle);
 
     pthread_mutex_lock(&event->mutex);
@@ -79,10 +129,27 @@ EventHandle createEvent(bool manual_reset, bool initial_state) {
     Event* event = new Event();
     if (!event) return nullptr;
 
-    if (pthread_mutex_init(&event->mutex, nullptr) != 0) {
+    // Create mutex attributes to disable priority protection
+    pthread_mutexattr_t attr;
+    if (pthread_mutexattr_init(&attr) != 0) {
         delete event;
         return nullptr;
     }
+
+    // Disable priority protection protocol to avoid privilege requirements
+    if (pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_NONE) != 0) {
+        pthread_mutexattr_destroy(&attr);
+        delete event;
+        return nullptr;
+    }
+
+    if (pthread_mutex_init(&event->mutex, &attr) != 0) {
+        pthread_mutexattr_destroy(&attr);
+        delete event;
+        return nullptr;
+    }
+
+    pthread_mutexattr_destroy(&attr);
 
     if (pthread_cond_init(&event->cond, nullptr) != 0) {
         pthread_mutex_destroy(&event->mutex);
@@ -143,11 +210,28 @@ MutexHandle createMutex() {
     pthread_mutex_t* mutex = static_cast<pthread_mutex_t*>(malloc(sizeof(pthread_mutex_t)));
     if (!mutex) return nullptr;
 
-    if (pthread_mutex_init(mutex, nullptr) != 0) {
+    // Create mutex attributes to disable priority protection
+    // This prevents glibc pthread_tpp_change_priority errors in test environments
+    pthread_mutexattr_t attr;
+    if (pthread_mutexattr_init(&attr) != 0) {
         free(mutex);
         return nullptr;
     }
 
+    // Disable priority protection protocol (TPP) to avoid privilege requirements
+    if (pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_NONE) != 0) {
+        pthread_mutexattr_destroy(&attr);
+        free(mutex);
+        return nullptr;
+    }
+
+    if (pthread_mutex_init(mutex, &attr) != 0) {
+        pthread_mutexattr_destroy(&attr);
+        free(mutex);
+        return nullptr;
+    }
+
+    pthread_mutexattr_destroy(&attr);
     return mutex;
 }
 
