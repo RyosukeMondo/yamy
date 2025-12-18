@@ -41,7 +41,7 @@
   - _Requirements: US-2 (Root Cause Investigation), US-4 (Reproducible Test Scenarios)_
   - _Prompt: Role: Test Infrastructure Engineer | Task: Fix the EngineTestFixture initialization and event injection in spec m00-integration-test-automation. Fix the test fixture to wait for Engine to be fully initialized after start(), wait additional time after setSetting() for EventProcessor to register triggers, use EventSimulator from Task 1 for event injection, and convert YAMY scan codes to evdev codes (0x1e → 30 for A key). In loadJsonConfig() add waitForEngineReady() call and increase wait from 100ms to 500ms after setSetting(). Update injectKey() to use evdev codes properly. Add yamyToEvdev() conversion helper | Restrictions: Do NOT re-enable tests yet (that's Task 5), do NOT change test logic only fix setup and timing, do NOT remove DISABLED_ prefix yet | Success: Test fixture initializes properly, logs show M00 trigger registration before events are injected, no race conditions during initialization_
 
-- [ ] 4. Update test methods with proper timing and synchronization
+- [x] 4. Update test methods with proper timing and synchronization
   - File: tests/test_m00_integration.cpp (modify)
   - Update all 5 test methods to use EventSimulator with proper timing
   - TapAShouldOutputB: Use injectSequence with 100ms delay

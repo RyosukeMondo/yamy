@@ -3,10 +3,16 @@
 #include <vector>
 #include <chrono>
 #include <cstdint>
+#include <functional>
 
 // Forward declarations
 class Engine;
 class MockInputInjector;
+
+namespace yamy::platform {
+    struct KeyEvent;
+    using KeyCallback = std::function<bool(const KeyEvent&)>;
+}
 
 namespace yamy {
 namespace test {
@@ -73,10 +79,11 @@ public:
     /**
      * Inject a sequence of events with proper timing
      *
-     * @param engine The Engine instance (to get input hook callback)
+     * @param keyCallback The key callback function from the input hook
      * @param events Vector of events to inject with delays
      */
-    void injectSequence(Engine* engine, const std::vector<Event>& events);
+    void injectSequence(yamy::platform::KeyCallback keyCallback,
+                       const std::vector<Event>& events);
 
     /**
      * Convert YAMY scan code to evdev code

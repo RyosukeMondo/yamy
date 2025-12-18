@@ -288,31 +288,25 @@ protected:
 /**
  * Test 1: Tap A <200ms → should output B
  * CRITICAL: Verifies hold-vs-tap detection works in full engine context
- *
- * NOTE: This test is DISABLED due to mock environment limitations.
- * The M00 tap/hold functionality IS working correctly and validated by:
- * - yamy_m00_virtual_modifier_test (unit tests) ✅ PASSING
- * - Real-world usage testing
- *
- * The integration test fails because the mock environment doesn't fully
- * replicate the evdev input pipeline and KeyEvent flow.
  */
 TEST_F(M00IntegrationTest, DISABLED_TapAShouldOutputB) {
     loadJsonConfig(TEST_CONFIG_M00);
     mockInputInjector->reset();
 
-    // Press A
-    injectKey(0x1e, true);
+    // Create event sequence: Press A, wait 100ms, Release A
+    std::vector<EventSimulator::Event> events = {
+        EventSimulator::Event(30, true, 100),   // Press A (evdev=30), wait 100ms
+        EventSimulator::Event(30, false, 0)     // Release A
+    };
 
-    // Release quickly (before 200ms threshold)
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    injectKey(0x1e, false);
+    // Inject sequence with proper timing
+    simulator->injectSequence(mockInputHook->capturedKeyCallback, events);
 
-    // Wait for processing
-    waitForProcessing();
+    // Wait for async processing to complete
+    bool outputReceived = simulator->waitForOutput(mockInputInjector, 1);
+    ASSERT_TRUE(outputReceived) << "No output generated within timeout";
 
     // Should output B (0x30)
-    EXPECT_GT(mockInputInjector->injectCallCount, 0) << "No output generated";
     EXPECT_EQ(mockInputInjector->lastMakeCode, 0x30)
         << "CRITICAL BUG: Tap A should output B (0x30)! Got 0x"
         << std::hex << mockInputInjector->lastMakeCode;
@@ -321,25 +315,25 @@ TEST_F(M00IntegrationTest, DISABLED_TapAShouldOutputB) {
 /**
  * Test 2: Hold A >200ms + press S → should output D
  * CRITICAL: Verifies M00 activation and rule matching through full engine
- *
- * NOTE: DISABLED - See TapAShouldOutputB for explanation
  */
 TEST_F(M00IntegrationTest, DISABLED_HoldAPlusShouldOutputD) {
     loadJsonConfig(TEST_CONFIG_M00);
     mockInputInjector->reset();
 
-    // Press A
-    injectKey(0x1e, true);
+    // Create event sequence: Press A, wait 250ms (exceed threshold), Press S
+    std::vector<EventSimulator::Event> events = {
+        EventSimulator::Event(30, true, 250),   // Press A (evdev=30), wait 250ms to exceed threshold
+        EventSimulator::Event(31, true, 0)      // Press S (evdev=31)
+    };
 
-    // Wait for threshold (200ms)
-    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    // Inject sequence with proper timing
+    simulator->injectSequence(mockInputHook->capturedKeyCallback, events);
 
-    // Press S while A is held
-    injectKey(0x1f, true);
-    waitForProcessing();
+    // Wait for async processing to complete
+    bool outputReceived = simulator->waitForOutput(mockInputInjector, 1);
+    ASSERT_TRUE(outputReceived) << "No output generated within timeout";
 
     // Should output D (0x20)
-    EXPECT_GT(mockInputInjector->injectCallCount, 0) << "No output generated";
     EXPECT_EQ(mockInputInjector->lastMakeCode, 0x20)
         << "CRITICAL BUG: M00+S should output D (0x20)! Got 0x"
         << std::hex << mockInputInjector->lastMakeCode;
@@ -348,25 +342,25 @@ TEST_F(M00IntegrationTest, DISABLED_HoldAPlusShouldOutputD) {
 /**
  * Test 3: Vim-mode Semicolon+H → LEFT arrow
  * CRITICAL: Verifies M00 works with arrow keys (extended scan codes)
- *
- * NOTE: DISABLED - See TapAShouldOutputB for explanation
  */
 TEST_F(M00IntegrationTest, DISABLED_VimModeSemicolonPlusHOutputsLeft) {
     loadJsonConfig(TEST_CONFIG_VIM);
     mockInputInjector->reset();
 
-    // Press Semicolon
-    injectKey(0x27, true);
+    // Create event sequence: Press Semicolon, wait 250ms (exceed threshold), Press H
+    std::vector<EventSimulator::Event> events = {
+        EventSimulator::Event(39, true, 250),   // Press Semicolon (evdev=39), wait 250ms
+        EventSimulator::Event(35, true, 0)      // Press H (evdev=35)
+    };
 
-    // Wait for threshold
-    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    // Inject sequence with proper timing
+    simulator->injectSequence(mockInputHook->capturedKeyCallback, events);
 
-    // Press H while Semicolon is held
-    injectKey(0x23, true);
-    waitForProcessing();
+    // Wait for async processing to complete
+    bool outputReceived = simulator->waitForOutput(mockInputInjector, 1);
+    ASSERT_TRUE(outputReceived) << "No output generated within timeout";
 
     // Should output LEFT (0xE04B)
-    EXPECT_GT(mockInputInjector->injectCallCount, 0) << "No output generated";
     EXPECT_EQ(mockInputInjector->lastMakeCode, 0xE04B)
         << "CRITICAL BUG: M00+H should output LEFT (0xE04B)! Got 0x"
         << std::hex << mockInputInjector->lastMakeCode;
@@ -375,24 +369,25 @@ TEST_F(M00IntegrationTest, DISABLED_VimModeSemicolonPlusHOutputsLeft) {
 /**
  * Test 4: Vim-mode Semicolon tap → Semicolon
  * Verifies tap detection for Semicolon trigger
- *
- * NOTE: DISABLED - See TapAShouldOutputB for explanation
  */
 TEST_F(M00IntegrationTest, DISABLED_VimModeSemicolonTapOutputsSemicolon) {
     loadJsonConfig(TEST_CONFIG_VIM);
     mockInputInjector->reset();
 
-    // Press Semicolon
-    injectKey(0x27, true);
+    // Create event sequence: Press Semicolon, wait 100ms (under threshold), Release
+    std::vector<EventSimulator::Event> events = {
+        EventSimulator::Event(39, true, 100),   // Press Semicolon (evdev=39), wait 100ms
+        EventSimulator::Event(39, false, 0)     // Release Semicolon
+    };
 
-    // Release quickly
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    injectKey(0x27, false);
+    // Inject sequence with proper timing
+    simulator->injectSequence(mockInputHook->capturedKeyCallback, events);
 
-    waitForProcessing();
+    // Wait for async processing to complete
+    bool outputReceived = simulator->waitForOutput(mockInputInjector, 1);
+    ASSERT_TRUE(outputReceived) << "No output generated within timeout";
 
     // Should output Semicolon (0x27)
-    EXPECT_GT(mockInputInjector->injectCallCount, 0) << "No output generated";
     EXPECT_EQ(mockInputInjector->lastMakeCode, 0x27)
         << "Tap Semicolon should output Semicolon (0x27)! Got 0x"
         << std::hex << mockInputInjector->lastMakeCode;
@@ -401,44 +396,47 @@ TEST_F(M00IntegrationTest, DISABLED_VimModeSemicolonTapOutputsSemicolon) {
 /**
  * Test 5: All vim arrow keys (HJKL → Left/Down/Up/Right)
  * Comprehensive test for all 4 arrow key mappings
- *
- * NOTE: DISABLED - See TapAShouldOutputB for explanation
  */
 TEST_F(M00IntegrationTest, DISABLED_VimModeAllArrowKeys) {
     loadJsonConfig(TEST_CONFIG_VIM);
 
     struct TestCase {
-        uint16_t inputScan;
+        uint16_t inputEvdev;
         uint16_t expectedScan;
         std::string name;
     };
 
     TestCase cases[] = {
-        {0x23, 0xE04B, "H→LEFT"},
-        {0x24, 0xE050, "J→DOWN"},
-        {0x25, 0xE048, "K→UP"},
-        {0x26, 0xE04D, "L→RIGHT"}
+        {35, 0xE04B, "H→LEFT"},    // H evdev=35
+        {36, 0xE050, "J→DOWN"},    // J evdev=36
+        {37, 0xE048, "K→UP"},      // K evdev=37
+        {38, 0xE04D, "L→RIGHT"}    // L evdev=38
     };
 
     for (const auto& tc : cases) {
         mockInputInjector->reset();
 
-        // Press Semicolon
-        injectKey(0x27, true);
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        // Create event sequence: Press Semicolon, wait 250ms, Press key (H/J/K/L), Release all
+        std::vector<EventSimulator::Event> events = {
+            EventSimulator::Event(39, true, 250),       // Press Semicolon (evdev=39), wait 250ms
+            EventSimulator::Event(tc.inputEvdev, true, 50),  // Press test key, wait 50ms
+            EventSimulator::Event(tc.inputEvdev, false, 10), // Release test key, wait 10ms
+            EventSimulator::Event(39, false, 0)         // Release Semicolon
+        };
 
-        // Press test key (H/J/K/L)
-        injectKey(tc.inputScan, true);
-        waitForProcessing();
+        // Inject sequence with proper timing
+        simulator->injectSequence(mockInputHook->capturedKeyCallback, events);
+
+        // Wait for async processing to complete
+        bool outputReceived = simulator->waitForOutput(mockInputInjector, 1);
+        ASSERT_TRUE(outputReceived) << "No output generated for " << tc.name;
 
         // Verify output
         EXPECT_EQ(mockInputInjector->lastMakeCode, tc.expectedScan)
             << "CRITICAL BUG: " << tc.name << " failed! Expected 0x"
             << std::hex << tc.expectedScan << " got 0x" << mockInputInjector->lastMakeCode;
 
-        // Release keys
-        injectKey(tc.inputScan, false);
-        injectKey(0x27, false);
+        // Wait between test cases for engine to stabilize
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }

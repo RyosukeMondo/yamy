@@ -85,17 +85,12 @@ bool EventSimulator::waitForOutput(MockInputInjector* mockInjector, int expected
     }
 }
 
-void EventSimulator::injectSequence(Engine* engine, const std::vector<Event>& events) {
-    if (!engine) {
-        std::cerr << "[EventSimulator] ERROR: null engine pointer" << std::endl;
+void EventSimulator::injectSequence(yamy::platform::KeyCallback keyCallback,
+                                   const std::vector<Event>& events) {
+    if (!keyCallback) {
+        std::cerr << "[EventSimulator] ERROR: null keyCallback" << std::endl;
         return;
     }
-
-    // Get the input hook from the engine (we need to access the mock hook's callback)
-    // Since we can't directly access it from Engine, we'll need to use a workaround
-    // For now, we'll document this limitation and expect tests to handle injection directly
-    std::cerr << "[EventSimulator] WARNING: injectSequence not fully implemented yet" << std::endl;
-    std::cerr << "[EventSimulator] Tests should use MockInputHook->capturedKeyCallback directly" << std::endl;
 
     for (const auto& event : events) {
         // Create KeyEvent structure
@@ -112,9 +107,8 @@ void EventSimulator::injectSequence(Engine* engine, const std::vector<Event>& ev
                   << " isDown=" << event.isKeyDown
                   << " delay=" << event.delayMs << "ms" << std::endl;
 
-        // Note: This requires access to the input hook callback
-        // For the actual implementation, tests should capture and call the callback directly
-        // This is a helper method to document the pattern
+        // Inject the event through the callback
+        keyCallback(keyEvent);
 
         // Apply delay after event
         if (event.delayMs > 0) {
