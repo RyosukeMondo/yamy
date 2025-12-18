@@ -7,7 +7,6 @@
 #include "test_setting.cpp"
 #include "test_misc.cpp"
 #include "test_keymap.cpp"
-#include "test_parser.cpp"
 #include "test_keyboard.cpp"
 #include "test_function.cpp"
 #include "test_layoutmanager.cpp"

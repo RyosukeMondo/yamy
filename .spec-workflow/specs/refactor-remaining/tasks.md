@@ -67,7 +67,7 @@
   - _Requirements: FR-4_
   - _Prompt: Role: Software Engineer with expertise in code refactoring and dependency cleanup | Task: Remove all stale FocusOfThread references from command files following requirement FR-4, deleting files that depend on removed window focus system | Restrictions: Must grep entire src/core/ to find all references, must review each reference to determine if file can be updated or should be deleted, do not leave any dangling references that cause compilation errors | Success: Zero FocusOfThread references remain in src/core/ (verified by grep), cmd_other_window_class.cpp and cmd_keymap_window.cpp deleted, cmd_sync.cpp either updated or deleted, clean build succeeds_
 
-- [ ] 6. Delete legacy parser test code
+- [x] 6. Delete legacy parser test code
   - File: src/tests/test_parser.cpp
   - Verify parser.cpp and parser.h are fully deleted (not just stubbed)
   - Delete test_parser.cpp (tests for deleted parser)
