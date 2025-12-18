@@ -13,7 +13,14 @@ namespace engine {
 
 ModifierKeyHandler::ModifierKeyHandler(uint32_t hold_threshold_ms)
     : m_hold_threshold_ms(hold_threshold_ms)
+    , m_debugLogging(false)
 {
+    // Check for debug logging environment variable
+    const char* debug_env = std::getenv("YAMY_DEBUG_KEYCODE");
+    if (debug_env && debug_env[0] == '1') {
+        m_debugLogging = true;
+        LOG_INFO("[TEST] [ModifierKeyHandler] Debug logging enabled via YAMY_DEBUG_KEYCODE");
+    }
     LOG_INFO("[ModifierKeyHandler] [MODIFIER] initialized with threshold {}ms", hold_threshold_ms);
 }
 
@@ -98,6 +105,10 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
                 state.state = NumberKeyState::WAITING;
                 state.press_time = std::chrono::steady_clock::now();
 
+                if (m_debugLogging) {
+                    LOG_DEBUG("[TEST] [ModifierKeyHandler] State: IDLE → WAITING for key 0x{:04X} ({})",
+                             yamy_scancode, is_virtual ? "virtual" : "hardware");
+                }
                 LOG_INFO("[ModifierKeyHandler] [MODIFIER] Key 0x{:04X} PRESS, waiting for threshold ({})",
                          yamy_scancode, is_virtual ? "virtual" : "hardware");
 
@@ -115,15 +126,25 @@ NumberKeyResult ModifierKeyHandler::processNumberKey(uint16_t yamy_scancode, Eve
                 if (hasExceededThreshold(state.press_time)) {
                     // Hold detected - activate modifier
                     state.state = NumberKeyState::MODIFIER_ACTIVE;
+                    auto elapsed = std::chrono::steady_clock::now() - state.press_time;
+                    auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
                     if (is_virtual) {
                         // Virtual modifier (M00-MFF) - activate in ModifierState, no VK code
+                        if (m_debugLogging) {
+                            LOG_DEBUG("[TEST] [ModifierKeyHandler] State: WAITING → ACTIVE for M{:02X} key 0x{:04X} (held {}ms, threshold {}ms)",
+                                     virtual_mod_num, yamy_scancode, elapsed_ms, m_hold_threshold_ms);
+                        }
                         LOG_INFO("[ModifierKeyHandler] [MODIFIER] Hold detected: M{:02X} (0x{:04X}) ACTIVATE",
                                  virtual_mod_num, yamy_scancode);
                         return NumberKeyResult(ProcessingAction::ACTIVATE_MODIFIER, 0, virtual_mod_num, true);
                     } else {
                         // Hardware modifier - return VK code
                         uint16_t vk_code = getModifierVKCode(modifier);
+                        if (m_debugLogging) {
+                            LOG_DEBUG("[TEST] [ModifierKeyHandler] State: WAITING → ACTIVE for key 0x{:04X} (held {}ms, threshold {}ms)",
+                                     yamy_scancode, elapsed_ms, m_hold_threshold_ms);
+                        }
                         LOG_INFO("[ModifierKeyHandler] [MODIFIER] Hold detected: 0x{:04X} → modifier VK 0x{:04X} PRESS",
                                  yamy_scancode, vk_code);
                         return NumberKeyResult(ProcessingAction::ACTIVATE_MODIFIER, vk_code, true);
@@ -292,12 +313,22 @@ std::vector<std::pair<uint16_t, uint8_t>> ModifierKeyHandler::checkAndActivateWa
         if (hasExceededThreshold(state.press_time)) {
             // Activate this modifier
             state.state = NumberKeyState::MODIFIER_ACTIVE;
+            auto elapsed = std::chrono::steady_clock::now() - state.press_time;
+            auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
             if (state.is_virtual) {
+                if (m_debugLogging) {
+                    LOG_DEBUG("[TEST] [ModifierKeyHandler] checkAndActivate: WAITING → ACTIVE for M{:02X} key 0x{:04X} (held {}ms, threshold {}ms)",
+                             state.virtual_mod_num, scancode, elapsed_ms, m_hold_threshold_ms);
+                }
                 LOG_INFO("[ModifierKeyHandler] [MODIFIER] Auto-activating M{:02X} (0x{:04X}) - threshold exceeded",
                          state.virtual_mod_num, scancode);
                 to_activate.push_back({scancode, state.virtual_mod_num});
             } else {
+                if (m_debugLogging) {
+                    LOG_DEBUG("[TEST] [ModifierKeyHandler] checkAndActivate: WAITING → ACTIVE for hardware key 0x{:04X} (held {}ms, threshold {}ms)",
+                             scancode, elapsed_ms, m_hold_threshold_ms);
+                }
                 LOG_INFO("[ModifierKeyHandler] [MODIFIER] Auto-activating hardware modifier (0x{:04X}) - threshold exceeded",
                          scancode);
                 // For hardware modifiers, we'd need to inject the modifier key

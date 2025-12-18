@@ -177,6 +177,9 @@ private:
     /// Hold threshold in milliseconds
     uint32_t m_hold_threshold_ms;
 
+    /// Debug logging flag (set by YAMY_DEBUG_KEYCODE environment variable)
+    bool m_debugLogging;
+
     /// Get hardware modifier VK code for a given modifier type
     /// @param modifier Hardware modifier type
     /// @return VK code (e.g., VK_LSHIFT = 0xA0)

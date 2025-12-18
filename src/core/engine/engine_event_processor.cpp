@@ -61,7 +61,9 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
 
     if (m_debugLogging) {
         const char* type_str = (type == EventType::PRESS) ? "PRESS" : "RELEASE";
-        LOG_DEBUG("[EventProcessor] [EVENT:START] evdev {} ({})", input_evdev, type_str);
+        const char* key_name = yamy::platform::getKeyName(input_evdev);
+        LOG_DEBUG("[TEST] [EventProcessor] INPUT: evdev={} (0x{:02X}) {} name='{}'",
+                  input_evdev, input_evdev, type_str, key_name);
     }
 
     // Layer 1: evdev → YAMY scan code
@@ -116,7 +118,9 @@ EventProcessor::ProcessedEvent EventProcessor::processEvent(uint16_t input_evdev
 
     if (m_debugLogging) {
         const char* type_str = (type == EventType::PRESS) ? "PRESS" : "RELEASE";
-        LOG_DEBUG("[EventProcessor] [EVENT:END] Output evdev {} ({})", output_evdev, type_str);
+        const char* key_name = yamy::platform::getKeyName(output_evdev);
+        LOG_DEBUG("[TEST] [EventProcessor] OUTPUT FINAL: evdev={} (0x{:02X}) {} name='{}' tap={}",
+                  output_evdev, output_evdev, type_str, key_name, m_currentEventIsTap);
     }
 
     // Event type is ALWAYS preserved: PRESS in = PRESS out, RELEASE in = RELEASE out
@@ -133,9 +137,9 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
 
     if (m_debugLogging) {
         if (yamy != 0) {
-            LOG_DEBUG("[EventProcessor] [LAYER1:IN] evdev {} → yamy 0x{:04X}", evdev, yamy);
+            LOG_DEBUG("[TEST] [LAYER1] evdev {} → yamy 0x{:04X}", evdev, yamy);
         } else {
-            LOG_DEBUG("[EventProcessor] [LAYER1:IN] evdev {} → NOT FOUND", evdev);
+            LOG_DEBUG("[TEST] [LAYER1] evdev {} → NOT FOUND", evdev);
         }
     }
 
@@ -145,8 +149,13 @@ uint16_t EventProcessor::layer1_evdevToYamy(uint16_t evdev)
 uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType type, input::ModifierState* io_modState)
 {
     if (m_debugLogging) {
-        LOG_DEBUG("[LAYER2] Processing 0x{:04X} modHandler={} modState={}",
+        LOG_DEBUG("[TEST] [LAYER2] Processing yamy 0x{:04X} modHandler={} modState={}",
                   yamy_in, (m_modifierHandler ? "YES" : "NO"), (io_modState ? "YES" : "NO"));
+        if (io_modState) {
+            LOG_DEBUG("[TEST] [LAYER2] Current modifier state: shift={} ctrl={} alt={} win={}",
+                      io_modState->isShiftPressed(), io_modState->isCtrlPressed(),
+                      io_modState->isAltPressed(), io_modState->isWinPressed());
+        }
     }
 
     // Step 0: Process virtual modifier triggers (e.g., CapsLock → M00)
@@ -156,7 +165,7 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
         // CRITICAL: Handle actions even if valid=false!
         // WAITING_FOR_THRESHOLD returns valid=false but we MUST suppress the key
         if (m_debugLogging) {
-            LOG_DEBUG("[MOD] processNumberKey 0x{:04X} action={} valid={} mod_type={}",
+            LOG_DEBUG("[TEST] [LAYER2] Modifier check: yamy 0x{:04X} action={} valid={} mod_type={}",
                       yamy_in, (int)result.action, result.valid, result.modifier_type);
         }
 
@@ -168,7 +177,7 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
             case engine::ProcessingAction::WAITING_FOR_THRESHOLD:
                 // CRITICAL: Suppress trigger key while waiting (even though valid=false)
                 if (m_debugLogging) {
-                    LOG_DEBUG("[MOD] WAITING for threshold - SUPPRESSING");
+                    LOG_DEBUG("[TEST] [LAYER2] WAITING for threshold - SUPPRESSING key 0x{:04X}", yamy_in);
                 }
                 return 0;
 
@@ -177,7 +186,8 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
                     // Virtual modifier (M00-MFF)
                     io_modState->activateModifier(result.modifier_type);
                     if (m_debugLogging) {
-                        LOG_DEBUG("[MOD] Activated M{:02X}", result.modifier_type);
+                        LOG_DEBUG("[TEST] [LAYER2] Activated virtual modifier M{:02X} from key 0x{:04X}",
+                                  result.modifier_type, yamy_in);
                     }
                 }
                 // Return 0 to suppress the trigger key output
@@ -188,7 +198,8 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
                     // Virtual modifier (M00-MFF)
                     io_modState->deactivateModifier(result.modifier_type);
                     if (m_debugLogging) {
-                        LOG_DEBUG("[MOD] Deactivated M{:02X}", result.modifier_type);
+                        LOG_DEBUG("[TEST] [LAYER2] Deactivated virtual modifier M{:02X} from key 0x{:04X}",
+                                  result.modifier_type, yamy_in);
                     }
                 }
                 // Return 0 to suppress the trigger key output
@@ -199,7 +210,8 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
                 // TAP detected - output the tap key
                 if (result.output_yamy_code != 0) {
                     if (m_debugLogging) {
-                        LOG_DEBUG("[MOD] TAP detected, output 0x{:04X}", result.output_yamy_code);
+                        LOG_DEBUG("[TEST] [LAYER2] TAP detected on key 0x{:04X}, output 0x{:04X}",
+                                  yamy_in, result.output_yamy_code);
                     }
                     m_currentEventIsTap = true;
                     return result.output_yamy_code;
@@ -216,10 +228,14 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
         const auto& state = io_modState->getFullState();
         if (const auto* match = m_lookupTable->findMatch(yamy_in, state)) {
             if (m_debugLogging) {
-                LOG_DEBUG("[EventProcessor] [LAYER2:MATCH] 0x{:04X} -> 0x{:04X} (New Lookup)",
+                LOG_DEBUG("[TEST] [LAYER2] RULE MATCH: yamy 0x{:04X} → 0x{:04X}",
                           yamy_in, match->outputScanCode);
             }
             return match->outputScanCode;
+        } else {
+            if (m_debugLogging) {
+                LOG_DEBUG("[TEST] [LAYER2] No rule match for yamy 0x{:04X}, pass-through", yamy_in);
+            }
         }
     }
 
@@ -230,7 +246,7 @@ uint16_t EventProcessor::layer2_applySubstitution(uint16_t yamy_in, EventType ty
 uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
 {
     if (m_debugLogging) {
-        LOG_DEBUG("[EventProcessor] [LAYER3:IN] Processing yamy 0x{:04X}", yamy);
+        LOG_DEBUG("[TEST] [LAYER3] Processing yamy 0x{:04X}", yamy);
     }
     // Layer 3: YAMY → evdev conversion with virtual key suppression
     // Virtual keys (V_*, M00-MFF, L00-LFF) have no evdev codes and must NOT
@@ -241,7 +257,7 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
 
     if (is_virtual || is_modifier || is_lock) {
         if (m_debugLogging) {
-            LOG_DEBUG("[EventProcessor] [LAYER3:SUPPRESS] yamy 0x{:04X} (virtual key, not output)", yamy);
+            LOG_DEBUG("[TEST] [LAYER3] SUPPRESS: yamy 0x{:04X} (virtual key, not output)", yamy);
         }
         return 0;  // Suppress virtual keys (no evdev output)
     }
@@ -252,10 +268,10 @@ uint16_t EventProcessor::layer3_yamyToEvdev(uint16_t yamy)
     if (m_debugLogging) {
         if (evdev != 0) {
             const char* key_name = yamy::platform::getKeyName(evdev);
-            LOG_DEBUG("[EventProcessor] [LAYER3:OUT] yamy 0x{:04X} → evdev {} ({})",
-                      yamy, evdev, key_name);
+            LOG_DEBUG("[TEST] [LAYER3] OUTPUT: yamy 0x{:04X} → evdev {} (0x{:02X}) name='{}'",
+                      yamy, evdev, evdev, key_name);
         } else {
-            LOG_DEBUG("[EventProcessor] [LAYER3:OUT] yamy 0x{:04X} → NOT FOUND", yamy);
+            LOG_DEBUG("[TEST] [LAYER3] ERROR: yamy 0x{:04X} → NOT FOUND", yamy);
         }
     }
 
