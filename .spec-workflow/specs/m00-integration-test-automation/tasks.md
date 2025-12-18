@@ -14,7 +14,7 @@
   - _Requirements: US-4 (Reproducible Test Scenarios)_
   - _Prompt: Role: Test Infrastructure Engineer | Task: Implement the EventSimulator utility class for M00 integration tests in spec m00-integration-test-automation. Create a new EventSimulator class that provides event injection with configurable delays between events, engine initialization synchronization (waitForEngineReady), output synchronization (waitForOutput for mock injector), and proper evdev code handling | Restrictions: Do NOT modify existing test files yet, do NOT use busy-wait loops (use proper sleep/condition variables), do NOT hardcode timeout values (make them configurable) | Success: EventSimulator compiles, provides timing control, and synchronization helpers work correctly. Can be included in test files and used for event injection_
 
-- [-] 2. Add integration test logging to EventProcessor and ModifierKeyHandler
+- [x] 2. Add integration test logging to EventProcessor and ModifierKeyHandler
   - File: src/core/engine/engine_event_processor.cpp (modify)
   - File: src/core/engine/modifier_key_handler.cpp (modify)
   - Add detailed logging for test debugging
