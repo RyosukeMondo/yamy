@@ -27,36 +27,8 @@
 #include "../commands/cmd_describe_bindings.h"
 #include "../commands/cmd_help_message.h"
 #include "../commands/cmd_help_variable.h"
-#include "../commands/cmd_window_raise.h"
-#include "../commands/cmd_window_lower.h"
-#include "../commands/cmd_window_minimize.h"
-#include "../commands/cmd_window_maximize.h"
-#include "../commands/cmd_window_h_maximize.h"
-#include "../commands/cmd_window_v_maximize.h"
-#include "../commands/cmd_window_hv_maximize.h"
-#include "../commands/cmd_window_move.h"
-#include "../commands/cmd_window_move_to.h"
-#include "../commands/cmd_window_move_visibly.h"
-#include "../commands/cmd_window_monitor_to.h"
-#include "../commands/cmd_window_monitor.h"
-#include "../commands/cmd_window_cling_to_left.h"
-#include "../commands/cmd_window_cling_to_right.h"
-#include "../commands/cmd_window_cling_to_top.h"
-#include "../commands/cmd_window_cling_to_bottom.h"
-#include "../commands/cmd_window_close.h"
-#include "../commands/cmd_window_toggle_top_most.h"
-#include "../commands/cmd_window_identify.h"
-#include "../commands/cmd_window_set_alpha.h"
-#include "../commands/cmd_window_redraw.h"
-#include "../commands/cmd_window_resize_to.h"
 #include "../commands/cmd_mouse_move.h"
 #include "../commands/cmd_mouse_wheel.h"
-#include "../commands/cmd_clipboard_change_case.h"
-#include "../commands/cmd_clipboard_upcase_word.h"
-#include "../commands/cmd_clipboard_downcase_word.h"
-#include "../commands/cmd_clipboard_copy.h"
-#include "../commands/cmd_emacs_edit_kill_line_pred.h"
-#include "../commands/cmd_emacs_edit_kill_line_func.h"
 #include "../commands/cmd_log_clear.h"
 #include "../commands/cmd_recenter.h"
 #include "../commands/cmd_direct_sstp.h"
@@ -105,36 +77,8 @@ FunctionData *createFunctionData(const std::string &i_name)
   { "DescribeBindings", Command_DescribeBindings::create },
   { "HelpMessage", Command_HelpMessage::create },
   { "HelpVariable", Command_HelpVariable::create },
-  { "WindowRaise", Command_WindowRaise::create },
-  { "WindowLower", Command_WindowLower::create },
-  { "WindowMinimize", Command_WindowMinimize::create },
-  { "WindowMaximize", Command_WindowMaximize::create },
-  { "WindowHMaximize", Command_WindowHMaximize::create },
-  { "WindowVMaximize", Command_WindowVMaximize::create },
-  { "WindowHVMaximize", Command_WindowHVMaximize::create },
-  { "WindowMove", Command_WindowMove::create },
-  { "WindowMoveTo", Command_WindowMoveTo::create },
-  { "WindowMoveVisibly", Command_WindowMoveVisibly::create },
-  { "WindowMonitorTo", Command_WindowMonitorTo::create },
-  { "WindowMonitor", Command_WindowMonitor::create },
-  { "WindowClingToLeft", Command_WindowClingToLeft::create },
-  { "WindowClingToRight", Command_WindowClingToRight::create },
-  { "WindowClingToTop", Command_WindowClingToTop::create },
-  { "WindowClingToBottom", Command_WindowClingToBottom::create },
-  { "WindowClose", Command_WindowClose::create },
-  { "WindowToggleTopMost", Command_WindowToggleTopMost::create },
-  { "WindowIdentify", Command_WindowIdentify::create },
-  { "WindowSetAlpha", Command_WindowSetAlpha::create },
-  { "WindowRedraw", Command_WindowRedraw::create },
-  { "WindowResizeTo", Command_WindowResizeTo::create },
   { "MouseMove", Command_MouseMove::create },
   { "MouseWheel", Command_MouseWheel::create },
-  { "ClipboardChangeCase", Command_ClipboardChangeCase::create },
-  { "ClipboardUpcaseWord", Command_ClipboardUpcaseWord::create },
-  { "ClipboardDowncaseWord", Command_ClipboardDowncaseWord::create },
-  { "ClipboardCopy", Command_ClipboardCopy::create },
-  { "EmacsEditKillLinePred", Command_EmacsEditKillLinePred::create },
-  { "EmacsEditKillLineFunc", Command_EmacsEditKillLineFunc::create },
   { "LogClear", Command_LogClear::create },
   { "Recenter", Command_Recenter::create },
   { "DirectSSTP", Command_DirectSSTP::create },

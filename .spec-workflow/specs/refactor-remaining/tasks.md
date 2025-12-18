@@ -41,7 +41,7 @@
 
 ## Important (Quality & Cleanup)
 
-- [ ] 4. Complete Phase 4 command file deletions
+- [x] 4. Complete Phase 4 command file deletions
   - File: src/core/commands/cmd_window_*.cpp, cmd_clipboard_*.cpp, cmd_emacs_*.cpp
   - Review all 36 remaining command files
   - Delete window manipulation commands (cmd_window_*.cpp)
