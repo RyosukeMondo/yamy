@@ -1739,40 +1739,6 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         add_test(NAME yamy_number_modifiers_test COMMAND yamy_number_modifiers_test)
 
         # -----------------------------------------------------------------------------
-        # Target: benchmark_event_processor (EventProcessor Performance Benchmark)
-        # Standalone performance benchmark to measure event processing latency
-        # Part of task 5.5 in key-remapping-consistency spec
-        # -----------------------------------------------------------------------------
-        set(BENCHMARK_EVENT_PROCESSOR_SOURCES
-            tests/benchmark_event_processor.cpp
-            src/platform/linux/keycode_mapping.cpp
-            src/core/engine/engine_event_processor.cpp
-            src/core/engine/modifier_key_handler.cpp
-            src/core/logger/journey_logger.cpp
-        )
-
-        add_executable(benchmark_event_processor
-            ${BENCHMARK_EVENT_PROCESSOR_SOURCES}
-        )
-
-        target_include_directories(benchmark_event_processor PRIVATE
-            src
-            src/core
-            src/core/engine
-            src/platform/linux
-            src/utils
-        )
-
-        target_compile_definitions(benchmark_event_processor PRIVATE
-            YAMY_UNIT_TEST
-        )
-
-        target_link_libraries(benchmark_event_processor PRIVATE
-            pthread
-            yamy_dependencies
-        )
-
-        # -----------------------------------------------------------------------------
         # Target: benchmark_modal_modifier (Modal Modifier Performance Benchmark)
         # Standalone performance benchmark to measure modal modifier pipeline latency
         # Part of task 12 in modal-modifier-remapping spec
