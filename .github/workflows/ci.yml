@@ -185,8 +185,8 @@ jobs:
         bash scripts/linux/track_legacy_strings.sh > metrics.txt
         LEGACY_COUNT=$(grep "TOTAL legacy string usages:" metrics.txt | awk '{print $5}')
         echo "Legacy string usages: $LEGACY_COUNT"
-        # Fail if count increases (baseline: 971)
-        if [ "$LEGACY_COUNT" -gt 971 ]; then
+        # Fail if count increases (baseline: 23)
+        if [ "$LEGACY_COUNT" -gt 23 ]; then
           echo "ERROR: Legacy string usage increased!"
           exit 1
         fi
