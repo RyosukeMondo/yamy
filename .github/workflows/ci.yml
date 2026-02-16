@@ -83,7 +83,7 @@ jobs:
         echo "## Code Metrics Check" >> $GITHUB_STEP_SUMMARY
 
         # Run lizard with configured limits: 500 lines/file, 50 lines/function, CCN ≤15
-        # Exclude third-party and build directories
+        # Exclude third-party, build, and vendored test framework directories
         LIZARD_OUTPUT=$(lizard src/ \
           --length 50 \
           --CCN 15 \
@@ -91,6 +91,8 @@ jobs:
           --exclude "*/third_party/*" \
           --exclude "*/external/*" \
           --exclude "*/build/*" \
+          --exclude "*/tests/googletest/*" \
+          --exclude "*/tests/googlemock/*" \
           --warnings_only 2>&1) || true
 
         # Check for violations
@@ -124,7 +126,9 @@ jobs:
         FILES_OVER_LIMIT=$(lizard src/ \
           --exclude "*/third_party/*" \
           --exclude "*/external/*" \
-          --exclude "*/build/*" 2>&1 | \
+          --exclude "*/build/*" \
+          --exclude "*/tests/googletest/*" \
+          --exclude "*/tests/googlemock/*" 2>&1 | \
           awk '/^[^[:space:]]/ {file=$1; nloc=$2} nloc > 500 {print file " (" nloc " lines)"}')
 
         if [ -n "$FILES_OVER_LIMIT" ]; then
@@ -157,11 +161,17 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake g++ make \
-          libx11-dev libxrandr-dev qtbase5-dev \
-          mold lld
+          libx11-dev libxrandr-dev qt6-base-dev libqt6network6 qt6-base-dev-tools \
+          mold lld python3-pip
+        pip3 install conan
+
+    - name: Setup Conan and install dependencies
+      run: |
+        conan profile detect --force
+        conan install . --output-folder=build --build=missing -s build_type=Release
 
     - name: Configure CMake
-      run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=OFF
+      run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=OFF -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
       run: cmake --build build -j2
@@ -218,11 +228,17 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y cmake g++ make \
           libx11-dev libxrandr-dev libudev-dev \
-          qtbase5-dev \
-          xvfb mold lld
+          qt6-base-dev libqt6network6 qt6-base-dev-tools \
+          xvfb mold lld python3-pip
+        pip3 install conan
+
+    - name: Setup Conan and install dependencies
+      run: |
+        conan profile detect --force
+        conan install . --output-folder=build --build=missing -s build_type=Debug
 
     - name: Configure CMake
-      run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_REGRESSION_TESTS=ON
+      run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_REGRESSION_TESTS=ON -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build regression tests
       run: cmake --build build --target yamy_regression_test --parallel
@@ -267,7 +283,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y cmake g++ make \
           libx11-dev libxrandr-dev libudev-dev \
-          qtbase5-dev \
+          qt6-base-dev libqt6network6 qt6-base-dev-tools libqt6test6 \
           xvfb mold lld python3-pip
         pip3 install conan
 
@@ -338,8 +354,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y cmake g++ make \
           libx11-dev libxrandr-dev libudev-dev \
-          qtbase5-dev \
-          xvfb lcov bc mold lld
+          qt6-base-dev libqt6network6 qt6-base-dev-tools \
+          xvfb lcov bc mold lld python3-pip
+        pip3 install conan
+
+    - name: Setup Conan and install dependencies
+      run: |
+        conan profile detect --force
+        conan install . --output-folder=build --build=missing -s build_type=Debug
 
     - name: Configure CMake with coverage
       run: |
@@ -349,6 +371,7 @@ jobs:
           -DBUILD_REGRESSION_TESTS=ON \
           -DBUILD_QT_GUI=OFF \
           -DENABLE_COVERAGE=ON \
+          -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake \
           -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build regression tests only
@@ -414,10 +437,16 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y cmake ninja-build g++ \
           libx11-dev libxrandr-dev libudev-dev \
-          qtbase5-dev mold lld
+          qt6-base-dev libqt6network6 qt6-base-dev-tools mold lld python3-pip
+        pip3 install conan
+
+    - name: Setup Conan and install dependencies
+      run: |
+        conan profile detect --force
+        conan install . --output-folder=build --build=missing -s build_type=Debug
 
     - name: Configure CMake
-      run: cmake -B build -G Ninja -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=ON
+      run: cmake -B build -G Ninja -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=ON -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build M00 integration tests
       run: cmake --build build --target yamy_m00_integration_test --parallel
@@ -491,10 +520,29 @@ jobs:
     - name: Install MinGW
       run: |
         sudo apt-get update
-        sudo apt-get install -y mingw-w64 cmake
+        sudo apt-get install -y mingw-w64 cmake python3-pip
+        pip3 install conan
+
+    - name: Setup Conan and install dependencies for MinGW
+      run: |
+        conan profile detect --force
+        # Create a MinGW cross-compile profile
+        cat > ~/.conan2/profiles/mingw <<'PROFILE'
+        [settings]
+        os=Windows
+        compiler=gcc
+        compiler.version=13
+        compiler.libcxx=libstdc++11
+        build_type=Release
+        arch=x86_64
+        [buildenv]
+        CC=x86_64-w64-mingw32-gcc
+        CXX=x86_64-w64-mingw32-g++
+        PROFILE
+        conan install . --output-folder=build_mingw --build=missing --profile:host=mingw --profile:build=default -s build_type=Release
 
     - name: Configure CMake
-      run: cmake -B build_mingw -DCMAKE_TOOLCHAIN_FILE=scripts/mingw_toolchain.cmake
+      run: cmake -B build_mingw -DCMAKE_TOOLCHAIN_FILE=build_mingw/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
       run: cmake --build build_mingw -j2
