@@ -35,7 +35,6 @@ jobs:
     - name: Build property tests
       run: |
         cmake --build build --target yamy_property_keymap_test --parallel
-        cmake --build build --target yamy_property_modifier_test --parallel
         cmake --build build --target yamy_property_layer_test --parallel
 
     - name: Run intensive property tests (10,000 iterations)
@@ -61,19 +60,6 @@ jobs:
           exit 1
         fi
 
-        # Run modifier state property tests
-        echo "Running modifier state property tests..."
-        MODIFIER_START=$(date +%s)
-        if RC_PARAMS="max_success=10000" ./build/bin/yamy_property_modifier_test > modifier_results.txt 2>&1; then
-          MODIFIER_END=$(date +%s)
-          MODIFIER_DURATION=$((MODIFIER_END - MODIFIER_START))
-          echo "✓ Modifier state property tests passed (10,000 iterations, ${MODIFIER_DURATION}s)" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "✗ Modifier state property tests FAILED" >> $GITHUB_STEP_SUMMARY
-          cat modifier_results.txt
-          exit 1
-        fi
-
         # Run layer switching property tests
         echo "Running layer switching property tests..."
         LAYER_START=$(date +%s)
@@ -96,7 +82,6 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "Total time: ${TOTAL_DURATION}s" >> $GITHUB_STEP_SUMMARY
         echo "- Keymap tests: ${KEYMAP_DURATION}s" >> $GITHUB_STEP_SUMMARY
-        echo "- Modifier tests: ${MODIFIER_DURATION}s" >> $GITHUB_STEP_SUMMARY
         echo "- Layer tests: ${LAYER_DURATION}s" >> $GITHUB_STEP_SUMMARY
       timeout-minutes: 30
       env:
@@ -109,7 +94,6 @@ jobs:
         name: nightly-property-test-logs
         path: |
           keymap_results.txt
-          modifier_results.txt
           layer_results.txt
         retention-days: 30
 

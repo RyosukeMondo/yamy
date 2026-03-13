@@ -2048,6 +2048,7 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
             ${UDEV_LIBRARIES}
             Qt6::Core
             Qt6::Test
+            yamy_dependencies
         )
 
         # Register with CTest
