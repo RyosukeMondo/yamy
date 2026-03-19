@@ -624,11 +624,6 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
             )
             set_target_properties(yamy-gui PROPERTIES AUTOMOC ON)
             target_link_libraries(yamy-gui PRIVATE
-                Qt6::Widgets
-                Qt6::Gui
-                Qt6::Core
-                Qt6::Network
-                yamy_core
                 yamy_qt_gui
             )
 
@@ -643,12 +638,7 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
                 src/core/platform/linux
             )
             target_link_libraries(yamy_gui_probe PRIVATE
-                yamy_core
                 yamy_qt_gui
-                Qt6::Widgets
-                Qt6::Gui
-                Qt6::Core
-                Qt6::Network
             )
         else()
             message(WARNING "Qt5 GUI components not found - building headless version only")
