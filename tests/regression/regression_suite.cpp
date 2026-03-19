@@ -15,6 +15,12 @@
 #include <gtest/gtest.h>
 #include <cstdlib>
 #include <iostream>
+#include <unistd.h>
+
+// GCC coverage data flush - needed when using _exit() to skip static destructors
+#ifdef __GNUC__
+extern "C" void __gcov_dump(void) __attribute__((weak));
+#endif
 
 //=============================================================================
 // Test filter for CI environments
@@ -60,6 +66,15 @@ int main(int argc, char** argv) {
     // Flush all output streams before exit
     std::cout.flush();
     std::cerr.flush();
+
+    // Flush gcov coverage data before _exit() since _exit() skips atexit handlers
+    // where gcov normally writes .gcda files. __gcov_dump() is a GCC extension
+    // available when compiling with --coverage / -fprofile-arcs.
+#ifdef __GNUC__
+    if (__gcov_dump) {
+        __gcov_dump();
+    }
+#endif
 
     // Use _exit() to avoid static destruction order issues.
     // The regression test links against yamy_core which has several singletons
