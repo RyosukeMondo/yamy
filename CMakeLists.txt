@@ -1923,98 +1923,11 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
                 #   tests/e2e/japanese_keyboard_layout_test.cpp
         )
 
-        # Platform sources needed for tests
-        set(REGRESSION_PLATFORM_SOURCES
-            src/platform/linux/window_system_linux.cpp
-            src/platform/linux/window_system_linux_queries.cpp
-            src/platform/linux/window_system_linux_manipulation.cpp
-            src/platform/linux/window_system_linux_hierarchy.cpp
-            src/platform/linux/window_system_linux_mouse.cpp
-            src/platform/linux/window_system_linux_monitor.cpp
-            src/platform/linux/x11_connection.cpp
-            src/platform/linux/input_injector_linux.cpp
-            src/platform/linux/input_hook_linux.cpp
-            src/platform/linux/input_driver_linux.cpp
-            src/platform/linux/device_manager_linux.cpp
-            src/platform/linux/keycode_mapping.cpp
-            src/platform/linux/sync_linux.cpp
-            src/platform/linux/thread_linux.cpp
-            src/platform/linux/hook_data_linux.cpp
-            src/platform/linux/ipc_linux.cpp
-            src/platform/linux/platform_paths_linux.cpp
-            src/utils/metrics.cpp
-        )
-
-        # Core sources for integration tests
-        set(REGRESSION_CORE_SOURCES
-            src/core/input/keyboard.cpp
-            src/core/input/keymap.cpp
-            src/core/input/modifier_state.cpp
-    
-            src/core/input/vkeytable.cpp
-            src/core/settings/setting.cpp
-            src/core/settings/json_config_loader.cpp
-            src/core/settings/config_backup.cpp
-            src/core/settings/config_manager.cpp
-            src/core/settings/config_metadata.cpp
-            src/core/settings/session_manager.cpp
-            src/core/settings/config_watcher.cpp
-            src/core/functions/strexpr.cpp
-            src/core/functions/function.cpp
-            src/core/functions/function_creator.cpp
-            src/core/engine/engine.cpp
-            src/core/engine/engine_lifecycle.cpp
-            src/core/engine/engine_input.cpp
-            src/core/engine/engine_modifier.cpp
-            src/core/engine/engine_generator.cpp
-            src/core/engine/engine_window.cpp
-            src/core/engine/engine_setting.cpp
-            src/core/engine/engine_log.cpp
-            src/core/engine/engine_event_processor.cpp
-            src/core/engine/modifier_key_handler.cpp
-            src/core/notification_dispatcher.cpp
-            src/core/logging/logger.cpp
-            src/core/platform/ipc_channel_interface.cpp
-            src/utils/stringtool.cpp
-            src/utils/compiler_specific_func.cpp
-        )
-
-        # Command sources needed for function_creator linkage
-        set(REGRESSION_CMD_SOURCES
-            src/core/commands/cmd_keymap_parent.cpp
-            src/core/commands/cmd_prefix.cpp
-            src/core/commands/cmd_keymap.cpp
-            src/core/commands/cmd_toggle.cpp
-            src/core/commands/cmd_edit_next_modifier.cpp
-            src/core/commands/cmd_variable.cpp
-            src/core/commands/cmd_repeat.cpp
-            src/core/commands/cmd_undefined.cpp
-            src/core/commands/cmd_ignore.cpp
-            src/core/commands/cmd_post_message.cpp
-            src/core/commands/cmd_wait.cpp
-            src/core/commands/cmd_vk.cpp
-            src/core/commands/cmd_default.cpp
-            src/core/commands/cmd_keymap_prev_prefix.cpp
-            src/core/commands/cmd_load_setting.cpp
-            src/core/commands/cmd_shell_execute.cpp
-            src/core/commands/cmd_investigate_command.cpp
-            src/core/commands/cmd_mayu_dialog.cpp
-            src/core/commands/cmd_describe_bindings.cpp
-            src/core/commands/cmd_help_variable.cpp
-            src/core/commands/cmd_mouse_move.cpp
-            src/core/commands/cmd_mouse_wheel.cpp
-            src/core/commands/cmd_log_clear.cpp
-            src/core/commands/cmd_direct_sstp.cpp
-            src/core/commands/cmd_mouse_hook.cpp
-            src/core/commands/cmd_cancel_prefix.cpp
-            src/core/commands/cmd_metrics.cpp
-        )
-
+        # Link against yamy_core instead of duplicating source file lists.
+        # This ensures the regression test always has access to all symbols
+        # without needing manual synchronization of source lists.
         add_executable(yamy_regression_test
             ${REGRESSION_TEST_SOURCES}
-            ${REGRESSION_PLATFORM_SOURCES}
-            ${REGRESSION_CORE_SOURCES}
-            ${REGRESSION_CMD_SOURCES}
             src/tests/googletest/src/gtest-all.cc
         )
 
@@ -2044,14 +1957,8 @@ if(UNIX AND NOT APPLE AND NOT WIN32)
         )
 
         target_link_libraries(yamy_regression_test PRIVATE
-            pthread
-            ${X11_LIBRARIES}
-            ${XRANDR_LIBRARIES}
-            ${UDEV_LIBRARIES}
-            Qt6::Core
-            Qt6::Network
+            yamy_core
             Qt6::Test
-            yamy_dependencies
         )
 
         # Register with CTest

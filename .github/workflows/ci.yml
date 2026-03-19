@@ -171,7 +171,7 @@ jobs:
         conan install . --output-folder=build --build=missing -s build_type=Release
 
     - name: Configure CMake
-      run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=OFF -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+      run: cmake -B build -DBUILD_LINUX_STUB=ON -DBUILD_LINUX_TESTING=OFF -DBUILD_REGRESSION_TESTS=OFF -DCMAKE_TOOLCHAIN_FILE=build/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
       run: cmake --build build -j2
