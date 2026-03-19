@@ -634,10 +634,6 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
 
             add_executable(yamy_gui_probe
                 tools/main_window_gui_probe.cpp
-                src/ui/qt/main_window_gui.cpp
-                src/ui/qt/ipc_client_gui.cpp
-                src/core/platform/linux/ipc_channel_qt.cpp
-                src/core/platform/ipc_channel_interface.cpp
             )
             set_target_properties(yamy_gui_probe PROPERTIES AUTOMOC ON)
             target_include_directories(yamy_gui_probe PRIVATE
@@ -647,6 +643,8 @@ if(BUILD_LINUX_STUB OR (UNIX AND NOT APPLE AND NOT WIN32))
                 src/core/platform/linux
             )
             target_link_libraries(yamy_gui_probe PRIVATE
+                yamy_core
+                yamy_qt_gui
                 Qt6::Widgets
                 Qt6::Gui
                 Qt6::Core
