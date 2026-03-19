@@ -221,13 +221,15 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
         return;
     }
 
-    // Create or recreate EventProcessor
-    m_eventProcessor = std::make_unique<yamy::EventProcessor>();
-    
+    // Build the new EventProcessor locally, then atomically swap it in.
+    // This prevents the keyboard handler thread from accessing a partially
+    // initialized processor or a destroyed one (use-after-free race).
+    auto newProcessor = std::make_shared<yamy::EventProcessor>();
+
     // Get the new lookup table and compile rules into it
     int total_rules = 0;
     int keymap_rules = 0;
-    if (auto* lookupTable = m_eventProcessor->getLookupTable()) {
+    if (auto* lookupTable = newProcessor->getLookupTable()) {
         lookupTable->clear();
 
         // Compile rules from legacy Keyboard::Substitutes (old .mayu system)
@@ -270,7 +272,7 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
               << " from substitutes, " << keymap_rules << " from keymap assignments)." << std::endl;
     }
 
-    m_eventProcessor->setDebugLogging(true);
+    newProcessor->setDebugLogging(true);
 
     // Register number modifiers
     for (const auto& numberMod : keyboard.getNumberModifiers()) {
@@ -279,7 +281,7 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
         }
         uint16_t numberYamyScan = numberMod.m_numberKey->getScanCodes()[0].m_scan;
         uint16_t modifierYamyScan = numberMod.m_modifierKey->getScanCodes()[0].m_scan;
-        m_eventProcessor->registerNumberModifier(numberYamyScan, modifierYamyScan);
+        newProcessor->registerNumberModifier(numberYamyScan, modifierYamyScan);
     }
 
     // Register virtual modifiers triggers
@@ -291,13 +293,17 @@ void Engine::buildSubstitutionTable(const Keyboard &keyboard) {
                 tapOutput = it->second;
             }
             // Register: trigger -> modNum (with optional tapOutput)
-            m_eventProcessor->registerVirtualModifierTrigger(trigger, modNum, tapOutput);
+            newProcessor->registerVirtualModifierTrigger(trigger, modNum, tapOutput);
         }
     }
 
     // Enable debug logging if env var is set
     const char* debugEnv = std::getenv("YAMY_DEBUG_KEYCODE");
     if (debugEnv && std::string(debugEnv) == "1") {
-        m_eventProcessor->setDebugLogging(true);
+        newProcessor->setDebugLogging(true);
     }
+
+    // Atomically publish the fully-initialized processor so the keyboard
+    // handler thread sees a complete object (or the old one, never a partial).
+    std::atomic_store(&m_eventProcessor, std::move(newProcessor));
 }

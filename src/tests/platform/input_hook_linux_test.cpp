@@ -380,35 +380,35 @@ TEST_F(EvdevEventProcessingTest, TimestampConversion) {
 class EvdevToKeyEventMappingTest : public ::testing::Test {};
 
 TEST_F(EvdevToKeyEventMappingTest, LetterKeyMapping) {
-    // Test that evdev KEY_A maps to correct YAMY scancode
+    // Test that evdev KEY_A maps to correct YAMY scan code (AT scan codes)
     uint16_t yamyCode = evdevToYamyKeyCode(KEY_A);
-    EXPECT_EQ(yamyCode, 0x41);  // VK_A
+    EXPECT_EQ(yamyCode, 0x1E);  // AT scan code for A
 
     yamyCode = evdevToYamyKeyCode(KEY_Z);
-    EXPECT_EQ(yamyCode, 0x5A);  // VK_Z
+    EXPECT_EQ(yamyCode, 0x2C);  // AT scan code for Z
 }
 
 TEST_F(EvdevToKeyEventMappingTest, ModifierKeyMapping) {
-    // Test modifier key mappings
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_LEFTSHIFT), 0xA0);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_RIGHTSHIFT), 0xA1);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_LEFTCTRL), 0xA2);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_RIGHTCTRL), 0xA3);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_LEFTALT), 0xA4);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_RIGHTALT), 0xA5);
+    // Test modifier key mappings (AT scan codes)
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_LEFTSHIFT), 0x2A);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_RIGHTSHIFT), 0x36);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_LEFTCTRL), 0x1D);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_RIGHTCTRL), 0xE01D);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_LEFTALT), 0x38);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_RIGHTALT), 0xE038);
 }
 
 TEST_F(EvdevToKeyEventMappingTest, FunctionKeyMapping) {
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_F1), 0x70);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_F12), 0x7B);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_F1), 0x3B);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_F12), 0x58);
 }
 
 TEST_F(EvdevToKeyEventMappingTest, SpecialKeyMapping) {
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_ESC), 0x1B);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_ENTER), 0x0D);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_SPACE), 0x20);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_TAB), 0x09);
-    EXPECT_EQ(evdevToYamyKeyCode(KEY_BACKSPACE), 0x08);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_ESC), 0x01);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_ENTER), 0x1C);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_SPACE), 0x39);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_TAB), 0x0F);
+    EXPECT_EQ(evdevToYamyKeyCode(KEY_BACKSPACE), 0x0E);
 }
 
 TEST_F(EvdevToKeyEventMappingTest, UnknownKeyReturnsZero) {

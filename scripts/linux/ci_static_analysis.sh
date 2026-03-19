@@ -7,16 +7,31 @@ echo "=== Static Analysis: Windows Dependencies ==="
 
 # 1. Check for windows.h includes in src/core
 echo "Checking for <windows.h> includes in src/core..."
-# Exclude vk_constants.h which has proper platform guards (#ifdef _WIN32)
-WINDOWS_H_COUNT=$(grep -r "#include <windows.h>" src/core | grep -v "vk_constants.h" | wc -l)
+# Find files with #include <windows.h> and check if each is guarded by #ifdef _WIN32
+UNGUARDED_COUNT=0
+UNGUARDED_FILES=""
 
-if [ "$WINDOWS_H_COUNT" -ne 0 ]; then
-    echo "❌ Error: Found $WINDOWS_H_COUNT unguarded inclusion(s) of <windows.h> in src/core:"
-    grep -r "#include <windows.h>" src/core | grep -v "vk_constants.h"
+while IFS=: read -r file line; do
+    # Check if the line before #include <windows.h> is #ifdef _WIN32
+    line_num=$(grep -n "#include <windows.h>" "$file" | head -1 | cut -d: -f1)
+    if [ -n "$line_num" ] && [ "$line_num" -gt 1 ]; then
+        prev_line=$(sed -n "$((line_num - 1))p" "$file")
+        if echo "$prev_line" | grep -q "#ifdef _WIN32"; then
+            # Properly guarded, skip
+            continue
+        fi
+    fi
+    UNGUARDED_COUNT=$((UNGUARDED_COUNT + 1))
+    UNGUARDED_FILES="$UNGUARDED_FILES\n$file"
+done < <(grep -rl "#include <windows.h>" src/core 2>/dev/null | while read f; do echo "$f:1"; done)
+
+if [ "$UNGUARDED_COUNT" -ne 0 ]; then
+    echo "Error: Found $UNGUARDED_COUNT unguarded inclusion(s) of <windows.h> in src/core:"
+    echo -e "$UNGUARDED_FILES"
     exit 1
 else
-    echo "✅ Pass: No unguarded <windows.h> includes found in src/core."
-    echo "   (vk_constants.h properly guards with #ifdef _WIN32)"
+    echo "Pass: No unguarded <windows.h> includes found in src/core."
+    echo "   (All <windows.h> includes are properly guarded with #ifdef _WIN32)"
 fi
 
 # 2. Check for Win32 specific types in src/core

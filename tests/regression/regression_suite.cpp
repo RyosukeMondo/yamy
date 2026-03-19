@@ -57,5 +57,15 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
     std::cout << "=== Regression Test Suite Complete ===" << std::endl;
 
-    return result;
+    // Flush all output streams before exit
+    std::cout.flush();
+    std::cerr.flush();
+
+    // Use _exit() to avoid static destruction order issues.
+    // The regression test links against yamy_core which has several singletons
+    // (ConfigManager, SessionManager, Logger, etc.) whose destruction order
+    // relative to google test's static parameterized test infrastructure can
+    // trigger std::bad_variant_access during cleanup. Since all test results
+    // are already reported by this point, skipping static destructors is safe.
+    _exit(result);
 }

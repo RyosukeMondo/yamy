@@ -242,7 +242,7 @@ private:
     bool volatile m_isPerfThreadRunning;     /// flag to control performance thread
 
     // Event processing
-    std::unique_ptr<yamy::EventProcessor> m_eventProcessor; /// Unified 3-layer event processor
+    std::shared_ptr<yamy::EventProcessor> m_eventProcessor; /// Unified 3-layer event processor
     yamy::input::ModifierState m_modifierState; /// Modal and hardware modifier state tracking
 
     /// Keymap entry for virtual modifier/lock-based key matching

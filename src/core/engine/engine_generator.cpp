@@ -360,14 +360,18 @@ void Engine::beginGeneratingKeyboardEvents(
 
     // FULL 3-LAYER EVENT PROCESSING via EventProcessor
     // Call EventProcessor::processEvent() for complete Layer1→Layer2→Layer3 flow
-    if (m_eventProcessor && i_c.m_evdev_code != 0) {
+    // Take a thread-safe shared_ptr copy to prevent use-after-free if
+    // setSetting() replaces m_eventProcessor on the main thread while the
+    // keyboard handler thread is processing an event.
+    auto eventProcessor = std::atomic_load(&m_eventProcessor);
+    if (eventProcessor && i_c.m_evdev_code != 0) {
         // Determine event type from modifier state
         yamy::EventType event_type = isPhysicallyPressed ? yamy::EventType::PRESS : yamy::EventType::RELEASE;
 
         // Process through all 3 layers
         // Pass ModifierState to track and update modal modifier state (mod0-mod19)
         // LockState is now integrated into ModifierState
-        yamy::EventProcessor::ProcessedEvent result = m_eventProcessor->processEvent(i_c.m_evdev_code, event_type, &m_modifierState);
+        yamy::EventProcessor::ProcessedEvent result = eventProcessor->processEvent(i_c.m_evdev_code, event_type, &m_modifierState);
 
         // CRITICAL: Check if event was suppressed at Layer 3 (virtual key, lock key, etc.)
         // If output_evdev is 0, the event should NOT be generated/output
